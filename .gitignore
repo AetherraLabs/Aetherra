@@ -43,6 +43,7 @@ aetherra-website/
 /.lyrixa_last_introspection
 
 # Generated reports and scanner outputs
+/docs/DOCS_CONSISTENCY_DEBUG.json
 /artifacts/
 /reports/
 /data/artifacts/

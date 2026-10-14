@@ -14,10 +14,13 @@ from __future__ import annotations
 
 # Standard library imports
 import argparse
+import ast
 import json
 import os
 import re
+import sys
 import time
+from collections.abc import Iterator
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,35 +30,60 @@ DOCS_CFG = ROOT / "docs" / "docs_consistency.json"
 
 # Treat only standalone env-like tokens and avoid matching doc filenames like AETHERRA_..._SYSTEM.md
 ENV_PATTERN = re.compile(r"\bAETHERRA_[A-Z0-9_]+\b(?!\.md)")
-# Contextual patterns for true env-var usage in code
-ENV_FETCH_PATTERNS = [
-    re.compile(r"os\.environ\[(?:'|\")(?P<var>AETHERRA_[A-Z0-9_]+)(?:'|\")\]"),
-    re.compile(
-        r"os\.environ\.get\((?:'|\")(?P<var>AETHERRA_[A-Z0-9_]+)(?:'|\")[^)]*\)"
-    ),
-    re.compile(r"os\.getenv\((?:'|\")(?P<var>AETHERRA_[A-Z0-9_]+)(?:'|\")[^)]*\)"),
-]
 ROUTE_PATTERN = re.compile(r"@app\.route\((?P<q>['\"])\s*([^'\"]+)\1.*?\)")
 BLUEPRINT_ROUTE_PATTERN = re.compile(r"@\w+\.route\((?P<q>['\"])\s*([^'\"]+)\1.*?\)")
 
 
+def _raise_walk_error(_error: OSError) -> None:
+    raise OSError("source_directory_unreadable") from None
+
+
+def _python_sources() -> Iterator[Path]:
+    excluded = {".venv", "__pycache__", "node_modules", ".git", "dist-packages"}
+    for directory, children, files in os.walk(ROOT, onerror=_raise_walk_error):
+        children[:] = [
+            child
+            for child in children
+            if child not in excluded and not child.startswith(".pytest_tmp")
+        ]
+        for name in files:
+            if name.endswith(".py"):
+                yield Path(directory) / name
+
+
 def find_env_vars_in_code() -> set[str]:
     found: set[str] = set()
-    for path in ROOT.rglob("*.py"):
-        if any(
-            part in {".venv", "__pycache__", "node_modules", ".git", "dist-packages"}
-            for part in path.parts
-        ):
-            continue
+    for path in _python_sources():
         try:
-            text = path.read_text(encoding="utf-8", errors="ignore")
-        except Exception:
-            continue
-        # Only count variables actually fetched from environment to avoid false positives
-        for pat in ENV_FETCH_PATTERNS:
-            for m in pat.finditer(text):
-                found.add(m.group("var"))
+            text = path.read_text(encoding="utf-8-sig")
+        except (OSError, UnicodeError):
+            raise OSError("source_file_unreadable") from None
+        for node in ast.walk(ast.parse(text, filename=str(path))):
+            key = None
+            if isinstance(node, ast.Call) and node.args:
+                if _qualified_name(node.func) in {"os.getenv", "os.environ.get"}:
+                    key = node.args[0]
+            elif (
+                isinstance(node, ast.Subscript)
+                and _qualified_name(node.value) == "os.environ"
+            ):
+                key = node.slice
+            if (
+                isinstance(key, ast.Constant)
+                and isinstance(key.value, str)
+                and ENV_PATTERN.fullmatch(key.value)
+            ):
+                found.add(key.value)
     return found
+
+
+def _qualified_name(node: ast.AST) -> str:
+    if isinstance(node, ast.Name):
+        return node.id
+    if isinstance(node, ast.Attribute):
+        parent = _qualified_name(node.value)
+        return f"{parent}.{node.attr}" if parent else ""
+    return ""
 
 
 def _normalize_route(route: str) -> str:
@@ -74,16 +102,11 @@ def _normalize_route(route: str) -> str:
 
 def find_routes_in_code() -> set[str]:
     found: set[str] = set()
-    for path in ROOT.rglob("*.py"):
-        if any(
-            part in {".venv", "__pycache__", "node_modules", ".git", "dist-packages"}
-            for part in path.parts
-        ):
-            continue
+    for path in _python_sources():
         try:
-            text = path.read_text(encoding="utf-8", errors="ignore")
-        except Exception:
-            continue
+            text = path.read_text(encoding="utf-8-sig")
+        except (OSError, UnicodeError):
+            raise OSError("source_file_unreadable") from None
         for m in ROUTE_PATTERN.finditer(text):
             found.add(_normalize_route(m.group(2)))
         for m in BLUEPRINT_ROUTE_PATTERN.finditer(text):
@@ -136,7 +159,7 @@ def read_doc_section_envs(doc: Path) -> set[str]:
 
     envs_all |= table_envs
 
-    return set(sorted(envs_all))
+    return envs_all
 
 
 def read_doc_endpoints(doc: Path) -> set[str]:
@@ -173,13 +196,12 @@ def read_doc_endpoints(doc: Path) -> set[str]:
         # Drop obvious non-API artifacts (file paths/extensions)
         # Keep certain .json API endpoints (e.g., OpenAPI schema) while filtering file-like paths
         exceptions = {"/api/openapi.json"}
-        filtered = {
+        return {
             p
             for p in filtered
             if (p in exceptions)
             or not re.search(r"\.(py|md|txt|json|yaml|yml)$", p, re.IGNORECASE)
         }
-        return filtered
 
     # Collect endpoints from multiple likely sections and the full doc for stability
     sections_to_try = [
@@ -205,16 +227,23 @@ def main() -> int:
     args = parser.parse_args()
 
     debug = args.debug or os.environ.get("AETHERRA_DOCS_DEBUG") == "1"
-    code_envs = find_env_vars_in_code()
-    code_routes = find_routes_in_code()
-    doc_envs = read_doc_section_envs(DOC_OVERVIEW)
-    doc_routes = read_doc_endpoints(DOC_OVERVIEW)
+    try:
+        code_envs = find_env_vars_in_code()
+        code_routes = find_routes_in_code()
+        doc_envs = read_doc_section_envs(DOC_OVERVIEW)
+        doc_routes = read_doc_endpoints(DOC_OVERVIEW)
+    except (OSError, UnicodeError, SyntaxError) as error:
+        print(
+            f"[DOCS][FAIL] source inspection failed ({type(error).__name__})",
+            file=sys.stderr,
+        )
+        return 1
 
     if debug:
         print("[debug] code_envs count:", len(code_envs))
-        print("[debug] first 15 code_envs:", sorted(list(code_envs))[:15])
+        print("[debug] first 15 code_envs:", sorted(code_envs)[:15])
         print("[debug] doc_envs count:", len(doc_envs))
-        print("[debug] first 15 doc_envs:", sorted(list(doc_envs))[:15])
+        print("[debug] first 15 doc_envs:", sorted(doc_envs)[:15])
         print("[debug] code_routes count:", len(code_routes))
         print("[debug] doc_routes count:", len(doc_routes))
 
@@ -273,9 +302,12 @@ def main() -> int:
             missing_routes_ignore = cfg.get("ignore_missing_endpoints", [])
             if isinstance(missing_routes_ignore, list):
                 cfg_ignore_missing_routes = {str(v) for v in missing_routes_ignore}
-        except Exception:
-            # Best-effort; ignore config errors to keep tool resilient
-            pass
+        except (OSError, ValueError, AttributeError, TypeError) as error:
+            print(
+                f"[DOCS][FAIL] configuration inspection failed ({type(error).__name__})",
+                file=sys.stderr,
+            )
+            return 1
 
     missing_envs = sorted((code_envs - doc_envs) - cfg_ignore_missing_envs)
     raw_extra_envs = doc_envs - code_envs
@@ -286,12 +318,16 @@ def main() -> int:
         if missing_envs:
             print("[debug] sample missing_envs:", missing_envs[:10])
         if raw_extra_envs:
-            print("[debug] sample raw_extra_envs:", sorted(list(raw_extra_envs))[:10])
+            print("[debug] sample raw_extra_envs:", sorted(raw_extra_envs)[:10])
     # Suppress configured doc-only envs from the extra list for a cleaner report
     extra_envs = sorted([v for v in raw_extra_envs if v not in cfg_ignore_extra_envs])
     missing_routes = sorted((code_routes - doc_routes) - cfg_ignore_missing_routes)
     extra_routes = sorted(
-        [r for r in doc_routes if r not in code_routes and r not in cfg_ignore_extra_routes]
+        [
+            r
+            for r in doc_routes
+            if r not in code_routes and r not in cfg_ignore_extra_routes
+        ]
     )
 
     debug_json_path = ROOT / "docs" / "DOCS_CONSISTENCY_DEBUG.json"
@@ -309,18 +345,16 @@ def main() -> int:
                 "code_envs_count": len(code_envs),
                 "doc_envs_count": len(doc_envs),
                 "missing_envs": missing_envs,
-                "raw_extra_envs": sorted(list(raw_extra_envs)),
+                "raw_extra_envs": sorted(raw_extra_envs),
                 "suppressed_doc_only_envs": sorted(
-                    list(cfg_ignore_extra_envs & raw_extra_envs)
+                    cfg_ignore_extra_envs & raw_extra_envs
                 ),
                 "extra_envs_reported": extra_envs,
                 "code_routes_count": len(code_routes),
                 "doc_routes_count": len(doc_routes),
                 "missing_routes": missing_routes,
                 "extra_routes": extra_routes,
-                "missing_consciousness_metrics": sorted(
-                    list(missing_consciousness_metrics)
-                ),
+                "missing_consciousness_metrics": sorted(missing_consciousness_metrics),
                 "report_path": str(REPORT),
                 "config_ignore_count": len(cfg_ignore_extra_envs),
             }

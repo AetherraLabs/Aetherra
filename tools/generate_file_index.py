@@ -61,7 +61,9 @@ def git_tracked_files(root: Path, include_ext: set[str]) -> list[Path] | None:
         path = root / rel
         if path.suffix.lower() not in include_ext:
             continue
-        if not path.exists() or any(part in DEFAULT_EXCLUDE_DIRS for part in path.parts):
+        if not path.exists() or any(
+            part in DEFAULT_EXCLUDE_DIRS for part in path.parts
+        ):
             continue
         paths.append(path)
     return paths
@@ -104,8 +106,8 @@ def summarize_file(path: Path) -> str:
                 for line in f:
                     if line.lstrip().startswith("#"):
                         return line.lstrip("# ").strip()
-        except Exception:
-            pass
+        except (OSError, UnicodeError):
+            return ""
     return ""
 
 
@@ -209,7 +211,7 @@ def main():
     lines = [
         "# Aetherra File Index",
         "",
-        f"Generated from: {root}",
+        "Generated from: repository source files",
         "",
         "Note: This appendix focuses on key project files. Some generated or cache files are excluded.",
         "",
