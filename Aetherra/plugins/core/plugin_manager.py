@@ -12,12 +12,17 @@ lifecycle management, and comprehensive analytics integration.
 # Standard library imports
 import importlib
 import importlib.util
+import logging
+import math
 import os
 import sys
 import threading
 import time
 from datetime import datetime
+from decimal import Decimal
 from typing import Any, Callable, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 # Optional consciousness imports (lazy, guarded)
 try:  # pragma: no cover - imported when consciousness enabled
@@ -95,13 +100,19 @@ class PluginManager:
             if extra_context:
                 context.update(extra_context)
             if event == "load_attempt":
-                self.analytics.record_plugin_action(plugin_name, "load_attempt", context)
+                self.analytics.record_plugin_action(
+                    plugin_name, "load_attempt", context
+                )
             elif event == "load_success":
-                self.analytics.record_plugin_action(plugin_name, "load_success", context)
+                self.analytics.record_plugin_action(
+                    plugin_name, "load_success", context
+                )
             elif event == "unload":
                 self.analytics.record_plugin_action(plugin_name, "unload", context)
             elif event == "execute_start":
-                self.analytics.record_plugin_action(plugin_name, "execute_start", context)
+                self.analytics.record_plugin_action(
+                    plugin_name, "execute_start", context
+                )
             elif event == "execute_end":
                 self.analytics.record_plugin_action(plugin_name, "execute_end", context)
             elif event == "load_error":
@@ -157,7 +168,7 @@ class PluginManager:
 
             try:
                 module = importlib.import_module(module_path)
-            except ImportError:
+            except ImportError as exc:
                 # Try direct import
                 spec = importlib.util.spec_from_file_location(
                     plugin_name, os.path.join(self.plugins_dir, f"{plugin_name}.py")
@@ -166,7 +177,7 @@ class PluginManager:
                     module = importlib.util.module_from_spec(spec)
                     spec.loader.exec_module(module)
                 else:
-                    raise ImportError(f"Could not load spec for {plugin_name}")
+                    raise ImportError(f"Could not load spec for {plugin_name}") from exc
 
             # Look for plugin class or main function
             plugin_instance = None
@@ -256,10 +267,79 @@ class PluginManager:
             return False
 
     def execute_plugin(self, plugin_name: str, *args, **kwargs) -> Any:
-        """Execute a plugin with analytics tracking."""
+        """Execute with optional cooperative timeout and process-RSS preflight.
+
+        Zero budgets retain unbudgeted compatibility. These Security helpers do
+        not provide process isolation or a continuous memory limit.
+        """
+        operation = "Plugin budget validation"
+        run_with_timeout_fn = None
+        ensure_mem_fn = None
+        TimeBudgetExceededCls = None
+        try:
+            budgets = {}
+            for name in ("_timeout_sec", "_memory_mb"):
+                raw = kwargs.pop(name, 0)
+                budget = float(raw)
+                if (
+                    isinstance(raw, bool)
+                    or not math.isfinite(budget)
+                    or budget < 0
+                    # A nonzero request must not underflow into an unbudgeted call.
+                    or (
+                        budget == 0
+                        and (Decimal(raw) if isinstance(raw, str) else raw) != 0
+                    )
+                ):
+                    raise ValueError("Plugin budgets must be finite and nonnegative")
+                budgets[name] = budget
+            timeout_sec = budgets["_timeout_sec"]
+            mem_mb = budgets["_memory_mb"]
+            if timeout_sec > threading.TIMEOUT_MAX:
+                raise ValueError("Timeout exceeds the Security helper's platform limit")
+            if timeout_sec > 0 or mem_mb > 0:
+                operation = "Plugin sandbox helper resolution"
+                # Aetherra imports
+                from Aetherra.security import sandbox as _sb
+
+                if timeout_sec > 0:
+                    run_with_timeout_fn = getattr(_sb, "run_with_timeout", None)
+                    if not callable(run_with_timeout_fn):
+                        raise RuntimeError("Timeout helper unavailable")
+                    TimeBudgetExceededCls = getattr(_sb, "TimeBudgetExceeded", None)
+                if mem_mb > 0:
+                    ensure_mem_fn = getattr(_sb, "ensure_memory_budget", None)
+                    if (
+                        not callable(ensure_mem_fn)
+                        or getattr(_sb, "psutil", None) is None
+                    ):
+                        raise RuntimeError("Memory checking unavailable")
+                    operation = "Plugin memory budget check"
+                    ensure_mem_fn(mem_mb)
+        except Exception as exc:
+            diagnostic = f"{operation} failed ({type(exc).__name__})"
+            logger.warning("%s", diagnostic)
+            self.track_plugin_event(plugin_name, "execute_error", {"error": diagnostic})
+            return None
+
         if plugin_name not in self.plugins:
             if not self.load_plugin(plugin_name):
                 return None
+            if mem_mb > 0:
+                try:
+                    # Loading may allocate memory; check again before invoking.
+                    if getattr(_sb, "psutil", None) is None:
+                        raise RuntimeError("Memory checking unavailable after loading")
+                    ensure_mem_fn(mem_mb)
+                except Exception as exc:
+                    diagnostic = (
+                        f"Plugin memory budget check failed ({type(exc).__name__})"
+                    )
+                    logger.warning("%s", diagnostic)
+                    self.track_plugin_event(
+                        plugin_name, "execute_error", {"error": diagnostic}
+                    )
+                    return None
 
         try:
             plugin = self.plugins[plugin_name]
@@ -277,30 +357,6 @@ class PluginManager:
 
             def _record_timeout():
                 _sandbox_ctx["timed_out"] = True
-
-            # Attempt sandbox wrappers if imported (run_with_timeout / ensure_memory_budget)
-            try:
-                timeout_sec = float(kwargs.pop("_timeout_sec", 0) or 0)
-            except Exception:
-                timeout_sec = 0.0
-            try:
-                mem_mb = int(kwargs.pop("_memory_mb", 0) or 0)
-            except Exception:
-                mem_mb = 0
-
-            # Lazy import sandbox helpers (keeps optional dependency surface minimal)
-            run_with_timeout_fn = None
-            ensure_mem_fn = None
-            TimeBudgetExceededCls = None
-            try:  # pragma: no cover - optional path
-                # Aetherra imports
-                from Aetherra.security import sandbox as _sb  # type: ignore
-
-                run_with_timeout_fn = getattr(_sb, "run_with_timeout", None)
-                ensure_mem_fn = getattr(_sb, "ensure_memory_budget", None)
-                TimeBudgetExceededCls = getattr(_sb, "TimeBudgetExceeded", None)
-            except Exception:
-                pass
 
             def _invoke():
                 if hasattr(plugin, "execute"):
@@ -336,23 +392,24 @@ class PluginManager:
                         )
                 except Exception:
                     pass
-            try:
-                if timeout_sec > 0 and run_with_timeout_fn:
-                    if mem_mb > 0 and ensure_mem_fn:
-                        try:
-                            ensure_mem_fn(mem_mb)  # type: ignore[call-arg]
-                        except Exception:
-                            pass
-                    try:
-                        result = run_with_timeout_fn(_invoke, timeout_sec=timeout_sec)  # type: ignore[call-arg]
-                    except Exception as _e_timeout:
-                        if TimeBudgetExceededCls and isinstance(_e_timeout, TimeBudgetExceededCls):
-                            _record_timeout()
-                        raise
-                else:
-                    result = _invoke()
-            except Exception:
-                raise
+            if timeout_sec > 0:
+                try:
+                    result = run_with_timeout_fn(_invoke, timeout_sec=timeout_sec)
+                except Exception as exc:
+                    if isinstance(TimeBudgetExceededCls, type) and isinstance(
+                        exc, TimeBudgetExceededCls
+                    ):
+                        _record_timeout()
+                    diagnostic = (
+                        f"Plugin timeout execution failed ({type(exc).__name__})"
+                    )
+                    logger.warning("%s", diagnostic)
+                    self.track_plugin_event(
+                        plugin_name, "execute_error", {"error": diagnostic}
+                    )
+                    return None
+            else:
+                result = _invoke()
 
             # Analytics tracking - success
             execution_time = time.time() - start_time
@@ -459,7 +516,7 @@ class PluginManager:
         """Execute a chain of plugins based on the user message."""
         try:
             # Example logic: iterate through plugins and execute matching ones
-            for plugin_name, plugin in self.plugins.items():
+            for _plugin_name, plugin in self.plugins.items():
                 if hasattr(plugin, "process_message"):
                     response = plugin.process_message(user_message)
                     if response:
@@ -529,10 +586,12 @@ class PluginManager:
                     if os.path.exists(plugin_file):
                         current_time = os.path.getmtime(plugin_file)
 
-                        if plugin_name in file_times:
-                            if current_time > file_times[plugin_name]:
-                                print(f"Reloading changed plugin: {plugin_name}")
-                                self.reload_plugin(plugin_name)
+                        if (
+                            plugin_name in file_times
+                            and current_time > file_times[plugin_name]
+                        ):
+                            print(f"Reloading changed plugin: {plugin_name}")
+                            self.reload_plugin(plugin_name)
 
                         file_times[plugin_name] = current_time
 
