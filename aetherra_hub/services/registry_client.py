@@ -114,6 +114,7 @@ def get_registry_status() -> dict[str, Any] | None:
 
 def get_kernel_status() -> dict[str, Any] | None:
     try:
+
         async def _local_kernel_status() -> Any:
             reg = await _get_registry_async()
             info = reg.get_service_info("kernel_loop")
@@ -134,6 +135,7 @@ def get_kernel_status() -> dict[str, Any] | None:
 
         # Prefer central Registry Daemon when no in-process kernel is registered.
         try:
+            # Aetherra imports
             from aetherra_registry_client import http_get_status
         except Exception:
             http_get_status = None
@@ -426,6 +428,7 @@ def submit_agent_task(
 ) -> str | None:
     """Submit a task to the agent orchestrator. Returns task_id on success."""
     try:
+        # Aetherra imports
         from Aetherra.aetherra_core.agents.agent_orchestrator import Task, TaskPriority
 
         async def _go() -> str | None:
@@ -577,19 +580,28 @@ def get_agent_task_list(
                         "task_id": task.task_id,
                         "name": task.name,
                         "description": task.description,
-                        "status": task.status.value
-                        if hasattr(task.status, "value")
-                        else str(task.status),
+                        "status": (
+                            task.status.value
+                            if hasattr(task.status, "value")
+                            else str(task.status)
+                        ),
                         "assigned_agent": task.assigned_agent,
-                        "created_at": task.created_at.isoformat()
-                        if hasattr(task.created_at, "isoformat")
-                        else str(task.created_at),
-                        "started_at": task.started_at.isoformat()
-                        if task.started_at and hasattr(task.started_at, "isoformat")
-                        else None,
-                        "completed_at": task.completed_at.isoformat()
-                        if task.completed_at and hasattr(task.completed_at, "isoformat")
-                        else None,
+                        "created_at": (
+                            task.created_at.isoformat()
+                            if hasattr(task.created_at, "isoformat")
+                            else str(task.created_at)
+                        ),
+                        "started_at": (
+                            task.started_at.isoformat()
+                            if task.started_at and hasattr(task.started_at, "isoformat")
+                            else None
+                        ),
+                        "completed_at": (
+                            task.completed_at.isoformat()
+                            if task.completed_at
+                            and hasattr(task.completed_at, "isoformat")
+                            else None
+                        ),
                         # Convenience field for UI: when was this task performed?
                         # Prefer completed_at, then started_at, else created_at
                         "performed_at": (
@@ -648,7 +660,7 @@ def get_agent_task_list(
         return []
 
 
-def get_memory_quantum_status() -> dict[str, Any]:
+def get_memory_quantum_status(*, allow_fallback: bool = True) -> dict[str, Any]:
     try:
 
         async def _go() -> Any:
@@ -680,6 +692,8 @@ def get_memory_quantum_status() -> dict[str, Any]:
             return r
     except Exception as exc:
         logger.debug("get_memory_quantum_status error: %s", exc)
+    if not allow_fallback:
+        return {"enabled": False}
     try:  # fallback
         q = _get_fallback_quantum_engine()
         if q is None:
@@ -697,7 +711,7 @@ def get_memory_quantum_status() -> dict[str, Any]:
         return {"enabled": False}
 
 
-def get_memory_audit() -> dict[str, Any]:
+def get_memory_audit(*, allow_fallback: bool = True) -> dict[str, Any]:
     try:
 
         async def _go() -> Any:
@@ -725,6 +739,8 @@ def get_memory_audit() -> dict[str, Any]:
             return r
     except Exception as exc:
         logger.debug("get_memory_audit error: %s", exc)
+    if not allow_fallback:
+        return {"enabled": False}
     try:  # fallback
         q = _get_fallback_quantum_engine()
         if q is None:
@@ -883,6 +899,7 @@ def get_keb_status() -> dict[str, Any]:
 
     # Prefer Registry Daemon status when no in-process event bus is registered.
     try:
+        # Aetherra imports
         from aetherra_registry_client import http_get_status
     except Exception:
         http_get_status = None
