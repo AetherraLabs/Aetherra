@@ -40,7 +40,7 @@ jobs:
           if [ -f docs/conf.py ]; then sphinx-build -b linkcheck docs docs/_build/linkcheck; fi
       - name: Upload artifact
         if: success()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docs-html
           path: docs/_build/html

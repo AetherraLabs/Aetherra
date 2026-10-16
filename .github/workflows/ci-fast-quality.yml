@@ -94,7 +94,7 @@ jobs:
           echo "\n_This gate is advisory; failures here should be addressed before full quality gates._" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload baseline artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: parse-baseline-fast
           path: parse_baseline_fast.json
@@ -102,7 +102,7 @@ jobs:
 
       - name: Upload classifier artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: workflow-classifier-fast
           path: |
