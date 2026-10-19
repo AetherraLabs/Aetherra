@@ -24,6 +24,15 @@ jobs:
             pip install -r requirements.txt
             pip install pytest pytest-cov prometheus-client pyyaml
           fi
+      - name: Install isolated vulnerability tooling
+        if: github.event_name == 'push'
+        run: |
+          audit_env="$RUNNER_TEMP/aetherra-vulnerability-tools"
+          python -m venv "$audit_env"
+          "$audit_env/bin/python" -m pip install 'pip-audit==2.10.1'
+          audit_bin=$(mktemp -d "$RUNNER_TEMP/aetherra-audit-bin.XXXXXX")
+          ln -s "$audit_env/bin/pip-audit" "$audit_bin/pip-audit"
+          echo "$audit_bin" >> "$GITHUB_PATH"
       - name: Version badge check
         run: python tools/verify_version_badge.py
       - name: Generate license report
