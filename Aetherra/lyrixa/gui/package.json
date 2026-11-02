@@ -42,7 +42,7 @@
         "eslint": "^10.13.0",
         "eslint-plugin-react-hooks": "^7.1.1",
         "eslint-plugin-react-refresh": "^0.5.7",
-        "postcss": "^8.5.29",
+        "postcss": "^8.5.32",
         "semver": "^7",
         "tailwindcss": "^4.3.3",
         "typescript": "~7.0.2",
