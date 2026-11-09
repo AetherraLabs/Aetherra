@@ -12,7 +12,7 @@
         "test": "node --test tests/*.test.mjs"
     },
     "dependencies": {
-        "@radix-ui/react-dialog": "^1.1.23",
+        "@radix-ui/react-dialog": "^1.3.1",
         "@radix-ui/react-progress": "^1.2.1",
         "@radix-ui/react-slot": "^1.4.0",
         "@radix-ui/react-tabs": "^1.2.1",
