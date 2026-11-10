@@ -46,11 +46,21 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 
+def _configure_console() -> None:
+    """Preserve console encoding while escaping characters it cannot represent."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(errors="backslashreplace")
+
+
 def run(cmd: list[str], timeout: float | None = None) -> tuple[int, str]:
     """Run a command and return (exit_code, stdout+stderr) decoded as UTF-8.
 
     Uses subprocess.run for improved timeout control and simpler IO.
     """
+    child_env = os.environ.copy()
+    child_env["PYTHONIOENCODING"] = "utf-8:replace"
     try:
         res = subprocess.run(
             cmd,
@@ -60,6 +70,7 @@ def run(cmd: list[str], timeout: float | None = None) -> tuple[int, str]:
             encoding="utf-8",
             errors="replace",
             timeout=timeout,
+            env=child_env,
         )
         return res.returncode, res.stdout
     except subprocess.TimeoutExpired as e:
@@ -75,6 +86,7 @@ def run_optional_tool(label: str, args: list[str], fail_fatal: bool = True) -> b
 
     If fail_fatal is False, failures are logged but do not abort gates.
     """
+    _configure_console()
     print(f"[GATES] {label} -> {' '.join(args)}")
     code, out = run(args)
     print(out)
@@ -141,6 +153,7 @@ def fetch_metrics(url: str) -> str:
 
 
 def main() -> int:
+    _configure_console()
     # Legacy hub enforcement removed - monolithic hub fully migrated to aetherra_hub module
 
     # Default strict license trend controls (can be overridden by CI env)
@@ -214,7 +227,7 @@ def main() -> int:
     if vuln_scan_enabled:
         tool = Path("tools/vuln_scan.py")
         if tool.exists():
-            args_vs = [sys.executable, str(tool), "--lock", str(lock_file)]
+            args_vs = [sys.executable, str(tool), "--lock", str(lock_file), "--exact-pins"]
             fail_level = os.getenv("VULN_FAIL_LEVEL")
             if fail_level:
                 args_vs += ["--fail-level", fail_level]
@@ -223,8 +236,9 @@ def main() -> int:
                 return 1
         else:
             print(
-                "[GATES] Vulnerability scan requested but tool missing; continuing (treat as warning)."
+                "[GATES] Vulnerability scan requested but tool missing; failing for safety."
             )
+            return 1
     else:
         print("[GATES] Vulnerability scan skipped (disabled or lock absent)")
 
