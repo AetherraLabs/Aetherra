@@ -46,7 +46,7 @@ jobs:
       - name: Integrity manifest
         run: python tools/generate_integrity_manifest.py --dist dist --out integrity-manifest.json || true
       - name: Publish artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: quality-gates-artifacts
           path: |
