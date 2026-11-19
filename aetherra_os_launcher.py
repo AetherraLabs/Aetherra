@@ -276,6 +276,11 @@ class EngineAdapter:
         # Back-compat for launcher activation
         await self.initialize()
 
+    async def shutdown(self):
+        if hasattr(self.impl, "shutdown"):
+            await self.impl.shutdown()
+
+
     async def process_message(self, content):
         if hasattr(self.impl, "process_message"):
             return await self.impl.process_message(str(content))
@@ -2670,11 +2675,12 @@ class AetherraOSLauncher:
                         )
 
                 # Start the built-in Hub server
-                hub_server = start_hub_server(port=chosen_port)
+                hub_server = start_hub_server(port=chosen_port, host="127.0.0.1")
+                self._presence_owned_hub = hub_server
 
                 if hub_server and hub_server.is_running():
                     # Expose chosen URL to environment for downstream consumers
-                    hub_url = f"http://localhost:{chosen_port}"
+                    hub_url = f"http://127.0.0.1:{chosen_port}"
                     os.environ["AETHERRA_HUB_URL"] = hub_url
                     # Persist runtime hub URL/port for external tools
                     try:
@@ -3616,11 +3622,35 @@ class AetherraOSLauncher:
         except Exception as e:
             logger.debug(f"[STATUS] Failed to cleanup status file: {e}")
 
+    async def _stop_presence_resources(self):
+        heartbeats = getattr(self, "_daemon_heartbeat_tasks", [])
+        for task in heartbeats:
+            task.cancel()
+        if heartbeats:
+            await asyncio.gather(*heartbeats, return_exceptions=True)
+            heartbeats.clear()
+        owned_hub = getattr(self, "_presence_owned_hub", None)
+        if owned_hub is not None:
+            await asyncio.to_thread(owned_hub.stop_server)
+            self._presence_owned_hub = None
+        process = self.systems.pop("registry_daemon_proc", None)
+        if process is not None and process.returncode is None:
+            with contextlib.suppress(ProcessLookupError):
+                process.terminate()
+                try:
+                    await asyncio.wait_for(process.wait(), timeout=2)
+                except TimeoutError:
+                    process.kill()
+                    await asyncio.wait_for(process.wait(), timeout=2)
+
+
     async def _graceful_shutdown(self):
         """🛑 Perform graceful system shutdown."""
         logger.info("🛑 Initiating graceful shutdown...")
 
         self.running = False
+
+        await self._stop_presence_resources()
 
         # Shutdown systems in reverse order
         if self.kernel_loop:

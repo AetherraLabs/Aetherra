@@ -24,14 +24,39 @@ import importlib
 import importlib.util
 import json
 import logging
+import math
 import os
+import threading
 from dataclasses import dataclass
 from enum import Enum
+from functools import partial
 from typing import Any, Dict, Optional, cast
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+_OPENAI_CLEANUP_TIMEOUT_SECONDS = 5.0
+
+
+def _cleanup_timeout(timeout: float) -> float:
+    if (
+        isinstance(timeout, bool)
+        or not isinstance(timeout, int | float)
+        or not math.isfinite(timeout)
+        or timeout < 0
+    ):
+        raise ValueError("llm_cleanup_timeout_invalid")
+    return float(timeout)
+
+
+@dataclass
+class _OpenAIRequest:
+    client: Any
+    loop: asyncio.AbstractEventLoop
+    cleanup: asyncio.Task[None] | None = None
+    unresolved: bool = False
+    error_code: str = ""
 
 
 class LLMProvider(Enum):
@@ -44,6 +69,14 @@ class LLMProvider(Enum):
     GEMINI = "gemini"
     AZURE = "azure"
     LOCAL_GGUF = "local_gguf"
+
+
+class LLMProvidersUnavailableError(RuntimeError):
+    """No supported backend could be initialized."""
+
+
+class LLMProviderDisabledError(RuntimeError):
+    """The requested provider is outside this manager's configured boundary."""
 
 
 @dataclass
@@ -63,58 +96,95 @@ class LLMConfig:
 
 
 class MultiLLMManager:
-    """Manages multiple LLM backends for AetherraCode"""
+    """Manage explicitly enabled backends, defaulting to OpenAI-only Alpha."""
 
-    def __init__(self):
+    def __init__(self, *, enabled_providers: tuple[LLMProvider, ...] = (LLMProvider.OPENAI,)):
+        supported = frozenset(
+            {
+                LLMProvider.OPENAI,
+                LLMProvider.OLLAMA,
+                LLMProvider.LLAMACPP,
+                LLMProvider.ANTHROPIC,
+                LLMProvider.GEMINI,
+            }
+        )
+        if (
+            not isinstance(enabled_providers, tuple)
+            or not enabled_providers
+            or not all(
+                isinstance(provider, LLMProvider) and provider in supported
+                for provider in enabled_providers
+            )
+            or len(set(enabled_providers)) != len(enabled_providers)
+        ):
+            raise ValueError("llm_enabled_providers_invalid")
+        self._enabled_providers = frozenset(enabled_providers)
+        self._primary_provider = enabled_providers[0]
         self.providers = {}
         self.current_model = None
         self.model_configs = {}
         self.available_models = {}
+        self.provider_diagnostics: dict[str, dict[str, str]] = {}
 
         # Initialize supported providers
         self._initialize_providers()
         self._load_model_configs()
 
+    @property
+    def enabled_providers(self) -> frozenset[LLMProvider]:
+        return self._enabled_providers
+
+    @property
+    def primary_provider(self) -> LLMProvider:
+        return self._primary_provider
+
+    def _provider_enabled(self, provider: Any) -> bool:
+        return isinstance(provider, LLMProvider) and provider in self.enabled_providers
+
     def _initialize_providers(self):
-        """Initialize all supported LLM providers"""
-
-        # OpenAI Provider
-        if importlib.util.find_spec("openai") is not None:
-            self.providers[LLMProvider.OPENAI] = OpenAIProvider()
-            logger.info("✅ OpenAI provider initialized")
-        else:
-            logger.warning("⚠️ OpenAI not available (pip install openai)")
-
-        # Ollama Provider (for local Mistral, LLaMA, etc.)
-        if importlib.util.find_spec("ollama") is not None:
-            self.providers[LLMProvider.OLLAMA] = OllamaProvider()
-            logger.info("✅ Ollama provider initialized")
-        else:
-            logger.warning("⚠️ Ollama not available (pip install ollama)")
-
-        # llama-cpp-python Provider (for GGUF models)
-        if importlib.util.find_spec("llama_cpp") is not None:
-            self.providers[LLMProvider.LLAMACPP] = LlamaCppProvider()
-            logger.info("✅ LlamaCpp provider initialized")
-        else:
-            logger.warning("⚠️ LlamaCpp not available (pip install llama-cpp-python)")
-
-        # Anthropic Provider
-        if importlib.util.find_spec("anthropic") is not None:
-            self.providers[LLMProvider.ANTHROPIC] = AnthropicProvider()
-            logger.info("✅ Anthropic provider initialized")
-        else:
-            logger.warning("⚠️ Anthropic not available (pip install anthropic)")
-
-        # Google Gemini Provider
-        try:
-            if importlib.util.find_spec("google.generativeai") is not None:
-                self.providers[LLMProvider.GEMINI] = GeminiProvider()
-                logger.info("✅ Gemini provider initialized")
-            else:
-                logger.warning("⚠️ Gemini not available (pip install google-generativeai)")
-        except (ImportError, ModuleNotFoundError):
-            logger.warning("⚠️ Gemini not available (pip install google-generativeai)")
+        """Initialize backends independently and retain sanitized startup outcomes."""
+        backends = (
+            (LLMProvider.OPENAI, "openai", OpenAIProvider),
+            (LLMProvider.OLLAMA, "ollama", OllamaProvider),
+            (LLMProvider.LLAMACPP, "llama_cpp", LlamaCppProvider),
+            (LLMProvider.ANTHROPIC, "anthropic", AnthropicProvider),
+            (LLMProvider.GEMINI, "google.generativeai", GeminiProvider),
+        )
+        for provider, module_name, factory in backends:
+            if not self._provider_enabled(provider):
+                self.provider_diagnostics[provider.value] = {
+                    "status": "disabled",
+                    "code": "provider_disabled",
+                }
+                continue
+            try:
+                try:
+                    present = importlib.util.find_spec(module_name) is not None
+                except (ImportError, ModuleNotFoundError):
+                    present = False
+                if not present:
+                    self.provider_diagnostics[provider.value] = {
+                        "status": "unavailable",
+                        "code": "dependency_unavailable",
+                    }
+                    logger.info("LLM provider dependency unavailable: %s", provider.value)
+                    continue
+                instance = factory()
+            except Exception:
+                self.provider_diagnostics[provider.value] = {
+                    "status": "failed",
+                    "code": "provider_initialization_failed",
+                }
+                logger.warning("LLM provider initialization failed: %s", provider.value)
+                continue
+            self.providers[provider] = instance
+            self.provider_diagnostics[provider.value] = {
+                "status": "available",
+                "code": "initialized",
+            }
+            logger.info("LLM provider initialized: %s", provider.value)
+        if not self.providers:
+            raise LLMProvidersUnavailableError("llm_providers_unavailable")
 
     def _load_model_configs(self):
         """Load model configurations from file or defaults"""
@@ -124,12 +194,20 @@ class MultiLLMManager:
             try:
                 with open(config_file) as f:
                     configs = json.load(f)
+                    if not isinstance(configs, list):
+                        raise ValueError("llm_model_configuration_invalid")
                     for config_data in configs:
-                        config = LLMConfig(**config_data)
+                        entry = dict(config_data)
+                        entry["provider"] = LLMProvider(entry["provider"])
+                        if not self._provider_enabled(entry["provider"]):
+                            continue
+                        config = LLMConfig(**entry)
+                        if not isinstance(config.model_name, str) or not config.model_name.strip():
+                            raise ValueError("llm_model_configuration_invalid")
                         self.model_configs[config.model_name] = config
                 logger.info(f"✅ Loaded {len(configs)} model configurations")
-            except Exception as e:
-                logger.error(f"❌ Error loading model configs: {e}")
+            except Exception:
+                logger.error("LLM model configuration invalid")
 
         # Add default configurations
         self._add_default_configs()
@@ -290,7 +368,7 @@ class MultiLLMManager:
         }
 
         for model_name, config in self.model_configs.items():
-            if config.provider in self.providers:
+            if self._provider_enabled(config.provider) and config.provider in self.providers:
                 models[model_name] = {
                     "provider": config.provider.value,
                     "context_window": config.context_window,
@@ -320,6 +398,11 @@ class MultiLLMManager:
 
         config = self.model_configs[model_name]
 
+        if not self._provider_enabled(config.provider):
+            return False
+        if "provider" in kwargs and kwargs["provider"] != config.provider:
+            return False
+
         # Update config with any provided parameters
         for key, value in kwargs.items():
             if hasattr(config, key):
@@ -341,78 +424,22 @@ class MultiLLMManager:
         return True
 
     def _select_auto_model(self) -> Optional[str]:
-        """Choose the best available model based on provider availability and API keys.
-
-        Selection priorities (cloud-first, local fallback):
-        1) OpenAI gpt-4o (if OpenAI provider loaded and OPENAI_API_KEY present)
-        2) OpenAI gpt-3.5-turbo (same conditions)
-        3) Anthropic claude-3-sonnet (ANTHROPIC_API_KEY present)
-        4) Gemini gemini-pro (GOOGLE_API_KEY present)
-        5) Local Ollama models (llama3 first, then mistral) - only as fallback
-        6) Any other available configured model
-        """
-        try:
-            import os
-        except Exception:
-            os = None  # type: ignore
-
-        def has_env(key: str) -> bool:
-            return bool(os and os.getenv(key))
-
-        # Helper to check configuration and provider availability
-        def is_available(name: str) -> bool:
-            cfg = self.model_configs.get(name)
-            if not cfg:
-                return False
-            provider = self.providers.get(cfg.provider)
-            if not provider:
-                return False
-            # Ensure a strict bool for type checkers
-            return bool(provider.is_model_available(cfg))
-
-        # Priority 1-2: OpenAI (prefer paid cloud API when key is available)
-        if has_env("OPENAI_API_KEY"):
-            if "gpt-4o" in self.model_configs and is_available("gpt-4o"):
-                logger.info("🔑 Using OpenAI gpt-4o (API key detected)")
-                return "gpt-4o"
-            if "gpt-3.5-turbo" in self.model_configs and is_available("gpt-3.5-turbo"):
-                logger.info("🔑 Using OpenAI gpt-3.5-turbo (API key detected)")
-                return "gpt-3.5-turbo"
-
-        # Priority 3: Anthropic (paid cloud API)
-        if (
-            has_env("ANTHROPIC_API_KEY")
-            and "claude-3-sonnet" in self.model_configs
-            and is_available("claude-3-sonnet")
-        ):
-            logger.info("🔑 Using Anthropic claude-3-sonnet (API key detected)")
-            return "claude-3-sonnet"
-
-        # Priority 4: Gemini (paid cloud API)
-        if (
-            has_env("GOOGLE_API_KEY")
-            and "gemini-pro" in self.model_configs
-            and is_available("gemini-pro")
-        ):
-            logger.info("🔑 Using Google gemini-pro (API key detected)")
-            return "gemini-pro"
-
-        # Priority 5: Local Ollama (fallback when no cloud API keys available)
-        logger.info("⚠️ No cloud API keys detected, falling back to local models")
-        for local_name in ("llama3", "mistral"):
-            if local_name in self.model_configs and is_available(local_name):
-                logger.info(f"🦙 Using local Ollama model: {local_name}")
-                return local_name
-
-        # Priority 6: Fallback to first available configured model
-        logger.warning("⚠️ No preferred models available, trying any available model")
-        for name, cfg in self.model_configs.items():
-            provider = self.providers.get(cfg.provider)
-            if provider and provider.is_model_available(cfg):
-                # Keys are strings by definition; cast for static analyzers
-                logger.info(f"📦 Using fallback model: {name}")
-                return cast(str, name)
-
+        """Select within the configured primary provider, never across providers."""
+        provider = self.providers.get(self.primary_provider)
+        if provider is None:
+            return None
+        preferred = (
+            ("gpt-4o", "gpt-3.5-turbo") if self.primary_provider is LLMProvider.OPENAI else ()
+        )
+        names = dict.fromkeys((*preferred, *self.model_configs))
+        for name in names:
+            config = self.model_configs.get(name)
+            if (
+                config is not None
+                and config.provider is self.primary_provider
+                and provider.is_model_available(config)
+            ):
+                return name
         return None
 
     async def generate_response(self, prompt: str, **kwargs) -> str:
@@ -420,22 +447,59 @@ class MultiLLMManager:
         if not self.current_model:
             raise ValueError("No model selected. Use set_model() first.")
 
+        if not self._provider_enabled(self.current_model.provider):
+            raise LLMProviderDisabledError("llm_provider_disabled")
+
         provider = self.providers[self.current_model.provider]
 
         try:
             response = await provider.generate(self.current_model, prompt, **kwargs)
             return str(response)
-        except Exception as e:
-            logger.error(f"❌ Error generating response: {e}")
+        except Exception:
+            logger.error("LLM generation failed")
             raise
 
     def generate_response_sync(self, prompt: str, **kwargs) -> str:
         """Synchronous wrapper for generate_response"""
         return asyncio.run(self.generate_response(prompt, **kwargs))
 
+    def get_lifecycle_status(self) -> dict[str, Any]:
+        active = unresolved = 0
+        degraded = False
+        for name, provider in self.providers.items():
+            getter = getattr(provider, "get_lifecycle_status", None)
+            if not self._provider_enabled(name) or not callable(getter):
+                continue
+            status = getter()
+            active += status["active_request_count"]
+            unresolved += status["unresolved_cleanup_count"]
+            degraded = degraded or status["status"] == "degraded"
+        result = {
+            "status": "degraded" if degraded else "available",
+            "active_request_count": active,
+            "unresolved_cleanup_count": unresolved,
+        }
+        if degraded:
+            result["error"] = {"code": "llm_cleanup_unconfirmed"}
+        return result
+
+    async def drain_pending_cleanup(self, timeout: float = 5.0) -> bool:
+        deadline = asyncio.get_running_loop().time() + _cleanup_timeout(timeout)
+        confirmed = True
+        for name, provider in self.providers.items():
+            drain = getattr(provider, "drain_pending_cleanup", None)
+            if self._provider_enabled(name) and callable(drain):
+                receipt = await drain(
+                    timeout=max(0.0, deadline - asyncio.get_running_loop().time())
+                )
+                confirmed = (receipt is True) and confirmed
+        return confirmed
+
     def get_current_model_info(self) -> Optional[Dict[str, Any]]:
         """Get information about the current model"""
         if not self.current_model:
+            return None
+        if not self._provider_enabled(self.current_model.provider):
             return None
 
         return {
@@ -480,11 +544,111 @@ class OpenAIProvider:
     def __init__(self):
         try:
             # Third party imports
-            import openai
+            importlib.import_module("openai")
+            from Aetherra.security.sdk_egress import SdkOwner, create_guarded_async_openai
 
-            self.client = openai.OpenAI()
-        except ImportError as e:
-            raise ImportError("OpenAI package not installed") from e
+            self._client_factory = partial(create_guarded_async_openai, SdkOwner.CORE_LLM)
+        except ImportError:
+            raise ImportError("OpenAI package not installed") from None
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if api_key is None or not api_key.strip():
+            raise RuntimeError("openai_credentials_unavailable")
+        base_url = os.environ.get("OPENAI_BASE_URL")
+        if base_url is None:
+            base_url = "https://api.openai.com/v1"
+        elif not base_url.strip():
+            raise RuntimeError("openai_endpoint_invalid")
+        self._client_options = {
+            "api_key": api_key,
+            "base_url": base_url,
+        }
+        for option, variable in (
+            ("organization", "OPENAI_ORG_ID"),
+            ("project", "OPENAI_PROJECT_ID"),
+        ):
+            value = os.environ.get(variable)
+            if value is not None:
+                self._client_options[option] = value
+        self._requests: dict[int, _OpenAIRequest] = {}
+        self._request_lock = threading.Lock()
+
+    def _finish_cleanup(self, record: _OpenAIRequest, task: asyncio.Task[None]) -> None:
+        confirmed = not task.cancelled() and task.exception() is None
+        with self._request_lock:
+            if confirmed:
+                self._requests.pop(id(record), None)
+            else:
+                record.unresolved = True
+                record.error_code = "openai_cleanup_failed"
+
+    def _records(self) -> list[_OpenAIRequest]:
+        with self._request_lock:
+            records = list(self._requests.values())
+        for record in records:
+            if record.cleanup is not None and record.cleanup.done():
+                self._finish_cleanup(record, record.cleanup)
+        with self._request_lock:
+            return list(self._requests.values())
+
+    def get_lifecycle_status(self) -> dict[str, Any]:
+        records = self._records()
+        from Aetherra.security.sdk_egress import SdkOwner, get_sdk_egress_status
+
+        egress = get_sdk_egress_status(SdkOwner.CORE_LLM)
+        with self._request_lock:
+            unresolved = sum(record.unresolved for record in records)
+            active = sum(record.cleanup is None for record in records)
+        result = {
+            "status": "degraded" if unresolved or egress["status"] == "degraded" else "available",
+            "active_request_count": active,
+            "unresolved_cleanup_count": unresolved,
+            "egress": egress,
+        }
+        if result["status"] == "degraded":
+            result["error"] = {"code": "openai_cleanup_unconfirmed"}
+        return result
+
+    async def drain_pending_cleanup(self, timeout: float = 5.0) -> bool:
+        budget = _cleanup_timeout(timeout)
+        loop = asyncio.get_running_loop()
+        records = self._records()
+        tasks = {
+            record.cleanup
+            for record in records
+            if record.loop is loop and record.cleanup is not None and not record.cleanup.done()
+        }
+        if tasks and budget:
+            await asyncio.wait(tasks, timeout=budget)
+        return (not self._records()
+                and self.get_lifecycle_status()["status"] == "available")
+
+    async def _close_client(self, client: Any) -> None:
+        await client.close()
+        if client.is_closed() is not True:
+            raise RuntimeError("openai_cleanup_unconfirmed")
+
+    async def _close_request(self, record: _OpenAIRequest, cancelled: bool) -> None:
+        task = asyncio.create_task(self._close_client(record.client))
+        with self._request_lock:
+            record.cleanup = task
+        task.add_done_callback(lambda done: self._finish_cleanup(record, done))
+        deadline = record.loop.time() + _OPENAI_CLEANUP_TIMEOUT_SECONDS
+        # Cancelling asyncio.wait does not cancel the retained close task.
+        while not task.done() and record.loop.time() < deadline:
+            try:
+                await asyncio.wait({task}, timeout=max(0.0, deadline - record.loop.time()))
+            except asyncio.CancelledError:
+                cancelled = True
+        if task.done():
+            self._finish_cleanup(record, task)
+        else:
+            with self._request_lock:
+                record.unresolved = True
+                record.error_code = "openai_cleanup_unconfirmed"
+        if cancelled:
+            raise asyncio.CancelledError
+        if record.unresolved:
+            raise RuntimeError(record.error_code)
 
     def is_model_available(self, config: LLMConfig) -> bool:
         """Check if model is available"""
@@ -495,18 +659,40 @@ class OpenAIProvider:
             return False
 
     async def generate(self, config: LLMConfig, prompt: str, **kwargs) -> str:
-        """Generate response using OpenAI"""
+        """Generate with a client owned by this invocation's event loop."""
+        if self.get_lifecycle_status()["status"] == "degraded":
+            raise RuntimeError("openai_cleanup_unconfirmed")
         try:
-            response = self.client.chat.completions.create(
-                model=config.model_name,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=kwargs.get("temperature", config.temperature),
-                max_tokens=kwargs.get("max_tokens", config.max_tokens),
-                timeout=config.timeout,
-            )
-            return response.choices[0].message.content or ""
-        except Exception as e:
-            raise Exception(f"OpenAI API error: {e}") from e
+            client = await self._client_factory(**self._client_options)
+        except Exception:
+            raise RuntimeError("openai_client_unavailable") from None
+        record = _OpenAIRequest(client, asyncio.get_running_loop())
+        with self._request_lock:
+            self._requests[id(record)] = record
+        cancelled = False
+        try:
+            try:
+                response = await client.chat.completions.create(
+                    model=config.model_name,
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=kwargs.get("temperature", config.temperature),
+                    max_tokens=kwargs.get("max_tokens", config.max_tokens),
+                    timeout=config.timeout,
+                )
+            except Exception:
+                raise RuntimeError("openai_generation_failed") from None
+            try:
+                text = response.choices[0].message.content
+            except Exception:
+                raise RuntimeError("openai_response_invalid") from None
+            if not isinstance(text, str) or not text.strip():
+                raise RuntimeError("openai_response_invalid")
+            return text
+        except asyncio.CancelledError:
+            cancelled = True
+            raise
+        finally:
+            await self._close_request(record, cancelled)
 
 
 class OllamaProvider:

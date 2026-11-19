@@ -154,6 +154,7 @@ class LyrixaMemorySystem:
 
     def __init__(self, memory_db_path: str = ":memory:"):
         self.db_path = memory_db_path
+        self._transaction_failed = False
         self.conn: Optional[sqlite3.Connection] = sqlite3.connect(
             self.db_path,
             check_same_thread=False,
@@ -203,9 +204,12 @@ class LyrixaMemorySystem:
 
     def ensure_connection(self) -> sqlite3.Connection:
         """Ensures the database connection is open and returns it."""
+        if self._transaction_failed and self.conn is not None:
+            raise RuntimeError("memory_transaction_unavailable")
         if self.conn is None:
             logger.info("Reopening memory database connection")
             self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
+            self._transaction_failed = False
         return self.conn
 
     def _initialize_database_sync(self):
@@ -307,8 +311,7 @@ class LyrixaMemorySystem:
                 memory_type=memory_type,
             )
 
-            with self.db_session():
-                cursor = self.ensure_connection().cursor()
+            with self.db_session() as cursor:
                 # Help type checker: created_at/last_accessed set above
                 assert memory.created_at is not None and memory.last_accessed is not None
                 cursor.execute(
@@ -919,10 +922,20 @@ class LyrixaMemorySystem:
         except Exception:
             logger.exception("Memory database operation failed")
             if self.conn:
-                self.conn.rollback()
+                try:
+                    self.conn.rollback()
+                except Exception:
+                    self._transaction_failed = True
+                    logger.error("Memory rollback failed; closing failed transaction")
+                    self.close_connection()
+            raise
         finally:
             if cursor:
-                cursor.close()
+                try:
+                    cursor.close()
+                except sqlite3.ProgrammingError:
+                    if self.conn is not None:
+                        raise
 
     # Ensure all methods that use the database call close_connection at the end
 

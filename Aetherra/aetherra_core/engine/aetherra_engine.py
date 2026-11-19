@@ -600,6 +600,17 @@ class AetherraEngine:
                 "stop_orchestration",
             )
 
+            llm_cleanup_confirmed = True
+            drain = getattr(self._llm_manager, "drain_pending_cleanup", None)
+            if callable(drain):
+                try:
+                    receipt = await asyncio.wait_for(drain(timeout=5.0), timeout=5.0)
+                    if receipt is not True:
+                        raise RuntimeError("llm_cleanup_unconfirmed")
+                except Exception as exc:
+                    llm_cleanup_confirmed = False
+                    self._record_lifecycle_failure("llm_cleanup", exc)
+
             # Close memory connections
             try:
                 if hasattr(self.memory_system, "close_connection"):
@@ -608,7 +619,10 @@ class AetherraEngine:
                 self._record_lifecycle_failure("memory_close", exc)
 
             self.initialized = False
-            logger.info("[OK] Aetherra Engine shutdown complete")
+            if llm_cleanup_confirmed:
+                logger.info("[OK] Aetherra Engine shutdown complete")
+            else:
+                logger.warning("Aetherra Engine stopped with unresolved owned cleanup")
 
         except Exception as exc:
             diagnostic = self._record_lifecycle_failure("engine_shutdown", exc)
@@ -840,13 +854,14 @@ class AetherraEngine:
 
         # Store conversation start in memory
         try:
-            await self.memory_system.store_memory(
+            receipt = await self.memory_system.store_memory(
                 content={"event": "conversation_start", "user_id": normalized_user_id},
-                context=self.conversation_context,
+                context=self._sanitize_persisted_context(self.conversation_context),
                 tags=["conversation", "session_start"],
                 importance=0.5,
                 memory_type="conversation",
             )
+            self._require_memory_receipt(receipt)
             self._last_session_start_info["memory"] = {"status": "stored"}
         except Exception as exc:
             diagnostic = self._record_session_start_failure("session_memory_store_failed", exc)
@@ -946,13 +961,22 @@ class AetherraEngine:
             )
 
             # Store user message in memory
-            memory_id = await self.memory_system.store_memory(
-                content={"role": "user", "content": safe_message},
-                context=message_context,
-                tags=["conversation", "user_message"],
-                importance=0.7,
-                memory_type="conversation",
-            )
+            try:
+                memory_id = await self.memory_system.store_memory(
+                    content={"role": "user", "content": safe_message},
+                    context=self._sanitize_persisted_context(message_context),
+                    tags=["conversation", "user_message"],
+                    importance=0.7,
+                    memory_type="conversation",
+                )
+                self._require_memory_receipt(memory_id)
+            except Exception as exc:
+                diagnostic = self._record_input_persistence_failure("user_memory_store_failed", exc)
+                self._last_input_persistence_info = {
+                    "memory": {"status": "degraded", "error": diagnostic},
+                    "persistent_memory": {"status": "not_attempted"},
+                }
+                raise
             self._last_input_persistence_info = {
                 "memory": {"status": "stored"},
                 "persistent_memory": {"status": "not_attempted"},
@@ -1199,6 +1223,7 @@ class AetherraEngine:
             raw_response: str
             used_llm = False
             self._last_llm_info = {}
+            provider_override_invalid = False
             # Provider router (Wave A): if AETHERRA_INTELLIGENCE_PROVIDER set, prefer provider adapters
             try:
                 prov_name = self._normalize_intelligence_provider(
@@ -1210,37 +1235,17 @@ class AetherraEngine:
                     ValueError("intelligence provider is not allowed"),
                 )
                 prov_name = ""
+                provider_override_invalid = True
             try:
+                if provider_override_invalid:
+                    raise RuntimeError("provider_not_allowed")
                 if prov_name:
-                    try:
-                        # Local imports
-                        from ..cognitive.reasoning_providers import call_provider  # type: ignore
-
-                        base_prompt = self._build_llm_prompt(
-                            safe_message,
-                            evidence,
-                            snippet_chars=300,
-                        )
-                        pr = await asyncio.wait_for(
-                            call_provider(
-                                base_prompt, evidence=evidence, provider_name=prov_name
-                            ),
-                            timeout=self._llm_timeout_seconds(),
-                        )
-                        raw_response = pr.text or ""
-                        used_llm = True
-                        self._last_llm_info = {
-                            "event": "ok",
-                            "provider": self._sanitize_context_value(pr.provider),
-                            "model": self._sanitize_context_value(pr.model),
-                        }
-                    except Exception as _prov_err:
-                        self._record_llm_failure(
-                            "provider_adapter_failed",
-                            _prov_err,
-                            provider=prov_name,
-                        )
-                        raise
+                    self._record_llm_failure(
+                        "provider_adapter_unavailable",
+                        RuntimeError("provider_adapter_unavailable"),
+                        provider=prov_name,
+                    )
+                    raise RuntimeError("provider_adapter_unavailable")
                 else:
                     await self._ensure_llm_selection()
                     if self._llm_manager and self._llm_selected:
@@ -1359,16 +1364,15 @@ class AetherraEngine:
                 "metrics": {"status": "pending"},
             }
             try:
-                await self.memory_system.store_memory(
+                receipt = await self.memory_system.store_memory(
                     content={"role": "assistant", "content": response},
-                    context=message_context,
+                    context=self._sanitize_persisted_context(message_context),
                     tags=["conversation", "assistant_response"],
                     importance=0.8,
                     memory_type="conversation",
                 )
-                self._last_response_persistence_info["assistant_memory"] = {
-                    "status": "stored"
-                }
+                self._require_memory_receipt(receipt)
+                self._last_response_persistence_info["assistant_memory"] = {"status": "stored"}
             except Exception as exc:
                 diagnostic = self._record_response_persistence_failure(
                     "assistant_memory_store_failed", exc
@@ -2005,6 +2009,13 @@ class AetherraEngine:
         if not re.fullmatch(r"[A-Za-z0-9_.@-]+", raw):
             return f"user_{_short_trace_id('user_id', raw)}"
         return raw
+
+    @staticmethod
+    def _require_memory_receipt(receipt: Any) -> str:
+        if not isinstance(receipt, str) or not receipt.strip():
+            raise RuntimeError("memory_store_unconfirmed")
+        return receipt
+
 
     def _sanitize_persisted_context(self, context: Any) -> Dict[str, Any]:
         if not isinstance(context, dict):
@@ -2797,43 +2808,41 @@ class AetherraEngine:
 
     # --------- LLM selection helpers ---------
     async def _ensure_llm_selection(self) -> bool:
-        """Ensure an LLM model is selected in the MultiLLMManager.
-
-        Preference order is controlled by env AETHERRA_LLM_PROVIDER_PREF (comma list),
-        default: policy-driven. If AETHERRA_LLM_AUTO_POLICY=cloud-first, default is
-        "openai,anthropic,gemini,ollama,llamacpp"; otherwise default is
-        "ollama,openai,anthropic,gemini,llamacpp". A specific model can be
-        forced via AETHERRA_LLM_MODEL.
-        """
-        if self._llm_selected:
-            return True
+        """Select only the primary provider, honoring an explicit model or auto alias."""
         mgr = self._llm_manager
         if mgr is None:
             return False
         try:
-            # Honor explicit provider order if provided
+            primary = getattr(mgr, "primary_provider", None)
+            primary_name = getattr(primary, "value", None) or "openai"
+            if self._llm_selected:
+                self._llm_selected = False
+                current = mgr.get_current_model_info()
+                if isinstance(current, dict) and current.get("provider") == primary_name:
+                    self._llm_selected = True
+                    return True
             preferred_env = os.environ.get("AETHERRA_LLM_PROVIDER_PREF", "").strip()
-            # Policy can flip the default order without requiring an explicit list
-            auto_policy = (os.environ.get("AETHERRA_LLM_AUTO_POLICY", "") or "").strip().lower()
-            if preferred_env:
-                preferred = preferred_env
-            else:
-                if auto_policy == "cloud-first":
-                    preferred = "openai,anthropic,gemini,ollama,llamacpp"
-                else:
-                    # default local-first for privacy/residency
-                    preferred = "ollama,openai,anthropic,gemini,llamacpp"
-            order = [p.strip().lower() for p in preferred.split(",") if p.strip()]
+            if preferred_env and primary_name not in {
+                value.strip().lower() for value in preferred_env.split(",")
+            }:
+                return False
+            order = [primary_name]
             force_model = os.environ.get("AETHERRA_LLM_MODEL", "").strip()
 
             models = mgr.list_available_models()  # name -> info
             selected = None
             # If a model is forced and exists, use it
-            if force_model and force_model in models and mgr.set_model(force_model):
+            if force_model:
+                info = models.get(force_model, {})
+                automatic = force_model.lower() in {"auto", "default"}
+                if (
+                    not automatic and str(info.get("provider", "")).lower() != primary_name
+                ) or not mgr.set_model(force_model):
+                    return False
                 self._llm_selected = True
-                logger.info(f"[LLM] selected forced model: {force_model}")
+                logger.info("[LLM] selected configured primary-provider model")
                 return True
-            # Otherwise, pick by provider order, preferring local where possible
+            # Automatic selection must remain within the primary provider.
             for prov in order:
                 for name, info in models.items():
                     try:
