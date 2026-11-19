@@ -4,21 +4,39 @@ Verified 2026-11-19 on Windows / Python 3.13.7. Aetherra is the persistent
 cognitive system; Lyrixa is her user-facing persona. This checkpoint concerns
 remembering, retrieving and answering, not general cognitive-runtime readiness.
 
-### Verification baseline and commit dependency
+### Runtime prerequisites and clean-checkout verification
 
-The offline and live results below use the integrated working tree based on
-`b7e2496a00ece28659719b6d7a65e4c9ad2d2595`, including the pre-existing staged
-runtime hardening. The continuity commit deliberately leaves that unrelated
-work staged. It is a dependent patch, **not independently ready for release**.
-In particular, loopback Hub startup, storage receipt validation/transaction
-error propagation, and the guarded OpenAI-only provider boundary come from
-that baseline; they are not implemented by this milestone.
+Commit `3eff802d3f1d3a51dc4f9d05e63132ec350c7e0a` includes the runtime
+prerequisites for the continuity implementation in `1d2fbf093`. Verification
+now runs from a fresh detached checkout with an empty Git status, without
+the main workspace's remaining staged changes.
 
-A separate HEAD-plus-continuity checkout passed six original unit checks but
-failed all three acceptance cases at Hub startup: its older wildcard binding
-was denied by the offline harness. That is not a standalone pass. Apply the
-runtime baseline before using the exact full-runtime commands below. The
-evidence JSON records this distinction and the original index fingerprint.
+The selected dependencies cover loopback Hub startup and owned-resource
+cleanup, committed storage receipts and dialogue-context serialization,
+primary-provider selection, and guarded OpenAI requests with strict policy
+and signed-audit validation. Presence, diagnostic mode, agent execution,
+broader readiness/concurrent-shutdown work, and other chat/provider routes
+remain outside this milestone.
+
+The clean checkout passed 288 offline tests: 255 continuity/Engine/Memory/Hub/
+provider checks, 14 adjacent chat/Memory Guardian checks, and 19 Guardian-policy/
+capability checks. The unrelated federation test was deselected. There were no
+new lint findings on changed lines; existing broader lint cleanup remains
+separate work. This proves the scoped milestone, not full-runtime readiness.
+
+The same clean checkout also passed the extended `gpt-4o` conversation: nine
+completed runtime processes, 35 generated turns, and zero fallbacks. Retrieved
+IDs matched the actual provider evidence and SQLite content. Missing-fact and
+separate-profile contexts were empty, and Lyrixa acknowledged both unknowns.
+The checkout remained clean afterward. Exact commands, source tree, process
+receipts and traces are in the evidence JSON's `clean_checkout_verification`.
+
+The initial standalone attempt at `1d2fbf093` failed Hub startup because its
+wildcard binding was denied by the offline harness. After selecting loopback
+startup, the next reproduced failure was the older Engine's provider-selection
+logic. Both prerequisites are now included. Earlier integrated-workspace
+results remain in the evidence file as historical results, distinct from this
+clean-checkout verification.
 
 ## Supported path and baseline
 
@@ -84,6 +102,10 @@ existing authority; this change does not add ownership enforcement to Memory.
 Run from the repository root with the existing runtime dependencies installed:
 
 ```powershell
+# Optional: verify the committed tree without any staged workspace changes.
+git worktree add --detach .pytest_tmp_continuity_clean HEAD
+Set-Location .pytest_tmp_continuity_clean
+
 python -m pip install '.[continuity]'
 # One-time public model provisioning; this command may download model files.
 python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2', revision='c9745ed1d9f207416be6d2e6f8de32d1f16199bf', device='cpu', trust_remote_code=False)"
@@ -149,29 +171,31 @@ record ID. Inspect their printed replies for an acknowledgment of missing
 information. The synthetic per-case trace is `extended-live-result.json` inside
 the chosen profile directory.
 
-The 2026-11-19 configured `gpt-4o` run passed core recall and missing-door-color
-checks, with `llm.used=true` and `llm.fallback=false`. The first network-restricted
-attempt correctly fell back; the permitted retry passed.
+The final clean-checkout `gpt-4o` run passed core recall, missing door color,
+both varied paraphrases, the restarted missing-fact profile, and the separate
+profile through this same entry point. Across nine completed runtime processes
+and 35 conversation turns, every turn used `gpt-4o`; no fallback ran. Each
+process began with an empty user session. Actual provider input was compared
+with retrieval IDs and persisted SQLite content. Runtime logs contained neither
+the raw synthetic dialogue nor any Engine model-failure entries.
 
-The expanded live run also passed all four additional cases through the same
-entry point. Across nine completed runtime processes and 35 conversation turns
-(including the repeated core smoke), every turn used `gpt-4o`; no fallback ran.
-Each process began with an empty user session. Actual provider input was compared
-with retrieval IDs and persisted SQLite content, and runtime logs contained
-neither the raw test questions nor any Engine model-failure entries.
+Earlier integrated runs remain separately recorded under `live` and
+`live_extended`. Their initial network-restricted attempt demonstrated fallback;
+it is not included in the successful clean-checkout model count.
 
 | Live case | Retrieved IDs | Observed reply |
 | --- | --- | --- |
-| Bicycle paraphrase | `b4f9026123d939da3e12ef84a8047acd` | Aunt Leona taught the user to repair a puncture. |
-| Music paraphrase | `1533a94143de379cee7c4a95c183d0b7`, `3e537dcb316883573bf32068efd86107` | Correctly chose Debussy's **Clair de lune** over the retrieved **Fur Elise** competitor. |
-| Missing fact, distractors persisted before restart | `[]` | “I haven't been told the nickname you gave to the place where you watch the stars.” |
-| Separate fresh profile | `[]` | “I haven't been told the nickname you gave the place where you watch the stars.” |
+| Bicycle paraphrase | `46ad58715b1dc2a82de4758cfa97423d` | Aunt Leona taught the user to repair a puncture. |
+| Music paraphrase | `a03a65d28681dbcdcde54e18f0a1c068`, `1cc634a4b5ab3f14f7dcbaa2586f6c84` | Correctly chose Debussy's **Clair de lune** over the retrieved **Fur Elise** competitor. |
+| Missing fact, distractors persisted before restart | `[]` | “I haven't been told the nickname you gave the place where you watch the stars.” |
+| Separate fresh profile | `[]` | “I haven't been told the nickname you gave to the place where you watch the stars.” |
 
 Both negative cases also had empty provider evidence; the original fact and ID
-were absent from their model inputs and replies. The synthetic evidence file's
-`live_extended` section retains source/competing record IDs, matching provider
-evidence, prompt hashes, replies and process IDs. The generated run artifacts
-are under `.pytest_tmp_continuity_live_extended1`.
+were absent from their model inputs, replies and stores. The synthetic evidence
+file's `clean_checkout_verification` section retains source/competing record IDs,
+matching provider evidence, prompt hashes, replies and process IDs. The generated
+artifacts are under
+`.pytest_tmp_continuity_runtime_commit/clean/.pytest_tmp_clean_live`.
 
 Unrelated startup services remained degraded under the bounded policy; full
 runtime readiness, large-store performance, semantic accuracy beyond these
@@ -181,8 +205,8 @@ separation remains storage isolation through distinct local data directories.
 Compact live trace:
 
 ```text
-process 1 write: 0418f885c82fa98fae536ebc0c484ea7 → SQLite commit
+process 1 write: 21a2456fc4af74556b944e00f8e3cc15 → SQLite commit
 process 2: empty user session → same ID selected → same ID + fact in model input
 OpenAI gpt-4o, fallback=false → “You call the little observatory in your garden the Lantern Room.”
-door color → “I haven't been told what color you painted its door.”
+door color → “I haven't been told what color you painted the door.”
 ```

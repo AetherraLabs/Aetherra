@@ -534,5 +534,454 @@
     ],
     "live_after_review_fixes": "Not rerun; the recorded synthetic live facts and prompts do not change under either fix.",
     "post_fix_continuity_tests_passed": 12
+  },
+  "clean_checkout_verification": {
+    "checkout": "D:\\Aetherra Labs\\Aetherra Project\\.pytest_tmp_continuity_runtime_commit\\clean",
+    "commit": "3eff802d3f1d3a51dc4f9d05e63132ec350c7e0a",
+    "tree": "b9dc4c80e1e98671f88ebc6d7b8d1a858e4cd529",
+    "initial_status": "",
+    "includes_uncommitted_main_index": false,
+    "final_status": "",
+    "checks": {
+      "offline": {
+        "passed": 255,
+        "skipped": 0,
+        "seconds": 196.364
+      },
+      "guardian": {
+        "passed": 14,
+        "skipped": 0,
+        "seconds": 10.838
+      },
+      "policy": {
+        "passed": 19,
+        "skipped": 0,
+        "seconds": 1.121
+      }
+    },
+    "total_offline_tests_passed": 288,
+    "out_of_scope_test_deselected": "test_hub_runs_in_thread_and_handles_federation_and_telemetry",
+    "live_core": {
+      "question": "What nickname did I give the place where I watch the stars?",
+      "profile": ".pytest_tmp_clean_live",
+      "write_process": 15416,
+      "recall_process": 30160,
+      "initial_user_message_count": 0,
+      "saved_id": "21a2456fc4af74556b944e00f8e3cc15",
+      "stored_evidence": [
+        {
+          "id": "21a2456fc4af74556b944e00f8e3cc15",
+          "content": {
+            "role": "user",
+            "content": "Remember that I call the little observatory in my garden the Lantern Room."
+          }
+        }
+      ],
+      "retrieved_evidence": [
+        {
+          "content": "{\"content\": \"Remember that I call the little observatory in my garden the Lantern Room.\", \"role\": \"user\"}",
+          "id": "21a2456fc4af74556b944e00f8e3cc15",
+          "importance": 0.7,
+          "score": 0.41558313369750977
+        }
+      ],
+      "generation_evidence": [
+        {
+          "id": "21a2456fc4af74556b944e00f8e3cc15",
+          "content": "{\"content\": \"Remember that I call the little observatory in my garden the Lantern Room.\", \"role\": \"user\"}"
+        }
+      ],
+      "generation_prompt_sha256": "49d9f664df81ec501d86027e6ee02bab1cd65d2ef2e2d5c9b5a796bc6f3641a3",
+      "retrieved_ids": [
+        "21a2456fc4af74556b944e00f8e3cc15"
+      ],
+      "responder": {
+        "diag": {
+          "event": "ok",
+          "model": {
+            "context_window": 8192,
+            "is_local": false,
+            "max_tokens": 4096,
+            "model_name": "gpt-4o",
+            "provider": "openai",
+            "temperature": 0.7
+          }
+        },
+        "evidence_ids": [
+          "21a2456fc4af74556b944e00f8e3cc15"
+        ],
+        "fallback": false,
+        "model": {
+          "context_window": 8192,
+          "is_local": false,
+          "max_tokens": 4096,
+          "model_name": "gpt-4o",
+          "provider": "openai",
+          "temperature": 0.7
+        },
+        "used": true
+      },
+      "reply": "You call the little observatory in your garden the Lantern Room. What would you like to try next?",
+      "stopped": true,
+      "unknown_detail_reply": "I haven't been told what color you painted the door."
+    },
+    "live_extended": {
+      "model": "gpt-4o",
+      "cases": {
+        "bicycle_paraphrase": {
+          "question": "Who showed me how to repair a puncture on my bicycle?",
+          "profile": "bicycle_paraphrase",
+          "write_process": 41432,
+          "recall_process": 34004,
+          "initial_user_message_count": 0,
+          "saved_id": "46ad58715b1dc2a82de4758cfa97423d",
+          "stored_evidence": [
+            {
+              "id": "46ad58715b1dc2a82de4758cfa97423d",
+              "content": {
+                "role": "user",
+                "content": "My aunt Leona taught me to mend a flat bike tire."
+              }
+            }
+          ],
+          "retrieved_evidence": [
+            {
+              "content": "{\"content\": \"My aunt Leona taught me to mend a flat bike tire.\", \"role\": \"user\"}",
+              "id": "46ad58715b1dc2a82de4758cfa97423d",
+              "importance": 0.7,
+              "score": 0.44921377301216125
+            }
+          ],
+          "generation_evidence": [
+            {
+              "id": "46ad58715b1dc2a82de4758cfa97423d",
+              "content": "{\"content\": \"My aunt Leona taught me to mend a flat bike tire.\", \"role\": \"user\"}"
+            }
+          ],
+          "generation_prompt_sha256": "2a2c3ed72a85c3d5ddc8a0c09fd225e2bb7367020b57ce0dd2ddcf74b7854fca",
+          "retrieved_ids": [
+            "46ad58715b1dc2a82de4758cfa97423d"
+          ],
+          "responder": {
+            "diag": {
+              "event": "ok",
+              "model": {
+                "context_window": 8192,
+                "is_local": false,
+                "max_tokens": 4096,
+                "model_name": "gpt-4o",
+                "provider": "openai",
+                "temperature": 0.7
+              }
+            },
+            "evidence_ids": [
+              "46ad58715b1dc2a82de4758cfa97423d"
+            ],
+            "fallback": false,
+            "model": {
+              "context_window": 8192,
+              "is_local": false,
+              "max_tokens": 4096,
+              "model_name": "gpt-4o",
+              "provider": "openai",
+              "temperature": 0.7
+            },
+            "used": true
+          },
+          "reply": "Your aunt Leona showed you how to repair a puncture on your bicycle. What would you like to try next?",
+          "stopped": true,
+          "seed_records": [
+            {
+              "id": "46ad58715b1dc2a82de4758cfa97423d",
+              "content": "My aunt Leona taught me to mend a flat bike tire."
+            },
+            {
+              "id": "67175719ab1e1eb0764c888f91294289",
+              "content": "My favorite tea is jasmine."
+            },
+            {
+              "id": "27effa33e3097849846a28d4613ece64",
+              "content": "My sister is called Mira."
+            },
+            {
+              "id": "434f1121e414aad124f5cb6679b5ee10",
+              "content": "I take the number 18 bus to work."
+            },
+            {
+              "id": "a3a9529e79a9a35ae0eb5ba6a29407b3",
+              "content": "My bicycle has a silver bell."
+            },
+            {
+              "id": "8c4c1c70b638dfa31c609adb7fda59c6",
+              "content": "I call the shed where I keep my garden tools the Copper Finch."
+            },
+            {
+              "id": "bf163f5135040d583b9cb85e478cd60c",
+              "content": "My uncle Mateo taught me how to swim."
+            },
+            {
+              "id": "758f65f783df6197af771e303947e4b3",
+              "content": "My friend Anika repairs cars for a living."
+            },
+            {
+              "id": "d3d2d80afc9c770c999d1c263b7106fa",
+              "content": "My bicycle has a silver bell."
+            }
+          ]
+        },
+        "music_paraphrase": {
+          "question": "Which composition do I play to relax at the end of a workday?",
+          "profile": "music_paraphrase",
+          "write_process": 20032,
+          "recall_process": 9040,
+          "initial_user_message_count": 0,
+          "saved_id": "a03a65d28681dbcdcde54e18f0a1c068",
+          "stored_evidence": [
+            {
+              "id": "a03a65d28681dbcdcde54e18f0a1c068",
+              "content": {
+                "role": "user",
+                "content": "I unwind after work by playing Debussy's Clair de lune on the piano."
+              }
+            },
+            {
+              "id": "1cc634a4b5ab3f14f7dcbaa2586f6c84",
+              "content": {
+                "role": "user",
+                "content": "On weekends I play Beethoven's Fur Elise on the violin."
+              }
+            }
+          ],
+          "retrieved_evidence": [
+            {
+              "content": "{\"content\": \"I unwind after work by playing Debussy's Clair de lune on the piano.\", \"role\": \"user\"}",
+              "id": "a03a65d28681dbcdcde54e18f0a1c068",
+              "importance": 0.7,
+              "score": 0.4957224726676941
+            },
+            {
+              "content": "{\"content\": \"On weekends I play Beethoven's Fur Elise on the violin.\", \"role\": \"user\"}",
+              "id": "1cc634a4b5ab3f14f7dcbaa2586f6c84",
+              "importance": 0.7,
+              "score": 0.48941659927368164
+            }
+          ],
+          "generation_evidence": [
+            {
+              "id": "a03a65d28681dbcdcde54e18f0a1c068",
+              "content": "{\"content\": \"I unwind after work by playing Debussy's Clair de lune on the piano.\", \"role\": \"user\"}"
+            },
+            {
+              "id": "1cc634a4b5ab3f14f7dcbaa2586f6c84",
+              "content": "{\"content\": \"On weekends I play Beethoven's Fur Elise on the violin.\", \"role\": \"user\"}"
+            }
+          ],
+          "generation_prompt_sha256": "b41549cc80845cff7f51e2b06acbd69393738f7327de79d2a758aabff1ecb98e",
+          "retrieved_ids": [
+            "a03a65d28681dbcdcde54e18f0a1c068",
+            "1cc634a4b5ab3f14f7dcbaa2586f6c84"
+          ],
+          "responder": {
+            "diag": {
+              "event": "ok",
+              "model": {
+                "context_window": 8192,
+                "is_local": false,
+                "max_tokens": 4096,
+                "model_name": "gpt-4o",
+                "provider": "openai",
+                "temperature": 0.7
+              }
+            },
+            "evidence_ids": [
+              "a03a65d28681dbcdcde54e18f0a1c068",
+              "1cc634a4b5ab3f14f7dcbaa2586f6c84"
+            ],
+            "fallback": false,
+            "model": {
+              "context_window": 8192,
+              "is_local": false,
+              "max_tokens": 4096,
+              "model_name": "gpt-4o",
+              "provider": "openai",
+              "temperature": 0.7
+            },
+            "used": true
+          },
+          "reply": "You play Debussy's \"Clair de lune\" on the piano to relax at the end of a workday. What would you like to try next?",
+          "stopped": true,
+          "seed_records": [
+            {
+              "id": "a03a65d28681dbcdcde54e18f0a1c068",
+              "content": "I unwind after work by playing Debussy's Clair de lune on the piano."
+            },
+            {
+              "id": "87bfa39ce31c78165024de06005da831",
+              "content": "My favorite tea is jasmine."
+            },
+            {
+              "id": "82c2f174f471826503321e8256f55fe9",
+              "content": "My sister is called Mira."
+            },
+            {
+              "id": "eb89ae91778fd64b02407c046fe8ba16",
+              "content": "I take the number 18 bus to work."
+            },
+            {
+              "id": "a055dfacc2214e71578e1bdf8dfd3620",
+              "content": "My bicycle has a silver bell."
+            },
+            {
+              "id": "1f2d928ea15d1b28c13a78b70b50e49c",
+              "content": "I call the shed where I keep my garden tools the Copper Finch."
+            },
+            {
+              "id": "1cc634a4b5ab3f14f7dcbaa2586f6c84",
+              "content": "On weekends I play Beethoven's Fur Elise on the violin."
+            },
+            {
+              "id": "9edfbdf91256299c2db03d740cc88426",
+              "content": "My brother plays jazz on his trumpet."
+            },
+            {
+              "id": "3df96039931466797b08b416e9f0e7cc",
+              "content": "I listen to podcasts during my commute."
+            }
+          ]
+        },
+        "missing_fact": {
+          "question": "What nickname did I give the place where I watch the stars?",
+          "profile": "missing_fact",
+          "write_process": 20288,
+          "recall_process": 36832,
+          "initial_user_message_count": 0,
+          "saved_id": null,
+          "stored_evidence": [],
+          "retrieved_evidence": [],
+          "generation_evidence": [],
+          "generation_prompt_sha256": "8f751d5706d8ac037ca4b7198c9f4337e85555740ebc286d61430b5cec5fdc53",
+          "retrieved_ids": [],
+          "responder": {
+            "diag": {
+              "event": "ok",
+              "model": {
+                "context_window": 8192,
+                "is_local": false,
+                "max_tokens": 4096,
+                "model_name": "gpt-4o",
+                "provider": "openai",
+                "temperature": 0.7
+              }
+            },
+            "evidence_ids": [],
+            "fallback": false,
+            "model": {
+              "context_window": 8192,
+              "is_local": false,
+              "max_tokens": 4096,
+              "model_name": "gpt-4o",
+              "provider": "openai",
+              "temperature": 0.7
+            },
+            "used": true
+          },
+          "reply": "I haven't been told the nickname you gave the place where you watch the stars. What would you like to try next?",
+          "stopped": true,
+          "seed_records": [
+            {
+              "id": "19fd757a67ef3d868b137e2dd325c050",
+              "content": "My favorite tea is jasmine."
+            },
+            {
+              "id": "a34c1e05982a45f604aa36d99b8215d3",
+              "content": "My sister is called Mira."
+            },
+            {
+              "id": "8b3357b6e76087444d16a19565a8d2e2",
+              "content": "I take the number 18 bus to work."
+            },
+            {
+              "id": "395f5e5f1b74f16182e6fe1e0b0028cd",
+              "content": "My bicycle has a silver bell."
+            },
+            {
+              "id": "a108779cf73a11a204c116da686f94a5",
+              "content": "I call the shed where I keep my garden tools the Copper Finch."
+            }
+          ],
+          "original_profile_id_absent": "21a2456fc4af74556b944e00f8e3cc15"
+        },
+        "separate_profile": {
+          "question": "What nickname did I give the place where I watch the stars?",
+          "profile": "separate_profile",
+          "write_process": null,
+          "recall_process": 40340,
+          "initial_user_message_count": 0,
+          "saved_id": null,
+          "stored_evidence": [],
+          "retrieved_evidence": [],
+          "generation_evidence": [],
+          "generation_prompt_sha256": "8f9874629955f40b01979b1e7fd990645bec3ea5aea5fc7e310177dc8cb6fc38",
+          "retrieved_ids": [],
+          "responder": {
+            "diag": {
+              "event": "ok",
+              "model": {
+                "context_window": 8192,
+                "is_local": false,
+                "max_tokens": 4096,
+                "model_name": "gpt-4o",
+                "provider": "openai",
+                "temperature": 0.7
+              }
+            },
+            "evidence_ids": [],
+            "fallback": false,
+            "model": {
+              "context_window": 8192,
+              "is_local": false,
+              "max_tokens": 4096,
+              "model_name": "gpt-4o",
+              "provider": "openai",
+              "temperature": 0.7
+            },
+            "used": true
+          },
+          "reply": "I haven't been told the nickname you gave to the place where you watch the stars. What would you like to try next?",
+          "stopped": true,
+          "seed_records": [],
+          "original_profile_id_absent": "21a2456fc4af74556b944e00f8e3cc15"
+        }
+      },
+      "model_generated_turns": 27,
+      "fallback_turns": 0
+    },
+    "live_processes_stopped": 9,
+    "live_generated_turns": 35,
+    "live_fallback_turns": 0,
+    "raw_test_dialogue_absent_from_runtime_logs": true,
+    "artifact_root": ".pytest_tmp_continuity_runtime_commit/clean/.pytest_tmp_clean_live",
+    "commands": [
+      "git worktree add --detach .pytest_tmp_continuity_clean 3eff802d3f1d3a51dc4f9d05e63132ec350c7e0a",
+      "python -m pytest tests/acceptance/test_personal_continuity.py tests/unit/test_chat_memory_retrieval.py tests/unit/test_engine_memory_compatibility.py tests/unit/test_aetherra_engine_hardening.py tests/unit/test_launcher_diagnostic_mode.py tests/unit/test_multi_llm_provider_startup.py tests/unit/test_openai_request_lifecycle.py tests/unit/test_sdk_egress.py tests/unit/test_hub_inthread.py -k \"not federation\" -q -o addopts= --basetemp=.pytest_tmp_clean_offline",
+      "python -m pytest tests/unit/test_hub_chat_safety_preflight.py tests/unit/test_chat_guardian.py tests/unit/test_memory_core_guardian.py -q -o addopts= --basetemp=.pytest_tmp_clean_guardian",
+      "python -m pytest tests/unit/test_guardian_core.py tests/unit/test_guardian_policy_engine.py tests/unit/test_capability_limits.py tests/unit/test_capabilities_policy.py -q -o addopts= --basetemp=.pytest_tmp_clean_policy",
+      "python tests/acceptance/test_personal_continuity.py --live --extended --profile .pytest_tmp_clean_live"
+    ],
+    "runtime_dependency_scope": [
+      "Normal launcher binds and shuts down its owned loopback Hub; preserve legacy direct-call host behavior.",
+      "Memory transaction failures cannot return committed receipts; Engine sanitizes dialogue contexts and validates receipts.",
+      "Engine selection stays on the primary manager provider and rejects the legacy adapter override.",
+      "OpenAI-only default manager uses guarded SDK transport with strict capability/domain/Guardian policies and signed audit receipts.",
+      "Provider client lifecycle validates responses and drains already-started cleanup after completed conversations.",
+      "Tests selected from the existing staged hardening cover those exact behaviors."
+    ],
+    "unrelated_work_left_staged": [
+      "Presence/avatar/diagnostic mode, agent execution, readiness reporting and full concurrent Engine shutdown ownership.",
+      "Other Lyrixa chat routes, coordinator/model adapters, narrator and legacy provider callers.",
+      "Audit byte budgets/process locking, Guardian observation limits, general logging and formatting cleanup.",
+      "Dependency/plugin signing, broad system documentation, unrelated tests and CI changes."
+    ],
+    "runtime_commit_preserved_original_index_byte_for_byte": true
   }
 }
