@@ -1816,6 +1816,19 @@ class AetherraOSLauncher:
                                 query=query_text, limit=limit
                             )
 
+                        async def recall_chat_memories(
+                            self, query_text, limit=3, *, exclude_id=None
+                        ):
+                            core_memory = getattr(self.engine, "core_memory", None)
+                            chat_recall = getattr(core_memory, "recall_chat_memories", None)
+                            if callable(chat_recall):
+                                return await chat_recall(
+                                    query_text, limit=limit, exclude_id=exclude_id
+                                )
+                            return await self.recall_memories(
+                                query_text, limit=limit, memory_type="conversation"
+                            )
+
                         async def get_memory_stats(self):
                             core_memory = getattr(self.engine, "core_memory", None)
                             if core_memory is not None and hasattr(

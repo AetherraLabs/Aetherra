@@ -11,6 +11,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 import sqlite3
 from contextlib import contextmanager, suppress
 from dataclasses import dataclass
@@ -106,6 +107,7 @@ class Memory:
     created_at: datetime | None = None
     last_accessed: datetime | None = None
     access_count: int = 0
+    relevance: float | None = None
 
 
 @dataclass
@@ -411,6 +413,68 @@ class LyrixaMemorySystem:
         return await self.recall_memories(
             query_text=session_id, limit=limit, memory_type="conversation"
         )
+
+    async def recall_chat_memories(
+        self, query_text: str, limit: int = 3, *, exclude_id: str | None = None
+    ) -> List[Memory]:
+        """Recall prior user statements from this database, ranked by meaning.
+
+        Assistant output, session events and question-only turns are not
+        personal-fact evidence. Mixed turns rank their declarative sentences.
+        This is storage isolation, not authorization by user_id.
+        Read/model failures propagate so Engine can distinguish missing evidence
+        from unavailable retrieval. Legacy recall_memories callers are unchanged.
+        """
+        from .chat_retrieval import rank
+
+        if not query_text.strip() or limit <= 0:
+            return []
+        rows = (
+            self.ensure_connection()
+            .execute(
+                "SELECT id, content, context, tags, importance, created_at, last_accessed, "
+                "access_count, memory_type FROM memories WHERE memory_type = ? AND id != ?",
+                ("conversation", exclude_id or ""),
+            )
+            .fetchall()
+        )
+        candidates = {}
+        texts = []
+        for row in rows:
+            content = json.loads(row[1])
+            if not isinstance(content, dict) or content.get("role") != "user":
+                continue
+            text = content.get("content")
+            if not isinstance(text, str) or not text.strip():
+                continue
+            statements = " ".join(
+                sentence
+                for sentence in re.split(r"(?<=[.!?])\s+", text.strip())
+                if not sentence.endswith("?")
+            )
+            if not statements:
+                continue
+            candidates[row[0]] = (row, content)
+            texts.append((row[0], statements))
+        memories = []
+        for record_id, score in rank(query_text, texts, min(limit, 3)):
+            row, content = candidates[record_id]
+            memories.append(
+                Memory(
+                    id=row[0],
+                    content=content,
+                    context=json.loads(row[2]) if row[2] else {},
+                    tags=json.loads(row[3]) if row[3] else [],
+                    importance=row[4],
+                    created_at=datetime.fromisoformat(row[5]),
+                    last_accessed=datetime.fromisoformat(row[6]),
+                    access_count=row[7],
+                    memory_type=row[8],
+                    relevance=score,
+                )
+            )
+            await self._update_memory_access(record_id)
+        return memories
 
     async def store_user_preference(
         self,

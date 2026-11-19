@@ -23,6 +23,14 @@ validation are not carried forward as complete.
 
 ## Current Project State
 
+Personal continuity milestone (2026-11-19): the existing full-launcher
+Hub/Engine/Memory path now supports bounded personal-fact recall across a process
+restart. Competing facts, unknown attributes and isolated directories are covered
+offline and in scoped OpenAI gpt-4o runs, including varied paraphrases and
+missing-fact/separate-profile checks.
+See `docs/PERSONAL_CONTINUITY.md` for exact commands, evidence and limitations.
+Account isolation and broader memory/runtime redesign remain outside this scope.
+
 Aetherra is in alpha foundation hardening.
 
 The current objective is not production autonomy. The current objective is to

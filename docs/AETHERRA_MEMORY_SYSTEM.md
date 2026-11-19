@@ -4,6 +4,12 @@
 > Maintained and officially operated by **Aetherra Labs**.
 > **Powered by Aetherra Labs.**
 
+Later personal-continuity checkpoint (2026-11-19): the default classical Engine
+chat path uses bounded local MiniLM ranking over persisted user statements via
+the existing SQLite core, preserving legacy substring callers and STORM behavior.
+See [PERSONAL_CONTINUITY.md](PERSONAL_CONTINUITY.md) for model provisioning,
+restart evidence, storage isolation and semantic-quality limits.
+
 Aetherra's Memory System combines reliable, local-first storage with advanced conceptual and episodic structures, adaptive compression (QFAC), optional quantum‑hybrid experimentation, and **STORM** (Sheaf-Transport Optimized Retrieval Memory) for topologically-consistent semantic retrieval. It preserves strict backward compatibility for existing Lyrixa plugins while enabling richer recall, narratives, reflection, and system health monitoring.
 
 ## Architecture overview
