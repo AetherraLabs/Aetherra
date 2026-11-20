@@ -24,6 +24,16 @@ jobs:
             pip install -r requirements.txt
             pip install pytest pytest-cov prometheus-client pyyaml
           fi
+      - name: Provision pinned continuity embedding model
+        env:
+          HF_HUB_DISABLE_TELEMETRY: '1'
+        run: |
+          python - <<'PY'
+          from sentence_transformers import SentenceTransformer
+          from Aetherra.aetherra_core.memory.chat_retrieval import MODEL, REVISION
+
+          SentenceTransformer(MODEL, revision=REVISION, device="cpu", trust_remote_code=False)
+          PY
       - name: Version badge check
         run: python tools/verify_version_badge.py
       - name: Generate license report
@@ -36,7 +46,9 @@ jobs:
           PACKAGE_SMOKE: '1'
           SBOM_GENERATE: '1'
           PUBLISH_ARTIFACTS: '1'
-          TEST_TARGETS: 'tests/capabilities tests/unit tests/integration'
+          TEST_TARGETS: 'tests/capabilities tests/unit tests/integration tests/acceptance/test_personal_continuity.py'
+          HF_HUB_OFFLINE: '1'
+          TRANSFORMERS_OFFLINE: '1'
           LOCK_FILE: requirements-ci.lock
           LOCK_ENFORCE: '1'
           VULN_SCAN: ${{ github.event_name == 'push' && '1' || '0' }}

@@ -122,6 +122,15 @@ The pinned embedding model is real, cached, and required: missing assets fail
 the recall assertions rather than silently skipping them. No download occurs
 during a test. Use a fresh `--basetemp` when retaining evidence from earlier runs.
 
+The CI Quality Gates workflow provisions that same public model, using the
+runtime's `MODEL` and `REVISION` constants, after installing dependencies and
+before running tests. It sets `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1`
+for the test/gate step and includes the three process-restart acceptance tests
+alongside the existing test targets. A fresh runner previously failed the
+mixed-statement retrieval test because this setup step was missing; the tests
+continue to fail if the model cannot be provisioned, with no skip or mock
+embedding substitution. The download is dependency setup, not runtime recall.
+
 The tests cover Lantern Room versus newer Copper Finch and unrelated records;
 unknown door color; competitors without the observatory; a separate empty
 profile; bicycle repair/Leona and music/Clair de lune paraphrases with competing
