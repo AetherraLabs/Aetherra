@@ -1,73 +1,67 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
-"""Failure injection for HMR rollback.
+"""A missing HMR source must fail safely without replacing the active engine.
 
-If HMR controller & kernel support dynamic reload tasks, we enqueue a reload with a
-bogus source to force failure and expect either an audit event or safe failure.
+Exercise the real kernel executor and HMR controller directly. The OS launcher
+owns a lifetime loop, so awaiting launch_full_os cannot be a test setup step.
 """
 
 # Standard library imports
 import asyncio
+import json
 
 # Third party imports
 import pytest
+
+# Aetherra imports
+from aetherra_hmr_controller import HMRController
+from aetherra_kernel_loop import AetherraKernelLoop
+from aetherra_service_registry import AetherraServiceRegistry
 
 pytestmark = pytest.mark.unit
 
 
 @pytest.mark.asyncio
-async def test_hmr_reload_failure(monkeypatch):
-    # Aetherra imports
-    from aetherra_os_launcher import AetherraOSLauncher
-    from aetherra_service_registry import get_service_registry
+@pytest.mark.parametrize("enabled", [False, True])
+async def test_hmr_reload_failure(monkeypatch, tmp_path, enabled):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("AETHERRA_PROFILE", "test")
+    monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(tmp_path))
+    monkeypatch.setenv("AETHERRA_GUARDIAN_MODE", "enforcing")
+    source = str(tmp_path / "missing_hmr_source.py")
+    monkeypatch.setenv("AETHERRA_HMR_ALLOWED_SOURCES", source)
+    audit_path = tmp_path / "hmr_audit.jsonl"
+    monkeypatch.setenv("AETHERRA_HMR_AUDIT_PATH", str(audit_path))
+    monkeypatch.delenv("AETHERRA_REQUIRE_CAPABILITIES", raising=False)
 
-    launcher = AetherraOSLauncher()
-    cfg = {"gui_enabled": False, "quiet": True, "hub_enabled": False}
-    await launcher.launch_full_os(cfg)
+    kernel = AetherraKernelLoop()
+    original_engine = object()
+    kernel.aetherra_engine = original_engine
+    if enabled:
+        kernel.hmr_controller = HMRController(
+            AetherraServiceRegistry(), kernel, strict=True
+        )
 
-    reg = await get_service_registry()
-    kernel = reg.get_service("kernel_loop") or reg.get_service("kernel")
+    result = await asyncio.wait_for(
+        kernel._execute_task(
+            {
+                "type": "hmr_reload",
+                "data": {"target": "engine", "source": source, "mode": "safe"},
+            }
+        ),
+        timeout=5.0,
+    )
 
-    if not kernel:
-        pytest.skip("kernel not available for HMR test")
-
-    # If kernel doesn't expose add_task, skip
-    if not hasattr(kernel, "add_task"):
-        pytest.skip("kernel missing add_task")
-
-    # Enqueue bogus reload (expect safe failure or disabled response)
-    task = {
-        "type": "hmr_reload",
-        "data": {
-            "target": "engine",
-            "source": "nonexistent.module.path",
-            "mode": "safe",
-        },
+    assert result == {
+        "ok": False,
+        "error": "load_failed" if enabled else "hmr_disabled",
     }
-    await kernel.add_task(task, priority="high")  # type: ignore
-
-    await asyncio.sleep(0.8)
-
-    # If HMR controller not enabled, kernel logs a warning and returns early.
-    # Treat that as a PASS (system safely ignores unsupported task).
-    if hasattr(kernel, "hmr_controller") and not kernel.hmr_controller:
-        launcher.running = False
-        await asyncio.sleep(0.05)
-        return
-
-    # Assert HMR rollback metric if status available when controller present
-    if hasattr(kernel, "get_status"):
-        status = kernel.get_status()  # type: ignore
-        hmr = status.get("hmr", {}) if isinstance(status, dict) else {}
-        attempts = hmr.get("attempts", 0)
-        rollback = hmr.get("rollback", 0)
-        # When controller present we expect at least one attempt recorded
-        assert attempts >= 1, f"expected at least 1 HMR attempt, got {attempts}"
-        if rollback == 0:
-            assert hmr.get("success", 0) == 0, "unexpected HMR success for bogus source"
-    else:
-        pytest.skip("kernel missing get_status for HMR metrics assertion")
-
-    launcher.running = False
-    await asyncio.sleep(0.05)
+    assert kernel.aetherra_engine is original_engine
+    metrics = kernel.get_status()["hmr"]
+    assert metrics["attempts"] == int(enabled)
+    assert metrics["success"] == 0
+    if enabled:
+        entries = [json.loads(line) for line in audit_path.read_text().splitlines()]
+        assert entries[-1]["event"] == "load_failed"
+        assert entries[-1]["ok"] is False

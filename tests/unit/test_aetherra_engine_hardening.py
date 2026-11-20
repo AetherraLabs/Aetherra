@@ -1487,3 +1487,140 @@ async def test_agent_evaluation_report_sanitizes_case_exception_details(tmp_path
     assert report["summary"]["errors"] == {"agent_evaluation_case_failed": 1}
     assert "sensitive path" not in str(report)
     assert "eval-secret.json" not in str(report)
+
+
+@pytest.mark.asyncio
+async def test_real_session_context_commits_and_recalls(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("AETHERRA_AB_RECALL_MODE", "classical")
+    engine = _engine(tmp_path)
+    engine.initialized = True
+    try:
+        await engine.start_conversation("synthetic_acceptance")
+        stored = await engine.memory_system.recall_memories("conversation_start", limit=5)
+        assert len(stored) == 1
+        assert isinstance(stored[0].context["start_time"], str)
+        assert engine._last_session_start_info["memory"]["status"] == "stored"
+    finally:
+        await engine.shutdown()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "stage", ["session", "input", "assistant"]
+)
+async def test_empty_receipt_never_reports_storage_success(tmp_path, stage):
+    class EmptyReceiptMemory(_RecordingMemory):
+        async def store_memory(self, *args, **kwargs):
+            content = kwargs.get("content") or {}
+            failed = (
+                (stage == "session" and content.get("event") == "conversation_start")
+                or (stage == "input" and content.get("role") == "user")
+                or (stage == "assistant" and content.get("role") == "assistant")
+                or (stage == "reflection" and "narrative" in content)
+            )
+            return "" if failed else await super().store_memory(*args, **kwargs)
+
+        async def store_learning(self, *args, **kwargs):
+            return ""
+
+    memory = EmptyReceiptMemory()
+    engine = _message_ready_engine(tmp_path, memory=memory)
+    engine._ensure_persistent_memory = _async_false
+    if stage == "session":
+        engine.initialized = True
+        await engine.start_conversation("synthetic_acceptance")
+        assert engine._last_session_start_info["memory"]["status"] == "degraded"
+    elif stage in {"input", "assistant"}:
+        result = await engine.process_message("synthetic acceptance")
+        info = (
+            engine._last_input_persistence_info["memory"]
+            if stage == "input"
+            else engine._last_response_persistence_info["assistant_memory"]
+        )
+        assert info["status"] == "degraded"
+        if stage == "input":
+            assert result["error"]["code"] == ENGINE_PROCESSING_ERROR_CODE
+    elif stage == "reflection":
+        await engine.reflect_on_day()
+        assert engine._last_reflection_info["memory"]["status"] == "degraded"
+    else:
+        result = await engine.learn_from_feedback("synthetic_interaction", {"rating": 5})
+        assert result["status"] == "error"
+
+
+@pytest.mark.parametrize("receipt", [None, False, 123, {}, "   "])
+def test_memory_receipt_validation_rejects_malformed_acknowledgments(receipt):
+    with pytest.raises(RuntimeError, match="^memory_store_unconfirmed$"):
+        AetherraEngine._require_memory_receipt(receipt)
+
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("failure", ["unavailable", "request", "malformed"])
+async def test_legacy_override_stays_unavailable_with_adapter_injection(
+    monkeypatch, tmp_path, failure
+):
+    from unittest.mock import Mock
+
+    from Aetherra.aetherra_core.cognitive import reasoning_providers as providers
+
+    adapter = object.__new__(providers.OpenAIProvider)
+    adapter.max_tokens_hint = None
+    adapter._client = None
+    if failure != "unavailable":
+        create = (
+            Mock(side_effect=RuntimeError("synthetic private failure"))
+            if failure == "request"
+            else Mock(return_value=types.SimpleNamespace(choices=[], usage=None))
+        )
+        adapter._client = types.SimpleNamespace(
+            ChatCompletion=types.SimpleNamespace(create=create)
+        )
+    monkeypatch.setattr(providers, "build_provider", lambda _: adapter)
+    monkeypatch.setenv("AETHERRA_INTELLIGENCE_PROVIDER", "openai")
+    engine = _message_ready_engine(tmp_path)
+    engine.initialized = True
+    engine.memory_system.get_memory_stats = _ReadyStatusMemory().get_memory_stats
+    result = await engine.process_message("hello")
+    assert "error" not in result
+    assert result["llm"]["used"] is False
+    assert result["llm"]["diag"]["error"]["code"] == "provider_adapter_unavailable"
+    assert "synthetic private failure" not in str(result)
+
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "receipt", [True, False, "yes", RuntimeError("synthetic-private-drain")]
+)
+async def test_engine_shutdown_drains_only_started_llm_cleanup(
+    tmp_path, receipt, caplog
+):
+    from unittest.mock import AsyncMock
+
+    engine = _engine(tmp_path)
+    caplog.set_level("INFO", logger=engine_module.__name__)
+    engine.initialized = True
+    drain = (
+        AsyncMock(side_effect=receipt)
+        if isinstance(receipt, Exception)
+        else AsyncMock(return_value=receipt)
+    )
+    close = AsyncMock(side_effect=AssertionError("global client close forbidden"))
+    engine._llm_manager = types.SimpleNamespace(
+        drain_pending_cleanup=drain, close=close
+    )
+    await engine.shutdown()
+    drain.assert_awaited_once()
+    close.assert_not_awaited()
+    failures = [
+        record for record in engine._lifecycle_diagnostics
+        if record.get("component") == "llm_cleanup"
+    ]
+    if receipt is True:
+        assert not failures
+    else:
+        assert failures
+        assert "shutdown complete" not in caplog.text
+        assert "synthetic-private-drain" not in caplog.text

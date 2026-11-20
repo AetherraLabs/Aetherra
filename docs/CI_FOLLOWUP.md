@@ -1,0 +1,128 @@
+# Main CI follow-up
+
+The post-#318 main run passed three restart acceptance cases and 1,795 tests
+(10 skipped), then stopped at production signing. Separate jobs exposed legacy
+style debt, duplicated YAML workflow definitions, and an invalid dependency name.
+
+## Python quality
+
+Fast Quality and Release run the same command on PRs and main:
+
+```powershell
+python -m pip install -r requirements/quality.txt
+python tools/python_quality.py
+```
+
+The checked-in `.ci/python-quality-baseline.json` records existing violations
+from main commit `25753cfcebc12a51a5a0873fc955340bf3b9fa0c`. Its only source
+correction before capture was the obsolete manual-test function reference in
+`test_lyrixa_primary_chat.py`; critical Ruff findings cannot be baselined.
+
+An allowance applies only to the same path, normalized source SHA-256 and set of
+checks. Editing a legacy file requires making that file clean. New files have no
+allowance. Changes to formatter configuration or installed tool versions fail
+closed. LF and CRLF are equivalent. Normal checks do not rewrite the baseline;
+resolved debt is reported and can be removed in a reviewed cleanup.
+
+The baseline was explicitly chosen to keep this CI repair focused. It does not
+claim the whole repository is style-clean. Updating it is a maintainer action:
+
+```powershell
+python tools/python_quality.py --write-baseline .ci/python-quality-baseline.json
+git diff -- .ci/python-quality-baseline.json
+```
+
+Do not regenerate it merely to make a failing PR pass. Review every added
+allowance. The pinned Black, Ruff and isort versions match pre-commit. Both use the root
+formatter configuration explicitly; nested configuration cannot hide violations.
+The source inventory includes tracked Python files even if a new gitignore rule
+would hide them, and excludes untracked generated test artifacts.
+
+## Workflow and dependency repairs
+
+`ci.yml` now has one workflow header and one jobs mapping. Both original sets of
+checks are restored; the deleted Qt GUI test is replaced by current Runtime UI
+contract tests in the existing UI smoke job. YAML validation rejects duplicate keys. Restored smoke
+jobs explicitly clear whole-repository coverage options, install their async
+test dependency, and retain the existing WebSocket `<16` compatibility bound. The debugger
+dependency uses the published package name `pdbpp`, as documented by
+[its maintainers](https://github.com/pdbpp/pdbpp#installation).
+
+Signing/discovery tests install the shared CI dependencies, including PyYAML.
+The strict quality job installs and enforces `requirements-ci.lock` instead of
+comparing unpinned dependencies against the obsolete desktop lock. Its style
+tools match the pinned quality requirements. The docs verifier runs on Python
+3.11 after correcting two incompatible legacy test-report f-strings. Metrics
+generation uses `python -m tools.generate_metrics_reference`; its generated table
+is checked in separately from the existing hand-written explanations.
+Two restored tools tests now pass their intended environment and resolve script
+paths before changing directories. Nested report-generation checks use a bounded
+test subset and isolated coverage output. The architecture HTTP probe still
+requires all three endpoints to return 200, with a ten-second per-request bound
+to accommodate the observed two-second cold metrics initialization.
+The restored HMR failure-injection test previously awaited the launcher's lifetime
+loop before its assertions. It now exercises the real kernel/controller directly,
+with enforcing Guardian policy, a five-second bound, and assertions for disabled
+HMR and failed source loading, unchanged engine identity, metrics and audit evidence.
+The strict job also bounds its test subprocess to 15 minutes and the job to 30.
+
+## Required operator action: release signing
+
+The repository secret list and failed main run show no configured repository
+secret named `AETHERRA_RELEASE_PRIVKEY`. An administrator must add the approved
+Ed25519 signing seed as **64 hexadecimal characters**, not a filename or PEM:
+
+1. Open repository **Settings → Secrets and variables → Actions**.
+2. Add `AETHERRA_RELEASE_PRIVKEY`, or grant this repository access to an existing
+   organization Actions secret of that name. Keep the existing trusted signing
+   identity; do not generate a replacement merely to pass CI.
+3. Rerun **CI Quality Gates** for the current main commit. Both production bundle
+   signing and signed-manifest policy must succeed.
+
+The secret is never printed by preflight. Missing secrets remain hard failures;
+there is no unsigned mode or test-key substitution in production.
+
+Release starts after successful CI Quality Gates and verifies the exact main
+commit, push event, and successful signing/policy steps through the GitHub API.
+Manual dispatch uses the same preflight. If main advances, release stops and
+waits for the newer commit's signed build. PR CI cannot authorize a release.
+
+Production publication remains unverified until the operator supplies the
+signing secret. Tests use synthetic metadata only and never publish a release.
+
+The dedicated release identity is recorded in [keys/README.md](../keys/README.md).
+It is separate from the API-store Master Key. Secret provisioning must validate
+the derived public key against `keys/release_signing_ed25519.pub`, then send the
+64-character seed to `gh secret set AETHERRA_RELEASE_PRIVKEY --repo AetherraLabs/Aetherra`
+through standard input, never a command-line argument, chat message, or log.
+
+The signer identifies only the public-key fingerprint and signs the complete
+manifest, including signing metadata. Invalid keys or unavailable signing
+dependencies fail the command. Production policy also cryptographically verifies
+the manifest and artifact hashes against the pinned public key; supplying a
+public key makes a missing signature a hard failure.
+
+The full production bundle also runs legacy standalone checks. Their fixtures
+now use the active Hub control-token interface and exact authentication responses,
+the strict policy's 100-line boundary and finite positive ethics weights, and
+scenario filenames rather than interpreter paths when simulating a failed run.
+These checks run on PRs too. Runtime authentication, policy limits, and the full
+bundle's required 100% pass rate are unchanged.
+
+The pinned semantic-release CLI now has explicit root package/build configuration.
+It derives the next version from Git history; a preflight rejects downgrades. The
+build updates both README version markers, and README is included in the release
+commit, preserving the existing version-badge gate. This is tested with disposable
+metadata and a no-operation release run; no tag or release was published.
+
+## Verification notes
+
+Regression checks cover unchanged legacy debt, edited/new files, config/tool drift,
+critical syntax errors, hidden source files, ignored generated files, nested config
+bypasses, exact-commit signing prerequisites, and README version synchronization.
+Workflow syntax is checked with actionlint and duplicate-key-aware YAML validation.
+
+Local full collection still encounters the pre-existing
+`tests/integration/test_phase2_bridge.py` import of `lyrixa.gui.main_window` when
+PySide6 is installed. No unrelated GUI work is included; Linux CI is reported
+separately.

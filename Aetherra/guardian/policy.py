@@ -26,7 +26,9 @@ class GuardianPolicy:
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
-def load_guardian_policy(path: Path | str | None = None) -> GuardianPolicy:
+def load_guardian_policy(
+    path: Path | str | None = None, *, require_valid_policy: bool = False
+) -> GuardianPolicy:
     """Load Guardian policy from JSON.
 
     Supported shape:
@@ -40,10 +42,14 @@ def load_guardian_policy(path: Path | str | None = None) -> GuardianPolicy:
 
     policy_path = Path(path).expanduser().resolve() if path else guardian_policy_file()
     if not policy_path.exists():
+        if require_valid_policy:
+            raise ValueError("guardian_policy_invalid")
         return GuardianPolicy()
     data = json.loads(policy_path.read_text(encoding="utf-8") or "{}")
     if not isinstance(data, dict):
         raise ValueError("Guardian policy must be a JSON object")
+    if require_valid_policy:
+        _validate_policy(data)
     default = str(data.get("default", "allow")).strip().lower()
     if default not in {"allow", "deny"}:
         raise ValueError("Guardian policy default must be 'allow' or 'deny'")
@@ -54,6 +60,36 @@ def load_guardian_policy(path: Path | str | None = None) -> GuardianPolicy:
         deny=tuple(rule for rule in data.get("deny", []) if isinstance(rule, dict)),
         metadata=dict(data.get("metadata", {}) if isinstance(data.get("metadata"), dict) else {}),
     )
+
+
+def _validate_policy(data: dict[str, Any]) -> None:
+    if (
+        set(data) - {"version", "default", "allow", "deny", "metadata"}
+        or data.get("default") not in {"allow", "deny"}
+        or type(data.get("version", 1)) is not int
+        or data.get("version", 1) < 1
+        or not isinstance(data.get("metadata", {}), dict)
+    ):
+        raise ValueError("guardian_policy_invalid")
+    for key in ("allow", "deny"):
+        rules = data.get(key, [])
+        if not isinstance(rules, list):
+            raise ValueError("guardian_policy_invalid")
+        for rule in rules:
+            if (
+                not isinstance(rule, dict)
+                or not rule
+                or set(rule) - {"requester", "subsystem", "action", "target", "capabilities"}
+            ):
+                raise ValueError("guardian_policy_invalid")
+            for value in rule.values():
+                values = [value] if isinstance(value, str) else value
+                if (
+                    not isinstance(values, list)
+                    or not values
+                    or any(not isinstance(item, str) or not item.strip() for item in values)
+                ):
+                    raise ValueError("guardian_policy_invalid")
 
 
 def security_capability_checker(requester: str, capability: str) -> bool:
@@ -68,11 +104,12 @@ def evaluate_guardian_policy(
     intent: IntentDeclaration,
     *,
     policy: GuardianPolicy | None = None,
+    require_valid_policy: bool = False,
 ) -> PolicyResult:
     """Evaluate explicit Guardian allow/deny rules for an intent."""
 
     try:
-        resolved = policy or load_guardian_policy()
+        resolved = policy or load_guardian_policy(require_valid_policy=require_valid_policy)
     except Exception as exc:
         return PolicyResult(
             allowed=False,

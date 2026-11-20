@@ -3,6 +3,12 @@
 > Maintained and officially operated by **Aetherra Labs**.
 > **Powered by Aetherra Labs.**
 
+Personal continuity checkpoint (2026-11-19): persisted personal records now reach
+the actual reply provider after a process restart, with bounded relevance-ranked
+evidence, per-turn record IDs and explicit unavailable-provider fallback.
+See [PERSONAL_CONTINUITY.md](PERSONAL_CONTINUITY.md) for offline and live evidence;
+this does not close the broader Engine acceptance work below.
+
 Status: v0.1 Functional Complete
 
 The Aetherra Engine System is the cognitive runtime coordinator for Aetherra.
