@@ -1,11 +1,13 @@
 """Exercise PowerShell argument expansion using a real disposable pytest run."""
 
+# Standard library imports
 import os
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
+# Third party imports
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -39,7 +41,7 @@ def test_quick_quality_selects_only_its_smoke_test(
         f"function global:ruff {{ $global:LASTEXITCODE = {lint_exit} }}\n"
         "function global:black { $global:LASTEXITCODE = 0 }\n"
         "function global:isort { $global:LASTEXITCODE = 0 }\n"
-        "function global:python { $global:LASTEXITCODE = 0 }\n"
+        f"function global:python {{ if ($args[0] -eq 'tools/python_quality.py') {{ $global:LASTEXITCODE = {lint_exit} }} else {{ $global:LASTEXITCODE = 0 }} }}\n"
         f"function global:pytest {{ & '{interpreter}' -m pytest @args -p no:cacheprovider; "
         "$global:LASTEXITCODE = $LASTEXITCODE }\n"
         f"& '{script}'\nexit $LASTEXITCODE\n",
