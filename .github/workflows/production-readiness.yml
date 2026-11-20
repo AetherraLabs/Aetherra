@@ -22,7 +22,7 @@ jobs:
           test -f .env.example
 
       - name: 📦 Upload .env.example
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: env-example
           path: .env.example
