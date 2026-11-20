@@ -1,21 +1,144 @@
 # CHANGELOG
 
 
-## v0.5.0-beta.1 (2026-11-20)
+## v0.5.0-beta.2 (2026-11-20)
 
 ### Bug Fixes
 
-- **release**: Continue approved beta line with signed distributions
-  ([`a90699e`](https://github.com/AetherraLabs/Aetherra/commit/a90699e1c2a2d0453d960594a1a38096ae980763))
+- **ci**: Provision scanner for strict quality gates
+  ([`e099bc3`](https://github.com/AetherraLabs/Aetherra/commit/e099bc3bb9ca5b5e7bab5bd5196c9f8ba075b3c9))
 
-- **release**: Preserve completed assets on no-bump commits
-  ([`3799366`](https://github.com/AetherraLabs/Aetherra/commit/37993666b96bc3d9d1727bccfcdca5a51a487000))
+### Chores
 
-- **release**: Verify uploads and forward signing to build
-  ([`4e75b1b`](https://github.com/AetherraLabs/Aetherra/commit/4e75b1bb70662f6158c6e922a6dc7d46cc12687d))
+- Retry signed release publication
+  ([`ab9ded1`](https://github.com/AetherraLabs/Aetherra/commit/ab9ded161582cfd36e2ec31d77a832450e212cf5))
+
+- **ci**: Enforce current vulnerability evidence on main
+  ([`dd7aff0`](https://github.com/AetherraLabs/Aetherra/commit/dd7aff0bcb0bd2be872765608171a0da3c0c0b65))
+
+- **ci**: Integrate action updates and cover all cache callers
+  ([`823ad71`](https://github.com/AetherraLabs/Aetherra/commit/823ad71628d47e609528d70af395d95725696c97))
+
+- **ci**: Integrate current action updates for Pages
+  ([`e610ac8`](https://github.com/AetherraLabs/Aetherra/commit/e610ac8054eeb70c6237550cbcb13e5881fa91cf))
+
+- **ci**: Integrate current action updates for stale
+  ([`29ee1c1`](https://github.com/AetherraLabs/Aetherra/commit/29ee1c1491a60f79499e38feb69c645ce41ee19b))
+
+- **ci**: Integrate current main for artifact action update
+  ([`34fdbdd`](https://github.com/AetherraLabs/Aetherra/commit/34fdbdd4cae9eb0c0c4eb612c59dc37f30e47c70))
+
+- **ci**: Integrate reviewed Actions and Radix updates
+  ([`b23c7b8`](https://github.com/AetherraLabs/Aetherra/commit/b23c7b8aee9b46ca3d8872620e13bb9787876f4e))
+
+- **ci**: Integrate reviewed Actions updates for Radix PR
+  ([`49440a4`](https://github.com/AetherraLabs/Aetherra/commit/49440a422ce83be7b9ba2c34e004141f04dc310a))
+
+- **ci**: Synchronize approved dependency merges
+  ([`1a128bd`](https://github.com/AetherraLabs/Aetherra/commit/1a128bdf8a8300a4f70c924558243316dde5c736))
+
+- **ci**: Update Python action on current main
+  ([`3eee0d3`](https://github.com/AetherraLabs/Aetherra/commit/3eee0d31eeb36cdeeba9f510dd987290e43ba17d))
+
+- **deps**: Bump @radix-ui/react-dialog in /Aetherra/lyrixa/gui
+  ([`2f1dea0`](https://github.com/AetherraLabs/Aetherra/commit/2f1dea0f69c463408a76c39dd473dcebd352ae5b))
+
+Bumps
+  [@radix-ui/react-dialog](https://github.com/radix-ui/primitives/tree/HEAD/packages/react/dialog)
+  from 1.1.23 to 1.3.1. -
+  [Changelog](https://github.com/radix-ui/primitives/blob/main/packages/react/dialog/CHANGELOG.md) -
+  [Commits](https://github.com/radix-ui/primitives/commits/HEAD/packages/react/dialog)
+
+--- updated-dependencies: - dependency-name: "@radix-ui/react-dialog" dependency-version: 1.3.1
+
+dependency-type: direct:production
+
+update-type: version-update:semver-minor ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump actions/cache from 4 to 6
+  ([`87a751b`](https://github.com/AetherraLabs/Aetherra/commit/87a751b95e2fe21387f54008c93859b6c16a1510))
+
+Bumps [actions/cache](https://github.com/actions/cache) from 4 to 6. - [Release
+  notes](https://github.com/actions/cache/releases) -
+  [Changelog](https://github.com/actions/cache/blob/main/RELEASES.md) -
+  [Commits](https://github.com/actions/cache/compare/v4...v6)
+
+--- updated-dependencies: - dependency-name: actions/cache dependency-version: '6'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump actions/setup-python from 4 to 6
+  ([`53e4343`](https://github.com/AetherraLabs/Aetherra/commit/53e4343e26b3d86431f8c3de4b29944f03e794b9))
+
+Bumps [actions/setup-python](https://github.com/actions/setup-python) from 4 to 6. - [Release
+  notes](https://github.com/actions/setup-python/releases) -
+  [Commits](https://github.com/actions/setup-python/compare/v4...v6)
+
+--- updated-dependencies: - dependency-name: actions/setup-python dependency-version: '6'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump actions/stale from 9 to 10
+  ([`1cfaede`](https://github.com/AetherraLabs/Aetherra/commit/1cfaede58a9595c6ed0779446a074b3efee25eb3))
+
+Bumps [actions/stale](https://github.com/actions/stale) from 9 to 10. - [Release
+  notes](https://github.com/actions/stale/releases) -
+  [Changelog](https://github.com/actions/stale/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/actions/stale/compare/v9...v10)
+
+--- updated-dependencies: - dependency-name: actions/stale dependency-version: '10'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump actions/upload-artifact from 4 to 7
+  ([`a4a9ec9`](https://github.com/AetherraLabs/Aetherra/commit/a4a9ec99aa8bde1ac640d65181bad885794e10d9))
+
+Bumps [actions/upload-artifact](https://github.com/actions/upload-artifact) from 4 to 7. - [Release
+  notes](https://github.com/actions/upload-artifact/releases) -
+  [Commits](https://github.com/actions/upload-artifact/compare/v4...v7)
+
+--- updated-dependencies: - dependency-name: actions/upload-artifact dependency-version: '7'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump actions/upload-pages-artifact from 3 to 5
+  ([`a494e00`](https://github.com/AetherraLabs/Aetherra/commit/a494e00f7050c6844a3a07f4bbb789e6a8221f7b))
+
+Bumps [actions/upload-pages-artifact](https://github.com/actions/upload-pages-artifact) from 3 to 5.
+  - [Release notes](https://github.com/actions/upload-pages-artifact/releases) -
+  [Commits](https://github.com/actions/upload-pages-artifact/compare/v3...v5)
+
+--- updated-dependencies: - dependency-name: actions/upload-pages-artifact dependency-version: '5'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Integrate Radix with compatible audited GUI tooling
+  ([`742e6b2`](https://github.com/AetherraLabs/Aetherra/commit/742e6b266c5079f1b3a2584dba1c9b0f87933c53))
 
 
-## v0.5.0 (2026-11-19)
+## v0.5.0-beta.1 (2026-11-19)
 
 ### Bug Fixes
 
@@ -156,6 +279,29 @@ Introduce requirements-ci.lock for the Ubuntu Python 3.11 quality-gates environm
 
 Point quality-gates lock sync, license reporting, artifacts, and integrity manifest inputs at the CI
   lock path while preserving requirements.lock for full runtime and release environments.
+
+- **ci**: Enforce complete vulnerability evidence
+  ([`9124f77`](https://github.com/AetherraLabs/Aetherra/commit/9124f77d47feb14ffc414d3538f7478f867408b8))
+
+Reject absent scanners, malformed or empty scan output, skipped dependencies, inconsistent exits and
+  unconfirmed severity instead of treating missing evidence as clean.
+
+Audit exact dependency pins without redundant installation or resolution, and require returned
+  package/version coverage to match the lock. Make an explicitly requested missing wrapper fatal.
+
+Provision pip-audit in a separate push-only virtual environment and expose only its executable so
+  audit tooling cannot shadow runtime Python or alter the locked dependency profile.
+
+Preserve child text and timeout diagnostics on legacy consoles. Add scanner failure-injection cases
+  and replace the report check with isolated real CLI pass/fail assertions.
+
+Validation: 60 focused tests pass on isolated Windows and locked Linux profiles; critical Python
+  lint and staged whitespace checks pass. No runtime policy, signing rule, PR target, coverage
+  threshold or advisory ignore rule changes.
+
+Publish only five CI/scanner files after merged PR #267. Keep the larger checkpoint and private
+  state local. Separate main-only lint/release/configuration failures remain outside this slice and
+  are not claimed resolved.
 
 - **ci**: Enforce truthful coverage baseline integrity
   ([`da33b17`](https://github.com/AetherraLabs/Aetherra/commit/da33b17ead24353622719acb9f74817e2dd5ed8c))
@@ -353,6 +499,12 @@ Verify 84 offline plugin regressions and two nearby real sandbox controls withou
   replay exposed 69 failures. Independent review confirmed the repaired post-load bypass and
   unchanged scope. Complete three behavior-preserving legacy module lint repairs.
 
+- **release**: Continue approved beta line with signed distributions
+  ([`a90699e`](https://github.com/AetherraLabs/Aetherra/commit/a90699e1c2a2d0453d960594a1a38096ae980763))
+
+- **release**: Preserve completed assets on no-bump commits
+  ([`3799366`](https://github.com/AetherraLabs/Aetherra/commit/37993666b96bc3d9d1727bccfcdca5a51a487000))
+
 - **release**: Unblock go-no-go and bundle retry
   ([`2535bc1`](https://github.com/AetherraLabs/Aetherra/commit/2535bc1cf9c34c53f7f126814b608d4cecfb3d38))
 
@@ -363,6 +515,9 @@ Verify 84 offline plugin regressions and two nearby real sandbox controls withou
   strict env flags - add focused compatibility tests for reasoning shim and cross-thread memory
   operations - fix build_release_bundle SBOM invocation (--out instead of unsupported
   --output/--version) - keep README beta-readiness updates in sync
+
+- **release**: Verify uploads and forward signing to build
+  ([`4e75b1b`](https://github.com/AetherraLabs/Aetherra/commit/4e75b1bb70662f6158c6e922a6dc7d46cc12687d))
 
 - **runtime**: Include personal continuity prerequisites
   ([`3eff802`](https://github.com/AetherraLabs/Aetherra/commit/3eff802d3f1d3a51dc4f9d05e63132ec350c7e0a))
