@@ -60,6 +60,11 @@ paths before changing directories. Nested report-generation checks use a bounded
 test subset and isolated coverage output. The architecture HTTP probe still
 requires all three endpoints to return 200, with a ten-second per-request bound
 to accommodate the observed two-second cold metrics initialization.
+The restored HMR failure-injection test previously awaited the launcher's lifetime
+loop before its assertions. It now exercises the real kernel/controller directly,
+with enforcing Guardian policy, a five-second bound, and assertions for disabled
+HMR and failed source loading, unchanged engine identity, metrics and audit evidence.
+The strict job also bounds its test subprocess to 15 minutes and the job to 30.
 
 ## Required operator action: release signing
 

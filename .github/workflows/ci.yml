@@ -274,6 +274,7 @@ jobs:
   quality-gates:
     name: "✅ Quality Gates (strict + arch verifier)"
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       ARCH_CHECK: '1'
       ARCH_CHECK_STRICT: '1'
@@ -281,6 +282,7 @@ jobs:
       # Keep coverage threshold flexible; no-drop is handled inside the script
       MIN_COVERAGE: '0'
       LOCK_FILE: requirements-ci.lock
+      TEST_TIMEOUT: '900'
     steps:
       - name: "📥 Checkout code"
         uses: actions/checkout@v4
