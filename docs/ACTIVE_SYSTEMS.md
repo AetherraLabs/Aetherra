@@ -22,6 +22,12 @@ Status meanings:
 
 ## Core Systems
 
+Personal continuity checkpoint (2026-11-19): the normal full-launcher Hub/Engine
+path now retrieves bounded persisted personal evidence across process restart.
+Offline and live competing-fact/profile checks and core recall are recorded
+in [PERSONAL_CONTINUITY.md](PERSONAL_CONTINUITY.md). This establishes local storage
+isolation, not account isolation or full-runtime readiness.
+
 | System | Status | Primary Reference |
 | --- | --- | --- |
 | Security | Functional complete | `docs/AETHERRA_SECURITY_SYSTEM.md` |
