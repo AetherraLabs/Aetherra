@@ -22,6 +22,14 @@ from Aetherra.security.sandbox import (
 
 def test_security_sandbox_blocks_risky_operations(monkeypatch):
     monkeypatch.setenv("AETHERRA_PROFILE", "production")
+    # This checks operation policy, not the test runner's ambient model/cache RSS.
+    # The excess-memory rejection is exercised separately below.
+    process = SimpleNamespace(
+        memory_info=lambda: SimpleNamespace(rss=128 * 1024 * 1024)
+    )
+    monkeypatch.setattr(
+        sandbox_module, "psutil", SimpleNamespace(Process=lambda: process)
+    )
     sandbox = SecuritySandbox(
         {
             "timeout": 0.01,

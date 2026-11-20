@@ -125,10 +125,12 @@ during a test. Use a fresh `--basetemp` when retaining evidence from earlier run
 The CI Quality Gates workflow provisions that same public model, using the
 runtime's `MODEL` and `REVISION` constants, after installing dependencies and
 before running tests. It sets `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1`
-for the test/gate steps. The retrieval unit tests and three process-restart
-acceptance tests run in a required, separate pytest process; the remaining
-suite appends their coverage. This keeps the model's resident memory out of
-unrelated sandbox resource-budget checks without relaxing their limits.
+for the test/gate steps. The three process-restart acceptance tests run in a
+required, separate pytest process; the full existing suite, including retrieval
+unit tests, appends their coverage. The sandbox operation-policy unit test uses
+a deterministic process-memory sample so loaded model libraries cannot change
+its result. The separate excess-memory rejection test and production sandbox
+limits remain unchanged.
 A fresh runner previously failed the mixed-statement retrieval test because
 this setup step was missing; the tests
 continue to fail if the model cannot be provisioned, with no skip or mock

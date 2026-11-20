@@ -38,11 +38,10 @@ jobs:
         env:
           HF_HUB_OFFLINE: '1'
           TRANSFORMERS_OFFLINE: '1'
-        # Keep the model's resident memory out of the sandbox resource tests.
-        # The main test process appends this coverage instead of discarding it.
+        # Run the complete restart acceptance cases explicitly; the main suite
+        # also runs retrieval unit tests and appends this coverage.
         run: >-
-          python -m pytest tests/unit/test_chat_memory_retrieval.py
-          tests/acceptance/test_personal_continuity.py -q -o addopts=
+          python -m pytest tests/acceptance/test_personal_continuity.py -q -o addopts=
           --cov=. --cov-report= --cov-fail-under=0
       - name: Version badge check
         run: python tools/verify_version_badge.py
@@ -57,8 +56,7 @@ jobs:
           SBOM_GENERATE: '1'
           PUBLISH_ARTIFACTS: '1'
           TEST_TARGETS: 'tests/capabilities tests/unit tests/integration'
-          # Already required by the separate model-backed test process above.
-          PYTEST_ADDOPTS: '--ignore=tests/unit/test_chat_memory_retrieval.py --cov-append'
+          PYTEST_ADDOPTS: '--cov-append'
           HF_HUB_OFFLINE: '1'
           TRANSFORMERS_OFFLINE: '1'
           LOCK_FILE: requirements-ci.lock
