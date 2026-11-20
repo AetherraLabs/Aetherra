@@ -257,6 +257,37 @@ def test_signed_build_rejects_missing_secret_before_build(tmp_path, monkeypatch)
         build_signed(tmp_path)
 
 
+@pytest.mark.parametrize("complete", [True, False])
+def test_no_bump_change_cannot_replace_assets_from_another_tree(
+    repo, monkeypatch, complete
+):
+    with package_baseline(repo):
+        semantic(repo, "version", "--no-push", "--no-vcs-release", "--skip-build")
+    (repo / "tools").mkdir()
+    shutil.copy(
+        Path(__file__).parents[2] / "tools/sync_release_version.py", repo / "tools"
+    )
+    (repo / "notes.txt").write_text("A documentation-only change")
+    git(repo, "add", "notes.txt")
+    git(repo, "commit", "-m", "docs: clarify operator note")
+
+    def verify_existing(repo, tag):
+        assert tag == "v0.5.0-beta.1"
+        if not complete:
+            raise ValueError("incomplete assets")
+
+    def forbid_build(repo):
+        pytest.fail("must not rebuild an existing tag from different source")
+
+    monkeypatch.setattr(release_runner, "verify_published", verify_existing)
+    monkeypatch.setattr(release_runner, "build_signed", forbid_build)
+    if complete:
+        assert run_release(repo) == "0.5.0-beta.1"
+    else:
+        with pytest.raises(ValueError, match="unchanged tagged tree"):
+            run_release(repo)
+
+
 @pytest.mark.parametrize("wrong_key", [False, True])
 def test_signed_build_verifies_actual_manifest(tmp_path, monkeypatch, wrong_key):
     signing = pytest.importorskip("nacl.signing")

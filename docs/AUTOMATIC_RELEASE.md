@@ -73,8 +73,10 @@ git push origin main
 ```
 
 This triggers full CI and a newly signed production bundle for the new exact
-main SHA. Release then rebuilds and signs the existing version, creates the
-GitHub release if missing, replaces partial assets, and verifies downloads.
+main SHA. A complete, verified release is preserved without rebuilding. For an
+incomplete release, recovery requires the current tree to equal the tagged tree;
+an empty recovery commit satisfies this. Release rebuilds and signs that version,
+creates the GitHub release if missing, replaces partial assets, and verifies downloads.
 Never bypass preflight or force-push historical tags to recover an upload.
 
 Inspect the completed run and GitHub release; a version-plan success alone is not

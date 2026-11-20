@@ -104,10 +104,55 @@ def run_release(repo: Path, *, plan: bool = False) -> str:
             raise ValueError(f"proposed release tag {tag} belongs to unrelated history")
         if not plan:
             if already_released:
+                try:
+                    verify_published(repo, tag)
+                    return version
+                except (OSError, ValueError, subprocess.CalledProcessError) as exc:
+                    if git(repo, "rev-parse", "HEAD^{tree}") != git(
+                        repo, "rev-parse", f"{tag}^{{tree}}"
+                    ):
+                        raise ValueError(
+                            "incomplete release requires recovery from the unchanged tagged tree"
+                        ) from exc
                 build_signed(repo)
-            subprocess.run([*command, "version"], cwd=repo, check=True)
+            else:
+                subprocess.run([*command, "version"], cwd=repo, check=True)
             publish_verified(repo, tag)
         return version
+
+
+def verify_download(repo: Path, tag: str, download: Path) -> None:
+    manifest = json.loads((download / "release-manifest.json").read_text())
+    if manifest["version"] != tag.removeprefix("v") or not manifest["artifacts"]:
+        raise ValueError("published manifest has the wrong version or no artifacts")
+    subprocess.run(
+        [
+            sys.executable,
+            "tools/verify_release_manifest.py",
+            "--manifest",
+            str(download / "release-manifest.json"),
+            "--dist",
+            str(download),
+            "--pubkey",
+            (repo / "keys/release_signing_ed25519.pub").read_text().strip(),
+        ],
+        cwd=repo,
+        check=True,
+    )
+
+
+def verify_published(repo: Path, tag: str) -> None:
+    """A no-bump commit must preserve a complete existing release."""
+    gh = shutil.which("gh")
+    if not gh:
+        raise ValueError("GitHub CLI is required for verified publication")
+    with tempfile.TemporaryDirectory(prefix="aetherra-release-existing-") as directory:
+        subprocess.run(
+            [gh, "release", "download", tag, "--dir", directory, "--pattern", "*"],
+            cwd=repo,
+            check=True,
+        )
+        verify_download(repo, tag, Path(directory))
 
 
 def publish_verified(repo: Path, tag: str) -> None:
@@ -158,20 +203,7 @@ def publish_verified(repo: Path, tag: str) -> None:
                     raise ValueError(
                         f"published asset differs from signed build: {path.name}"
                     )
-        subprocess.run(
-            [
-                sys.executable,
-                "tools/verify_release_manifest.py",
-                "--manifest",
-                str(download / "release-manifest.json"),
-                "--dist",
-                directory,
-                "--pubkey",
-                (repo / "keys/release_signing_ed25519.pub").read_text().strip(),
-            ],
-            cwd=repo,
-            check=True,
-        )
+        verify_download(repo, tag, download)
 
 
 def build_signed(repo: Path) -> None:
