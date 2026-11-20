@@ -68,6 +68,45 @@ def test_pr_and_push_scanner_tooling_is_isolated():
     assert gates["env"]["VULN_SCAN"] == "1"
 
 
+def test_every_enabled_quality_gate_has_isolated_scanner_tooling():
+    callers = []
+    for path in sorted((ROOT / ".github/workflows").glob("*.y*ml")):
+        workflow = yaml.safe_load(path.read_text(encoding="utf-8"))
+        for job_name, job in workflow.get("jobs", {}).items():
+            steps = job.get("steps", [])
+            for index, step in enumerate(steps):
+                if "tools/quality_gates.py" not in step.get("run", ""):
+                    continue
+                env = {
+                    **workflow.get("env", {}),
+                    **job.get("env", {}),
+                    **step.get("env", {}),
+                }
+                if str(env.get("VULN_SCAN", "1")) == "0":
+                    continue
+                caller = f"{path.name}:{job_name}:{step.get('name', index)}"
+                callers.append(caller)
+                installers = [
+                    prior
+                    for prior in steps[:index]
+                    if prior.get("name") == "Install isolated vulnerability tooling"
+                ]
+                assert installers, f"{caller} has no scanner installation"
+                installer = installers[-1]
+                assert "if" not in installer, caller
+                assert "continue-on-error" not in installer, caller
+                script = installer["run"]
+                assert "python -m venv" in script, caller
+                assert "pip-audit==2.10.1" in script, caller
+                assert (
+                    'ln -s "$audit_env/bin/pip-audit" "$audit_bin/pip-audit"' in script
+                ), caller
+                assert 'echo "$audit_bin" >> "$GITHUB_PATH"' in script, caller
+                assert 'echo "$audit_env/bin"' not in script, caller
+                assert "--system-site-packages" not in script, caller
+    assert callers
+
+
 @pytest.mark.parametrize("lock_enforce", ["0", "1"])
 def test_requested_vulnerability_scan_missing_lock_fails_before_tests(
     tmp_path, monkeypatch, capsys, lock_enforce
