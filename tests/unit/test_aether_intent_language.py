@@ -20,6 +20,7 @@ Tests Coverage:
 """
 
 # Standard library imports
+import logging
 import os
 import sys
 import tempfile
@@ -62,7 +63,9 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
                 if hasattr(self.interpreter, "memory"):
                     self.interpreter.memory.clear()
             except Exception:
-                pass
+                logging.getLogger(__name__).warning(
+                    "Failed to clear interpreter memory during teardown", exc_info=True
+                )
 
     # ==================== MEMORY OPERATIONS TESTS ====================
 
@@ -72,14 +75,14 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Test simple remember command
         result = self.interpreter.execute('remember("Python is awesome") as "language"')
-        self.assertIn("Memory", result)
-        self.assertIn("Python is awesome", result)
+        assert "Memory" in result
+        assert "Python is awesome" in result
 
         # Test memory with multiple tags
         result = self.interpreter.execute(
             'remember("Always backup code") as "best_practice,safety"'
         )
-        self.assertIn("Memory", result)
+        assert "Memory" in result
 
         print("[OK] Basic memory storage working")
 
@@ -93,7 +96,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Test recall by tag
         result = self.interpreter.execute('recall tag: "performance"')
-        self.assertIn("performance", result.lower())
+        assert "performance" in result.lower()
 
         print("[OK] Memory recall operations working")
 
@@ -109,11 +112,11 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Test pattern detection
         result = self.interpreter.execute("detect recurring patterns")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         # Test memory summary
         result = self.interpreter.execute("memory summary")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         print("[OK] Memory pattern analysis working")
 
@@ -131,7 +134,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Test reflection
         result = self.interpreter.execute('reflect on tags="ai_knowledge"')
-        self.assertIn("Reflect", result)
+        assert "Reflect" in result
 
         print("[OK] AI memory reflection working")
 
@@ -143,17 +146,17 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Test basic goal setting
         result = self.interpreter.execute("goal: improve performance priority: high")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         # Test goal with metrics
         result = self.interpreter.execute(
             "goal: reduce memory usage by 25% priority: medium"
         )
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         # Test goal status
         result = self.interpreter.execute("goal status")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         print("[OK] Goal setting and priorities working")
 
@@ -166,11 +169,11 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Test goal checking
         result = self.interpreter.execute('check goal "database"')
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         # Test autonomous monitoring
         result = self.interpreter.execute("autonomous monitoring")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         print("[OK] Goal progress monitoring working")
 
@@ -180,11 +183,11 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Test reflective loop
         result = self.interpreter.execute("reflective loop")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         # Test next action suggestions
         result = self.interpreter.execute("suggest next actions")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         print("[OK] Adaptive goal management working")
 
@@ -196,15 +199,15 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Test agent activation
         result = self.interpreter.execute("agent: on")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         # Test agent deactivation
         result = self.interpreter.execute("agent: off")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         # Test auto mode
         result = self.interpreter.execute("agent: auto")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         print("[OK] Agent activation and modes working")
 
@@ -216,7 +219,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute(
             "agent: research specialization: code_analysis"
         )
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         print("[OK] Agent specialization working")
 
@@ -228,11 +231,11 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Test plugin listing
         result = self.interpreter.execute("list plugins")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         # Test plugin execution (with fallback for missing plugins)
         result = self.interpreter.execute("plugin: demo_plugin")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         print("[OK] Basic plugin execution working")
 
@@ -244,11 +247,11 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute(
             'plugin: test_plugin("parameter1", "parameter2")'
         )
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         # Test meta-plugin execution
         result = self.interpreter.execute("meta: system_info")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         print("[OK] Plugin execution with parameters working")
 
@@ -258,11 +261,11 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Test plugin info
         result = self.interpreter.execute("plugin info demo_plugin")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         # Test meta-plugin listing
         result = self.interpreter.execute("list meta plugins")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         print("[OK] Plugin chaining and integration working")
 
@@ -274,11 +277,11 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Test assistant queries
         result = self.interpreter.execute("assistant: help me optimize this code")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         # Test learning commands
         result = self.interpreter.execute('learn from "user_behavior.log"')
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         print("[OK] Natural language intent parsing working")
 
@@ -288,11 +291,11 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Test optimization request
         result = self.interpreter.execute('optimize for "speed"')
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         # Test fix suggestions
         result = self.interpreter.execute('suggest fix for "performance issue"')
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         print("[OK] Optimization and improvement intents working")
 
@@ -302,7 +305,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Test code analysis
         result = self.interpreter.execute("analyze recent_logs")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         print("[OK] Contextual code understanding working")
 
@@ -316,7 +319,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute(
             'if memory.pattern("crash", frequency="daily"):'
         )
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         print("[OK] Conditional statements working")
 
@@ -326,7 +329,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Test pattern frequency
         result = self.interpreter.execute('pattern frequency "error" in "weekly"')
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         print("[OK] Pattern-based conditions working")
 
@@ -344,11 +347,11 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         try:
             # Test file loading
             result = self.interpreter.execute(f"load {test_file}")
-            self.assertIsInstance(result, str)
+            assert isinstance(result, str)
 
             # Test code analysis
             result = self.interpreter.execute(f"analyze {test_file}")
-            self.assertIsInstance(result, str)
+            assert isinstance(result, str)
         finally:
             os.unlink(test_file)
 
@@ -360,11 +363,11 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Test self-edit mode control
         result = self.interpreter.execute("set self_edit_mode off")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         # Test backup creation
         result = self.interpreter.execute("backup test_file.py")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         print("[OK] Self-editing safety mechanisms working")
 
@@ -376,11 +379,10 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Test debug status
         self.interpreter.execute("debug status")
-        # Debug status might not return a string, just check it doesn't crash
 
         # Test auto-debug configuration
         self.interpreter.execute("set auto_debug on 85")
-        # This might not return anything, just check it doesn't crash
+        assert self.interpreter.debug_system.auto_apply_enabled
 
         print("[OK] Debug system integration working")
 
@@ -398,7 +400,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Test pattern detection
         result = self.interpreter.execute('detect recurring patterns in "error_log"')
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         print("[OK] Error pattern detection working")
 
@@ -410,11 +412,11 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Test function definition
         result = self.interpreter.execute("define test_func(param): return param")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         # Test function call
         result = self.interpreter.execute('call test_func("hello")')
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         print("[OK] Function definition and calls working")
 
@@ -424,7 +426,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Test variable assignment
         result = self.interpreter.execute("$result = plugin: demo_action")
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         print("[OK] Variable and context management working")
 
@@ -444,7 +446,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute(
             'recall tags="algorithm,performance" category="technical"'
         )
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         print("[OK] Advanced memory queries working")
 
@@ -454,7 +456,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Test agent coordination
         result = self.interpreter.execute('agent: coordinate with "research_agent"')
-        self.assertIsInstance(result, str)
+        assert isinstance(result, str)
 
         print("[OK] Multi-agent coordination working")
 

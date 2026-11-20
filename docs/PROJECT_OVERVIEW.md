@@ -736,6 +736,24 @@ Hub status:
 
 - `AETHERRA_HUB_STATUS` — Explicit toggle or mode for Hub status reporting (used by site status and widgets when present).
 
+## Environment Inspection Corrections (2026-10-13)
+
+These settings are read by current source; they do not grant additional permissions.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `AETHERRA_AUDIT_OUT` | `audits/hallucination_audit_<YYYYMMDD>.md` | Output destination for the manual hallucination-audit report. |
+| `AETHERRA_CONSCIOUSNESS_METRICS_PATH` | `.aetherra/consciousness_metrics.txt` | Destination for orchestrator coherence metrics; existing governance checks still apply. |
+| `AETHERRA_CONSCIOUSNESS_STREAM_PATH` | `.aetherra/consciousness_stream.log` | Destination used when the consciousness stream tap is enabled. |
+| `AETHERRA_KERNEL_HEARTBEAT_LEVEL` | `INFO` | Logging level for the visible kernel heartbeat. |
+| `AETHERRA_LEARNING_STATE_PATH` | `.aetherra/learning_loop_state.json` | Learning-loop state path when no explicit constructor path is supplied. |
+| `AETHERRA_PLUGIN_ISOLATION` | `process` in production; `thread` otherwise | Plugin isolation mode; this setting does not grant execution authority. |
+| `AETHERRA_PLUGIN_SIGNING_SECRET` | Unset | Optional environment override for the plugin signing secret; signing tests clear it and use disposable synthetic keys. |
+| `AETHERRA_QFAC_ALLOW_SIMULATOR_IN_PROD` | Disabled | Explicit experimental QFAC provider-policy override for controlled validation, not an execution grant. |
+| `AETHERRA_REGISTRY_STALE_SEC` | Three heartbeat intervals | Age threshold used to classify registry heartbeats as stale. |
+| `AETHERRA_SKIP_GUI_PLUGINS` | `0` | Discovery toggle for skipping plugin filenames ending in `_gui.py`; plugin GUIs remain supported. |
+| `AETHERRA_TEST_ROLLBACK_TOKEN` | Synthetic probe token | Test-only HMR probe token override; never a production approval or release-signing credential. |
+
 ## Endpoints (canonical)
 
 Primary Hub endpoints added/updated in this release (canonical list; see full inventory above for all routes):

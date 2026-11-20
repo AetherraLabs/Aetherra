@@ -65,7 +65,8 @@ async def test_audit_ledger_writes_and_redacts(monkeypatch, tmp_path):
 
     # Prompts sanitized
     prompts = last.get("prompts")
-    assert prompts is not None and isinstance(prompts, list)
+    assert prompts is not None
+    assert isinstance(prompts, list)
     assert any("password=[REDACTED]" in p for p in prompts)
     assert any("token: [REDACTED]" in p for p in prompts)
     assert all("supersecret" not in p for p in prompts)

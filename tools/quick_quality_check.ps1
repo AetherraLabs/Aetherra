@@ -21,22 +21,18 @@ function Invoke-Step($Name, $ScriptBlock) {
 # Note: Versioning is automated via python-semantic-release. Do not manually edit version strings;
 # use Conventional Commit messages (feat:, fix:, perf:, refactor:, chore:, docs:, ci:, test:, revert:) to drive releases.
 
-# 1. Ruff (lint)
-Invoke-Step "ruff lint" { ruff check . }
-
-# 2. Ruff format (idempotence)
-if (-not $Fix) { Invoke-Step "ruff format (dry)" { ruff format --check . } } else { Invoke-Step "ruff format (apply)" { ruff format . } }
-
-# 3. Black
-if (-not $Fix) { Invoke-Step "black --check" { black --line-length 100 --check . } } else { Invoke-Step "black (apply)" { black --line-length 100 . } }
-
-# 4. isort
-if (-not $Fix) { Invoke-Step "isort --check-only" { isort --profile black --line-length 100 --check-only . } } else { Invoke-Step "isort (apply)" { isort --profile black --line-length 100 . } }
+# The shared runner enforces the same fixed baseline on PRs, main and releases.
+if ($Fix) {
+    Invoke-Step "ruff format (apply)" { ruff format --config pyproject.toml . }
+    Invoke-Step "black (apply)" { black --config pyproject.toml . }
+    Invoke-Step "isort (apply)" { isort --settings-path pyproject.toml . }
+}
+Invoke-Step "Python quality baseline" { python tools/python_quality.py }
 
 # 5. Minimal tests (single fast file if exists)
 $test = "tests/capabilities/test_lyrixa_chat_bridge_schema.py"
 if (Test-Path $test) {
-    Invoke-Step "pytest minimal" { pytest -q -o addopts= $test::test_edit_plan_mirrors_suggestions_and_confidence_defaults }
+    Invoke-Step "pytest minimal" { pytest -q -o addopts= "${test}::test_edit_plan_mirrors_suggestions_and_confidence_defaults" }
 }
 
 # 6. Parse baseline sample

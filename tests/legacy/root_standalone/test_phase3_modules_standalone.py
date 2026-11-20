@@ -11,15 +11,19 @@ Run with:
 
 from __future__ import annotations
 
+# Standard library imports
 import json
-import os
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
+# Third party imports
+import pytest
+
+# Aetherra imports
 from Aetherra.consciousness.autonomy_governor import AutonomyGovernor
 from Aetherra.consciousness.decision_engine import ConsciousnessDecisionEngine
 from Aetherra.plugins.manager import PluginManager
@@ -31,14 +35,14 @@ class TestDecisionEngine(unittest.TestCase):
 
     def test_decision_has_required_fields(self):
         d = self.engine.decide({"goal": "fix bug", "context": "repo"})
-        self.assertTrue(d.action)
-        self.assertTrue(0.0 <= d.confidence <= 1.0)
-        self.assertIn(d.risk_level, {"low", "medium", "high"})
-        self.assertIsInstance(d.alternatives, list)
+        assert d.action
+        assert 0.0 <= d.confidence <= 1.0
+        assert d.risk_level in {"low", "medium", "high"}
+        assert isinstance(d.alternatives, list)
 
     def test_candidate_actions_from_goal(self):
         d = self.engine.decide({"goal": "fix critical bug", "context": "prod"})
-        self.assertIn(d.action, {"analyze", "execute", "rollback", "defer"})
+        assert d.action in {"analyze", "execute", "rollback", "defer"}
 
     def test_requires_approval_for_high_risk(self):
         d = self.engine.decide(
@@ -50,7 +54,7 @@ class TestDecisionEngine(unittest.TestCase):
                 "confidence_hint": 0.9,
             }
         )
-        self.assertTrue(d.requires_approval)
+        assert d.requires_approval
 
     def test_constraints_reduce_risky_actions(self):
         d = self.engine.decide(
@@ -60,7 +64,7 @@ class TestDecisionEngine(unittest.TestCase):
                 "candidate_actions": ["execute", "analyze"],
             }
         )
-        self.assertEqual(d.action, "analyze")
+        assert d.action == "analyze"
 
     def test_custom_candidates_supported(self):
         d = self.engine.decide(
@@ -69,7 +73,7 @@ class TestDecisionEngine(unittest.TestCase):
                 "candidate_actions": ["measure", "execute", "defer"],
             }
         )
-        self.assertIn(d.action, {"measure", "execute", "defer"})
+        assert d.action in {"measure", "execute", "defer"}
 
 
 class TestAutonomyGovernor(unittest.TestCase):
@@ -86,26 +90,26 @@ class TestAutonomyGovernor(unittest.TestCase):
                 "breaking_change": False,
             }
         )
-        self.assertTrue(r.allowed)
+        assert r.allowed
 
     def test_blocks_forbidden_operation(self):
         r = self.gov.evaluate({"operation": "git reset --hard", "risk_score": 0.1})
-        self.assertFalse(r.allowed)
-        self.assertIn("forbidden_operation", r.violations)
+        assert not r.allowed
+        assert "forbidden_operation" in r.violations
 
     def test_file_change_limit(self):
         r = self.gov.evaluate(
             {"operation": "bulk edit", "file_changes": 10_000, "risk_score": 0.1}
         )
-        self.assertFalse(r.allowed)
-        self.assertIn("file_change_limit_exceeded", r.violations)
+        assert not r.allowed
+        assert "file_change_limit_exceeded" in r.violations
 
     def test_risk_limit(self):
         r = self.gov.evaluate(
             {"operation": "apply", "file_changes": 1, "risk_score": 0.99}
         )
-        self.assertFalse(r.allowed)
-        self.assertIn("risk_limit_exceeded", r.violations)
+        assert not r.allowed
+        assert "risk_limit_exceeded" in r.violations
 
     def test_breaking_change_requires_approval(self):
         r = self.gov.evaluate(
@@ -116,7 +120,7 @@ class TestAutonomyGovernor(unittest.TestCase):
                 "breaking_change": True,
             }
         )
-        self.assertTrue(r.requires_approval)
+        assert r.requires_approval
 
     def test_api_rate_limit_violation(self):
         self.gov.max_api_calls_per_min = 3
@@ -128,8 +132,8 @@ class TestAutonomyGovernor(unittest.TestCase):
                 "risk_score": 0.2,
             }
         )
-        self.assertFalse(r.allowed)
-        self.assertIn("api_rate_limit_exceeded", r.violations)
+        assert not r.allowed
+        assert "api_rate_limit_exceeded" in r.violations
 
 
 class TestPluginsManager(unittest.TestCase):
@@ -149,7 +153,7 @@ class TestPluginsManager(unittest.TestCase):
             )
             pm = PluginManager(plugins_dir=root)
             names = pm.discover_plugins()
-            self.assertIn("sample_plugin", names)
+            assert "sample_plugin" in names
 
     def test_load_file_plugin(self):
         with tempfile.TemporaryDirectory() as td:
@@ -162,7 +166,7 @@ class TestPluginsManager(unittest.TestCase):
             pm = PluginManager(plugins_dir=root)
             pm.discover_plugins()
             ok = pm.load_plugin("sample_plugin")
-            self.assertTrue(ok)
+            assert ok
 
     def test_execute_capability_via_execute_action(self):
         with tempfile.TemporaryDirectory() as td:
@@ -174,10 +178,10 @@ class TestPluginsManager(unittest.TestCase):
             )
             pm = PluginManager(plugins_dir=root)
             pm.discover_plugins()
-            self.assertTrue(pm.load_plugin("sample_plugin"))
+            assert pm.load_plugin("sample_plugin")
             out = pm.execute_capability("sample_plugin", "analyze", x=1)
-            self.assertEqual(out["action"], "analyze")
-            self.assertEqual(out["kwargs"]["x"], 1)
+            assert out["action"] == "analyze"
+            assert out["kwargs"]["x"] == 1
 
     def test_unload_plugin(self):
         with tempfile.TemporaryDirectory() as td:
@@ -189,8 +193,8 @@ class TestPluginsManager(unittest.TestCase):
             )
             pm = PluginManager(plugins_dir=root)
             pm.discover_plugins()
-            self.assertTrue(pm.load_plugin("sample_plugin"))
-            self.assertTrue(pm.unload_plugin("sample_plugin"))
+            assert pm.load_plugin("sample_plugin")
+            assert pm.unload_plugin("sample_plugin")
 
     def test_manifest_directory_plugin_validation_fail(self):
         with tempfile.TemporaryDirectory() as td:
@@ -201,8 +205,8 @@ class TestPluginsManager(unittest.TestCase):
             pm = PluginManager(plugins_dir=root)
             pm.discover_plugins()
             ok, errors = pm.validate_plugin("badplug")
-            self.assertFalse(ok)
-            self.assertGreater(len(errors), 0)
+            assert not ok
+            assert len(errors) > 0
 
     def test_list_plugins(self):
         with tempfile.TemporaryDirectory() as td:
@@ -211,8 +215,8 @@ class TestPluginsManager(unittest.TestCase):
             pm = PluginManager(plugins_dir=root)
             pm.discover_plugins()
             rows = pm.list_plugins(include_unloaded=True)
-            self.assertEqual(len(rows), 1)
-            self.assertEqual(rows[0]["name"], "sample_plugin")
+            assert len(rows) == 1
+            assert rows[0]["name"] == "sample_plugin"
 
     def test_plugin_load_failure_is_reported(self):
         with tempfile.TemporaryDirectory() as td:
@@ -223,8 +227,8 @@ class TestPluginsManager(unittest.TestCase):
             pm = PluginManager(plugins_dir=root)
             pm.discover_plugins()
             ok = pm.load_plugin("broken_plugin")
-            self.assertFalse(ok)
-            self.assertTrue(pm.registry["broken_plugin"].errors)
+            assert not ok
+            assert pm.registry["broken_plugin"].errors
 
     def test_execute_unknown_capability_raises(self):
         with tempfile.TemporaryDirectory() as td:
@@ -236,8 +240,8 @@ class TestPluginsManager(unittest.TestCase):
             )
             pm = PluginManager(plugins_dir=root)
             pm.discover_plugins()
-            self.assertTrue(pm.load_plugin("sample_plugin"))
-            with self.assertRaises(AttributeError):
+            assert pm.load_plugin("sample_plugin")
+            with pytest.raises(AttributeError, match="unknown capability"):
                 pm.execute_capability("sample_plugin", "unknown")
 
 

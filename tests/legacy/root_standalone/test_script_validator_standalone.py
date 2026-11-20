@@ -19,18 +19,20 @@ Test Categories:
 Total: 22 comprehensive tests
 """
 
+# Standard library imports
 import json
 import os
 import sys
 import tempfile
 from pathlib import Path
 
+# Third party imports
 import yaml
 
 # Add project root to path
-ROOT_DIR = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT_DIR))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
+# Aetherra imports
 # Import modules directly (no engine init)
 from Aetherra.aetherra_core.script_service.script_validator import (
     ErrorLevel,

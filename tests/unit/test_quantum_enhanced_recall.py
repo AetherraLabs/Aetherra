@@ -24,10 +24,12 @@ async def test_quantum_enhanced_recall_scoring(monkeypatch):
     # Store two memories, one clearly more similar to the query
     id1 = await mem.store("I love quantum hashing techniques", importance=0.1)
     id2 = await mem.store("Completely unrelated gardening tips", importance=0.9)
-    assert id1 and id2
+    assert id1
+    assert id2
 
     results = await mem.retrieve("quantum hash", limit=2)
     assert len(results) >= 1
     # With QHASH weight 1.0, the text with matching tokens should rank higher
     top = results[0]
-    assert "audit" in top and "quantum" in top["audit"]
+    assert "audit" in top
+    assert "quantum" in top["audit"]

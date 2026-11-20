@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import json
 import os
@@ -12,6 +13,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
+# Third party imports
 from packaging.requirements import InvalidRequirement, Requirement
 from packaging.utils import canonicalize_name
 from packaging.version import InvalidVersion, Version

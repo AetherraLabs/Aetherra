@@ -9,6 +9,9 @@ on:
       - 'Aetherra/pyproject.toml'
       - '.pre-commit-config.yaml'
       - 'tools/quick_quality_check.ps1'
+      - '.ci/python-quality-baseline.json'
+      - 'requirements/quality.txt'
+      - '.github/workflows/*.yml'
   pull_request:
     paths:
       - '**/*.py'
@@ -17,6 +20,9 @@ on:
       - 'Aetherra/pyproject.toml'
       - '.pre-commit-config.yaml'
       - 'tools/quick_quality_check.ps1'
+      - '.ci/python-quality-baseline.json'
+      - 'requirements/quality.txt'
+      - '.github/workflows/*.yml'
 
 jobs:
   fast-quality:
@@ -47,33 +53,19 @@ jobs:
       - name: Install minimal deps
         run: |
           python -m pip install --upgrade pip
-          pip install ruff black isort pytest jq requests flask pyyaml
+          pip install -r requirements/quality.txt pytest jq requests flask pyyaml
 
       - name: Quick lint/format/test
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
-            mapfile -t py_files < <(git diff --name-only --diff-filter=ACMRT "origin/${{ github.base_ref }}...HEAD" -- '*.py' ':!:dist-packages/**' ':!:**/node_modules/**')
-            if [ "${#py_files[@]}" -eq 0 ]; then
-              echo 'No changed Python files; skipping Python lint/format checks.'
-            else
-              echo '--- Ruff critical checks changed files'
-              ruff check --select E9,F63,F7,F82 "${py_files[@]}"
-            fi
-          elif [ "${{ github.ref }}" != "refs/heads/main" ]; then
-            echo 'Feature branch push detected; full repo lint runs only on main pushes.'
-          else
-            echo '--- Ruff lint'
-            ruff check .
-            echo '--- Ruff format check'
-            ruff format --check .
-            echo '--- Black check'
-            black --line-length 100 --check . || (echo 'Black failed' && exit 1)
-            echo '--- isort check'
-            isort --profile black --line-length 100 --check-only .
-          fi
+          python tools/python_quality.py
           echo '--- Minimal pytest'
           if [ -f tests/capabilities/test_lyrixa_chat_bridge_schema.py ]; then pytest -q -o addopts= tests/capabilities/test_lyrixa_chat_bridge_schema.py::test_edit_plan_mirrors_suggestions_and_confidence_defaults; fi
+
+      - name: Quality gate regression tests
+        run: python -m pytest tests/tools/test_python_quality.py tests/tools/test_release_ci.py tests/tools/test_release_version.py -q -o addopts=
+
+      - name: Validate workflow YAML
+        run: python -m pre_commit_hooks.check_yaml .github/workflows/*.yml
 
       - name: Sample parse baseline (non-blocking)
         run: |

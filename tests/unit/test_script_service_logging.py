@@ -10,8 +10,8 @@ Tests cover:
   - File writing and export
 """
 
+# Standard library imports
 import json
-import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -22,6 +22,7 @@ class TestLogEvent(unittest.TestCase):
 
     def test_create_log_event(self):
         """Test creating log event."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             EventLevel,
             ExecutionPhase,
@@ -35,11 +36,12 @@ class TestLogEvent(unittest.TestCase):
             message="Test event",
         )
 
-        self.assertEqual(event.message, "Test event")
-        self.assertEqual(event.phase, ExecutionPhase.EXECUTING)
+        assert event.message == "Test event"
+        assert event.phase == ExecutionPhase.EXECUTING
 
     def test_log_event_to_json(self):
         """Test converting log event to JSON."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             EventLevel,
             ExecutionPhase,
@@ -58,9 +60,9 @@ class TestLogEvent(unittest.TestCase):
         json_str = event.to_json()
         data = json.loads(json_str)
 
-        self.assertEqual(data["message"], "Test event")
-        self.assertEqual(data["phase"], "executing")
-        self.assertEqual(data["step_name"], "step1")
+        assert data["message"] == "Test event"
+        assert data["phase"] == "executing"
+        assert data["step_name"] == "step1"
 
 
 class TestTimelineEntry(unittest.TestCase):
@@ -68,8 +70,10 @@ class TestTimelineEntry(unittest.TestCase):
 
     def test_create_timeline_entry(self):
         """Test creating timeline entry."""
+        # Standard library imports
         import time
 
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             TimelineEntry,
         )
@@ -80,8 +84,8 @@ class TestTimelineEntry(unittest.TestCase):
             duration=0.5,
         )
 
-        self.assertEqual(entry.event, "test_event")
-        self.assertEqual(entry.duration, 0.5)
+        assert entry.event == "test_event"
+        assert entry.duration == 0.5
 
 
 class TestExecutionTimeline(unittest.TestCase):
@@ -89,16 +93,18 @@ class TestExecutionTimeline(unittest.TestCase):
 
     def test_create_timeline(self):
         """Test creating execution timeline."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ExecutionTimeline,
         )
 
         timeline = ExecutionTimeline()
 
-        self.assertEqual(len(timeline.entries), 0)
+        assert len(timeline.entries) == 0
 
     def test_record_event(self):
         """Test recording event in timeline."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ExecutionTimeline,
         )
@@ -106,13 +112,15 @@ class TestExecutionTimeline(unittest.TestCase):
         timeline = ExecutionTimeline()
         timeline.record("test_event", duration=0.5)
 
-        self.assertEqual(len(timeline.entries), 1)
-        self.assertEqual(timeline.entries[0].event, "test_event")
+        assert len(timeline.entries) == 1
+        assert timeline.entries[0].event == "test_event"
 
     def test_timeline_elapsed(self):
         """Test timeline elapsed time."""
+        # Standard library imports
         import time
 
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ExecutionTimeline,
         )
@@ -121,10 +129,11 @@ class TestExecutionTimeline(unittest.TestCase):
         time.sleep(0.1)
         elapsed = timeline.get_elapsed()
 
-        self.assertGreater(elapsed, 0.05)
+        assert elapsed > 0.05
 
     def test_timeline_export(self):
         """Test exporting timeline."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ExecutionTimeline,
         )
@@ -135,9 +144,9 @@ class TestExecutionTimeline(unittest.TestCase):
 
         export = timeline.export()
 
-        self.assertIn("total_elapsed", export)
-        self.assertIn("events", export)
-        self.assertEqual(len(export["events"]), 2)
+        assert "total_elapsed" in export
+        assert "events" in export
+        assert len(export["events"]) == 2
 
 
 class TestServiceMetrics(unittest.TestCase):
@@ -145,17 +154,19 @@ class TestServiceMetrics(unittest.TestCase):
 
     def test_create_metrics(self):
         """Test creating service metrics."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ServiceMetrics,
         )
 
         metrics = ServiceMetrics()
 
-        self.assertEqual(len(metrics.step_durations), 0)
-        self.assertEqual(len(metrics.errors), 0)
+        assert len(metrics.step_durations) == 0
+        assert len(metrics.errors) == 0
 
     def test_record_step(self):
         """Test recording step duration."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ServiceMetrics,
         )
@@ -164,10 +175,11 @@ class TestServiceMetrics(unittest.TestCase):
         metrics.record_step(0.5)
         metrics.record_step(0.3)
 
-        self.assertEqual(len(metrics.step_durations), 2)
+        assert len(metrics.step_durations) == 2
 
     def test_average_step_duration(self):
         """Test average step duration."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ServiceMetrics,
         )
@@ -177,10 +189,11 @@ class TestServiceMetrics(unittest.TestCase):
         metrics.record_step(0.3)
 
         avg = metrics.get_average_step_duration()
-        self.assertAlmostEqual(avg, 0.4)
+        assert round(abs(avg - 0.4), 7) == 0
 
     def test_record_error(self):
         """Test recording error."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ServiceMetrics,
         )
@@ -189,10 +202,11 @@ class TestServiceMetrics(unittest.TestCase):
         metrics.record_error("Error 1")
         metrics.record_error("Error 2")
 
-        self.assertEqual(len(metrics.errors), 2)
+        assert len(metrics.errors) == 2
 
     def test_record_warning(self):
         """Test recording warning."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ServiceMetrics,
         )
@@ -200,10 +214,11 @@ class TestServiceMetrics(unittest.TestCase):
         metrics = ServiceMetrics()
         metrics.record_warning("Warning 1")
 
-        self.assertEqual(len(metrics.warnings), 1)
+        assert len(metrics.warnings) == 1
 
     def test_custom_metrics(self):
         """Test custom metrics."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ServiceMetrics,
         )
@@ -212,10 +227,11 @@ class TestServiceMetrics(unittest.TestCase):
         metrics.set_custom("cache_hits", 150)
         metrics.set_custom("cache_misses", 45)
 
-        self.assertEqual(metrics.custom_metrics["cache_hits"], 150)
+        assert metrics.custom_metrics["cache_hits"] == 150
 
     def test_success_rate(self):
         """Test success rate calculation."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ServiceMetrics,
         )
@@ -226,10 +242,11 @@ class TestServiceMetrics(unittest.TestCase):
 
         # 8 successful out of 10 total = 80%
         success_rate = metrics.get_success_rate(10)
-        self.assertEqual(success_rate, 80.0)
+        assert success_rate == 80.0
 
     def test_metrics_to_dict(self):
         """Test metrics dictionary export."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ServiceMetrics,
         )
@@ -240,9 +257,9 @@ class TestServiceMetrics(unittest.TestCase):
 
         data = metrics.to_dict()
 
-        self.assertIn("step_durations", data)
-        self.assertIn("error_count", data)
-        self.assertEqual(data["error_count"], 1)
+        assert "step_durations" in data
+        assert "error_count" in data
+        assert data["error_count"] == 1
 
 
 class TestMetricsSnapshot(unittest.TestCase):
@@ -250,6 +267,7 @@ class TestMetricsSnapshot(unittest.TestCase):
 
     def test_create_snapshot(self):
         """Test creating metrics snapshot."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ExecutionPhase,
             MetricsSnapshot,
@@ -263,8 +281,8 @@ class TestMetricsSnapshot(unittest.TestCase):
             elapsed_time=5.0,
         )
 
-        self.assertEqual(snapshot.total_steps, 10)
-        self.assertEqual(snapshot.phase, ExecutionPhase.COMPLETED)
+        assert snapshot.total_steps == 10
+        assert snapshot.phase == ExecutionPhase.COMPLETED
 
 
 class TestScriptServiceLogger(unittest.TestCase):
@@ -272,18 +290,20 @@ class TestScriptServiceLogger(unittest.TestCase):
 
     def test_logger_initialization(self):
         """Test logger initialization."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ScriptServiceLogger,
         )
 
         logger = ScriptServiceLogger("/path/to/script.aether")
 
-        self.assertEqual(logger.script_path, "/path/to/script.aether")
-        self.assertIsNotNone(logger.timeline)
-        self.assertIsNotNone(logger.metrics)
+        assert logger.script_path == "/path/to/script.aether"
+        assert logger.timeline is not None
+        assert logger.metrics is not None
 
     def test_log_execution_start(self):
         """Test logging execution start."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ScriptServiceLogger,
         )
@@ -291,11 +311,12 @@ class TestScriptServiceLogger(unittest.TestCase):
         logger = ScriptServiceLogger("/path/to/script.aether")
         logger.log_execution_start()
 
-        self.assertEqual(len(logger.events), 1)
-        self.assertIn("Execution started", logger.events[0].message)
+        assert len(logger.events) == 1
+        assert "Execution started" in logger.events[0].message
 
     def test_log_parsing_complete(self):
         """Test logging parsing completion."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ScriptServiceLogger,
         )
@@ -303,11 +324,12 @@ class TestScriptServiceLogger(unittest.TestCase):
         logger = ScriptServiceLogger("/path/to/script.aether")
         logger.log_parsing_complete(5)
 
-        self.assertEqual(len(logger.events), 1)
-        self.assertIn("Parsing complete", logger.events[0].message)
+        assert len(logger.events) == 1
+        assert "Parsing complete" in logger.events[0].message
 
     def test_log_validation_complete(self):
         """Test logging validation completion."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ScriptServiceLogger,
         )
@@ -315,11 +337,12 @@ class TestScriptServiceLogger(unittest.TestCase):
         logger = ScriptServiceLogger("/path/to/script.aether")
         logger.log_validation_complete(True, 0)
 
-        self.assertEqual(len(logger.events), 1)
-        self.assertIn("valid", logger.events[0].message)
+        assert len(logger.events) == 1
+        assert "valid" in logger.events[0].message
 
     def test_log_step_start(self):
         """Test logging step start."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ScriptServiceLogger,
         )
@@ -327,11 +350,12 @@ class TestScriptServiceLogger(unittest.TestCase):
         logger = ScriptServiceLogger("/path/to/script.aether")
         logger.log_step_start("step1")
 
-        self.assertEqual(len(logger.events), 1)
-        self.assertEqual(logger.events[0].step_name, "step1")
+        assert len(logger.events) == 1
+        assert logger.events[0].step_name == "step1"
 
     def test_log_step_completed(self):
         """Test logging step completion."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ScriptServiceLogger,
         )
@@ -339,11 +363,12 @@ class TestScriptServiceLogger(unittest.TestCase):
         logger = ScriptServiceLogger("/path/to/script.aether")
         logger.log_step_completed("step1", 0.5)
 
-        self.assertEqual(len(logger.events), 1)
-        self.assertEqual(logger.metrics.step_durations[0], 0.5)
+        assert len(logger.events) == 1
+        assert logger.metrics.step_durations[0] == 0.5
 
     def test_log_step_failed(self):
         """Test logging step failure."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ScriptServiceLogger,
         )
@@ -351,11 +376,12 @@ class TestScriptServiceLogger(unittest.TestCase):
         logger = ScriptServiceLogger("/path/to/script.aether")
         logger.log_step_failed("step1", "Connection timeout", 2.0)
 
-        self.assertEqual(len(logger.events), 1)
-        self.assertEqual(len(logger.metrics.errors), 1)
+        assert len(logger.events) == 1
+        assert len(logger.metrics.errors) == 1
 
     def test_log_execution_complete(self):
         """Test logging execution completion."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ScriptServiceLogger,
         )
@@ -363,11 +389,12 @@ class TestScriptServiceLogger(unittest.TestCase):
         logger = ScriptServiceLogger("/path/to/script.aether")
         logger.log_execution_complete(True, 3.5)
 
-        self.assertEqual(len(logger.events), 1)
-        self.assertIn("succeeded", logger.events[0].message)
+        assert len(logger.events) == 1
+        assert "succeeded" in logger.events[0].message
 
     def test_log_warning(self):
         """Test logging warning."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ScriptServiceLogger,
         )
@@ -375,10 +402,11 @@ class TestScriptServiceLogger(unittest.TestCase):
         logger = ScriptServiceLogger("/path/to/script.aether")
         logger.log_warning("Test warning")
 
-        self.assertEqual(len(logger.metrics.warnings), 1)
+        assert len(logger.metrics.warnings) == 1
 
     def test_log_error(self):
         """Test logging error."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ScriptServiceLogger,
         )
@@ -386,10 +414,11 @@ class TestScriptServiceLogger(unittest.TestCase):
         logger = ScriptServiceLogger("/path/to/script.aether")
         logger.log_error("Test error")
 
-        self.assertEqual(len(logger.metrics.errors), 1)
+        assert len(logger.metrics.errors) == 1
 
     def test_get_metrics_snapshot(self):
         """Test getting metrics snapshot."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ScriptServiceLogger,
         )
@@ -398,11 +427,12 @@ class TestScriptServiceLogger(unittest.TestCase):
         logger.log_step_completed("step1", 0.5)
         snapshot = logger.get_metrics_snapshot(total_steps=10, completed_steps=1)
 
-        self.assertEqual(snapshot.total_steps, 10)
-        self.assertEqual(snapshot.completed_steps, 1)
+        assert snapshot.total_steps == 10
+        assert snapshot.completed_steps == 1
 
     def test_export_json(self):
         """Test exporting logs as JSON."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ScriptServiceLogger,
         )
@@ -414,13 +444,14 @@ class TestScriptServiceLogger(unittest.TestCase):
         json_export = logger.export_json()
         data = json.loads(json_export)
 
-        self.assertIn("script_path", data)
-        self.assertIn("events", data)
-        self.assertIn("metrics", data)
-        self.assertIn("timeline", data)
+        assert "script_path" in data
+        assert "events" in data
+        assert "metrics" in data
+        assert "timeline" in data
 
     def test_export_prometheus(self):
         """Test exporting metrics in Prometheus format."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ScriptServiceLogger,
         )
@@ -430,13 +461,14 @@ class TestScriptServiceLogger(unittest.TestCase):
 
         prometheus_export = logger.export_prometheus()
 
-        self.assertIn("# HELP", prometheus_export)
-        self.assertIn("# TYPE", prometheus_export)
-        self.assertIn("script_steps_total", prometheus_export)
-        self.assertIn("script_errors_total", prometheus_export)
+        assert "# HELP" in prometheus_export
+        assert "# TYPE" in prometheus_export
+        assert "script_steps_total" in prometheus_export
+        assert "script_errors_total" in prometheus_export
 
     def test_export_timeline(self):
         """Test exporting execution timeline."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ScriptServiceLogger,
         )
@@ -446,11 +478,12 @@ class TestScriptServiceLogger(unittest.TestCase):
 
         timeline_export = logger.export_timeline()
 
-        self.assertIn("total_elapsed", timeline_export)
-        self.assertIn("events", timeline_export)
+        assert "total_elapsed" in timeline_export
+        assert "events" in timeline_export
 
     def test_write_logs(self):
         """Test writing logs to file."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ScriptServiceLogger,
         )
@@ -464,8 +497,8 @@ class TestScriptServiceLogger(unittest.TestCase):
             log_files = list(Path(tmpdir).glob("*.json"))
             metrics_files = list(Path(tmpdir).glob("*.txt"))
 
-            self.assertEqual(len(log_files), 1)
-            self.assertEqual(len(metrics_files), 1)
+            assert len(log_files) == 1
+            assert len(metrics_files) == 1
 
 
 if __name__ == "__main__":

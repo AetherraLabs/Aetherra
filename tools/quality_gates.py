@@ -24,7 +24,7 @@ Env/config:
     ARCH_PROBE_HUB            : 1 enable Hub probe (default 0)
     LOCK_ENFORCE              : 1 enforce dependency lock drift check (default 1 if lock present)
     LOCK_FILE                 : path to lock file (default requirements.lock)
-    VULN_SCAN                 : 1 run vulnerability scan (default 1 if lock present)
+    VULN_SCAN                 : 1 require vulnerability scan (default 1; missing lock fails)
     VULN_FAIL_LEVEL           : severity threshold (default high) passed through to vuln_scan.py
     LICENSE_REPORT            : 1 generate license report (default 1)
     LICENSE_REPORT_JSON       : output JSON path (default licenses_report.json)
@@ -36,12 +36,14 @@ Env/config:
 
 # Standard library imports
 import json
+import math
 import os
 import re
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urlsplit
 
 
 def _configure_console() -> None:
@@ -112,6 +114,42 @@ def parse_coverage(text: str) -> float | None:
         # Fallback: overall 'coverage: 97%'
         m = re.search(r"coverage[:\s]+(\d+)%", text, re.IGNORECASE)
     return float(m.group(1)) if m else None
+
+
+def read_coverage_baseline(path: Path) -> float | None:
+    """Accept an absent initial baseline, but never discard an invalid one."""
+    try:
+        contents = path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        return None
+    except (OSError, UnicodeError):
+        raise OSError("Cannot read coverage baseline") from None
+    try:
+        value = float(contents.strip())
+    except ValueError:
+        raise ValueError("Invalid coverage baseline") from None
+    if not math.isfinite(value) or not 0 <= value <= 100:
+        raise ValueError("Invalid coverage baseline")
+    return value
+
+
+def fetch_metrics(url: str) -> str:
+    """Fetch the configured HTTP endpoint without following redirects."""
+    try:
+        endpoint = urlsplit(url)
+        valid = endpoint.scheme in {"http", "https"} and bool(endpoint.hostname)
+    except ValueError:
+        valid = False
+    if not valid:
+        raise ValueError("Invalid metrics endpoint")
+
+    # Third party imports
+    import requests
+
+    response = requests.get(url, timeout=3, allow_redirects=False)
+    if response.status_code != 200:
+        raise ValueError("Metrics endpoint returned non-success")
+    return response.content.decode("utf-8", errors="replace")
 
 
 def main() -> int:
@@ -185,11 +223,20 @@ def main() -> int:
     else:
         print("[GATES] Lock enforcement skipped (disabled or lock absent)")
 
-    vuln_scan_enabled = os.getenv("VULN_SCAN", "1") == "1" and lock_exists
+    vuln_scan_enabled = os.getenv("VULN_SCAN", "1") == "1"
     if vuln_scan_enabled:
+        if not lock_file.is_file():
+            print(f"[GATES] VULN_SCAN=1 but missing lock file {lock_file}; failing.")
+            return 1
         tool = Path("tools/vuln_scan.py")
         if tool.exists():
-            args_vs = [sys.executable, str(tool), "--lock", str(lock_file), "--exact-pins"]
+            args_vs = [
+                sys.executable,
+                str(tool),
+                "--lock",
+                str(lock_file),
+                "--exact-pins",
+            ]
             fail_level = os.getenv("VULN_FAIL_LEVEL")
             if fail_level:
                 args_vs += ["--fail-level", fail_level]
@@ -202,7 +249,7 @@ def main() -> int:
             )
             return 1
     else:
-        print("[GATES] Vulnerability scan skipped (disabled or lock absent)")
+        print("[GATES] Vulnerability scan skipped (disabled)")
 
     # Optional test selection heuristic (Phase 1 stub)
     selection_tool = Path("tools/test_selection_stub.py")
@@ -270,12 +317,11 @@ def main() -> int:
         return 1
 
     # Coverage no-drop gate
-    prev = None
-    if baseline_file.exists():
-        try:
-            prev = float(baseline_file.read_text().strip())
-        except Exception:
-            prev = None
+    try:
+        prev = read_coverage_baseline(baseline_file)
+    except (OSError, ValueError):
+        print("[GATES] Coverage baseline unavailable or invalid; failing.")
+        return 1
     coverage_delta = None
     coverage_drop = False
     if prev is not None:
@@ -288,9 +334,10 @@ def main() -> int:
     # Update baseline to latest
     if not coverage_drop:  # Only update baseline if not a regression
         try:
-            baseline_file.write_text(str(cov))
-        except Exception as e:
-            print(f"[GATES] Warning: failed to write baseline: {e}")
+            baseline_file.write_text(str(cov), encoding="utf-8")
+        except OSError:
+            print("[GATES] Coverage baseline update failed; failing.")
+            return 1
 
     # ------------------------------------------------------------------
     # Per-file coverage delta artifact (experimental Phase 1 extension)
@@ -342,8 +389,10 @@ def main() -> int:
                             print(
                                 f"[GATES] Warning: could not load previous coverage snapshot: {e}"
                             )
-                except Exception:
-                    pass
+                except Exception as exc:
+                    print(
+                        f"[GATES] Coverage snapshot discovery failed ({type(exc).__name__})"
+                    )
             files_section = cov_data.get("files") if isinstance(cov_data, dict) else {}
             # Determine changed files heuristic: TOUCHED_PATHS env or git diff HEAD~1
             changed_files: set[str] = set()
@@ -368,8 +417,10 @@ def main() -> int:
                         for line in out_diff.splitlines():
                             if line.endswith(".py"):
                                 changed_files.add(line.strip())
-                except Exception:  # pragma: no cover
-                    pass
+                except Exception as exc:  # pragma: no cover
+                    print(
+                        f"[GATES] Changed-file discovery failed ({type(exc).__name__})"
+                    )
             # Fallback: consider all files in coverage data
             if not changed_files and isinstance(files_section, dict):
                 changed_files.update(files_section.keys())
@@ -420,8 +471,10 @@ def main() -> int:
                     for old in snaps_all[:-retention]:
                         try:
                             old.unlink()
-                        except Exception:
-                            pass
+                        except Exception as exc:
+                            print(
+                                f"[GATES] Coverage snapshot cleanup failed ({type(exc).__name__})"
+                            )
                 # Optional orphan pruning of legacy root coverage.json files
                 if os.getenv("COVERAGE_PRUNE_ORPHANS", "1") == "1":
                     try:
@@ -680,16 +733,20 @@ def main() -> int:
                 print("[GATES] SBOM generation skipped (tool or lock missing)")
 
     # 4. Threat model presence enforcement
-    if os.getenv("REQUIRE_THREAT_MODEL", "1") == "1":
-        if not Path("docs/THREAT_MODEL.md").exists():
-            print("[GATES] Missing docs/THREAT_MODEL.md (REQUIRE_THREAT_MODEL=1)")
-            return 1
+    if (
+        os.getenv("REQUIRE_THREAT_MODEL", "1") == "1"
+        and not Path("docs/THREAT_MODEL.md").exists()
+    ):
+        print("[GATES] Missing docs/THREAT_MODEL.md (REQUIRE_THREAT_MODEL=1)")
+        return 1
 
     # 5. License policy presence (non-negotiable for alpha governance transparency)
-    if os.getenv("REQUIRE_LICENSE_POLICY", "1") == "1":
-        if not Path("LICENSE_POLICY.md").exists():
-            print("[GATES] Missing LICENSE_POLICY.md (REQUIRE_LICENSE_POLICY=1)")
-            return 1
+    if (
+        os.getenv("REQUIRE_LICENSE_POLICY", "1") == "1"
+        and not Path("LICENSE_POLICY.md").exists()
+    ):
+        print("[GATES] Missing LICENSE_POLICY.md (REQUIRE_LICENSE_POLICY=1)")
+        return 1
 
     # 6. Packaging smoke test (build + install + basic probes)
     if os.getenv("PACKAGE_SMOKE", "1") == "1":
@@ -759,8 +816,10 @@ def main() -> int:
                     "message": f"{entry['path']} {entry['delta']:.2f}% ({entry['before']} -> {entry['after']})",
                 }
             )
-        except Exception:
-            pass
+        except Exception as exc:
+            print(
+                f"[GATES] File coverage diagnostic construction failed ({type(exc).__name__})"
+            )
     # Future: append reasons for vuln scan, arch failures, etc.
 
     coverage_report_path = Path(
@@ -866,7 +925,6 @@ def main() -> int:
     if os.getenv("CONSCIOUSNESS_METRICS_CHECK", "0") == "1":
         # Standard library imports
         import time
-        import urllib.request
 
         host = os.getenv("CONSCIOUSNESS_METRICS_HOST", "http://localhost")
         port = int(os.getenv("AETHERRA_PROM_PORT", "9109"))
@@ -896,12 +954,11 @@ def main() -> int:
         body = ""
         for _attempt in range(5):
             try:
-                with urllib.request.urlopen(url, timeout=3) as resp:  # nosec B310
-                    body = resp.read().decode("utf-8", errors="replace")
+                body = fetch_metrics(url)
                 if body:
                     break
             except Exception as exc:
-                print(f"[GATES] Metrics fetch attempt failed: {exc}")
+                print(f"[GATES] Metrics fetch attempt failed ({type(exc).__name__})")
             time.sleep(0.5)
         if not body:
             print("[GATES] Consciousness metrics endpoint not reachable.")

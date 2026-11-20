@@ -1,22 +1,44 @@
 """Gate output handling and real CLI reports with isolated coverage fixtures."""
 
+# Standard library imports
 import io
 import json
 import os
 import re
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 
+# Third party imports
 import pytest
 import yaml
+from packaging.specifiers import SpecifierSet
 
+# Aetherra imports
 from tools import quality_gates
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_push_scanner_tooling_is_isolated():
+@pytest.mark.parametrize("name", ["contributor-check.yml", "ci_quality_gates.yml"])
+def test_dependency_workflows_use_supported_python(name):
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    supported = SpecifierSet(project["project"]["requires-python"])
+    workflow = yaml.safe_load(
+        (ROOT / ".github/workflows" / name).read_text(encoding="utf-8")
+    )
+    versions = [
+        step["with"]["python-version"]
+        for job in workflow["jobs"].values()
+        for step in job["steps"]
+        if step.get("uses", "").startswith("actions/setup-python@")
+    ]
+    assert versions
+    assert all(version in supported for version in versions)
+
+
+def test_pr_and_push_scanner_tooling_is_isolated():
     workflow = yaml.safe_load(
         (ROOT / ".github/workflows/ci_quality_gates.yml").read_text(encoding="utf-8")
     )
@@ -30,7 +52,7 @@ def test_push_scanner_tooling_is_isolated():
         None,
     )
     assert audit is not None
-    assert audit["if"] == "github.event_name == 'push'"
+    assert "if" not in audit
     assert "python -m venv" in audit["run"]
     assert "$RUNNER_TEMP" in audit["run"]
     assert "$GITHUB_PATH" in audit["run"]
@@ -43,9 +65,25 @@ def test_push_scanner_tooling_is_isolated():
         gates["env"]["TEST_TARGETS"]
         == "tests/capabilities tests/unit tests/integration"
     )
-    assert (
-        gates["env"]["VULN_SCAN"] == "${{ github.event_name == 'push' && '1' || '0' }}"
-    )
+    assert gates["env"]["VULN_SCAN"] == "1"
+
+
+@pytest.mark.parametrize("lock_enforce", ["0", "1"])
+def test_requested_vulnerability_scan_missing_lock_fails_before_tests(
+    tmp_path, monkeypatch, capsys, lock_enforce
+):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("LOCK_FILE", "absent.lock")
+    monkeypatch.setenv("LOCK_ENFORCE", lock_enforce)
+    monkeypatch.setenv("VULN_SCAN", "1")
+    monkeypatch.setenv("TEST_SELECTION", "0")
+
+    def unexpected_execution(*args, **kwargs):
+        pytest.fail("Missing requested lock must stop before subsequent stages")
+
+    monkeypatch.setattr(quality_gates, "run", unexpected_execution)
+    assert quality_gates.main() == 1
+    assert "absent.lock" in capsys.readouterr().out
 
 
 def test_requested_vulnerability_wrapper_missing_fails(tmp_path, monkeypatch):

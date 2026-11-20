@@ -14,4 +14,5 @@ async def test_basic_memory_recall_roundtrip():
     # Compat store/retrieve exist for tests
     mem.store({"content": "hello world", "metadata": {"tags": ["greet"]}})
     results = mem.retrieve("hello")
-    assert results and any("hello" in r["content"] for r in results)
+    assert results
+    assert any("hello" in r["content"] for r in results)

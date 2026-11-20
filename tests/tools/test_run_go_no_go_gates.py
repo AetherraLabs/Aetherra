@@ -6,9 +6,10 @@
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 
-SCRIPT = Path("tools/run_go_no_go_gates.py")
+SCRIPT = Path(__file__).resolve().parents[2] / "tools/run_go_no_go_gates.py"
 
 
 def test_gate_script_enumeration_and_artifacts(tmp_path, monkeypatch):
@@ -17,9 +18,12 @@ def test_gate_script_enumeration_and_artifacts(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     env = os.environ.copy()
     env.setdefault("AETHERRA_PROFILE", "test")
+    env["PYTHONUTF8"] = "1"
     # Run only two quick gates to keep test fast (launcher + policy, which start minimal hub instances)
-    cmd = ["python", str(SCRIPT), "--gates", "launcher_smoke", "policy_privacy"]
-    proc = subprocess.run(cmd, env=env, capture_output=True, text=True)
+    cmd = [sys.executable, str(SCRIPT), "--gates", "launcher_smoke", "policy_privacy"]
+    proc = subprocess.run(
+        cmd, env=env, capture_output=True, text=True, encoding="utf-8", timeout=90
+    )
     # Non-zero may occur if a gate fails; still assert artifacts exist to surface partial failures.
     assert (tmp_path / "gate_results.json").exists(), proc.stderr + proc.stdout
     assert (tmp_path / "gate_sign_off.md").exists(), "sign off artifact missing"
@@ -28,8 +32,10 @@ def test_gate_script_enumeration_and_artifacts(tmp_path, monkeypatch):
     assert "policy_privacy" in data, "policy privacy result missing"
     # Required metadata keys
     meta = data.get("_meta") or {}
-    assert "profile" in meta and meta.get("profile") == env["AETHERRA_PROFILE"]
+    assert "profile" in meta
+    assert meta.get("profile") == env["AETHERRA_PROFILE"]
     # Ensure each included gate result has ok/manual keys
     for k in ("launcher_smoke", "policy_privacy"):
         r = data.get(k) or {}
-        assert "ok" in r and "manual" in r
+        assert "ok" in r
+        assert "manual" in r

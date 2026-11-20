@@ -1,12 +1,15 @@
 """Security scanning must distinguish clean evidence from missing evidence."""
 
+# Standard library imports
 import json
 import subprocess
 import sys
 from unittest.mock import Mock
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from tools import vuln_scan
 
 
@@ -65,6 +68,35 @@ def test_exact_scan_must_match_lock(tmp_path, monkeypatch, dependencies):
     )
     monkeypatch.setattr(
         vuln_scan, "run", Mock(return_value=(0, json.dumps(dependencies)))
+    )
+    monkeypatch.setattr(sys, "argv", ["vuln_scan", "--lock", str(lock), "--exact-pins"])
+    assert vuln_scan.main() == 2
+
+
+@pytest.mark.parametrize(
+    "audited_names",
+    [
+        ["example"],
+        ["example", "second", "extra"],
+        ["example", "second", "example"],
+    ],
+    ids=["omitted-dependency", "extra-dependency", "duplicate-dependency"],
+)
+def test_exact_scan_requires_each_locked_dependency_once(
+    tmp_path, monkeypatch, audited_names
+):
+    lock = tmp_path / "requirements.lock"
+    lock.write_text("example==1.0\nsecond==1.0\n", encoding="utf-8")
+    monkeypatch.setattr(
+        vuln_scan.shutil, "which", lambda name: name if name == "pip-audit" else None
+    )
+    dependencies = [
+        {"name": name, "version": "1.0", "vulns": []} for name in audited_names
+    ]
+    monkeypatch.setattr(
+        vuln_scan,
+        "run",
+        lambda command: (0, json.dumps({"dependencies": dependencies})),
     )
     monkeypatch.setattr(sys, "argv", ["vuln_scan", "--lock", str(lock), "--exact-pins"])
     assert vuln_scan.main() == 2

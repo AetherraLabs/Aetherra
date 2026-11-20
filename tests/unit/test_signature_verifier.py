@@ -12,12 +12,17 @@ Tests cover:
 - Audit logging
 """
 
+# Standard library imports
 import json
 import tempfile
 import unittest
 from datetime import datetime
 from pathlib import Path
 
+# Third party imports
+import pytest
+
+# Aetherra imports
 from Aetherra.aetherra_core.system.signature_verifier import (
     SignatureInfo,
     SignatureVerifier,
@@ -45,14 +50,15 @@ class TestSignatureVerifier(unittest.TestCase):
         file_hash = verifier._compute_file_hash(str(self.test_file))
 
         # Verify hash is correct length (64 hex chars for SHA-256)
-        self.assertEqual(len(file_hash), 64)
+        assert len(file_hash) == 64
         # Verify hash is hexadecimal
-        self.assertTrue(all(c in "0123456789abcdef" for c in file_hash))
+        assert all(c in "0123456789abcdef" for c in file_hash)
 
     def test_compute_file_hash_nonexistent_file(self):
         """Test hash computation with nonexistent file."""
         verifier = SignatureVerifier()
-        with self.assertRaises(IOError):
+        # Preserve the original IOError check's acceptance of any error message.
+        with pytest.raises(OSError, match=r".*"):
             verifier._compute_file_hash("nonexistent_file.py")
 
     def test_is_trusted_location(self):
@@ -60,13 +66,13 @@ class TestSignatureVerifier(unittest.TestCase):
         verifier = SignatureVerifier(development_mode=True)
 
         # Test trusted paths
-        self.assertTrue(verifier._is_trusted_location("Aetherra/core/test.py"))
-        self.assertTrue(verifier._is_trusted_location("Aetherra/aetherra_core/test.py"))
-        self.assertTrue(verifier._is_trusted_location("src/lyrixa/test.py"))
+        assert verifier._is_trusted_location("Aetherra/core/test.py")
+        assert verifier._is_trusted_location("Aetherra/aetherra_core/test.py")
+        assert verifier._is_trusted_location("src/lyrixa/test.py")
 
         # Test untrusted paths
-        self.assertFalse(verifier._is_trusted_location("tests/test.py"))
-        self.assertFalse(verifier._is_trusted_location("demos/demo.py"))
+        assert not verifier._is_trusted_location("tests/test.py")
+        assert not verifier._is_trusted_location("demos/demo.py")
 
     def test_path_based_trust_verification(self):
         """Test path-based trust verification."""
@@ -78,7 +84,7 @@ class TestSignatureVerifier(unittest.TestCase):
 
         # Should fail because file doesn't exist, but within trusted path logic
         # In reality we need to test with actual files
-        self.assertIsInstance(info, SignatureInfo)
+        assert isinstance(info, SignatureInfo)
 
     def test_path_based_trust_with_existing_file_trusted(self):
         """Test path-based trust with actual trusted file."""
@@ -91,9 +97,9 @@ class TestSignatureVerifier(unittest.TestCase):
         verifier = SignatureVerifier(development_mode=True)
         is_valid, info = verifier.verify(str(trusted_file))
 
-        self.assertTrue(is_valid)
-        self.assertEqual(info.method, "path_based_trust")
-        self.assertTrue(info.trusted_location)
+        assert is_valid
+        assert info.method == "path_based_trust"
+        assert info.trusted_location
 
     def test_path_based_trust_with_existing_file_untrusted(self):
         """Test path-based trust with untrusted file."""
@@ -103,9 +109,9 @@ class TestSignatureVerifier(unittest.TestCase):
         verifier = SignatureVerifier(development_mode=True)
         is_valid, info = verifier.verify(str(untrusted_file))
 
-        self.assertFalse(is_valid)
-        self.assertEqual(info.method, "path_based_trust")
-        self.assertFalse(info.trusted_location)
+        assert not is_valid
+        assert info.method == "path_based_trust"
+        assert not info.trusted_location
 
     def test_manifest_loading(self):
         """Test manifest file loading."""
@@ -124,14 +130,14 @@ class TestSignatureVerifier(unittest.TestCase):
 
         verifier = SignatureVerifier(manifest_path=str(manifest_file))
 
-        self.assertEqual(verifier.manifest["test.py"], "abc123def456789")
-        self.assertEqual(verifier.manifest_metadata["version"], "1.0")
+        assert verifier.manifest["test.py"] == "abc123def456789"
+        assert verifier.manifest_metadata["version"] == "1.0"
 
     def test_manifest_loading_nonexistent(self):
         """Test manifest loading with nonexistent file."""
         verifier = SignatureVerifier(manifest_path="nonexistent.json")
 
-        self.assertEqual(len(verifier.manifest), 0)
+        assert len(verifier.manifest) == 0
 
     def test_manifest_verification_valid(self):
         """Test manifest verification with valid hash."""
@@ -162,9 +168,9 @@ class TestSignatureVerifier(unittest.TestCase):
         verifier2 = SignatureVerifier(manifest_path=str(manifest_file))
         is_valid, info = verifier2.verify(str(test_file))
 
-        self.assertTrue(is_valid)
-        self.assertEqual(info.method, "manifest")
-        self.assertTrue(info.signature_valid)
+        assert is_valid
+        assert info.method == "manifest"
+        assert info.signature_valid
 
     def test_manifest_verification_invalid_hash(self):
         """Test manifest verification with mismatched hash."""
@@ -188,8 +194,8 @@ class TestSignatureVerifier(unittest.TestCase):
         verifier = SignatureVerifier(manifest_path=str(manifest_file))
         is_valid, info = verifier.verify(str(test_file))
 
-        self.assertFalse(is_valid)
-        self.assertFalse(info.signature_valid)
+        assert not is_valid
+        assert not info.signature_valid
 
     def test_manifest_verification_file_not_in_manifest(self):
         """Test manifest verification when file not in manifest."""
@@ -211,8 +217,8 @@ class TestSignatureVerifier(unittest.TestCase):
         verifier = SignatureVerifier(manifest_path=str(manifest_file))
         is_valid, info = verifier.verify(str(test_file))
 
-        self.assertFalse(is_valid)
-        self.assertFalse(info.signature_present)
+        assert not is_valid
+        assert not info.signature_present
 
     def test_batch_verification(self):
         """Test batch verification of multiple files."""
@@ -226,9 +232,9 @@ class TestSignatureVerifier(unittest.TestCase):
         verifier = SignatureVerifier(development_mode=True)
         results = verifier.verify_batch(files)
 
-        self.assertEqual(len(results), 3)
-        for file_path, (is_valid, info) in results.items():
-            self.assertIsInstance(info, SignatureInfo)
+        assert len(results) == 3
+        for _file_path, (_is_valid, info) in results.items():
+            assert isinstance(info, SignatureInfo)
 
     def test_caching_behavior(self):
         """Test verification caching."""
@@ -244,9 +250,9 @@ class TestSignatureVerifier(unittest.TestCase):
         is_valid2, info2 = verifier.verify(str(test_file))
 
         # Results should be identical
-        self.assertEqual(is_valid1, is_valid2)
+        assert is_valid1 == is_valid2
         # Timestamps should be the same (from cache)
-        self.assertEqual(info1.timestamp, info2.timestamp)
+        assert info1.timestamp == info2.timestamp
 
     def test_clear_cache(self):
         """Test cache clearing."""
@@ -255,10 +261,10 @@ class TestSignatureVerifier(unittest.TestCase):
 
         verifier = SignatureVerifier(development_mode=True)
         verifier.verify(str(test_file))
-        self.assertGreater(len(verifier.verification_cache), 0)
+        assert len(verifier.verification_cache) > 0
 
         verifier.clear_cache()
-        self.assertEqual(len(verifier.verification_cache), 0)
+        assert len(verifier.verification_cache) == 0
 
     def test_generate_manifest(self):
         """Test manifest generation."""
@@ -275,15 +281,15 @@ class TestSignatureVerifier(unittest.TestCase):
         verifier = SignatureVerifier(development_mode=True)
         success = verifier.generate_manifest(str(python_dir), str(output_manifest))
 
-        self.assertTrue(success)
-        self.assertTrue(output_manifest.exists())
+        assert success
+        assert output_manifest.exists()
 
         # Verify manifest content
         with open(output_manifest) as f:
             manifest_data = json.load(f)
 
-        self.assertEqual(manifest_data["version"], "1.0")
-        self.assertEqual(len(manifest_data["hashes"]), 3)
+        assert manifest_data["version"] == "1.0"
+        assert len(manifest_data["hashes"]) == 3
 
     def test_generate_manifest_excludes_venv(self):
         """Test that manifest generation excludes virtual env."""
@@ -306,11 +312,10 @@ class TestSignatureVerifier(unittest.TestCase):
 
         # Should include project code but not virtual-environment files.
         manifest_paths = set(manifest_data["hashes"])
-        self.assertIn("code.py", manifest_paths)
-        self.assertFalse(
-            any(path.startswith(".venv/") for path in manifest_paths),
-            manifest_paths,
-        )
+        assert "code.py" in manifest_paths
+        assert not any(
+            path.startswith(".venv/") for path in manifest_paths
+        ), manifest_paths
 
     def test_audit_logging(self):
         """Test audit log generation."""
@@ -323,15 +328,15 @@ class TestSignatureVerifier(unittest.TestCase):
         )
         verifier.verify(str(test_file))
 
-        self.assertTrue(audit_log.exists())
+        assert audit_log.exists()
 
         with open(audit_log) as f:
             log_entry = json.loads(f.read().strip())
 
-        self.assertIn("timestamp", log_entry)
-        self.assertIn("file_path", log_entry)
-        self.assertIn("is_valid", log_entry)
-        self.assertIn("method", log_entry)
+        assert "timestamp" in log_entry
+        assert "file_path" in log_entry
+        assert "is_valid" in log_entry
+        assert "method" in log_entry
 
     def test_normalize_manifest_key(self):
         """Test manifest key normalization."""
@@ -339,11 +344,11 @@ class TestSignatureVerifier(unittest.TestCase):
 
         # Test Windows path conversion
         normalized = verifier._normalize_manifest_key("path\\to\\file.py")
-        self.assertEqual(normalized, "path/to/file.py")
+        assert normalized == "path/to/file.py"
 
         # Test Unix path (should stay same)
         normalized = verifier._normalize_manifest_key("path/to/file.py")
-        self.assertEqual(normalized, "path/to/file.py")
+        assert normalized == "path/to/file.py"
 
     def test_development_mode_disabled(self):
         """Test verification when development mode is disabled."""
@@ -354,8 +359,8 @@ class TestSignatureVerifier(unittest.TestCase):
         verifier = SignatureVerifier(development_mode=False)
         is_valid, info = verifier.verify(str(test_file))
 
-        self.assertFalse(is_valid)
-        self.assertEqual(info.method, "unknown")
+        assert not is_valid
+        assert info.method == "unknown"
 
     def test_signature_info_dataclass(self):
         """Test SignatureInfo dataclass."""
@@ -367,11 +372,11 @@ class TestSignatureVerifier(unittest.TestCase):
             reason="Test reason",
         )
 
-        self.assertEqual(info.file_path, "/path/to/file.py")
-        self.assertEqual(info.file_hash, "abc123")
-        self.assertTrue(info.is_valid)
-        self.assertEqual(info.method, "manifest")
-        self.assertIsInstance(info.timestamp, datetime)
+        assert info.file_path == "/path/to/file.py"
+        assert info.file_hash == "abc123"
+        assert info.is_valid
+        assert info.method == "manifest"
+        assert isinstance(info.timestamp, datetime)
 
 
 class TestSignatureVerifierEdgeCases(unittest.TestCase):
@@ -395,7 +400,7 @@ class TestSignatureVerifierEdgeCases(unittest.TestCase):
         verifier = SignatureVerifier(development_mode=True)
         file_hash = verifier._compute_file_hash(str(large_file))
 
-        self.assertEqual(len(file_hash), 64)
+        assert len(file_hash) == 64
 
     def test_empty_file_hashing(self):
         """Test hashing of empty files."""
@@ -406,9 +411,9 @@ class TestSignatureVerifierEdgeCases(unittest.TestCase):
         file_hash = verifier._compute_file_hash(str(empty_file))
 
         # SHA256 of empty file is known
-        self.assertEqual(
-            file_hash,
-            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        assert (
+            file_hash
+            == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         )
 
     def test_symlink_handling(self):
@@ -424,7 +429,7 @@ class TestSignatureVerifierEdgeCases(unittest.TestCase):
             verifier = SignatureVerifier(development_mode=True)
             file_hash = verifier._compute_file_hash(str(symlink_file))
 
-            self.assertEqual(len(file_hash), 64)
+            assert len(file_hash) == 64
         except (OSError, NotImplementedError):
             # Symlinks not supported on this system
             self.skipTest("Symlinks not supported on this system")

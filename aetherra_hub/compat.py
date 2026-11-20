@@ -9,6 +9,7 @@ API surface functional.
 from __future__ import annotations
 
 # Standard library imports
+import logging
 import threading
 import time
 
@@ -21,6 +22,9 @@ from .services import plugins as _plugins
 from .services import registry_client as _reg_client
 from .services.metrics_accum import chat_metrics
 
+logger = logging.getLogger(__name__)
+_LEGACY_BIND_HOST = "0.0.0.0"  # noqa: S104 - historical default for direct callers
+
 # Expose a FLASK_AVAILABLE flag for legacy tests that gated execution
 try:  # pragma: no cover - simple availability flag
     # Third party imports
@@ -32,8 +36,9 @@ except Exception:  # pragma: no cover
 
 
 class AetherraHubServer:  # minimal subset used in tests/tools
-    def __init__(self, port: int = 3001):
+    def __init__(self, port: int = 3001, *, host: str = _LEGACY_BIND_HOST):
         self.port = port
+        self.host = host
         self._srv = None
         self._thread: threading.Thread | None = None
         self.server_running = False
@@ -56,9 +61,13 @@ class AetherraHubServer:  # minimal subset used in tests/tools
         if self.server_running:
             return True
         app = create_app()
-        self._srv = make_server("0.0.0.0", self.port, app)
-        self._thread = threading.Thread(target=self._srv.serve_forever, daemon=True)
-        self._thread.start()
+        self._srv = make_server(self.host, self.port, app)
+        try:
+            self._thread = threading.Thread(target=self._srv.serve_forever, daemon=True)
+            self._thread.start()
+        except BaseException:
+            self.stop_server()
+            raise
         self.server_running = True
         # Seed minimal kernel / orchestrator status so initial metrics scrape includes histograms
         try:  # best-effort; avoids test flakiness when registry not yet populated
@@ -82,16 +91,25 @@ class AetherraHubServer:  # minimal subset used in tests/tools
         return True
 
     def stop_server(self):  # pragma: no cover - rarely used
-        if not self.server_running:
-            return
-        try:
-            if self._srv:
-                self._srv.shutdown()
-        finally:
-            self.server_running = False
+        if self._thread is threading.current_thread():
+            raise RuntimeError("Hub cannot stop from its serving thread")
+        if self._srv is not None and self.server_running:
+            self._srv.shutdown()
+        if self._thread is not None and self._thread.ident is not None:
+            self._thread.join(timeout=3)
+            if self._thread.is_alive():
+                raise RuntimeError("Hub shutdown thread timeout")
+        self.server_running = False
+        if self._srv is not None:
+            self._srv.server_close()
+        self.server_running = False
+        self._thread = None
+        self._srv = None
 
     def is_running(self) -> bool:
-        return self.server_running
+        return bool(
+            self.server_running and self._thread is not None and self._thread.is_alive()
+        )
 
     # Legacy helper used in smoke tests
     def register_plugin(self, manifest: dict):  # pragma: no cover - simple pass-through
@@ -108,17 +126,53 @@ class AetherraHubServer:  # minimal subset used in tests/tools
 _global_server: AetherraHubServer | None = None
 
 
-def start_hub_server(port: int = 3001) -> AetherraHubServer:
+_server_factory_lock = threading.RLock()
+
+
+def start_hub_server(
+    port: int = 3001,
+    *,
+    host: str | None = None,
+) -> AetherraHubServer:
+    with _server_factory_lock:
+        return _start_hub_server(port, host=host)
+
+
+def _start_hub_server(
+    port: int, *, host: str | None
+) -> AetherraHubServer:
     global _global_server
-    if _global_server and _global_server.port != port:
+    if host is not None and (not isinstance(host, str) or not host.strip()):
+        raise ValueError("Hub host must be a nonempty string")
+    bind_host = (
+        host
+        if host is not None
+        else _global_server.host
+        if _global_server is not None and _global_server.port == port
+        else _LEGACY_BIND_HOST
+    )
+    if _global_server is not None:
+        if (
+            _global_server.port == port
+            and _global_server.host == bind_host
+            and _global_server.is_running()
+        ):
+            return _global_server
         try:
             _global_server.stop_server()
-        except Exception:  # pragma: no cover
-            pass
+        except Exception:
+            logger.warning("Previous Hub shutdown failed")
+            raise
         _global_server = None
     if _global_server is None:
-        _global_server = AetherraHubServer(port)
-        _global_server.start_server()
+        candidate = AetherraHubServer(port, host=bind_host)
+        try:
+            if not candidate.start_server() or not candidate.is_running():
+                raise RuntimeError("Hub startup failed")
+        except BaseException:
+            candidate.stop_server()
+            raise
+        _global_server = candidate
         # Best-effort readiness wait (avoids rare race where first test request 404s)
         try:  # pragma: no cover - timing dependent
             # Third party imports
@@ -132,10 +186,10 @@ def start_hub_server(port: int = 3001) -> AetherraHubServer:
                     if r.status_code == 200:
                         break
                 except Exception:
-                    pass
+                    logger.debug("Hub readiness probe failed")
                 time.sleep(0.05)
         except Exception:
-            pass
+            logger.warning("Hub readiness check unavailable")
         # Reset counters for deterministic tests
         cm = _global_server.chat_metrics
         for k in list(cm.keys()):
@@ -145,7 +199,7 @@ def start_hub_server(port: int = 3001) -> AetherraHubServer:
         try:  # align mock fallback counter with real metric object
             chat_metrics.fallback_mock_total = 0  # type: ignore[attr-defined]
         except Exception:  # pragma: no cover
-            pass
+            logger.warning("Hub fallback metric reset failed")
     return _global_server
 
 

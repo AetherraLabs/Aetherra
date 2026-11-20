@@ -7,6 +7,7 @@ Avoids Aetherra engine initialization.
 Run: python tests/legacy/root_standalone/test_ignore_pattern_loader_standalone.py
 """
 
+# Standard library imports
 import shutil
 import sys
 import tempfile
@@ -14,9 +15,9 @@ import unittest
 from pathlib import Path
 
 # Add workspace root to path
-ROOT_DIR = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT_DIR))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
+# Aetherra imports
 from Aetherra.aetherra_core.system.ignore_pattern_loader import (
     IgnorePattern,
     IgnorePatternLoader,
@@ -173,7 +174,7 @@ class TestIgnorePatternLoaderStandalone(unittest.TestCase):
 
     def test_13_pattern_matching_wildcards(self):
         """Test pattern matching with wildcards."""
-        loader = IgnorePatternLoader(str(self.workspace), use_defaults=False)
+        _loader = IgnorePatternLoader(str(self.workspace), use_defaults=False)
         pattern = IgnorePattern(pattern="*.*.pyc")
 
         assert pattern.matches("test.backup.pyc")
@@ -197,7 +198,7 @@ class TestIgnorePatternLoaderStandalone(unittest.TestCase):
 
     def test_15_directory_specific_patterns(self):
         """Test directory-specific patterns."""
-        loader = IgnorePatternLoader(str(self.workspace), use_defaults=False)
+        _loader = IgnorePatternLoader(str(self.workspace), use_defaults=False)
 
         dir_pattern = IgnorePattern(pattern="logs/", is_directory=True)
         file_pattern = IgnorePattern(pattern="*.log")
@@ -207,7 +208,7 @@ class TestIgnorePatternLoaderStandalone(unittest.TestCase):
 
     def test_16_pattern_case_handling(self):
         """Test pattern matching case handling."""
-        loader = IgnorePatternLoader(str(self.workspace), use_defaults=False)
+        _loader = IgnorePatternLoader(str(self.workspace), use_defaults=False)
 
         # Create patterns
         pattern1 = IgnorePattern(pattern="temp*")
@@ -272,7 +273,7 @@ class TestIgnorePatternLoaderStandalone(unittest.TestCase):
 
         assert success
         # Check for important default patterns
-        patterns_str = " ".join(patterns)
+        _patterns_str = " ".join(patterns)
 
         # Check for Python patterns
         assert any("*.pyc" in p for p in patterns), "Should ignore .pyc files"
@@ -316,11 +317,11 @@ def run_tests():
     print("FAIL SOME TESTS FAILED")
     if result.failures:
         print("\nFailures:")
-        for test, traceback in result.failures:
+        for test, _traceback in result.failures:
             print(f"  - {test}")
     if result.errors:
         print("\nErrors:")
-        for test, traceback in result.errors:
+        for test, _traceback in result.errors:
             print(f"  - {test}")
     return 1
 

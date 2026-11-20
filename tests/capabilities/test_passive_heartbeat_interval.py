@@ -1,7 +1,3 @@
-def test_pytest_discovery_sanity():
-    assert 1 + 1 == 2
-
-
 # Standard library imports
 import asyncio
 import time
@@ -11,6 +7,10 @@ import pytest
 
 # Aetherra imports
 from aetherra_kernel_loop import AetherraKernelLoop
+
+
+def test_pytest_discovery_sanity():
+    assert 1 + 1 == 2
 
 
 @pytest.mark.asyncio
