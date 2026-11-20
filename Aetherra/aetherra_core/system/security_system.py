@@ -404,11 +404,11 @@ def clear_security_lockdown(
             "actor": actor,
             "recovery_context": recovery_context,
         }
-    except Exception as exc:
+    except Exception:
         append_security_audit_entry(
             actor,
             "security_lockdown_clear_failed",
-            reason=str(exc),
+            reason="security_lockdown_clear_failed",
             details={"reason": reason, "recovery_context": recovery_context},
         )
         raise
@@ -765,11 +765,13 @@ class AetherraSecuritySystem:
         api_results = results["api_keys"]
         if api_results["rotation_needed"]:
             alerts.append(
-                f"API key rotation needed for: {', '.join(api_results['rotation_needed'])}"
+                f"API key rotation needed: {len(api_results['rotation_needed'])} keys"
             )
 
         if api_results["potential_leaks"]:
-            alerts.append(f"Potential API key leaks: {', '.join(api_results['potential_leaks'])}")
+            alerts.append(
+                f"Potential API key leaks: {len(api_results['potential_leaks'])} findings"
+            )
 
         # Check memory issues
         memory_results = results["memory"]
@@ -791,8 +793,13 @@ class AetherraSecuritySystem:
 
         # Log alerts
         for alert in alerts:
-            self.logger.warning(f"🚨 SECURITY ALERT: {alert}")
-            rec = {"timestamp": time.time(), "alert": alert, "severity": "warning"}
+            safe_alert = str(redact_secrets(alert))
+            self.logger.warning("SECURITY ALERT: %s", safe_alert)
+            rec = {
+                "timestamp": time.time(),
+                "alert": safe_alert,
+                "severity": "warning",
+            }
             self.security_alerts.append(rec)
             # Append to JSONL for UI
             try:
@@ -820,7 +827,8 @@ class AetherraSecuritySystem:
     def add_alert(self, alert: str, severity: str = "warning") -> None:
         """Public helper to record a security alert and append to the JSONL feed."""
         try:
-            rec = {"timestamp": time.time(), "alert": alert, "severity": severity}
+            safe_alert = str(redact_secrets(alert))
+            rec = {"timestamp": time.time(), "alert": safe_alert, "severity": severity}
             self.security_alerts.append(rec)
             try:
                 self.alerts_jsonl.parent.mkdir(parents=True, exist_ok=True)
@@ -828,7 +836,7 @@ class AetherraSecuritySystem:
                     f.write(json.dumps(rec) + "\n")
             except Exception:
                 pass
-            self.logger.warning(f"🚨 SECURITY ALERT: {alert}")
+            self.logger.warning("SECURITY ALERT: %s", safe_alert)
         except Exception:
             pass
 

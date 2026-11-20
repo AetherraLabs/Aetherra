@@ -300,7 +300,7 @@ resp = await plugin.invoke("compose", {"goal": "refactor memory subsystem"}, con
 
 ## 14) References
 
-- Roadmap (June): `docs/roadmap/AETHERRA_PLUGIN_ROADMAP.md`
+- Master Roadmap: `docs/MASTER_ROADMAP.md`
 - Lyrixa System: `docs/AETHERRA_LYRIXA_SYSTEM.md`
 - Memory System: `docs/AETHERRA_MEMORY_SYSTEM.md`
 - Agent System: `docs/AETHERRA_AGENT_SYSTEM.md`

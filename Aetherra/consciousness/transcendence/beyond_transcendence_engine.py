@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Namespaced Beyond Transcendence Engine adapter.
+"""Advanced cognition metrics adapter with legacy naming.
 
-Re-uses root implementation if present; otherwise contains minimal shim.
+The module name is retained for compatibility with older consciousness tests
+and documentation. Treat it as rename debt, not removal debt.
 """
 
 from __future__ import annotations
@@ -24,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class BeyondTranscendenceEngine:
-    """Phase 8.3 Beyond Transcendence adapter (namespaced).
+    """Advanced cognition/transcendence metric adapter.
 
     Adds:
     - Deterministic baseline support via env AETHERRA_DETERMINISTIC / AETHERRA_TRANSCENDENCE_BASELINE

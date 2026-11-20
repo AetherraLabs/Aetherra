@@ -11,17 +11,18 @@ jobs:
         uses: actions/checkout@v4
 
       - name: 🐍 Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
-      - name: 📦 Verify minimal run scripts
+      - name: Verify minimal runtime files
         run: |
-          test -f Aetherra/gui/aetherra_os_gui.py
+          test -f Aetherra/runtime_ui/__init__.py
+          test -f aetherra_hub/blueprints/runtime_ui.py
           test -f .env.example
 
       - name: 📦 Upload .env.example
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: env-example
           path: .env.example

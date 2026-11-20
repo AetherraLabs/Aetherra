@@ -34,6 +34,7 @@ import json
 import os
 import sys
 import time
+from contextlib import suppress
 from pathlib import Path
 from typing import Any
 
@@ -88,27 +89,19 @@ async def gate1_launcher_smoke() -> tuple[bool, dict[str, Any]]:
         expected = {"memory_system", "plugin_manager", "aetherra_engine"}
         missing = sorted(expected - services)
         ok = not missing
-        # Attempt kernel status file evidence (if produced by launcher)
-        kernel_status_path = Path(
-            "demos/kernel_status_ui.py"
-        )  # placeholder; adjust if real status artifact exists
         return ok, {
             "services": sorted(services),
             "missing": missing,
             "expected": sorted(expected),
-            "evidence_status_file": str(kernel_status_path)
-            if kernel_status_path.exists()
-            else None,
+            "evidence_status_file": None,
         }
     finally:
         launcher.running = False
         await asyncio.sleep(0.1)
         if not boot_task.done():
             boot_task.cancel()
-            try:
+            with suppress(Exception, asyncio.CancelledError):
                 await boot_task
-            except (Exception, asyncio.CancelledError):
-                pass  # Expected when cancelling a running task
 
 
 async def _start_hub_for_stream(port: int = 3012):
@@ -157,8 +150,8 @@ async def gate2_chat_sse_resume() -> tuple[bool, dict[str, Any]]:
                     eid = int(line.split(": ", 1)[1])
                     first_ids.append(eid)
                     last_id = eid
-                except Exception:
-                    pass
+                except (IndexError, ValueError):
+                    continue
             if line.startswith("event: policy"):
                 break
     if last_id is None:
@@ -182,8 +175,8 @@ async def gate2_chat_sse_resume() -> tuple[bool, dict[str, Any]]:
                         if eid != last_id + 1:
                             monotonic = False
                             break
-                except Exception:
-                    pass
+                except (IndexError, ValueError):
+                    continue
             if line.startswith("event: final"):
                 break
     ok = bool(monotonic and resumed_first == last_id + 1)
@@ -307,7 +300,7 @@ async def gate6_agents_api() -> tuple[bool, dict[str, Any]]:
     try:
         # Disabled call: explicitly disable endpoint for this phase.
         os.environ["AETHERRA_AGENTS_API_ENABLED"] = "0"
-        os.environ["AETHERRA_AGENTS_API_REQUIRE_TOKEN"] = "0"
+        os.environ["AETHERRA_AGENTS_API_REQUIRE_TOKEN"] = "0"  # noqa: S105
         os.environ["AETHERRA_AGENTS_API_TOKEN"] = ""
 
         # pick a free port
@@ -329,8 +322,8 @@ async def gate6_agents_api() -> tuple[bool, dict[str, Any]]:
 
         # Enable + token for the second phase. The blueprint reads env at request time.
         os.environ["AETHERRA_AGENTS_API_ENABLED"] = "1"
-        os.environ["AETHERRA_AGENTS_API_REQUIRE_TOKEN"] = "1"
-        os.environ["AETHERRA_AGENTS_API_TOKEN"] = "dev"
+        os.environ["AETHERRA_AGENTS_API_REQUIRE_TOKEN"] = "1"  # noqa: S105
+        os.environ["AETHERRA_AGENTS_API_TOKEN"] = "dev"  # noqa: S105
 
         # Need a mock engine registration for 200 path
         async def _register():
@@ -362,10 +355,8 @@ async def gate6_agents_api() -> tuple[bool, dict[str, Any]]:
         }
     finally:
         if server is not None:
-            try:
+            with suppress(Exception):
                 server.stop_server()
-            except Exception:
-                pass
         for key, value in previous.items():
             if value is None:
                 os.environ.pop(key, None)

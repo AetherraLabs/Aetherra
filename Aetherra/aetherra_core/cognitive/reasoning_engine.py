@@ -220,7 +220,7 @@ class ReasoningEngine:
         """
         Main reasoning method that coordinates different reasoning approaches
         """
-        logger.info(f"Starting reasoning for query: {context.query}")
+        logger.info("Starting reasoning query_length=%s", len(context.query))
 
         reasoning_chain = ReasoningChain()
 

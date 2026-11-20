@@ -6,13 +6,15 @@ Run with:
 
 from __future__ import annotations
 
-import os
+# Standard library imports
 import sys
 import unittest
 from datetime import datetime
+from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
+# Aetherra imports
 from Aetherra.plugins.reflector import ReflectorPlugin
 
 
@@ -25,23 +27,23 @@ class TestReflectorPluginStandalone(unittest.TestCase):
 
     def test_temporal_patterns_empty(self):
         r = self.p._analyze_temporal_patterns()
-        self.assertEqual(r["total_actions"], 0)
-        self.assertIsNone(r["peak_hour"])
+        assert r["total_actions"] == 0
+        assert r["peak_hour"] is None
 
     def test_temporal_patterns_non_empty(self):
         now = datetime.now().isoformat()
         self.p.behavior_log.append({"type": "x", "timestamp": now, "data": {}})
         self.p.behavior_log.append({"type": "y", "timestamp": now, "data": {}})
         r = self.p._analyze_temporal_patterns()
-        self.assertEqual(r["total_actions"], 2)
-        self.assertIsNotNone(r["peak_hour"])
+        assert r["total_actions"] == 2
+        assert r["peak_hour"] is not None
 
     def test_contextual_patterns(self):
         self._log("analyze", context="dev")
         self._log("analyze", context="dev")
         self._log("run", context="qa")
         r = self.p._analyze_contextual_patterns()
-        self.assertEqual(r["top_context"], "dev")
+        assert r["top_context"] == "dev"
 
     def test_decision_patterns(self):
         self.p.decision_tracking(
@@ -51,27 +53,27 @@ class TestReflectorPluginStandalone(unittest.TestCase):
             {"action": "y", "confidence": 0.5, "outcome": "failed"}
         )
         r = self.p._analyze_decision_patterns()
-        self.assertEqual(r["decision_count"], 2)
-        self.assertIn("success", r["outcomes"])
+        assert r["decision_count"] == 2
+        assert "success" in r["outcomes"]
 
     def test_error_patterns(self):
         self._log("task", success=False)
         self._log("error", success=False)
         self._log("task", success=True)
         r = self.p._analyze_error_patterns()
-        self.assertEqual(r["error_count"], 2)
-        self.assertGreater(r["error_rate"], 0)
+        assert r["error_count"] == 2
+        assert r["error_rate"] > 0
 
     def test_learning_patterns(self):
         self._log("learn", domain="math")
         self._log("adapt", domain="coding")
         r = self.p._analyze_learning_patterns()
-        self.assertEqual(r["learning_events"], 2)
+        assert r["learning_events"] == 2
 
     def test_activity_times(self):
         self._log("x", context="a")
         r = self.p._analyze_activity_times()
-        self.assertIn("business_hours_ratio", r)
+        assert "business_hours_ratio" in r
 
     def test_identify_workflows(self):
         self._log("plan")
@@ -79,29 +81,29 @@ class TestReflectorPluginStandalone(unittest.TestCase):
         self._log("test")
         self._log("build")
         wf = self.p._identify_workflows()
-        self.assertTrue(any(x == "plan->build" for x in wf))
+        assert "plan->build" in wf
 
     def test_cognitive_load(self):
         for _ in range(5):
             self._log("task", complexity="high")
         r = self.p._analyze_cognitive_load()
-        self.assertIn(r["cognitive_load"], {"low", "medium", "high"})
+        assert r["cognitive_load"] in {"low", "medium", "high"}
 
     def test_decision_quality(self):
         q = self.p._analyze_decision_quality({"confidence": 0.8, "outcome": "success"})
-        self.assertGreaterEqual(q["quality_score"], 0.8)
+        assert q["quality_score"] >= 0.8
 
     def test_improvement_rate(self):
         self._log("learn", topic="python", performance=0.5)
         self._log("learn", topic="python", performance=0.6)
         r = self.p._calculate_improvement_rate("python", 0.8)
-        self.assertGreater(r, 0)
+        assert r > 0
 
     def test_learning_curve(self):
         self._log("learn", topic="nlp", performance=0.2)
         self._log("learn", topic="nlp", performance=0.5)
         c = self.p._analyze_learning_curve("nlp")
-        self.assertEqual(c["trend"], "improving")
+        assert c["trend"] == "improving"
 
     def test_goal_efficiency_and_recommendations(self):
         actions = [
@@ -121,9 +123,9 @@ class TestReflectorPluginStandalone(unittest.TestCase):
             },
         ]
         eff = self.p._analyze_goal_time_efficiency(actions)
-        self.assertIn("efficiency", eff)
+        assert "efficiency" in eff
         rec = self.p._generate_goal_recommendations(actions)
-        self.assertGreaterEqual(len(rec), 1)
+        assert len(rec) >= 1
 
     def test_goal_resource_usage(self):
         actions = [
@@ -131,8 +133,8 @@ class TestReflectorPluginStandalone(unittest.TestCase):
             {"data": {"resource_usage": {"cpu": 0.6, "memory": 0.5}}},
         ]
         r = self.p._analyze_goal_resource_usage(actions)
-        self.assertIn("resources", r)
-        self.assertIsNotNone(r["resources"]["avg_cpu"])
+        assert "resources" in r
+        assert r["resources"]["avg_cpu"] is not None
 
     def test_goal_side_effects(self):
         actions = [
@@ -140,7 +142,7 @@ class TestReflectorPluginStandalone(unittest.TestCase):
             {"data": {"side_effects": ["fatigue"]}},
         ]
         r = self.p._identify_goal_side_effects(actions)
-        self.assertIn("fatigue", r)
+        assert "fatigue" in r
 
     def test_forgetting_patterns(self):
         mem = [
@@ -149,7 +151,7 @@ class TestReflectorPluginStandalone(unittest.TestCase):
             {"type": "recall", "data": {}},
         ]
         r = self.p._analyze_forgetting_patterns(mem)
-        self.assertEqual(r["patterns"]["forget_count"], 2)
+        assert r["patterns"]["forget_count"] == 2
 
 
 if __name__ == "__main__":

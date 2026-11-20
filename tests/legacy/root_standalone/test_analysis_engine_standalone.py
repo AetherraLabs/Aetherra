@@ -6,14 +6,15 @@ Run with:
 
 from __future__ import annotations
 
-import os
+# Standard library imports
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
+# Aetherra imports
 from aetherra_coding.analysis import (
     DependencyGraphBuilder,
     ImpactAnalyzer,
@@ -35,7 +36,7 @@ class TestAnalysisEngine(unittest.TestCase):
             self._write(root, "pkg/b.py", "x = 1\n")
             gb = DependencyGraphBuilder()
             graph = gb.build_graph(root)
-            self.assertIn(Path("pkg/a.py"), graph)
+            assert Path("pkg/a.py") in graph
 
     def test_find_dependents(self):
         with tempfile.TemporaryDirectory() as td:
@@ -45,7 +46,7 @@ class TestAnalysisEngine(unittest.TestCase):
             gb = DependencyGraphBuilder()
             gb.build_graph(root)
             deps = gb.find_dependents("pkg/b.py")
-            self.assertIn(Path("pkg/a.py"), deps)
+            assert Path("pkg/a.py") in deps
 
     def test_find_transitive_dependents(self):
         with tempfile.TemporaryDirectory() as td:
@@ -56,8 +57,8 @@ class TestAnalysisEngine(unittest.TestCase):
             gb = DependencyGraphBuilder()
             gb.build_graph(root)
             deps = gb.find_transitive_dependents("pkg/c.py")
-            self.assertIn(Path("pkg/a.py"), deps)
-            self.assertIn(Path("pkg/b.py"), deps)
+            assert Path("pkg/a.py") in deps
+            assert Path("pkg/b.py") in deps
 
     def test_detect_cycles(self):
         with tempfile.TemporaryDirectory() as td:
@@ -67,7 +68,7 @@ class TestAnalysisEngine(unittest.TestCase):
             gb = DependencyGraphBuilder()
             gb.build_graph(root)
             cycles = gb.detect_cycles()
-            self.assertTrue(len(cycles) >= 1)
+            assert len(cycles) >= 1
 
     def test_impact_analyze_low(self):
         with tempfile.TemporaryDirectory() as td:
@@ -75,8 +76,8 @@ class TestAnalysisEngine(unittest.TestCase):
             self._write(root, "pkg/a.py", "x = 1\n")
             ia = ImpactAnalyzer()
             rp = ia.analyze_change("pkg/a.py", "+x = 2\n", root)
-            self.assertIn(rp.risk_level, {"low", "medium", "high"})
-            self.assertGreaterEqual(rp.score, 0.0)
+            assert rp.risk_level in {"low", "medium", "high"}
+            assert rp.score >= 0.0
 
     def test_impact_api_change_factor(self):
         with tempfile.TemporaryDirectory() as td:
@@ -86,7 +87,7 @@ class TestAnalysisEngine(unittest.TestCase):
             rp = ia.analyze_change(
                 "pkg/a.py", "+def api_func():\n+    return 1\n", root
             )
-            self.assertGreater(rp.factors["api_change_factor"], 0.0)
+            assert rp.factors["api_change_factor"] > 0.0
 
     def test_impact_suggests_tests(self):
         with tempfile.TemporaryDirectory() as td:
@@ -94,7 +95,7 @@ class TestAnalysisEngine(unittest.TestCase):
             self._write(root, "pkg/a.py", "x=1\n")
             ia = ImpactAnalyzer()
             rp = ia.analyze_change("pkg/a.py", "+x=2\n", root)
-            self.assertTrue(any("test_a.py" in t for t in rp.suggested_tests))
+            assert any("test_a.py" in t for t in rp.suggested_tests)
 
     def test_impact_for_test_file_lowers_test_factor(self):
         with tempfile.TemporaryDirectory() as td:
@@ -104,18 +105,18 @@ class TestAnalysisEngine(unittest.TestCase):
             )
             ia = ImpactAnalyzer()
             rp = ia.analyze_change("tests/unit/test_mod.py", "+assert True\n", root)
-            self.assertEqual(rp.factors["test_factor"], 0.0)
+            assert rp.factors["test_factor"] == 0.0
 
     def test_analyze_patch_backward_compat(self):
         diff = "*** Update File: a.py\n+line\n*** Add File: b.py\n+line\n"
         report = analyze_patch(diff)
-        self.assertEqual(report.risk_level, "low")
-        self.assertEqual(len(report.touched_files), 2)
+        assert report.risk_level == "low"
+        assert len(report.touched_files) == 2
 
     def test_analyze_patch_risk_levels(self):
         base = "\n".join([f"*** Update File: f{i}.py" for i in range(13)])
         report = analyze_patch(base)
-        self.assertEqual(report.risk_level, "high")
+        assert report.risk_level == "high"
 
 
 if __name__ == "__main__":

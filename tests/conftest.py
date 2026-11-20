@@ -10,6 +10,7 @@ import asyncio
 import inspect
 import os
 import sys
+import threading
 import warnings
 from pathlib import Path
 
@@ -50,6 +51,39 @@ def project_root_path():
 def aetherra_root_path():
     """Provide the Aetherra directory path for tests"""
     return Path(__file__).parent.parent / "Aetherra"
+
+
+@pytest.fixture
+def signing_hub(monkeypatch, tmp_path):
+    monkeypatch.setenv("AETHERRA_STATE_DIR", str(tmp_path / "state"))
+    monkeypatch.setenv("NO_PROXY", "127.0.0.1,localhost")
+    for name in (
+        "AETHERRA_ALLOW_UNSIGNED_DEV",
+        "AETHERRA_PLUGIN_SIGNING_SECRET",
+        "AETHERRA_KEYS_MASTER",
+    ):
+        monkeypatch.delenv(name, raising=False)
+    # Third party imports
+    from werkzeug.serving import make_server
+
+    # Aetherra imports
+    from aetherra_hub.app import create_app
+    from aetherra_hub.blueprints import plugins as plugin_routes
+    from aetherra_hub.services import plugins as plugin_service
+
+    monkeypatch.setattr(plugin_routes, "_PLUGIN_REGISTRY", {})
+    store = plugin_service.PluginStore()
+    monkeypatch.setattr(plugin_service, "store", store)
+    server = make_server("127.0.0.1", 0, create_app())
+    worker = threading.Thread(target=server.serve_forever, daemon=True)
+    worker.start()
+    try:
+        yield f"http://127.0.0.1:{server.server_port}", store
+    finally:
+        server.shutdown()
+        server.server_close()
+        worker.join(timeout=5)
+        assert not worker.is_alive(), "signing test Hub did not stop"
 
 
 @pytest.fixture(autouse=True)

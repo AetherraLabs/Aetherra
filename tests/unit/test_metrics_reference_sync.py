@@ -19,10 +19,7 @@ WILDCARD_PATTERNS = [
 def _matches_any(metric: str, content: str) -> bool:
     if metric in content:
         return True
-    for pat in WILDCARD_PATTERNS:
-        if re.search(pat, metric):  # metrics themselves will match wildcard directly
-            return True
-    return False
+    return any(re.search(pat, metric) for pat in WILDCARD_PATTERNS)
 
 
 def test_metrics_reference_lists_core_chat_metrics():

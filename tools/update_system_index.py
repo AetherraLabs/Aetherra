@@ -76,7 +76,6 @@ FOUNDATIONAL_FILES: list[tuple[str, list[str]]] = [
         [
             os.path.join(DOCS_DIR, "AETHERRA_MANIFESTO.md"),
             os.path.join(ROOT, "Aetherra", "docs", "AETHERRA_MANIFESTO.md"),
-            os.path.join(ROOT, "docs-organized", "manifesto", "AETHERRA_MANIFESTO.md"),
         ],
     ),
     (
@@ -84,7 +83,6 @@ FOUNDATIONAL_FILES: list[tuple[str, list[str]]] = [
         [
             os.path.join(DOCS_DIR, "AI_OS_MANIFESTO.md"),
             os.path.join(ROOT, "Aetherra", "docs", "AI_OS_MANIFESTO.md"),
-            os.path.join(ROOT, "docs-organized", "manifesto", "AI_OS_MANIFESTO.md"),
         ],
     ),
     (
@@ -92,9 +90,6 @@ FOUNDATIONAL_FILES: list[tuple[str, list[str]]] = [
         [
             os.path.join(DOCS_DIR, "aetherra_labs_vision.md"),
             os.path.join(ROOT, "Aetherra", "docs", "aetherra_labs_vision.md"),
-            os.path.join(
-                ROOT, "docs-organized", "manifesto", "aetherra_labs_vision.md"
-            ),
         ],
     ),
 ]

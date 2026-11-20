@@ -40,6 +40,9 @@ This document describes the Aetherra Kernel: the core runtime loop, service regi
 - HMR Phase 2 improvements: in‑flight counters per target, source gating, audit logging
 - New services: KLM (Module Manager) and KEB (Event Bus) wired in Phase 2; Hub exports their metrics
 - Kernel readiness contract: Implemented (`assess_kernel_readiness` and Hub `/api/kernel/readiness`)
+- Alpha boot validation: Implemented (`tools/alpha_boot_validation.py`) as a
+  CI-friendly readiness assembly check that does not start long-running
+  services or depend on local runtime state.
 
 ## Functional foundation completion
 

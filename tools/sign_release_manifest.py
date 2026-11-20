@@ -71,8 +71,8 @@ def maybe_sign(
         key = nacl.signing.SigningKey(key_hex, encoder=nacl.encoding.HexEncoder)  # type: ignore
         sig = key.sign(manifest_bytes).signature.hex()
         return sig, None
-    except Exception as e:  # pragma: no cover
-        return None, str(e)
+    except Exception:  # pragma: no cover
+        return None, "Invalid Ed25519 signing seed or signing failure"
 
 
 def main() -> int:
@@ -109,12 +109,29 @@ def main() -> int:
         manifest["sbom"] = sbom_rel
 
     key_hex = os.getenv("AETHERRA_RELEASE_PRIVKEY")
+    if key_hex:
+        if not TRY_NACL:
+            print("[MANIFEST][FAIL] PyNaCl is required for signing")
+            return 1
+        try:
+            public_key = bytes(
+                nacl.signing.SigningKey(
+                    key_hex, encoder=nacl.encoding.HexEncoder
+                ).verify_key
+            )
+        except Exception:
+            print("[MANIFEST][FAIL] Expected a 64-character hexadecimal Ed25519 seed")
+            return 1
+        # Identify the public key only. Include all metadata in the signed bytes.
+        fingerprint = hashlib.sha256(public_key).hexdigest()
+        manifest["signing"] = {
+            "tool_version": "alpha",
+            "key_hint": "sha256:" + fingerprint[:16],
+        }
     sig, err = maybe_sign(json.dumps(manifest, sort_keys=True).encode("utf-8"), key_hex)
-    if sig:
-        key_hint = (key_hex[:8] + "...") if key_hex else "unknown"
-        manifest["signing"] = {"tool_version": "alpha", "key_hint": key_hint}
-    elif err:
-        manifest["signing_warning"] = err
+    if err:
+        print(f"[MANIFEST][FAIL] {err}")
+        return 1
 
     out_path = Path(args.output)
     out_path.parent.mkdir(parents=True, exist_ok=True)

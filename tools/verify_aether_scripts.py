@@ -71,13 +71,19 @@ def _apply_profile(profile: str | None):
     os.environ.setdefault("PYTHONHASHSEED", "0")
     try:
         random.seed(0)
-    except Exception:
-        pass
+    except Exception as exc:
+        print(
+            f"[VERIFY] Python random seed failed ({type(exc).__name__})",
+            file=sys.stderr,
+        )
     if _np is not None:
         try:
             _np.random.seed(0)
-        except Exception:
-            pass
+        except Exception as exc:
+            print(
+                f"[VERIFY] NumPy random seed failed ({type(exc).__name__})",
+                file=sys.stderr,
+            )
 
 
 def main() -> int:
@@ -185,23 +191,23 @@ def main() -> int:
             lines.append(f"- {path}: score={info['score']} findings={len(findings)}")
             # Print per-file risky lines for easier review in PRs
             max_lines = max(0, int(args.max_findings_per_file))
-            shown = 0
-            for f in findings:
+            for shown, f in enumerate(findings, start=1):
                 kind = f.get("kind")
                 line_no = f.get("line")
                 snippet = f.get("snippet", "").strip()
                 if len(snippet) > 180:
                     snippet = snippet[:177] + "..."
                 lines.append(f"  - L{line_no}: [{kind}] {snippet}")
-                shown += 1
                 if shown >= max_lines:
                     remaining = max(0, len(findings) - shown)
                     if remaining:
                         lines.append(f"  ...and {remaining} more lines (capped)")
                     break
-            if not getattr(args, "fail_on_any_risk", False):
-                if info.get("score", 0) > args.risk_threshold:
-                    fail = True
+            if (
+                not getattr(args, "fail_on_any_risk", False)
+                and info.get("score", 0) > args.risk_threshold
+            ):
+                fail = True
         lines.append("")
     else:
         lines.append("No .aether files found.")
