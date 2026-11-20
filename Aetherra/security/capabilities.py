@@ -72,7 +72,7 @@ __all__ = [
 ]
 
 
-def _load_policy_full() -> dict:
+def _load_policy_full(*, require_valid_policy: bool = False) -> dict:
     """Load full capabilities policy JSON (allow + optional limits).
 
     Structure:
@@ -81,6 +81,23 @@ def _load_policy_full() -> dict:
       "limits": { "capability": { "timeout_sec": 10, "max_concurrency": 1 } }
     }
     """
+    if require_valid_policy:
+        try:
+            data = json.loads(_policy_file().read_text(encoding="utf-8"))
+            allow = data.get("allow") if isinstance(data, dict) else None
+            limits = data.get("limits", {}) if isinstance(data, dict) else None
+            if not isinstance(allow, dict) or not isinstance(limits, dict):
+                raise ValueError
+            if any(
+                not isinstance(name, str) or not name.strip()
+                or not isinstance(caps, list)
+                or any(not isinstance(cap, str) or not cap.strip() for cap in caps)
+                for name, caps in allow.items()
+            ) or any(not isinstance(value, dict) for value in limits.values()):
+                raise ValueError
+            return data
+        except Exception:
+            raise ValueError("capability_policy_invalid") from None
     try:
         policy_file = _policy_file()
         if policy_file.exists():
@@ -104,7 +121,7 @@ def _load_policy() -> dict[str, list[str]]:
     return {}
 
 
-def get_capability_limits(capability: str) -> dict:
+def get_capability_limits(capability: str, *, require_valid_policy: bool = False) -> dict:
     """Return per-capability limits from policy, if any.
 
     Example capabilities.json:
@@ -116,6 +133,8 @@ def get_capability_limits(capability: str) -> dict:
       }
     }
     """
+    if require_valid_policy:
+        return dict(_load_policy_full(require_valid_policy=True).get("limits", {}).get(capability, {}))
     try:
         cap = (capability or "").strip()
         if not cap:
@@ -196,12 +215,18 @@ def revoke_capability(requester: str, capability: str) -> bool:
         return True
 
 
-def list_capabilities(requester: str) -> list[str]:
+def list_capabilities(requester: str, *, require_valid_policy: bool = False) -> list[str]:
     """List all capabilities (policy + ephemeral) for a requester."""
     r = _normalize(requester) or "unknown"
-    policy_map = _load_policy()
+    policy_map = (
+        _load_policy_full(require_valid_policy=True)["allow"]
+        if require_valid_policy else _load_policy()
+    )
     with _LOCK:
-        ephem = _EPHEMERAL_GRANTS.get(r, set())
+        ephem = (
+            set() if require_valid_policy and r not in policy_map
+            else _EPHEMERAL_GRANTS.get(r, set())
+        )
         combined = set(policy_map.get(r, [])) | set(ephem)
     return sorted(combined)
 

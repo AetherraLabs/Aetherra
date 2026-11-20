@@ -103,15 +103,21 @@ class SecurityAuditLedger:
             self._append_bytes(_canonical(record) + b"\n")
             return record
 
-    def verify_integrity(self) -> bool:
-        """Return whether every record and chain link is valid."""
+    def verify_integrity(
+        self,
+        *,
+        require_signed_records: bool = False,
+    ) -> bool:
+        """Verify the chain, optionally requiring signed history."""
         with self._lock:
             try:
                 secret = self._load_secret()
                 if secret is None:
-                    return not self.path.exists() or self.path.stat().st_size == 0
-                self._verified_tail(secret)
-                return True
+                    return not require_signed_records and (
+                        not self.path.exists() or self.path.stat().st_size == 0
+                    )
+                sequence, _ = self._verified_tail(secret)
+                return sequence > 0 if require_signed_records else True
             except (AuditLedgerError, OSError, ValueError, json.JSONDecodeError):
                 return False
 

@@ -1,5 +1,10 @@
+# Standard library imports
 import json
 
+# Third party imports
+import pytest
+
+# Aetherra imports
 from Aetherra.maintenance import (
     MaintenanceCoordinator,
     MaintenanceDecision,
@@ -50,15 +55,13 @@ def test_record_store_default_uses_approved_generated_output_path(tmp_path):
 
 
 def test_record_store_blocks_unapproved_destination(tmp_path):
-    try:
+    with pytest.raises(
+        ValueError, match="root_level_generated_reports_are_not_allowed"
+    ):
         MaintenanceRecordStore(
             file_path=tmp_path / "maintenance_cycles.jsonl",
             project_root=tmp_path,
         )
-    except ValueError as exc:
-        assert "root_level_generated_reports_are_not_allowed" in str(exc)
-    else:
-        raise AssertionError("Expected unapproved Maintenance record path to fail")
 
 
 def test_record_store_exports_and_loads_coordinator_records(tmp_path):
@@ -101,9 +104,5 @@ def test_record_store_rejects_invalid_jsonl(tmp_path):
     store.file_path.parent.mkdir(parents=True, exist_ok=True)
     store.file_path.write_text("{invalid-json}\n", encoding="utf-8")
 
-    try:
+    with pytest.raises(ValueError, match="Invalid Maintenance record at line 1"):
         store.load_records()
-    except ValueError as exc:
-        assert "Invalid Maintenance record at line 1" in str(exc)
-    else:
-        raise AssertionError("Expected invalid JSONL to raise ValueError")

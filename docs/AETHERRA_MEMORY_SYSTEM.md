@@ -4,6 +4,12 @@
 > Maintained and officially operated by **Aetherra Labs**.
 > **Powered by Aetherra Labs.**
 
+Later personal-continuity checkpoint (2026-11-19): the default classical Engine
+chat path uses bounded local MiniLM ranking over persisted user statements via
+the existing SQLite core, preserving legacy substring callers and STORM behavior.
+See [PERSONAL_CONTINUITY.md](PERSONAL_CONTINUITY.md) for model provisioning,
+restart evidence, storage isolation and semantic-quality limits.
+
 Aetherra's Memory System combines reliable, local-first storage with advanced conceptual and episodic structures, adaptive compression (QFAC), optional quantum‑hybrid experimentation, and **STORM** (Sheaf-Transport Optimized Retrieval Memory) for topologically-consistent semantic retrieval. It preserves strict backward compatibility for existing Lyrixa plugins while enabling richer recall, narratives, reflection, and system health monitoring.
 
 ## Architecture overview
@@ -954,30 +960,13 @@ class MetaMemoryIndex:
 
 ### Memory Dashboards & Monitoring
 
-#### Quantum Memory Web Dashboard
+#### Quantum Memory Dashboard
 
-**Implementation**: `Aetherra/aetherra_core/memory/quantum_web_dashboard.py`
+Status: Retired legacy UI surface.
 
-**Purpose**: Web-based real-time monitoring for quantum-enhanced Lyrixa memory system.
-
-**Features**:
-
-- Real-time quantum coherence monitoring
-- Quantum operation statistics and performance metrics
-- Interactive quantum circuit visualization
-- Quantum state health indicators
-- Performance comparison charts (classical vs quantum)
-- Quantum hardware status and scaling information
-
-**Integration**: Works with existing QFAC dashboard framework
-
-**Launch**:
-
-```python
-from Aetherra.tools.quantum_dashboard_launcher import launch_dashboard
-
-launch_dashboard(port=8080, mode="web")
-```
+Quantum memory observability now belongs in the canonical Runtime UI /
+Cognitive Observatory path. The previous package-level dashboard launcher was a
+disabled compatibility stub and has been removed.
 
 #### QFAC Dashboard
 

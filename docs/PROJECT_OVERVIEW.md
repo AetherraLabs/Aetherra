@@ -43,7 +43,7 @@ Core (Aetherra/aetherra_core) includes engine, kernel, memory, plugins, config. 
 
 Lyrixa (assistant) spans intelligence, gui, plugins, memory, launcher and integrates with the OS through the registry and Hub. The chat service is workspace-aware and can suggest/apply safe fixes with deterministic fallbacks when offline.
 
-Hub & Federation includes server, federation, node_assets. When Flask is present, the local Hub exposes health, stats, plugin registry, federation sync, and a Lyrixa chat bridge.
+Hub & Federation includes the Flask compatibility entry, blueprint API layer, service adapters, and federation support. When Flask is present, the local Hub exposes health, stats, plugin registry, federation sync, and a Lyrixa chat bridge.
 
 QFAC (Quantum Fractal Adaptive Compression) is present (integration, dashboard, analyzer). It is an optional extension that can be enabled via environment flags and verified via capability tests.
 
@@ -87,7 +87,6 @@ Additional parity test added: `tests/integration/test_hub_compat_parity.py` (ens
 - AETHERRA_HUB_ENABLED
 - AETHERRA_IMPORT_UPDATE_REPORT
 - AETHERRA_INTELLIGENCE_PROVIDER
-- AETHERRA_INTERFACE_TYPE
 - AETHERRA_LOG_LEVEL
 - AETHERRA_LYRIXA_CLEANUP_REPORT
 - AETHERRA_MAINTENANCE_ENABLED
@@ -447,14 +446,14 @@ sum by () (aetherra_style_empathy_total)
 
 ## Environment Variables — Chat and Base URLs (Aug 31, 2025)
 
-The chat system and demos recognize these common variables:
+The chat system and API clients recognize these common variables:
 
 - `AETHERRA_BASE_URL` — Base URL for Hub/API when clients are external to the process
 - `AETHERRA_CHAT_MAX_TOKENS` — Default output token cap for chat completions
 - `AETHERRA_CHAT_SAFETY_MODE` — Safety preset: strict | standard (affects policy gates)
 - `AETHERRA_CHAT_TEMPERATURE` — Default sampling temperature for chat
-- `AETHERRA_DEMO` — 1/0 to enable demo paths/features in UIs and tools
 - `AETHERRA_LLM_MODEL` — Preferred default LLM model identifier
+- `AETHERRA_LLM_TIMEOUT_SEC` — Engine LLM call timeout in seconds; clamped to a safe upper bound by the Engine runtime.
 // Chat transport, versioning, and idempotency
 - `AETHERRA_AI_API_WS` — 1/0 to enable WebSocket transport endpoints; when enabled, clients can use ws://.../ws/ai/stream
 - `AETHERRA_CHAT_VERSION_REQUIRED` — If set to `2`, require header `X-Aetherra-Chat-Version: 2` on chat endpoints (reject otherwise)
@@ -502,7 +501,6 @@ Core toggles and networking:
 - `AETHERRA_HUB_WS_PORT`
 - `AETHERRA_NET_STRICT`
 - `AETHERRA_POLICY_HOME` — Override directory for security policy files (capabilities.json, net_policy.json); default: `~/.aetherra/policy`. Useful for CI/tests or sharing policy across instances.
-- `AETHERRA_OS_MODE`
 - `AETHERRA_PEERS`
 - `AETHERRA_QFAC_IN_OS`
 - `AETHERRA_QFAC_MODE`
@@ -584,8 +582,8 @@ Chat and client defaults:
 - `AETHERRA_CHAT_MAX_TOKENS`
 - `AETHERRA_CHAT_SAFETY_MODE`
 - `AETHERRA_CHAT_TEMPERATURE`
-- `AETHERRA_DEMO`
 - `AETHERRA_LLM_MODEL`
+- `AETHERRA_LLM_TIMEOUT_SEC` — Engine LLM call timeout in seconds; clamped to a safe upper bound by the Engine runtime.
 // Chat transport, versioning, and idempotency
 - `AETHERRA_AI_API_WS`
 - `AETHERRA_CHAT_VERSION_REQUIRED`
@@ -737,6 +735,24 @@ Capability and ethics tuning:
 Hub status:
 
 - `AETHERRA_HUB_STATUS` — Explicit toggle or mode for Hub status reporting (used by site status and widgets when present).
+
+## Environment Inspection Corrections (2026-10-13)
+
+These settings are read by current source; they do not grant additional permissions.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `AETHERRA_AUDIT_OUT` | `audits/hallucination_audit_<YYYYMMDD>.md` | Output destination for the manual hallucination-audit report. |
+| `AETHERRA_CONSCIOUSNESS_METRICS_PATH` | `.aetherra/consciousness_metrics.txt` | Destination for orchestrator coherence metrics; existing governance checks still apply. |
+| `AETHERRA_CONSCIOUSNESS_STREAM_PATH` | `.aetherra/consciousness_stream.log` | Destination used when the consciousness stream tap is enabled. |
+| `AETHERRA_KERNEL_HEARTBEAT_LEVEL` | `INFO` | Logging level for the visible kernel heartbeat. |
+| `AETHERRA_LEARNING_STATE_PATH` | `.aetherra/learning_loop_state.json` | Learning-loop state path when no explicit constructor path is supplied. |
+| `AETHERRA_PLUGIN_ISOLATION` | `process` in production; `thread` otherwise | Plugin isolation mode; this setting does not grant execution authority. |
+| `AETHERRA_PLUGIN_SIGNING_SECRET` | Unset | Optional environment override for the plugin signing secret; signing tests clear it and use disposable synthetic keys. |
+| `AETHERRA_QFAC_ALLOW_SIMULATOR_IN_PROD` | Disabled | Explicit experimental QFAC provider-policy override for controlled validation, not an execution grant. |
+| `AETHERRA_REGISTRY_STALE_SEC` | Three heartbeat intervals | Age threshold used to classify registry heartbeats as stale. |
+| `AETHERRA_SKIP_GUI_PLUGINS` | `0` | Discovery toggle for skipping plugin filenames ending in `_gui.py`; plugin GUIs remain supported. |
+| `AETHERRA_TEST_ROLLBACK_TOKEN` | Synthetic probe token | Test-only HMR probe token override; never a production approval or release-signing credential. |
 
 ## Endpoints (canonical)
 

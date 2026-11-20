@@ -9,6 +9,7 @@ Provides:
 
 from __future__ import annotations
 
+# Standard library imports
 import ast
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -74,8 +75,7 @@ class DependencyGraphBuilder:
 
     def find_dependents(self, filepath: str | Path) -> list[Path]:
         target = self._normalize(filepath)
-        dependents = sorted(self.reverse_graph.get(target, set()))
-        return dependents
+        return sorted(self.reverse_graph.get(target, set()))
 
     def find_transitive_dependents(self, filepath: str | Path) -> list[Path]:
         target = self._normalize(filepath)
@@ -139,9 +139,8 @@ class DependencyGraphBuilder:
             if isinstance(node, ast.Import):
                 for alias in node.names:
                     imports.add(alias.name)
-            elif isinstance(node, ast.ImportFrom):
-                if node.module:
-                    imports.add(node.module)
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                imports.add(node.module)
         return imports
 
     def _normalize(self, filepath: str | Path) -> Path:
@@ -206,9 +205,9 @@ class ImpactAnalyzer:
     def _count_changed_lines(changes: str) -> int:
         return sum(
             1
-            for l in changes.splitlines()
-            if (l.startswith("+") and not l.startswith("+++"))
-            or (l.startswith("-") and not l.startswith("---"))
+            for line in changes.splitlines()
+            if (line.startswith("+") and not line.startswith("+++"))
+            or (line.startswith("-") and not line.startswith("---"))
         )
 
     @staticmethod

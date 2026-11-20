@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aetherra"
-version = "0.5.0-beta.0"
+version = "0.5.0-beta.1"
 description = "AI-native development environment with intelligent workflows and persistent memory"
 readme = "README.md"
 license = {text = "GPL-3.0-or-later"}
@@ -38,12 +38,14 @@ dependencies = [
     "prometheus-client>=0.19.0",
     "pyyaml>=6.0",
     "cryptography>=41.0.0",
+    "PyNaCl>=1.6.2",
     "numpy>=1.24.0",
     "qiskit>=1.0.0",
     "qiskit-aer>=0.13.0",
 ]
 
 [project.optional-dependencies]
+continuity = ["sentence-transformers==4.1.0"]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.1.0",
@@ -232,6 +234,21 @@ title = "Aetherra Test Coverage Report"
 [tool.coverage.xml]
 output = "coverage.xml"
 
+# The release CLI runs from the repository root, not Aetherra/pyproject.toml.
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+build_command = "python tools/run_release.py --build"
+build_command_env = ["AETHERRA_RELEASE_PRIVKEY"]
+assets = ["README.md"]
+major_on_zero = false
+allow_zero_version = true
+tag_format = "v{version}"
+
+[tool.semantic_release.branches.main]
+match = "main"
+prerelease = true
+prerelease_token = "beta"
+
 # Code Formatting and Linting
 [tool.black]
 line-length = 88
@@ -282,7 +299,6 @@ extend-exclude = [
     "Aetherra/plugins/extra_plugins/*_gui.py",
     "tests/gui",
     "tests/ai/test_neural_interface.py",
-    "demos/demo_intelligent_error_handler_8.py",
 ]
 
 [tool.ruff.lint]

@@ -107,8 +107,6 @@ foundation:
 - `aetherra_import_updater.py`
 - `aetherra_lyrixa_cleaner.py`
 - `aetherra_plugins_cleaner.py`
-- `clean_hub_tmp.py`
-- `clean_hub_tmp_utf8.py`
 - `stub_finder.py`
 
 Reasons:
@@ -116,8 +114,6 @@ Reasons:
 - Some perform direct writes, moves, or deletes without the newer Guardian
   preflight style.
 - Some generate root-level reports or backups.
-- `clean_hub_tmp.py` is very large and appears to contain broad Hub/runtime
-  logic rather than a focused maintenance tool.
 - `stub_finder.py` writes `STUB_INVENTORY.json` directly and should be replaced
   by `generate_stub_inventory.py` for guarded inventory generation.
 
@@ -135,3 +131,17 @@ For Maintenance foundation work, prefer:
 Treat action tools as manual, Guardian-gated execution paths only. Treat legacy
 or questionable tools as cleanup candidates after all systems reach functional
 completion.
+
+## Verified Retirement: 2026-10-13
+
+The two temporary Hub copies (`clean_hub_tmp.py` and `clean_hub_tmp_utf8.py`)
+were removed after confirming they had no runtime, workflow or test references.
+One duplicated the historical monolithic Hub; the other was a truncated stub.
+The canonical `aetherra_hub` package and its integration coverage remain.
+
+The obsolete intelligence suites `test_intelligence_core.py`,
+`test_intelligence_core_enhanced.py` and `test_intelligence_real_api.py` were
+also removed with explicit approval. Their production imports referred to
+removed `core_migrated` paths, then substituted classes defined within the
+tests themselves. Passing those substitutes was not evidence of runtime health.
+Current Engine, provider, memory and chat acceptance tests remain authoritative.

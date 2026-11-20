@@ -4,6 +4,11 @@ This is the project dashboard for systems that currently define Aetherra. It
 tracks what exists, what state each system is in, and which document should be
 treated as the primary reference.
 
+For the human-readable identity, authority model, and core lifecycle of the
+project, see `docs/WHO_IS_AETHERRA.md`.
+
+For the active build sequence, see `docs/BUILD_ORDER.md`.
+
 Status meanings:
 
 - Functional foundation complete: the system has a working bounded foundation,
@@ -16,6 +21,12 @@ Status meanings:
   active foundation.
 
 ## Core Systems
+
+Personal continuity checkpoint (2026-11-19): the normal full-launcher Hub/Engine
+path now retrieves bounded persisted personal evidence across process restart.
+Offline and live competing-fact/profile checks and core recall are recorded
+in [PERSONAL_CONTINUITY.md](PERSONAL_CONTINUITY.md). This establishes local storage
+isolation, not account isolation or full-runtime readiness.
 
 | System | Status | Primary Reference |
 | --- | --- | --- |
@@ -38,6 +49,7 @@ Status meanings:
 
 | System | Status | Primary Reference |
 | --- | --- | --- |
+| Engine | Functional complete | `docs/AETHERRA_ENGINE_SYSTEM.md` |
 | Artificial Intelligence | Functional foundation complete | `docs/AETHERRA_ARTIFICIAL_INTELLIGENCE_SYSTEM.md` |
 | Consciousness | Functional foundation complete | `docs/AETHERRA_CONSCIOUSNESS_SYSTEM.md` |
 | Coding | Functional foundation complete | `docs/AETHERRA_CODING_SYSTEM.md` |
@@ -53,4 +65,4 @@ operations foundation. New systems should integrate with those foundations
 instead of bypassing them.
 
 When a system reaches a functional milestone, update this file, the system
-document, and `docs/BUILD_ORDER.md` in the same change.
+document, and `docs/MASTER_ROADMAP.md` in the same change.

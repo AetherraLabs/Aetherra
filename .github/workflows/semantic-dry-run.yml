@@ -16,29 +16,28 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Install deps
         run: |
           pip install --upgrade pip
           pip install .[dev]
+          pip install python-semantic-release==9.21.1 pynacl
+      - name: Test release bootstrap with real Git and CLI
+        run: python -m pytest tests/tools/test_release_bootstrap.py -q -o addopts=
       - name: Semantic release dry-run
-        id: semrel
+        id: next
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          semantic-release print-version --current || true
-          semantic-release version --noop --skip-build --skip-changelog || true
-          semantic-release changelog --noop || true
-      - name: Determine next version
-        id: next
-        run: |
-          nv=$(semantic-release version --noop --print | tail -n1 || echo unknown)
-          echo "next=$nv" >> $GITHUB_OUTPUT
+          # Evaluate the PR merge checkout under the actual main release policy.
+          git checkout -B main
+          nv=$(python tools/run_release.py --plan)
+          echo "next=$nv" >> "$GITHUB_OUTPUT"
       - name: Post PR comment
         if: ${{ github.event_name == 'pull_request' }}
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           recreate: true
           message: |

@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import re
 import subprocess
+import sys
 from pathlib import Path
 
 LINE_RE = re.compile(r"^([A-Za-z0-9_.\-]+)==([A-Za-z0-9_.\-]+)$")
@@ -30,7 +31,10 @@ LINE_RE = re.compile(r"^([A-Za-z0-9_.\-]+)==([A-Za-z0-9_.\-]+)$")
 
 def collect_freeze() -> set[str]:
     out = subprocess.check_output(
-        ["python", "-m", "pip", "freeze"], text=True, encoding="utf-8", errors="replace"
+        [sys.executable, "-m", "pip", "freeze"],
+        text=True,
+        encoding="utf-8",
+        errors="replace",
     )
     items = set()
     for line in out.splitlines():

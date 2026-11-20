@@ -193,7 +193,7 @@ def test_guardian_mode_api_validates_payload(monkeypatch, tmp_path):
     assert missing_reason.status_code == 400
     assert missing_reason.get_json()["error"] == "reason required"
     assert invalid_mode.status_code == 400
-    assert "invalid Guardian mode" in invalid_mode.get_json()["error"]
+    assert invalid_mode.get_json()["error"] == "invalid_guardian_mode"
 
 
 def test_guardian_mode_api_validates_history_limit(monkeypatch, tmp_path):

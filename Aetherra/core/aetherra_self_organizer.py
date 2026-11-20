@@ -163,7 +163,7 @@ class AetherraFileIntelligence:
             "archive",
             ".backups",
             "frontend",
-            "aetherra-website",  # Skip frontend and website node_modules
+            "aetherra-website",  # Legacy website source tree, if present locally
         }
 
         files_processed = 0
@@ -177,14 +177,11 @@ class AetherraFileIntelligence:
                 return True
 
             # Skip by pattern
-            if (
+            return (
                 dir_name.startswith(("legacy_cleanup_", "aetherra_backup_", "housekeeping_"))
                 or "backup" in dir_name
                 or "unused" in dir_name
-            ):
-                return True
-
-            return False
+            )
 
         def scan_directory(dir_path: Path):
             """Recursively scan directory, skipping unwanted ones."""
