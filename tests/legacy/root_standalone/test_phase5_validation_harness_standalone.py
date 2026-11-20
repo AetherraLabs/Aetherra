@@ -49,7 +49,7 @@ class TestPhase5ValidationHarness(unittest.TestCase):
         plan = build_plan("quick")[:2]
 
         def fake_runner(command, timeout):
-            if "quality" in " ".join(command):
+            if "quality" in Path(command[-1]).name:
                 return {
                     "ok": False,
                     "returncode": 1,

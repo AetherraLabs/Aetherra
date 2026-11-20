@@ -102,6 +102,13 @@ dependencies fail the command. Production policy also cryptographically verifies
 the manifest and artifact hashes against the pinned public key; supplying a
 public key makes a missing signature a hard failure.
 
+The full production bundle also runs legacy standalone checks. Their fixtures
+now use the active Hub control-token interface and exact authentication responses,
+the strict policy's 100-line boundary and finite positive ethics weights, and
+scenario filenames rather than interpreter paths when simulating a failed run.
+These checks run on PRs too. Runtime authentication, policy limits, and the full
+bundle's required 100% pass rate are unchanged.
+
 The pinned semantic-release CLI now has explicit root package/build configuration.
 It derives the next version from Git history; a preflight rejects downgrades. The
 build updates both README version markers, and README is included in the release

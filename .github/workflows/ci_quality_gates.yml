@@ -43,9 +43,13 @@ jobs:
         run: >-
           python -m pytest tests/acceptance/test_personal_continuity.py -q -o addopts=
           --cov=. --cov-report= --cov-fail-under=0
-      - name: Release signing regression tests
+      - name: Release signing and bundle regression tests
         run: >-
-          python -m pytest tests/tools/test_release_signing.py -q -o addopts=
+          python -m pytest tests/tools/test_release_signing.py
+          tests/legacy/root_standalone/test_hub_blueprints_standalone.py
+          tests/legacy/root_standalone/test_policy_manager_standalone.py
+          tests/legacy/root_standalone/test_phase5_validation_harness_standalone.py
+          -q -o addopts=
           --cov=. --cov-append --cov-report= --cov-fail-under=0
       - name: Version badge check
         run: python tools/verify_version_badge.py

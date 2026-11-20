@@ -8,14 +8,20 @@ in Windows cmd.exe environment.
 Run: python tests/legacy/root_standalone/test_policy_manager_standalone.py
 """
 
+# Standard library imports
+import math
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 
+# Third party imports
+import pytest
+
 # Add workspace root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
+# Aetherra imports
 from Aetherra.aetherra_core.system.policy_manager import (
     EthicsProfile,
     PolicyManager,
@@ -33,6 +39,7 @@ class TestPolicyManagerStandalone(unittest.TestCase):
 
     def tearDown(self):
         """Clean up."""
+        # Standard library imports
         import shutil
 
         shutil.rmtree(self.temp_dir, ignore_errors=True)
@@ -44,7 +51,7 @@ class TestPolicyManagerStandalone(unittest.TestCase):
         assert success, f"Failed to load strict profile: {msg}"
         assert policy is not None, "Policy object is None"
         assert policy.constraints.max_autonomy_level == 1
-        assert policy.constraints.require_verification == True
+        assert policy.constraints.require_verification
 
     def test_02_predefined_balanced_profile(self):
         """Test loading predefined balanced profile."""
@@ -59,7 +66,7 @@ class TestPolicyManagerStandalone(unittest.TestCase):
         assert success, f"Failed to load permissive profile: {msg}"
         assert policy is not None
         assert policy.constraints.max_autonomy_level == 4
-        assert policy.constraints.require_verification == False
+        assert not policy.constraints.require_verification
 
     def test_04_get_ethics_weights(self):
         """Test retrieving ethics weights from policy."""
@@ -138,17 +145,18 @@ class TestPolicyManagerStandalone(unittest.TestCase):
 
     def test_13_ethics_profile_validation(self):
         """Test EthicsProfile weight validation."""
-        try:
-            # Invalid weights: 0.5 + 0.5 + 0.1 + 0.1 = 1.2 (not 1.0)
-            bad_profile = EthicsProfile(
-                utilitarian=0.5,
-                deontological=0.5,
-                virtue=0.1,
-                care=0.1,  # Sum = 1.2, will fail on init
-            )
-            assert False, "Should have raised ValueError for invalid weights"
-        except ValueError as e:
-            assert "sum to 1.0" in str(e)
+        for invalid in (0, -0.5, float("nan"), float("inf"), "invalid"):
+            with (
+                self.subTest(weight=invalid),
+                pytest.raises(ValueError, match="Ethics weights must be"),
+            ):
+                EthicsProfile(utilitarian=invalid)
+        profile = EthicsProfile(
+            utilitarian=0.5, deontological=0.5, virtue=0.1, care=0.1
+        )
+        profile.normalize()
+        assert math.isclose(profile.utilitarian, 5 / 12, abs_tol=1e-7)
+        assert math.isclose(profile.care, 1 / 12, abs_tol=1e-7)
 
     def test_14_policy_validator_schema(self):
         """Test PolicyValidator schema validation."""
@@ -177,17 +185,16 @@ class TestPolicyManagerStandalone(unittest.TestCase):
 
     def test_15_strict_mode_code_size_limit(self):
         """Test strict mode enforces code size limit."""
-        # 1000 line limit in strict mode, so 500 should be ALLOWED
+        # The active strict policy allows at most 100 lines.
         is_allowed, reason = self.manager.validate_operation(
-            "code_generation", "strict", code_size=500
+            "code_generation", "strict", code_size=100
         )
-        assert is_allowed, f"500 lines should be under strict limit of 1000: {reason}"
+        assert is_allowed, f"100 lines should be within the strict limit: {reason}"
 
-        # But 1500 should NOT be allowed
         is_allowed, reason = self.manager.validate_operation(
-            "code_generation", "strict", code_size=1500
+            "code_generation", "strict", code_size=101
         )
-        assert not is_allowed, "1500 lines should exceed strict limit of 1000"
+        assert not is_allowed, "101 lines should exceed the strict limit of 100"
 
 
 def run_tests():
