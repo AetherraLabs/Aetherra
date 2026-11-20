@@ -12,7 +12,7 @@
         "test": "node --test tests/*.test.mjs"
     },
     "dependencies": {
-        "@radix-ui/react-dialog": "^1.1.23",
+        "@radix-ui/react-dialog": "^1.3.1",
         "@radix-ui/react-progress": "^1.2.1",
         "@radix-ui/react-slot": "^1.4.0",
         "@radix-ui/react-tabs": "^1.2.1",
@@ -36,16 +36,16 @@
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
         "@types/three": "^0.187.0",
-        "@typescript-eslint/eslint-plugin": "^8.72.1",
-        "@typescript-eslint/parser": "^8.72.0",
+        "@typescript-eslint/eslint-plugin": "^8.73.0",
+        "@typescript-eslint/parser": "^8.73.0",
         "@vitejs/plugin-react": "^6.1.2",
-        "eslint": "^10.14.0",
+        "eslint": "^10.15.0",
         "eslint-plugin-react-hooks": "^7.1.1",
         "eslint-plugin-react-refresh": "^0.5.7",
         "postcss": "^8.5.32",
         "semver": "^7",
         "tailwindcss": "^4.3.3",
-        "typescript": "~7.0.2",
+        "typescript": "~6.0.3",
         "vite": "^8.3.8"
     },
     "overrides": {
