@@ -237,7 +237,8 @@ output = "coverage.xml"
 # The release CLI runs from the repository root, not Aetherra/pyproject.toml.
 [tool.semantic_release]
 version_toml = ["pyproject.toml:project.version"]
-build_command = "python tools/sync_release_version.py && python -m build"
+build_command = "python tools/run_release.py --build"
+build_command_env = ["AETHERRA_RELEASE_PRIVKEY"]
 assets = ["README.md"]
 major_on_zero = false
 allow_zero_version = true
@@ -245,6 +246,7 @@ tag_format = "v{version}"
 
 [tool.semantic_release.branches.main]
 match = "main"
+prerelease = true
 prerelease_token = "beta"
 
 # Code Formatting and Linting

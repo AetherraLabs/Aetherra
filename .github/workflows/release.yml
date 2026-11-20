@@ -59,7 +59,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install .[dev]
-          pip install -r requirements/quality.txt python-semantic-release==9.21.1 build
+          pip install -r requirements/quality.txt python-semantic-release==9.21.1 build pynacl
 
       - name: Quick quality (lint + minimal test)
         run: |
@@ -84,17 +84,9 @@ jobs:
       - name: Semantic Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AETHERRA_RELEASE_PRIVKEY: ${{ secrets.AETHERRA_RELEASE_PRIVKEY }}
         run: |
-          version_output=$(semantic-release version --print)
-          next="${version_output%%$'\n'*}"
-          if git rev-parse --verify --quiet "refs/tags/v$next" >/dev/null; then
-            echo "Version $next is already released; nothing to publish."
-            exit 0
-          fi
-          python tools/sync_release_version.py --check-next "$next"
-          semantic-release version
-          semantic-release changelog
-          semantic-release publish
+          python tools/run_release.py
 
       - name: Format changelog
         if: always()
