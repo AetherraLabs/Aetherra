@@ -41,11 +41,25 @@ would hide them, and excludes untracked generated test artifacts.
 ## Workflow and dependency repairs
 
 `ci.yml` now has one workflow header and one jobs mapping. Both original sets of
-jobs are retained; workflow YAML validation rejects duplicate keys. Restored smoke
+checks are restored; the deleted Qt GUI test is replaced by current Runtime UI
+contract tests in the existing UI smoke job. YAML validation rejects duplicate keys. Restored smoke
 jobs explicitly clear whole-repository coverage options, install their async
 test dependency, and retain the existing WebSocket `<16` compatibility bound. The debugger
 dependency uses the published package name `pdbpp`, as documented by
 [its maintainers](https://github.com/pdbpp/pdbpp#installation).
+
+Signing/discovery tests install the shared CI dependencies, including PyYAML.
+The strict quality job installs and enforces `requirements-ci.lock` instead of
+comparing unpinned dependencies against the obsolete desktop lock. Its style
+tools match the pinned quality requirements. The docs verifier runs on Python
+3.11 after correcting two incompatible legacy test-report f-strings. Metrics
+generation uses `python -m tools.generate_metrics_reference`; its generated table
+is checked in separately from the existing hand-written explanations.
+Two restored tools tests now pass their intended environment and resolve script
+paths before changing directories. Nested report-generation checks use a bounded
+test subset and isolated coverage output. The architecture HTTP probe still
+requires all three endpoints to return 200, with a ten-second per-request bound
+to accommodate the observed two-second cold metrics initialization.
 
 ## Required operator action: release signing
 
