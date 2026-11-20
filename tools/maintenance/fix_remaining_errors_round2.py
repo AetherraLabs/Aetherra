@@ -67,9 +67,9 @@ def _guardian_preflight_round2_fixes(
             subsystem="maintenance",
             action="maintenance.round_two_error_fix",
             target="maintenance:phase7_round2_error_fixes",
-            purpose="Apply remaining Phase 7.1 GUI and roadmap repair edits",
+            purpose="Apply remaining Phase 7.1 GUI repair edits",
             capabilities=("maintenance:cleanup", "fs:write"),
-            expected_outcome="Planned Phase 7.1 repair edits are written to selected files",
+            expected_outcome="Planned Phase 7.1 GUI repair edits are written to selected files",
             reversible=False,
             rollback_plan="restore rewritten files from version control or backup",
             metadata={
@@ -174,57 +174,12 @@ def _plan_phase3_type_handling(project_root: Path) -> FileRewritePlan | None:
     )
 
 
-def _plan_roadmap_update(project_root: Path) -> FileRewritePlan | None:
-    file_path = project_root / "Aetherra" / "consciousness" / "EXTENDED_ROADMAP.md"
-    if not file_path.exists():
-        return None
-
-    content = file_path.read_text(encoding="utf-8")
-    quantum_update = """### Phase 7.1: Quantum Substrate Implementation - COMPLETE
-**Current Status: Phase 7.1 repair pass complete**
-
-#### Quantum State Management - COMPLETE
-- Quantum bit integration implemented for consciousness states
-- Superposition processing operational
-- Quantum decoherence controls documented
-- Quantum error correction paths reviewed
-
-#### Quantum Entanglement Networks - COMPLETE
-- Memory entanglement paths documented
-- Consciousness entanglement paths reviewed
-- Temporal and emotional entanglement notes preserved
-
-#### System Integration & Error Resolution - COMPLETE
-- Plugin loading optimization reviewed
-- Import error repair paths guarded
-- Panel generation defensive handling planned
-- Dashboard integration repair notes updated"""
-
-    updated, replacements = re.subn(
-        r"### .*?Phase 7\.1:.*?(?=### |\Z)",
-        quantum_update + "\n\n",
-        content,
-        count=1,
-        flags=re.DOTALL,
-    )
-
-    if updated == content:
-        return None
-    return FileRewritePlan(
-        file_path=file_path,
-        content=updated,
-        replacements=replacements,
-        label="phase7_roadmap_status_update",
-    )
-
-
 def plan_round2_fixes(project_root: str | Path = ".") -> list[FileRewritePlan]:
     """Build all Round 2 repair plans without mutating files."""
 
     root = Path(project_root)
     plans = [
         _plan_phase3_type_handling(root),
-        _plan_roadmap_update(root),
     ]
     return [plan for plan in plans if plan is not None]
 

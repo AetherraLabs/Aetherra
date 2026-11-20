@@ -121,7 +121,7 @@ def main() -> int:
     if sig_path.exists():
         sig_hex = sig_path.read_text().strip()
         pub_hex = args.pubkey
-        if pub_hex:
+        if pub_hex is not None:
             verified, err = verify_signature(
                 json.dumps(manifest, sort_keys=True).encode("utf-8"), sig_hex, pub_hex
             )
@@ -134,6 +134,9 @@ def main() -> int:
             print(
                 "[VERIFY][WARN] signature present but no --pubkey provided (skipping verification)"
             )
+    elif args.pubkey is not None:
+        print("[VERIFY][FAIL] public key supplied but signature file is missing")
+        ok = False
     else:
         print("[VERIFY][INFO] no signature file present")
 

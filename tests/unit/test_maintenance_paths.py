@@ -1,6 +1,10 @@
+# Third party imports
+import pytest
+
+# Aetherra imports
 from Aetherra.maintenance import (
-    classify_report_destination_for_root,
     classify_report_destination,
+    classify_report_destination_for_root,
     normalize_project_relative_path,
     require_allowed_report_destination,
 )
@@ -50,12 +54,10 @@ def test_absolute_path_can_be_classified_relative_to_project_root(tmp_path):
 def test_require_allowed_report_destination_raises_for_blocked_path(tmp_path):
     path = tmp_path / "MAINTENANCE_REPORT.md"
 
-    try:
+    with pytest.raises(
+        ValueError, match="root_level_generated_reports_are_not_allowed"
+    ):
         require_allowed_report_destination(path, tmp_path)
-    except ValueError as exc:
-        assert "root_level_generated_reports_are_not_allowed" in str(exc)
-    else:
-        raise AssertionError("Expected blocked report path to raise ValueError")
 
 
 def test_root_level_generated_report_is_blocked():

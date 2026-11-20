@@ -32,7 +32,6 @@ Author: GitHub Copilot
 Date: January 31, 2025
 """
 
-
 # Standard library imports
 import sys
 import time
@@ -899,14 +898,14 @@ def run_neural_interface_tests():
     if failures > 0:
         print("\n[ERROR] FAILURES:")
         for test, traceback in result.failures:
-            print(
-                f"  - {test}: {traceback.split('AssertionError: ')[-1].split('\\n')[0]}"
-            )
+            detail = traceback.split("AssertionError: ")[-1].splitlines()[0]
+            print(f"  - {test}: {detail}")
 
     if errors > 0:
         print("\n[FAIL] ERRORS:")
         for test, traceback in result.errors:
-            print(f"  - {test}: {traceback.split('\\n')[-2]}")
+            detail = traceback.rstrip().splitlines()[-1]
+            print(f"  - {test}: {detail}")
 
     # Generate detailed test report
     generate_neural_interface_test_report(result, success_rate)

@@ -1,53 +1,21 @@
-# Aetherra - AI-Native Development Platform
+# Aetherra Package
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
-A revolutionary development platform that bridges natural language and code through the Aetherra programming language and Lyrixa AI assistant.
+This directory contains the primary Aetherra Python package: runtime systems,
+governance systems, Lyrixa persona support, plugin support, validation helpers,
+and compatibility modules that are still required by tests or operator flows.
 
-## Features
+For the current project overview, build order, repository structure, and system
+status, use the root documentation:
 
-- **Aetherra Language**: AI-native programming language with natural language integration
-- **Lyrixa Assistant**: Intelligent AI assistant with memory, plugins, and contextual awareness
-- **Plugin Ecosystem**: Extensible architecture with dynamic plugin loading
-- **Visual Memory System**: Timeline and clustering visualization of AI memory
-- **Live Code Analysis**: Real-time suggestions and pattern recognition
+- `README.md`
+- `docs/ACTIVE_SYSTEMS.md`
+- `docs/MASTER_ROADMAP.md`
+- `docs/AETHERRA_MASTER_MAP.md`
 
-## Quick Start
-
-```powershell
-# Install dependencies
-pip install -r requirements.txt
-
-# Optional: GUI dependencies
-pip install -e .[gui]
-
-# Run Lyrixa
-python -m Aetherra.ui.enhanced_lyrixa
-
-# Run tests
-python -m Aetherra.scripts.run_tests
-```
-
-## Project Structure
-
-```text
-Aetherra/
-├── .vscode/           # VS Code settings & Continue agent configs
-├── agents/            # Lyrixa agent definitions
-├── core/              # Core runtime modules
-├── plugins/           # Built-in plugins (.aether files)
-├── ui/                # Desktop UI components
-├── scripts/           # Utility scripts
-├── tests/             # Automated tests
-└── docs/              # Documentation
-```
-
-## Documentation
-
-See the `docs/` directory for detailed documentation, guides, and API references.
-
-## License
-
-GPL-3.0-or-later — see the root LICENSE file for full terms.
+The root Master Map is the source of truth for whether files in this package are
+active runtime, provisional runtime, validation support, documentation, tooling,
+or cleanup/rename debt.
 
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

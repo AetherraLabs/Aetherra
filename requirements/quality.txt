@@ -1,0 +1,5 @@
+# Keep local checks and both PR/push workflows on the baseline's tool versions.
+ruff==0.17.6
+black==26.10.1
+isort==9.0.2
+pre-commit-hooks==6.0.0

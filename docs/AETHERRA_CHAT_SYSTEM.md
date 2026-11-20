@@ -3,6 +3,12 @@
 > Maintained and officially operated by **Aetherra Labs**.
 > **Powered by Aetherra Labs.**
 
+Personal continuity checkpoint (2026-11-19): the full-launcher
+`POST /api/ai/ask` path is verified through Engine, SQLite recall and the actual
+reply provider after restart. The separate Lyrixa bridge is unchanged.
+Commands, fallback limits and synthetic traces are in
+[PERSONAL_CONTINUITY.md](PERSONAL_CONTINUITY.md).
+
 ## Release notes (2025-08-31)
 
 - Lyrixa bridge schema hardening:

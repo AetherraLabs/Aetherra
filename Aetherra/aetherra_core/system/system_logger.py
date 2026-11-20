@@ -3,16 +3,18 @@
 
 # Standard library imports
 # Minimal system_logger for Aetherra
-# Logs to console and to a file in the system directory
+# Logs to console and to runtime state outside source-controlled directories.
 import datetime
 from pathlib import Path
 
-LOG_PATH = Path(__file__).parent / "system_log.txt"
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+LOG_PATH = PROJECT_ROOT / ".aetherra" / "logs" / "system.log"
 
 
 def log(message):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     entry = f"[{timestamp}] {message}"
     print(entry)
+    LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
     with open(LOG_PATH, "a", encoding="utf-8") as f:
         f.write(entry + "\n")

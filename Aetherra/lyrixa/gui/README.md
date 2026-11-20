@@ -22,5 +22,6 @@ Active files:
 - `package.json`
 - Vite, TypeScript, PostCSS, and Tailwind configuration
 
-Legacy Lyrixa GUI files from this package have been moved to
-`deprecated/ui_legacy/Aetherra/lyrixa/gui/`.
+Legacy Lyrixa GUI archives were removed from mainline after the Runtime
+Observatory became the active UI direction. Historical snapshots should live in
+Git history or a dedicated archive branch, not in the operating tree.

@@ -4,6 +4,35 @@
 >
 > Format: `metric_name` — TYPE — Description (Key related env or notes)
 
+## Generated chat fields
+
+<!-- Regenerate with: python -m tools.generate_metrics_reference -->
+<!-- GENERATED_METRICS_TABLE_BEGIN -->
+| Metric (field) | Type | Description | Notes |
+| -------------- | ---- | ----------- | ----- |
+| aetherra_chat_requests_total | counter | Total chat requests processed | |
+| aetherra_chat_streams_current | gauge | Active SSE streaming connections | |
+| aetherra_chat_fallback_mock_total | counter | Mock fallback path activations (aggregate) | |
+| aetherra_chat_latency_ms_sum | gauge | TBD | |
+| aetherra_chat_latency_count | counter | TBD | |
+| aetherra_chat_ttft_ms_sum | gauge | TBD | |
+| aetherra_chat_ttft_count | counter | TBD | |
+| aetherra_chat_chars_in_total | counter | Cumulative input characters (approx) | |
+| aetherra_chat_chars_out_total | counter | Cumulative output characters (approx) | |
+| aetherra_chat_tokens_in_total | counter | Approximate input tokens (heuristic) | |
+| aetherra_chat_tokens_out_total | counter | Approximate output tokens (heuristic) | |
+| aetherra_chat_chunks_total | counter | SSE chunk events emitted | |
+| aetherra_chat_breaker_open_total | counter | Circuit breaker / timeout triggered count | |
+| aetherra_chat_rate_limited_total | counter | TBD | |
+| aetherra_chat_soft_timeouts_total | counter | Soft timeout terminations before engine response | |
+| aetherra_chat_auth_missing_token_total | counter | Missing required token rejections | |
+| aetherra_chat_auth_invalid_token_total | counter | Invalid token rejections | |
+| aetherra_chat_hmr_denied_total | counter | HMR enable attempts denied | |
+| aetherra_chat_resume_gaps_total | counter | SSE resume gap detections (missed events) | |
+| aetherra_chat_latency_ms_* | histogram | Latency histogram & counters | Buckets 50..5000ms |
+| aetherra_chat_ttft_ms_* | histogram | TTFT histogram & counters | Buckets 50..2000ms |
+<!-- GENERATED_METRICS_TABLE_END -->
+
 ## Chat / Streaming
 
 | Metric                                                | Type              | Description                                                  | Key Env / Notes                        |

@@ -1,5 +1,7 @@
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.maintenance import (
     MAINTENANCE_SERVICE_ALIASES,
     MAINTENANCE_SERVICE_NAME,
@@ -43,9 +45,7 @@ class _FakeRegistry:
 
     async def register_service(self, name, instance, metadata=None):
         self.registrations.append((name, instance, metadata or {}))
-        if name == MAINTENANCE_SERVICE_NAME and self.fail_primary:
-            return False
-        return True
+        return not (name == MAINTENANCE_SERVICE_NAME and self.fail_primary)
 
 
 def test_service_status_wraps_coordinator_without_claiming_extra_authority():
@@ -203,9 +203,5 @@ async def test_register_maintenance_service_raises_when_primary_registration_fai
 ):
     registry = _FakeRegistry(fail_primary=True)
 
-    try:
+    with pytest.raises(RuntimeError, match="failed_to_register_maintenance_service"):
         await register_maintenance_service(registry=registry, project_root=tmp_path)
-    except RuntimeError as exc:
-        assert "failed_to_register_maintenance_service" in str(exc)
-    else:
-        raise AssertionError("Expected failed Maintenance service registration to raise")

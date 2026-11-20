@@ -14,8 +14,11 @@ This lightweight module avoids adding the dependency overhead unless enabled.
 from __future__ import annotations
 
 # Standard library imports
+import logging
 import os
 import threading
+
+logger = logging.getLogger(__name__)
 
 try:  # optional dependency
     # Third party imports
@@ -25,7 +28,8 @@ try:  # optional dependency
         Histogram,
         start_http_server,
     )
-except Exception:  # pragma: no cover
+except Exception as exc:  # pragma: no cover
+    logger.warning("Metrics client import failed (%s)", type(exc).__name__)
     Gauge = None  # type: ignore
     Counter = None  # type: ignore
     Histogram = None  # type: ignore
@@ -45,15 +49,7 @@ _lock = threading.Lock()
 
 def initialize_exporter() -> bool:
     """Initialize exporter if enabled; idempotent. Returns True if active."""
-    global \
-        _started, \
-        _workspace_queue_gauge, \
-        _narrative_coherence_gauge, \
-        _narrative_chapters_gauge, \
-        _workspace_candidate_counter, \
-        _workspace_broadcast_counter, \
-        _workspace_latency_hist, \
-        _narrative_generation_hist
+    global _started, _workspace_queue_gauge, _narrative_coherence_gauge, _narrative_chapters_gauge, _workspace_candidate_counter, _workspace_broadcast_counter, _workspace_latency_hist, _narrative_generation_hist
     if os.getenv("AETHERRA_PROMETHEUS", "0") != "1":
         return False
     if Gauge is None:
@@ -67,7 +63,8 @@ def initialize_exporter() -> bool:
                 start_http_server(port)
             else:
                 return False
-        except Exception:
+        except Exception as exc:
+            logger.warning("Metrics listener startup failed (%s)", type(exc).__name__)
             return False
         _workspace_queue_gauge = Gauge(
             "aetherra_consciousness_workspace_queue_size",
@@ -108,8 +105,11 @@ def initialize_exporter() -> bool:
                     "Narrative chapter generation duration",
                     buckets=[0.005, 0.01, 0.02, 0.05, 0.1, 0.25, 0.5, 1, 2],
                 )
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning(
+                    "Workspace counter and histogram registration failed (%s)",
+                    type(exc).__name__,
+                )
         _started = True
     return True
 
@@ -118,24 +118,30 @@ def update_workspace_queue(size: int):  # lightweight guard
     if _workspace_queue_gauge is not None:
         try:
             _workspace_queue_gauge.set(size)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning(
+                "Workspace queue gauge update failed (%s)", type(exc).__name__
+            )
 
 
 def update_narrative_coherence(coherence: float):
     if _narrative_coherence_gauge is not None:
         try:
             _narrative_coherence_gauge.set(coherence)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning(
+                "Narrative coherence gauge update failed (%s)", type(exc).__name__
+            )
 
 
 def update_identity_coherence(coherence: float):
     if _identity_coherence_gauge is not None:
         try:
             _identity_coherence_gauge.set(coherence)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning(
+                "Identity coherence gauge update failed (%s)", type(exc).__name__
+            )
 
 
 def increment_chapter_count():
@@ -143,37 +149,47 @@ def increment_chapter_count():
         try:
             # Gauge used as counter (Prom client guarantees thread safety)
             _narrative_chapters_gauge.inc()
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning(
+                "Narrative chapter counter increment failed (%s)", type(exc).__name__
+            )
 
 
 def inc_workspace_candidate(source: str):
     if _workspace_candidate_counter is not None:
         try:
             _workspace_candidate_counter.labels(source=source or "unknown").inc()
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning(
+                "Workspace candidate counter increment failed (%s)", type(exc).__name__
+            )
 
 
 def inc_workspace_broadcast(source: str):
     if _workspace_broadcast_counter is not None:
         try:
             _workspace_broadcast_counter.labels(source=source or "unknown").inc()
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning(
+                "Workspace broadcast counter increment failed (%s)", type(exc).__name__
+            )
 
 
 def observe_workspace_latency(seconds: float):
     if _workspace_latency_hist is not None:
         try:
             _workspace_latency_hist.observe(max(0.0, seconds))
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning(
+                "Workspace latency observation failed (%s)", type(exc).__name__
+            )
 
 
 def observe_narrative_generation(seconds: float):
     if _narrative_generation_hist is not None:
         try:
             _narrative_generation_hist.observe(max(0.0, seconds))
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning(
+                "Narrative generation observation failed (%s)", type(exc).__name__
+            )
