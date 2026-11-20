@@ -666,18 +666,18 @@ def build_all_metrics_lines() -> list[str]:  # core builder used by blueprint
         )
         inflight = ks.get("inflight") or {}
         if isinstance(inflight, dict):
-            for target, count in sorted(inflight.items(), key=lambda item: str(item[0])):
+            for target, count in sorted(
+                inflight.items(), key=lambda item: str(item[0])
+            ):
                 lines.append(
-                    'aetherra_kernel_inflight_current'
+                    "aetherra_kernel_inflight_current"
                     f'{{target="{_label_value(target)}"}} {_num(count)}'
                 )
 
     # HMR configuration gauges
     hmr_config = registry_client.get_hmr_config_metrics() or {}
     if hmr_config:
-        lines.append(
-            f"aetherra_hmr_enabled {1 if hmr_config.get('enabled') else 0}"
-        )
+        lines.append(f"aetherra_hmr_enabled {1 if hmr_config.get('enabled') else 0}")
         lines.append(f"aetherra_hmr_strict {1 if hmr_config.get('strict') else 0}")
         lines.append(
             "aetherra_hmr_allowed_sources_count "
@@ -714,7 +714,7 @@ def build_all_metrics_lines() -> list[str]:  # core builder used by blueprint
                 per_module_active.items(), key=lambda item: str(item[0])
             ):
                 lines.append(
-                    'aetherra_klm_active_module'
+                    "aetherra_klm_active_module"
                     f'{{module="{_label_value(module)}"}} {_num(active)}'
                 )
 
@@ -733,7 +733,7 @@ def build_all_metrics_lines() -> list[str]:  # core builder used by blueprint
                 topic_backlog.items(), key=lambda item: str(item[0])
             ):
                 lines.append(
-                    'aetherra_keb_topic_backlog'
+                    "aetherra_keb_topic_backlog"
                     f'{{topic="{_label_value(topic)}"}} {_num(backlog)}'
                 )
 
@@ -809,20 +809,10 @@ def build_all_metrics_lines() -> list[str]:  # core builder used by blueprint
             )
 
     # Memory quantum + audit
-    mq = registry_client.get_memory_quantum_status() or {}
-    if mq:
-        if "coherence" in mq:
-            lines.append(
-                f"aetherra_memory_coherence_score {_num(mq.get('coherence', 0.0))}"
-            )
-        if "branches" in mq:
-            lines.append(
-                f"aetherra_memory_branches_total {_num(mq.get('branches', 0))}"
-            )
-        if "fragments" in mq:
-            lines.append(
-                f"aetherra_memory_fragments_total {_num(mq.get('fragments', 0))}"
-            )
+    mq = registry_client.get_memory_quantum_status(allow_fallback=False) or {}
+    lines.append(f"aetherra_memory_coherence_score {_num(mq.get('coherence', 0.0))}")
+    lines.append(f"aetherra_memory_branches_total {_num(mq.get('branches', 0))}")
+    lines.append(f"aetherra_memory_fragments_total {_num(mq.get('fragments', 0))}")
 
     # STORM metrics (STORM PR-5 + Shadow Mode + Day 8 Maintenance)
     storm = registry_client.get_storm_metrics() or {}
@@ -1006,46 +996,23 @@ def build_all_metrics_lines() -> list[str]:  # core builder used by blueprint
         )
         lines.append("# TYPE aetherra_qfac_shadow_logs_recent gauge")
         lines.append("aetherra_qfac_shadow_logs_recent 0")
-    # QFAC policy decision metrics (P1 #9). Best-effort: try optional qfac_memory_system
+    # Observe registered QFAC state without constructing stores during a scrape.
     policy_emitted = False
     snapshot_emitted = False
     parity_emitted = False
     try:
-        # Aetherra imports
-        from Aetherra.aetherra_core.memory.qfac_integration import (
-            QFACMemorySystem,
-        )
-
-        # Access via service registry for canonical instance
-        qfac_status = None
+        live_inst = registry_client.get_service("qfac_memory_system")
         try:
-            qs = registry_client.get_registry_status() or {}
-            # Not all registries expose direct instance list; fallback: dynamic import probe below
-            _ = qs  # placeholder to avoid linter
-        except Exception:
-            logger.debug("metrics: registry status fetch failed", exc_info=True)
-        # Direct import path: attempt to locate a global instance reference from launcher systems via registry
-        try:
-            # Indirect retrieval: memory quantum status may include qfac info in future; for now attempt attribute walk
-            # This is intentionally best-effort to avoid tight coupling.
-            # Heuristic: scan globals for a QFACMemorySystem singleton (lightweight)
-            for obj in list(globals().values()):
-                if isinstance(
-                    obj, QFACMemorySystem
-                ):  # pragma: no cover - heuristic path
-                    qfac_status = obj.get_policy_decision()
-                    break
-        except Exception:
-            logger.debug("metrics: global QFAC scan failed", exc_info=True)
+            qfac_status = (
+                live_inst.get_policy_decision()
+                if live_inst is not None and hasattr(live_inst, "get_policy_decision")
+                else None
+            )
+        except Exception as exc:
+            logger.debug(
+                "metrics: registered QFAC policy lookup failed (%s)", type(exc).__name__
+            )
             qfac_status = None
-        if not qfac_status:
-            # Fallback: attempt lazy construction only to introspect policy; this yields a fresh decision
-            try:
-                _tmp = QFACMemorySystem("_qfac_policy_probe")
-                qfac_status = _tmp.get_policy_decision()
-            except Exception:
-                logger.debug("metrics: policy probe construct failed", exc_info=True)
-                qfac_status = None
         if isinstance(qfac_status, dict) and qfac_status:
             mode = qfac_status.get("mode", "classical")
             allowed = 1 if qfac_status.get("allowed") else 0
@@ -1076,19 +1043,7 @@ def build_all_metrics_lines() -> list[str]:  # core builder used by blueprint
             )
             policy_emitted = True
 
-        # Always attempt a lightweight QFAC metrics snapshot for observability
         try:
-            # Try to discover a live instance (heuristic); otherwise temp-construct
-            live_inst = None
-            for obj in list(globals().values()):  # pragma: no cover - best-effort
-                if isinstance(obj, QFACMemorySystem):
-                    live_inst = obj
-                    break
-            if live_inst is None:
-                try:
-                    live_inst = QFACMemorySystem("_qfac_metrics_probe")
-                except Exception:
-                    live_inst = None
             if live_inst is not None and hasattr(live_inst, "get_metrics_snapshot"):
                 snap = live_inst.get_metrics_snapshot()
                 if isinstance(snap, dict) and snap:
@@ -1385,7 +1340,7 @@ def build_all_metrics_lines() -> list[str]:  # core builder used by blueprint
     lines.append(
         f"aetherra_qfac_retrieval_parity_enabled {1 if (os.getenv('AETHERRA_QFAC_RETRIEVAL_PARITY', '1') not in ('0', 'false', 'False')) else 0}"
     )
-    ma = registry_client.get_memory_audit() or {}
+    ma = registry_client.get_memory_audit(allow_fallback=False) or {}
     if isinstance(ma.get("audit"), dict):
         audit = ma.get("audit") or {}
         nodes_count = _safe_len(audit.get("nodes"))
@@ -1400,6 +1355,7 @@ def build_all_metrics_lines() -> list[str]:  # core builder used by blueprint
 
     # Engine metrics (message/recall latency, STORM canary)
     try:
+        # Aetherra imports
         from Aetherra.aetherra_core.engine.aetherra_engine import (
             aetherra_engine,  # type: ignore
         )
@@ -1529,9 +1485,7 @@ def build_all_metrics_lines() -> list[str]:  # core builder used by blueprint
     # Plugin metrics appended last
     try:
         # Local imports
-        from .plugin_metrics import (
-            as_prometheus_lines as plugin_metrics_lines,
-        )
+        from .plugin_metrics import as_prometheus_lines as plugin_metrics_lines
 
         lines.extend(plugin_metrics_lines())
     except Exception:

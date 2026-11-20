@@ -60,7 +60,21 @@ def _strict_net_policy_enabled() -> bool:
     return os.getenv("AETHERRA_NET_STRICT", "0") == "1" or _is_production_profile()
 
 
-def _load_policy() -> dict[str, Any]:
+def _load_policy(*, require_valid_policy: bool = False) -> dict[str, Any]:
+    if require_valid_policy:
+        try:
+            data = json.loads(_policy_file().read_text(encoding="utf-8"))
+            if not isinstance(data, dict):
+                raise ValueError
+            for key in ("allow_domains", "deny_domains"):
+                values = data.get(key, [])
+                if not isinstance(values, list) or any(
+                    not isinstance(value, str) or not value.strip() for value in values
+                ):
+                    raise ValueError
+            return data
+        except Exception:
+            raise ValueError("network_policy_invalid") from None
     try:
         policy_file = _policy_file()
         if policy_file.exists():
@@ -113,16 +127,18 @@ def _guardian_allows_network(
     return decision.status in {GuardianStatus.ALLOW, GuardianStatus.ALLOW_LIMITED}
 
 
-def is_domain_allowed(url: str, requester: str) -> bool:
-    dom = _domain_of(url)
-    pol = _load_policy()
+def is_domain_allowed(
+    url: str, requester: str, *, require_valid_policy: bool = False
+) -> bool:
+    dom = (urlparse(url).hostname or "").lower() if require_valid_policy else _domain_of(url)
+    pol = _load_policy(require_valid_policy=True) if require_valid_policy else _load_policy()
     allow = list(pol.get("allow_domains", []) or [])
     deny = set(pol.get("deny_domains", []) or [])
     # Default allowlist in production when none provided
-    if _is_production_profile() and not allow:
+    if not require_valid_policy and _is_production_profile() and not allow:
         allow = ["localhost", "127.0.0.1", ".aetherra.dev"]
     allow = set(allow)
-    strict = _strict_net_policy_enabled()
+    strict = require_valid_policy or _strict_net_policy_enabled()
 
     if dom in deny:
         logger.warning("Net policy deny: %s -> %s", requester, dom)

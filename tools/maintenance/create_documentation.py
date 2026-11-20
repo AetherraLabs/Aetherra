@@ -378,7 +378,7 @@ Files supporting the project ecosystem:
 ### File Organization
 1. **Core components** should remain in `Aetherra/` directory
 2. **Tests** are organized in `tests/` directory
-3. **Documentation** is organized in `docs-organized/` directory
+3. **Documentation** is organized in the `docs/` directory
 4. **Database files** are centralized in `Aetherra/data/databases/`
 
 ### Development Practices

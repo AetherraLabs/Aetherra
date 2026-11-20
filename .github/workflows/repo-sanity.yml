@@ -13,7 +13,6 @@ jobs:
         run: |
           git ls-files -z \
             ':!:dist-packages/**' \
-            ':!:aetherra-website/node_modules/**' \
             ':!:**/node_modules/**' \
             ':!:tools/doctor_last_run.txt' \
             | xargs -0 -I {} bash -lc 'size=$(wc -c < "{}" || echo 0); if [ "$size" -gt 10485760 ]; then echo "Large file: {} ($size bytes)"; exit 1; fi'
@@ -34,14 +33,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Enforce lockfile for frontend
+      - name: Enforce lockfiles for npm projects
         run: |
-          if [ -f frontend/package.json ]; then \
-            if [ -f frontend/package-lock.json ] || [ -f frontend/yarn.lock ] || [ -f frontend/pnpm-lock.yaml ]; then \
-              echo "Lockfile present"; \
+          for project in Aetherra/lyrixa/gui Aetherra/aetherra_hub/aetherra_hub; do \
+            if [ -f "$project/package.json" ]; then \
+              if [ -f "$project/package-lock.json" ] || [ -f "$project/yarn.lock" ] || [ -f "$project/pnpm-lock.yaml" ]; then \
+                echo "Lockfile present for $project"; \
+              else \
+                echo "Missing lockfile for $project (expected one of package-lock.json, yarn.lock, pnpm-lock.yaml)"; exit 1; \
+              fi; \
             else \
-              echo "Missing lockfile for frontend (expected one of package-lock.json, yarn.lock, pnpm-lock.yaml)"; exit 1; \
+              echo "No package.json for $project; skipping"; \
             fi; \
-          else \
-            echo "No frontend/package.json; skipping"; \
-          fi
+          done

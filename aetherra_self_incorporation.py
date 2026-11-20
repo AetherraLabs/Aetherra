@@ -2614,6 +2614,95 @@ class CoreIntegrator:
     def __init__(self, service: "SelfIncorporationService"):
         self.service = service
 
+    @staticmethod
+    def _action_to_canonical_dict(action: Any) -> dict[str, Any]:
+        """Return the execution-relevant fields for an integration action."""
+
+        if hasattr(action, "action"):
+            action_type = getattr(action, "action", None)
+            target = getattr(action, "target", {})
+            deps = getattr(action, "deps", [])
+            priority = getattr(action, "priority", None)
+        elif isinstance(action, dict):
+            action_type = action.get("action")
+            target = action.get("target", {})
+            deps = action.get("deps", [])
+            priority = action.get("priority")
+        else:
+            action_type = None
+            target = {}
+            deps = []
+            priority = None
+
+        return {
+            "action": str(action_type or ""),
+            "target": target if isinstance(target, dict) else {},
+            "deps": list(deps) if isinstance(deps, list) else [],
+            "priority": str(priority or "normal"),
+        }
+
+    @classmethod
+    def action_scope_hash(cls, actions: list[Any]) -> str:
+        """Hash the exact action scope that may be executed."""
+
+        canonical_actions = [cls._action_to_canonical_dict(action) for action in actions]
+        payload = json.dumps(
+            canonical_actions,
+            sort_keys=True,
+            separators=(",", ":"),
+            default=str,
+        )
+        return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+    @classmethod
+    def plan_scope_lock(cls, plan: dict[str, Any]) -> dict[str, Any]:
+        """Create a lock describing the approved execution scope."""
+
+        actions = plan.get("actions", [])
+        if not isinstance(actions, list):
+            actions = []
+        return {
+            "version": 1,
+            "action_count": len(actions),
+            "action_scope_hash": cls.action_scope_hash(actions),
+        }
+
+    @classmethod
+    def validate_plan_scope_lock(cls, plan: dict[str, Any]) -> dict[str, Any]:
+        """Validate that the plan still matches its approved action scope."""
+
+        lock = plan.get("approved_scope")
+        if not isinstance(lock, dict):
+            return {"ok": True, "locked": False}
+
+        actions = plan.get("actions", [])
+        if not isinstance(actions, list):
+            return {
+                "ok": False,
+                "reason": "invalid_actions",
+                "approved_scope": lock,
+            }
+
+        current_count = len(actions)
+        current_hash = cls.action_scope_hash(actions)
+        expected_count = int(lock.get("action_count", -1))
+        expected_hash = str(lock.get("action_scope_hash") or "")
+        if current_count != expected_count or current_hash != expected_hash:
+            return {
+                "ok": False,
+                "reason": "plan_scope_mismatch",
+                "approved_scope": {
+                    "action_count": expected_count,
+                    "action_scope_hash": expected_hash,
+                },
+                "current_scope": {
+                    "action_count": current_count,
+                    "action_scope_hash": current_hash,
+                },
+            }
+
+        return {"ok": True, "locked": True, "approved_scope": lock}
+
     def _get_hmr_controller(self) -> Any:
         """Get HMR controller from service registry."""
         try:
@@ -2694,8 +2783,11 @@ class CoreIntegrator:
             try:
                 if bool(supports_action(str(action or ""))):
                     return True
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.debug(
+                    "[SELFINC][HMR] rollback action support probe failed: %s",
+                    exc,
+                )
         has_explicit_registration = callable(
             getattr(hmr_controller, "register_rollback_token", None)
         )
@@ -2716,9 +2808,7 @@ class CoreIntegrator:
                         )
                     )
                 )
-        if callable(supports_action):
-            return False
-        return True
+        return not callable(supports_action)
 
     async def _call_hmr_token_rollback(
         self,
@@ -2883,6 +2973,30 @@ class CoreIntegrator:
         skipped = 0
         errors = 0
         plan_id = plan.get("plan_id")
+
+        scope_validation = self.validate_plan_scope_lock(plan)
+        if not scope_validation.get("ok"):
+            return {
+                "ok": False,
+                "applied": 0,
+                "skipped": 0,
+                "errors": 1,
+                "status": "scope_mismatch",
+                "reason": scope_validation.get("reason", "plan_scope_mismatch"),
+                "scope": {
+                    "approved": scope_validation.get("approved_scope"),
+                    "current": scope_validation.get("current_scope"),
+                },
+                "results": [
+                    {
+                        "status": "error",
+                        "action": "plan_scope",
+                        "error": scope_validation.get(
+                            "reason", "plan_scope_mismatch"
+                        ),
+                    }
+                ],
+            }
 
         actions = plan.get("actions", [])
         for act in actions:
@@ -4785,6 +4899,8 @@ class SelfIncorporationService:
                 "duration": time.time() - start_time,
             }
 
+        plan["approved_scope"] = self.core_integrator.plan_scope_lock(plan)
+
         from Aetherra.guardian import GuardianStatus
 
         guardian_decision = self._guardian_preflight_integrate(
@@ -4916,6 +5032,7 @@ class SelfIncorporationService:
                     "applied": exec_result.get("applied"),
                     "errors": exec_result.get("errors"),
                     "rollback_token_count": len(rollback_tokens),
+                    "approved_scope": plan.get("approved_scope"),
                 },
                 trace_id=plan_trace_id,
                 ethics_overall=ethics_evaluation.get("overall_score"),
@@ -4931,6 +5048,9 @@ class SelfIncorporationService:
             "errors": exec_result.get("errors", 0),
             "duration": time.time() - start_time,
         }
+        if exec_result.get("status") == "scope_mismatch":
+            result["status"] = "scope_mismatch"
+            result["reason"] = exec_result.get("reason")
         if rollback_tokens:
             result["rollback_tokens"] = rollback_tokens
             result["last_rollback_token"] = rollback_tokens[-1]
@@ -5159,7 +5279,7 @@ class SelfIncorporationService:
         local_actions = {"register_workflow", "load_aether_script"}
         for item in actions:
             if hasattr(item, "action"):
-                action = str(getattr(item, "action") or "")
+                action = str(item.action or "")
             elif isinstance(item, dict):
                 action = str(item.get("action") or "")
             else:

@@ -1,25 +1,24 @@
 """
 Standalone tests for SignatureVerifier (no Aetherra engine dependencies)
 
-Run with: python tests/legacy/root_standalone/test_signature_verifier_standalone.py
+Run with: python -m tests.legacy.root_standalone.test_signature_verifier_standalone
 """
 
+# Standard library imports
+import hashlib
+import importlib.util
 import json
+import sys
 import tempfile
 import unittest
 from datetime import datetime
 from pathlib import Path
-import sys
-import hashlib
 
-# Add the project to path so we can import SignatureVerifier
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-# Import directly without triggering engine initialization
-import importlib.util
+# Load the production module without initializing the Aetherra engine.
 spec = importlib.util.spec_from_file_location(
     "signature_verifier",
-    "Aetherra/aetherra_core/system/signature_verifier.py"
+    Path(__file__).resolve().parents[3]
+    / "Aetherra/aetherra_core/system/signature_verifier.py",
 )
 sig_verifier_module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(sig_verifier_module)
@@ -49,8 +48,8 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
         file_hash = verifier._compute_file_hash(str(test_file))
 
         # Hash should be 64 characters (SHA-256)
-        self.assertEqual(len(file_hash), 64)
-        self.assertTrue(all(c in "0123456789abcdef" for c in file_hash))
+        assert len(file_hash) == 64
+        assert all(c in "0123456789abcdef" for c in file_hash)
         print("PASS test_01_compute_file_hash PASSED")
 
     def test_02_empty_file_hash(self):
@@ -63,18 +62,18 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
 
         # Known SHA-256 of empty string
         expected = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-        self.assertEqual(file_hash, expected)
+        assert file_hash == expected
         print("PASS test_02_empty_file_hash PASSED")
 
     def test_03_is_trusted_location(self):
         """Test trusted location detection."""
         verifier = SignatureVerifier(development_mode=True)
 
-        self.assertTrue(verifier._is_trusted_location("Aetherra/core/test.py"))
-        self.assertTrue(verifier._is_trusted_location("Aetherra/aetherra_core/test.py"))
-        self.assertTrue(verifier._is_trusted_location("src/lyrixa/test.py"))
-        self.assertFalse(verifier._is_trusted_location("tests/test.py"))
-        self.assertFalse(verifier._is_trusted_location("demos/test.py"))
+        assert verifier._is_trusted_location("Aetherra/core/test.py")
+        assert verifier._is_trusted_location("Aetherra/aetherra_core/test.py")
+        assert verifier._is_trusted_location("src/lyrixa/test.py")
+        assert not verifier._is_trusted_location("tests/test.py")
+        assert not verifier._is_trusted_location("demos/test.py")
         print("PASS test_03_is_trusted_location PASSED")
 
     def test_04_path_based_trust_trusted_file(self):
@@ -87,9 +86,9 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
         verifier = SignatureVerifier(development_mode=True)
         is_valid, info = verifier.verify(str(trusted_file))
 
-        self.assertTrue(is_valid)
-        self.assertEqual(info.method, "path_based_trust")
-        self.assertTrue(info.trusted_location)
+        assert is_valid
+        assert info.method == "path_based_trust"
+        assert info.trusted_location
         print("PASS test_04_path_based_trust_trusted_file PASSED")
 
     def test_05_path_based_trust_untrusted_file(self):
@@ -100,9 +99,9 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
         verifier = SignatureVerifier(development_mode=True)
         is_valid, info = verifier.verify(str(untrusted_file))
 
-        self.assertFalse(is_valid)
-        self.assertEqual(info.method, "path_based_trust")
-        self.assertFalse(info.trusted_location)
+        assert not is_valid
+        assert info.method == "path_based_trust"
+        assert not info.trusted_location
         print("PASS test_05_path_based_trust_untrusted_file PASSED")
 
     def test_06_manifest_loading(self):
@@ -120,8 +119,8 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
 
         verifier = SignatureVerifier(manifest_path=str(manifest_file))
 
-        self.assertEqual(verifier.manifest["test.py"], "abc123")
-        self.assertEqual(verifier.manifest_metadata["version"], "1.0")
+        assert verifier.manifest["test.py"] == "abc123"
+        assert verifier.manifest_metadata["version"] == "1.0"
         print("PASS test_06_manifest_loading PASSED")
 
     def test_07_manifest_verification_valid(self):
@@ -148,8 +147,8 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
         verifier = SignatureVerifier(manifest_path=str(manifest_file))
         is_valid, info = verifier.verify(str(test_file))
 
-        self.assertTrue(is_valid)
-        self.assertTrue(info.signature_valid)
+        assert is_valid
+        assert info.signature_valid
         print("PASS test_07_manifest_verification_valid PASSED")
 
     def test_08_manifest_verification_invalid(self):
@@ -172,8 +171,8 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
         verifier = SignatureVerifier(manifest_path=str(manifest_file))
         is_valid, info = verifier.verify(str(test_file))
 
-        self.assertFalse(is_valid)
-        self.assertFalse(info.signature_valid)
+        assert not is_valid
+        assert not info.signature_valid
         print("PASS test_08_manifest_verification_invalid PASSED")
 
     def test_09_batch_verification(self):
@@ -187,9 +186,9 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
         verifier = SignatureVerifier(development_mode=True)
         results = verifier.verify_batch(files)
 
-        self.assertEqual(len(results), 3)
-        for file_path, (is_valid, info) in results.items():
-            self.assertIsInstance(info, SignatureInfo)
+        assert len(results) == 3
+        for _file_path, (_is_valid, info) in results.items():
+            assert isinstance(info, SignatureInfo)
         print("PASS test_09_batch_verification PASSED")
 
     def test_10_caching(self):
@@ -206,9 +205,9 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
         is_valid2, info2 = verifier.verify(str(test_file))
 
         # Should get same result
-        self.assertEqual(is_valid1, is_valid2)
+        assert is_valid1 == is_valid2
         # Timestamps should be identical (from cache)
-        self.assertEqual(info1.timestamp, info2.timestamp)
+        assert info1.timestamp == info2.timestamp
         print("PASS test_10_caching PASSED")
 
     def test_11_clear_cache(self):
@@ -219,9 +218,9 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
         verifier = SignatureVerifier(development_mode=True)
         verifier.verify(str(test_file))
 
-        self.assertGreater(len(verifier.verification_cache), 0)
+        assert len(verifier.verification_cache) > 0
         verifier.clear_cache()
-        self.assertEqual(len(verifier.verification_cache), 0)
+        assert len(verifier.verification_cache) == 0
         print("PASS test_11_clear_cache PASSED")
 
     def test_12_generate_manifest(self):
@@ -238,14 +237,14 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
         verifier = SignatureVerifier()
         success = verifier.generate_manifest(str(python_dir), str(output_manifest))
 
-        self.assertTrue(success)
-        self.assertTrue(output_manifest.exists())
+        assert success
+        assert output_manifest.exists()
 
         with open(output_manifest) as f:
             manifest_data = json.load(f)
 
-        self.assertEqual(len(manifest_data["hashes"]), 3)
-        self.assertEqual(manifest_data["version"], "1.0")
+        assert len(manifest_data["hashes"]) == 3
+        assert manifest_data["version"] == "1.0"
         print("PASS test_12_generate_manifest PASSED")
 
     def test_13_audit_logging(self):
@@ -259,14 +258,14 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
         )
         verifier.verify(str(test_file))
 
-        self.assertTrue(audit_log.exists())
+        assert audit_log.exists()
 
         with open(audit_log) as f:
             log_entry = json.loads(f.read().strip())
 
-        self.assertIn("timestamp", log_entry)
-        self.assertIn("file_path", log_entry)
-        self.assertIn("is_valid", log_entry)
+        assert "timestamp" in log_entry
+        assert "file_path" in log_entry
+        assert "is_valid" in log_entry
         print("PASS test_13_audit_logging PASSED")
 
     def test_14_normalize_manifest_key(self):
@@ -274,10 +273,10 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
         verifier = SignatureVerifier()
 
         normalized = verifier._normalize_manifest_key("path\\to\\file.py")
-        self.assertEqual(normalized, "path/to/file.py")
+        assert normalized == "path/to/file.py"
 
         normalized = verifier._normalize_manifest_key("path/to/file.py")
-        self.assertEqual(normalized, "path/to/file.py")
+        assert normalized == "path/to/file.py"
         print("PASS test_14_normalize_manifest_key PASSED")
 
 
@@ -300,10 +299,9 @@ def run_tests():
     if result.wasSuccessful():
         print("PASS ALL TESTS PASSED")
         return 0
-    else:
-        print("FAIL SOME TESTS FAILED")
-        return 1
+    print("FAIL SOME TESTS FAILED")
+    return 1
 
 
 if __name__ == "__main__":
-    exit(run_tests())
+    sys.exit(run_tests())

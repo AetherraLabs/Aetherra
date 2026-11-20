@@ -52,10 +52,11 @@ jobs:
             exit(1)
         "
 
-    - name: ✅ Check OS GUI syntax
+    - name: Check Runtime UI syntax
       run: |
-        python -m py_compile Aetherra/gui/aetherra_os_gui.py
-        echo "✅ OS GUI syntax is valid"
+        python -m py_compile Aetherra/runtime_ui/__init__.py
+        python -m py_compile aetherra_hub/blueprints/runtime_ui.py
+        echo "Runtime UI syntax is valid"
 
     - name: ✅ Check AI OS launcher syntax
       run: |

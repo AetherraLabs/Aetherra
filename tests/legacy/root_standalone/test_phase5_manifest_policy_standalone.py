@@ -6,6 +6,7 @@ Run with:
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import os
 import sys
@@ -13,9 +14,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
-ROOT_DIR = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT_DIR))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
+# Aetherra imports
 from tools.verify_phase5_manifest_policy import verify_policy, verify_required_env_var
 
 

@@ -85,7 +85,7 @@ runtime path discovery are updated together.
 | --- | --- |
 | `Aetherra/aetherra_core/system/*.aether` | Keep in place. |
 | `Aetherra/plugins/examples/advanced-memory-system/memory_plugin.aether` | Keep in place. |
-| `Aetherra/scripts/self_organizer.aether` | Keep in place. |
+| `Aetherra/scripts/self_organizer.aether` | Keep in place until script verification/runtime discovery are migrated; package-level Python cleanup scripts have been removed. |
 | `Aetherra/tools/curiosity_conflict_resolution.aether` | Keep in place. |
 
 ## Next Safe Step

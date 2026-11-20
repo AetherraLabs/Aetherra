@@ -19,6 +19,7 @@ from __future__ import annotations
 import contextlib
 import importlib
 import io
+import logging
 import os
 import time
 
@@ -28,6 +29,7 @@ from flask import Blueprint, jsonify, request
 from ..services.control_auth import authorize_control_request
 
 bp = Blueprint("qfac_admin", __name__)
+logger = logging.getLogger(__name__)
 
 
 def _authorize():
@@ -69,8 +71,9 @@ def qfac_admin_show():
             data = do_show()
             # give a moment for any async prints from imported modules
             time.sleep(0.02)
-    except Exception as e:
-        resp = jsonify({"available": False, "error": str(e)})
+    except Exception:
+        logger.exception("QFAC admin show failed")
+        resp = jsonify({"available": False, "error": "qfac_admin_show_failed"})
         resp.status_code = 200
         return resp
     resp = jsonify(data)
@@ -94,8 +97,9 @@ def qfac_admin_reset():
         with contextlib.redirect_stdout(noise), contextlib.redirect_stderr(noise):
             res = do_reset()
             time.sleep(0.02)
-    except Exception as e:
-        resp = jsonify({"ok": False, "error": str(e)})
+    except Exception:
+        logger.exception("QFAC admin reset failed")
+        resp = jsonify({"ok": False, "error": "qfac_admin_reset_failed"})
         resp.status_code = 200
         return resp
     resp = jsonify(res)

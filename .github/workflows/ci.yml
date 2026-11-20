@@ -3,7 +3,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -34,7 +34,7 @@ jobs:
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install pytest
+          pip install pytest pytest-asyncio
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Smoke tests
@@ -51,19 +51,6 @@ jobs:
 
       - name: Spec→Tests Gate
         run: python tools/spec_tests_gate.py
-name: "🧠 Aetherra Continuous Integration"
-
-on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
-
-jobs:
   docs-consistency:
     name: "📚 Docs consistency"
     runs-on: ubuntu-latest
@@ -77,7 +64,7 @@ jobs:
       - name: "📦 Install minimal deps"
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt || true
+          # The verifier uses only the Python standard library.
       - name: "🔎 Run docs consistency verifier"
         run: |
           python tools/verify_docs_consistency.py
@@ -95,7 +82,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "🐍 Set up Python 3.11"
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -138,7 +125,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "🐍 Set up Python 3.11"
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -184,8 +171,8 @@ jobs:
         run: |
           ruff check --select TID252 . || true
 
-  gui-smoke:
-    name: "🧪 GUI monitor smoke"
+  runtime-ui-smoke:
+    name: "Runtime UI smoke"
     runs-on: ubuntu-latest
     continue-on-error: true
     timeout-minutes: 10
@@ -194,7 +181,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "🐍 Setup Python"
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -202,33 +189,33 @@ jobs:
       - name: "📦 Install minimal deps"
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install requests pytest
 
-      - name: "🔍 Snapshot run (no-Qt)"
+      - name: "Runtime UI read-only snapshot"
         run: |
-          python Aetherra/gui/aetherra_os_gui.py --once || exit 1
+          python - <<'PY'
+          from Aetherra.runtime_ui import (
+              build_runtime_ui_bootstrap_payload,
+              parse_observatory_mode,
+          )
 
-  lyrixa-gui-import:
-    name: "🧪 Lyrixa GUI import smoke"
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    timeout-minutes: 15
-    steps:
-      - name: "📥 Checkout"
-        uses: actions/checkout@v4
-      - name: "🐍 Setup Python"
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-      - name: "📦 Install deps (with offscreen Qt)"
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests flask flask-socketio PySide6 pytest
-      - name: "🔎 Run Lyrixa GUI smoke test (offscreen)"
-        run: |
-          export QT_QPA_PLATFORM=offscreen
-          python -m pytest -q tests/unit/test_gui_smoke.py
+          mode = parse_observatory_mode("overview")
+          assert mode is not None
+          payload = build_runtime_ui_bootstrap_payload(
+              mode=mode,
+              user_name="CI",
+              limit=5,
+          )
+          assert payload["ok"] is True
+          assert payload["read_only"] is True
+          assert payload["observatory"]["mode"] == "overview"
+          assert payload["manifest"]["authority"]["approve"] == "guardian"
+          PY
+      - name: "Runtime UI contract tests"
+        # The former Qt GUI and test_gui_smoke.py were retired.
+        run: >-
+          python -m pytest -q -o addopts=
+          tests/unit/test_runtime_ui_contract.py tests/unit/test_runtime_ui_manifest.py
 
   aether-tests:
     name: "🧪 Aether script basic tests"
@@ -237,17 +224,17 @@ jobs:
       - name: "📥 Checkout"
         uses: actions/checkout@v4
       - name: "🐍 Setup Python"
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
       - name: "📦 Install pytest"
         run: |
           python -m pip install --upgrade pip
-          pip install pytest
+          pip install pytest pytest-asyncio
       - name: "🏃 Run basic aether script test"
         run: |
-          pytest -q tests/test_aether_script_basic.py
+          pytest -q -o addopts= tests/test_aether_script_basic.py
 
   signing-tests:
     name: "🔐 Signing & Discovery tests"
@@ -256,14 +243,14 @@ jobs:
       - name: "📥 Checkout"
         uses: actions/checkout@v4
       - name: "🐍 Setup Python"
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
-      - name: "📦 Install deps (Flask, Requests, PyNaCl, pytest)"
+      - name: "📦 Install deps (CI, PyNaCl, pytest-asyncio)"
         run: |
           python -m pip install --upgrade pip
-          pip install pytest requests flask pynacl
+          pip install -r requirements/ci.txt pytest-asyncio pynacl
       - name: "🔧 Set env flags"
         run: |
           echo "AETHERRA_SIGN_PLUGINS=1" >> $GITHUB_ENV
@@ -271,7 +258,7 @@ jobs:
       - name: "🏃 Run signing tests (hub + discovery)"
         run: |
           # Soften warnings if project addopts is strict
-          pytest -q -W ignore::Warning tests/test_hub_signing.py tests/test_discovery_signing.py
+          pytest -q -o addopts= -W ignore::Warning tests/test_hub_signing.py tests/test_discovery_signing.py
 
   lyrixa-tasks:
     name: "🔁 Lyrixa tasks present"
@@ -281,18 +268,21 @@ jobs:
         uses: actions/checkout@v4
       - name: "🔎 Verify tasks exist"
         run: |
-          test -f Aetherra/lyrixa/lyrixa_basic.py && echo "✅ Lyrixa Basic GUI present" || (echo "❌ Missing Lyrixa Basic GUI"; exit 1)
+          test -f aetherra_os_launcher.py && echo "✅ Supported OS launcher present" || (echo "❌ Missing OS launcher"; exit 1)
           test -f Aetherra/lyrixa/launcher.py && echo "✅ Lyrixa backend launcher present" || (echo "❌ Missing Lyrixa backend launcher"; exit 1)
 
   quality-gates:
     name: "✅ Quality Gates (strict + arch verifier)"
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       ARCH_CHECK: '1'
       ARCH_CHECK_STRICT: '1'
       ARCH_PROBE_HUB: '1'
       # Keep coverage threshold flexible; no-drop is handled inside the script
       MIN_COVERAGE: '0'
+      LOCK_FILE: requirements-ci.lock
+      TEST_TIMEOUT: '900'
     steps:
       - name: "📥 Checkout code"
         uses: actions/checkout@v4
@@ -306,8 +296,7 @@ jobs:
       - name: "📦 Install test deps"
         run: |
           python -m pip install --upgrade pip
-          pip install pytest pytest-cov requests flask
-          if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi
+          pip install -r requirements-ci.lock
 
       - name: "🚦 Run Quality Gates"
         run: |
@@ -330,7 +319,7 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements/ci.txt ]; then pip install -r requirements/ci.txt; fi
           # Ensure runtime stack for Flask-Sock
-          pip install flask simple-websocket websockets pytest
+          pip install flask simple-websocket "websockets>=11,<16" pytest pytest-asyncio
       - name: "� Set env flags for WS"
         run: |
           echo "AETHERRA_AI_API_ENABLED=1" >> $GITHUB_ENV
@@ -339,7 +328,7 @@ jobs:
           echo "AETHERRA_IDEMPOTENCY_ENFORCE=1" >> $GITHUB_ENV
       - name: "🏃 Run WS tests"
         run: |
-          pytest -q tests/unit/test_ws_idempotency.py
+          pytest -q -o addopts= tests/unit/test_ws_idempotency.py
 
   metrics-reference-sync:
     name: "📊 Metrics reference sync"
@@ -359,7 +348,7 @@ jobs:
           pip install flask
       - name: "� Regenerate metrics reference"
         run: |
-          python tools/generate_metrics_reference.py --out docs/METRICS_REFERENCE.md
+          python -m tools.generate_metrics_reference --out docs/METRICS_REFERENCE.md
       - name: "🔍 Diff check"
         run: |
-          git diff --exit-code docs/METRICS_REFERENCE.md || (echo "❌ Metrics reference out of date. Run: python tools/generate_metrics_reference.py --out docs/METRICS_REFERENCE.md" && exit 1)
+          git diff --exit-code docs/METRICS_REFERENCE.md || (echo "❌ Metrics reference out of date. Run: python -m tools.generate_metrics_reference --out docs/METRICS_REFERENCE.md" && exit 1)

@@ -147,8 +147,18 @@ def ai_ask_post():
             break
         time.sleep(0.02)
     if not engine or not hasattr(engine, "process_message"):
-        return jsonify(
-            {"ok": True, "result": {"text": "offline", "response": "offline"}}
+        return (
+            jsonify(
+                {
+                    "ok": False,
+                    "error": {
+                        "code": "engine_unavailable",
+                        "message": "AI engine is unavailable",
+                        "details": {"trace_id": trace_id},
+                    },
+                }
+            ),
+            503,
         )
     try:
         # Standard library imports
@@ -187,4 +197,17 @@ def ai_ask_post():
             resp.status_code = 429
             resp.headers["Retry-After"] = str(ra_int)
             return resp
-        return jsonify({"ok": False, "error": msg}), 500
+        logger.exception("AI ask processing failed trace_id=%s", trace_id)
+        return (
+            jsonify(
+                {
+                    "ok": False,
+                    "error": {
+                        "code": "engine_processing_failed",
+                        "message": "AI engine request failed",
+                        "details": {"trace_id": trace_id},
+                    },
+                }
+            ),
+            500,
+        )

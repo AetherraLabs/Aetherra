@@ -5,15 +5,14 @@ import logging
 import os
 import sys
 
-"""Legacy import shim for BeyondTranscendenceEngine.
+"""Legacy import shim for the advanced cognition metrics adapter.
 
 Delegates to the namespaced adapter at
 `Aetherra.consciousness.transcendence.beyond_transcendence_engine`.
 
-This file exists solely for backward compatibility with older tests and
-launcher code that import the legacy root-level module name. A future
-release may remove this shim once all references migrate to the
-namespaced location.
+The public name is retained for compatibility with older tests and launcher
+code. It is intentionally marked as rename debt: keep it until the advanced
+cognition/transcendence API is renamed with a compatibility shim and tests.
 """
 
 logger = logging.getLogger(__name__)
@@ -29,8 +28,8 @@ try:
     _root = os.path.abspath(os.path.dirname(__file__))
     if _root not in sys.path:
         sys.path.insert(0, _root)
-except Exception:
-    pass
+except Exception as exc:  # pragma: no cover - defensive compatibility path
+    logger.debug("Unable to add project root for legacy advanced cognition shim: %s", exc)
 
 try:  # Preferred import
     # Aetherra imports

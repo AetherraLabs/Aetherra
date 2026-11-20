@@ -21,12 +21,12 @@ Test Coverage:
 """
 
 # Standard library imports
+import asyncio
 import math
 import tempfile
 import time
 import unittest
 from datetime import datetime
-from pathlib import Path
 
 
 class TestQuantumAwareSimulations(unittest.TestCase):
@@ -56,47 +56,35 @@ class TestCausalBranchSimulator(TestQuantumAwareSimulations):
 
     def test_causal_branch_creation(self):
         """Test creating causal branches from memory"""
-        try:
-            # Standard library imports
-            import sys
+        # Aetherra imports
+        from Aetherra.aetherra_core.memory.causal_branch_simulator import (
+            CausalBranchSimulator,
+        )
 
-            sys.path.append(
-                str(Path(__file__).parent / "Aetherra" / "aetherra_core" / "memory")
+        simulator = CausalBranchSimulator(data_dir=self.test_dir)
+        source_memory_id = "memory_001"
+        branch_scenario = "User asks follow-up question about wave-particle duality"
+        branch = asyncio.run(
+            simulator.create_causal_branch(
+                source_memory_id,
+                self.test_memory_content,
+                branch_scenario,
+                probability_weight=0.75,
             )
+        )
 
-            # Mock the causal branch simulator
-            # Standard library imports
-            from unittest.mock import MagicMock
+        assert branch.source_memory_id == source_memory_id
+        assert isinstance(branch.branch_id, str)
+        assert branch.probability_weight > 0.0
+        assert branch.probability_weight <= 1.0
+        assert branch.coherence_score > 0.0
+        assert branch.coherence_score <= 1.0
+        assert branch.probability_weight == 0.75
+        assert branch.branch_content["branch_scenario"] == branch_scenario
+        stored_branches = asyncio.run(simulator.get_memory_branches(source_memory_id))
+        assert stored_branches == [branch], "Causal branch creation concept validated"
 
-            # Create mock simulator
-            simulator = MagicMock()
-
-            # Mock branch creation
-            mock_branch = MagicMock()
-            mock_branch.branch_id = "branch_test123"
-            mock_branch.source_memory_id = "memory_001"
-            mock_branch.probability_weight = 0.75
-            mock_branch.coherence_score = 0.85
-            mock_branch.creation_timestamp = datetime.now()
-
-            # Test branch creation logic
-            source_memory_id = "memory_001"
-            branch_scenario = "User asks follow-up question about wave-particle duality"
-
-            # Verify branch attributes
-            self.assertEqual(mock_branch.source_memory_id, source_memory_id)
-            self.assertIsInstance(mock_branch.branch_id, str)
-            self.assertGreater(mock_branch.probability_weight, 0.0)
-            self.assertLessEqual(mock_branch.probability_weight, 1.0)
-            self.assertGreater(mock_branch.coherence_score, 0.0)
-            self.assertLessEqual(mock_branch.coherence_score, 1.0)
-
-            print("✅ Causal branch creation working")
-
-        except Exception as e:
-            print(f"[WARN] Testing with mock due to import issues: {e}")
-            # Create a basic test that validates the concept
-            self.assertTrue(True, "Causal branch creation concept validated")
+        print("✅ Causal branch creation working")
 
     def test_probability_calculation(self):
         """Test branch probability weight calculation"""
@@ -121,9 +109,9 @@ class TestCausalBranchSimulator(TestQuantumAwareSimulations):
             ),
         )
 
-        self.assertGreater(calculated_prob, 0.0)
-        self.assertLess(calculated_prob, 1.0)
-        self.assertAlmostEqual(calculated_prob, 0.716, delta=0.1)
+        assert calculated_prob > 0.0
+        assert calculated_prob < 1.0
+        assert abs(calculated_prob - 0.716) <= 0.1
 
         print(f"✅ Branch probability calculation: {calculated_prob:.3f}")
 
@@ -141,9 +129,9 @@ class TestCausalBranchSimulator(TestQuantumAwareSimulations):
         coherence = base_coherence + preservation_score * 0.2 + consistency_score * 0.1
         coherence = max(0.0, min(1.0, coherence))
 
-        self.assertGreater(coherence, 0.0)
-        self.assertLessEqual(coherence, 1.0)
-        self.assertAlmostEqual(coherence, 0.95, delta=0.05)
+        assert coherence > 0.0
+        assert coherence <= 1.0
+        assert abs(coherence - 0.95) <= 0.05
 
         print(f"✅ Coherence scoring: {coherence:.3f}")
 
@@ -178,11 +166,9 @@ class TestCausalBranchSimulator(TestQuantumAwareSimulations):
         }
 
         # Verify superposition properties
-        self.assertEqual(len(superposition["active_branches"]), 3)
-        self.assertAlmostEqual(
-            sum(amp**2 for amp in wave_function.values()), 1.0, delta=0.001
-        )
-        self.assertGreater(superposition["coherence_score"], 0.0)
+        assert len(superposition["active_branches"]) == 3
+        assert abs(sum(amp**2 for amp in wave_function.values()) - 1.0) <= 0.001
+        assert superposition["coherence_score"] > 0.0
 
         print(f"✅ Superposition creation: {len(branch_ids)} branches")
         print(
@@ -231,9 +217,12 @@ class TestCausalBranchSimulator(TestQuantumAwareSimulations):
             "phase_difference": phase_difference,
         }
 
-        self.assertIn(interference_type, ["constructive", "destructive", "neutral"])
-        self.assertGreater(interference_strength, 0.0)
-        self.assertLessEqual(interference_strength, 1.0)
+        assert interference_type in ["constructive", "destructive", "neutral"]
+        assert interference_strength > 0.0
+        assert interference_strength <= 1.0
+        assert interference_pattern["branch_a_id"] == "branch_001"
+        assert interference_pattern["branch_b_id"] == "branch_002"
+        assert interference_pattern["interference_type"] == "destructive"
 
         print(f"✅ Interference simulation: {interference_type}")
         print(f"   Phase difference: {phase_difference:.3f}")
@@ -270,9 +259,9 @@ class TestCausalBranchSimulator(TestQuantumAwareSimulations):
             1.0  # Fully coherent after collapse
         )
 
-        self.assertEqual(len(collapsed_superposition["active_branches"]), 1)
-        self.assertEqual(collapsed_superposition["coherence_score"], 1.0)
-        self.assertEqual(collapsed_branch, "branch_001")  # Highest probability
+        assert len(collapsed_superposition["active_branches"]) == 1
+        assert collapsed_superposition["coherence_score"] == 1.0
+        assert collapsed_branch == "branch_001"  # Highest probability
 
         print(f"✅ Superposition collapse: {collapsed_branch}")
         print(
@@ -309,21 +298,23 @@ class TestObserverEffectSimulator(TestQuantumAwareSimulations):
             },
         }
 
-        for observer_type, profile in observers.items():
-            self.assertGreater(profile["impact_strength"], 0.0)
-            self.assertLessEqual(profile["impact_strength"], 1.0)
-            self.assertGreater(profile["sharpening_factor"], 0.0)
+        for profile in observers.values():
+            assert profile["impact_strength"] > 0.0
+            assert profile["impact_strength"] <= 1.0
+            assert profile["sharpening_factor"] > 0.0
 
         # Verify impact hierarchy
-        self.assertGreater(
-            observers["lyrixa"]["impact_strength"], observers["user"]["impact_strength"]
+        assert (
+            observers["lyrixa"]["impact_strength"]
+            > observers["user"]["impact_strength"]
         )
-        self.assertGreater(
-            observers["user"]["impact_strength"], observers["plugin"]["impact_strength"]
+        assert (
+            observers["user"]["impact_strength"]
+            > observers["plugin"]["impact_strength"]
         )
-        self.assertGreater(
-            observers["plugin"]["impact_strength"],
-            observers["system"]["impact_strength"],
+        assert (
+            observers["plugin"]["impact_strength"]
+            > observers["system"]["impact_strength"]
         )
 
         print("✅ Observer profiles hierarchy validated")
@@ -352,9 +343,9 @@ class TestObserverEffectSimulator(TestQuantumAwareSimulations):
         }
 
         # Verify layer structure
-        self.assertIn("surface_layer", memory_view)
-        self.assertIn("core_layer", memory_view)
-        self.assertIn("deep_layer", memory_view)
+        assert "surface_layer" in memory_view
+        assert "core_layer" in memory_view
+        assert "deep_layer" in memory_view
 
         # Verify layer structure - surface should be most compressed (fewer detail fields)
         surface_keys = len(memory_view["surface_layer"])
@@ -362,12 +353,8 @@ class TestObserverEffectSimulator(TestQuantumAwareSimulations):
         deep_keys = len(memory_view["deep_layer"])
 
         # Surface layer has summary data, core has compression details, deep has full data + history
-        self.assertLessEqual(
-            surface_keys, deep_keys
-        )  # Surface should have fewer keys than deep
-        self.assertLessEqual(
-            core_keys, deep_keys
-        )  # Core should have fewer keys than deep
+        assert surface_keys <= deep_keys  # Surface should have fewer keys than deep
+        assert core_keys <= deep_keys  # Core should have fewer keys than deep
 
         print("✅ Layered memory access structure validated")
         print(
@@ -376,7 +363,6 @@ class TestObserverEffectSimulator(TestQuantumAwareSimulations):
 
     def test_memory_mutation_through_access(self):
         """Test how memory changes when accessed by different observers"""
-        initial_memory = self.test_memory_content.copy()
         initial_fidelity = 0.80
 
         # Simulate access by different observers
@@ -414,16 +400,14 @@ class TestObserverEffectSimulator(TestQuantumAwareSimulations):
             current_fidelity = max(0.0, min(1.0, current_fidelity))
 
             # Verify fidelity bounds
-            self.assertGreaterEqual(current_fidelity, 0.0)
-            self.assertLessEqual(current_fidelity, 1.0)
+            assert current_fidelity >= 0.0
+            assert current_fidelity <= 1.0
 
         # Verify Lyrixa access improves fidelity most
         lyrixa_effect = next(a for a in access_effects if a["observer"] == "lyrixa")
         system_effect = next(a for a in access_effects if a["observer"] == "system")
 
-        self.assertGreater(
-            lyrixa_effect["fidelity_change"], system_effect["fidelity_change"]
-        )
+        assert lyrixa_effect["fidelity_change"] > system_effect["fidelity_change"]
 
         print(
             f"✅ Memory mutation through access: {initial_fidelity:.3f} → {current_fidelity:.3f}"
@@ -450,16 +434,16 @@ class TestObserverEffectSimulator(TestQuantumAwareSimulations):
         }
 
         # Verify meta-memory structure
-        self.assertGreater(len(meta_memory["access_pattern"]), 0)
-        self.assertGreater(len(meta_memory["reconstruction_history"]), 0)
+        assert len(meta_memory["access_pattern"]) > 0
+        assert len(meta_memory["reconstruction_history"]) > 0
 
         # Verify influence map sums to reasonable total
         total_influence = sum(meta_memory["observer_influence_map"].values())
-        self.assertAlmostEqual(total_influence, 1.0, delta=0.1)
+        assert abs(total_influence - 1.0) <= 0.1
 
         # Verify cognitive drift is within bounds
-        self.assertGreater(meta_memory["cognitive_drift"], 0.0)
-        self.assertLess(meta_memory["cognitive_drift"], 1.0)
+        assert meta_memory["cognitive_drift"] > 0.0
+        assert meta_memory["cognitive_drift"] < 1.0
 
         print("✅ Meta-memory tracking functional")
         print(f"   Access events: {len(meta_memory['access_pattern'])}")
@@ -484,9 +468,7 @@ class TestObserverEffectSimulator(TestQuantumAwareSimulations):
                 base_strength[case["observer"]] * layer_multiplier[case["layer"]]
             )
 
-            self.assertAlmostEqual(
-                collapse_strength, case["expected_strength"], delta=0.05
-            )
+            assert abs(collapse_strength - case["expected_strength"]) <= 0.05
 
         print("✅ Collapse strength calculation validated")
 
@@ -517,10 +499,10 @@ class TestQuantumMemoryBridge(TestQuantumAwareSimulations):
             "measurement_results": [0, 1, 0, 1][:required_qubits],
         }
 
-        self.assertGreater(quantum_state["qubit_count"], 0)
-        self.assertGreater(quantum_state["circuit_depth"], 0)
-        self.assertGreater(quantum_state["encoding_fidelity"], 0.0)
-        self.assertLessEqual(quantum_state["encoding_fidelity"], 1.0)
+        assert quantum_state["qubit_count"] > 0
+        assert quantum_state["circuit_depth"] > 0
+        assert quantum_state["encoding_fidelity"] > 0.0
+        assert quantum_state["encoding_fidelity"] <= 1.0
 
         print(f"✅ Quantum state encoding: {required_qubits} qubits")
         print(f"   Encoding fidelity: {quantum_state['encoding_fidelity']:.3f}")
@@ -557,9 +539,9 @@ class TestQuantumMemoryBridge(TestQuantumAwareSimulations):
                 "depth": len(template["gates"]),
             }
 
-            self.assertGreater(circuit["qubit_count"], 0)
-            self.assertGreater(circuit["depth"], 0)
-            self.assertEqual(len(circuit["gate_sequence"]), len(template["gates"]))
+            assert circuit["qubit_count"] > 0
+            assert circuit["depth"] > 0
+            assert len(circuit["gate_sequence"]) == len(template["gates"])
 
         print("✅ Quantum circuit generation validated")
         print(f"   Templates: {list(circuit_templates.keys())}")
@@ -582,7 +564,7 @@ class TestQuantumMemoryBridge(TestQuantumAwareSimulations):
 
         # Verify quantum encoding properties
         amplitude_sum = sum(amp**2 for amp in quantum_encoding["amplitude_vector"])
-        self.assertAlmostEqual(amplitude_sum, 1.0, delta=0.001)  # Normalized
+        assert abs(amplitude_sum - 1.0) <= 0.001  # Normalized
 
         # Test decoding back to classical
         decoded_classical = {
@@ -594,10 +576,8 @@ class TestQuantumMemoryBridge(TestQuantumAwareSimulations):
             "reconstruction_method": "quantum_measurement",
         }
 
-        self.assertEqual(
-            decoded_classical["emotional_tag"], classical_memory["emotional_tag"]
-        )
-        self.assertAlmostEqual(decoded_classical["quantum_fidelity"], 1.0, delta=0.001)
+        assert decoded_classical["emotional_tag"] == classical_memory["emotional_tag"]
+        assert abs(decoded_classical["quantum_fidelity"] - 1.0) <= 0.001
 
         print("✅ Quantum-classical bridging functional")
         print(f"   Amplitude normalization: {amplitude_sum:.6f}")
@@ -638,8 +618,8 @@ class TestQuantumMemoryBridge(TestQuantumAwareSimulations):
         )
 
         # For this test, ensure we can measure improvement
-        self.assertGreaterEqual(final_fidelity, fidelity)  # Should be >= not >
-        self.assertGreaterEqual(final_fidelity, 0.95)
+        assert final_fidelity >= fidelity  # Should be >= not >
+        assert final_fidelity >= 0.95
 
         print(
             f"✅ Quantum error correction: fidelity {fidelity:.3f} → {final_fidelity:.3f}"
@@ -665,10 +645,8 @@ class TestQuantumMemoryBridge(TestQuantumAwareSimulations):
             "classical_content": self.test_memory_content,
         }
 
-        self.assertEqual(classical_reconstruction["measured_state"], "|01⟩")
-        self.assertAlmostEqual(
-            classical_reconstruction["reconstruction_fidelity"], 0.64, delta=0.01
-        )
+        assert classical_reconstruction["measured_state"] == "|01⟩"
+        assert abs(classical_reconstruction["reconstruction_fidelity"] - 0.64) <= 0.01
 
         print(
             f"✅ Quantum memory retrieval: {classical_reconstruction['measured_state']}"
@@ -687,7 +665,6 @@ class TestQuantumAwareIntegration(TestQuantumAwareSimulations):
         workflow_steps = []
 
         # Step 1: Create causal branches
-        memory_content = self.test_memory_content
         branch_scenarios = [
             "User asks about wave-particle duality",
             "User shifts to classical physics",
@@ -712,7 +689,7 @@ class TestQuantumAwareIntegration(TestQuantumAwareSimulations):
             "coherence": 0.75,
         }
         workflow_steps.append(
-            f"Created superposition with {len(mock_branches)} branches"
+            f"Created superposition with {len(superposition['branches'])} branches"
         )
 
         # Step 3: Apply observer effects
@@ -758,9 +735,9 @@ class TestQuantumAwareIntegration(TestQuantumAwareSimulations):
         )
 
         # Verify workflow completion
-        self.assertEqual(len(workflow_steps), 10)  # Updated expected number of steps
-        self.assertGreater(len(mock_branches), 0)
-        self.assertIsNotNone(winning_branch)
+        assert len(workflow_steps) == 10  # Updated expected number of steps
+        assert len(mock_branches) > 0
+        assert winning_branch is not None
 
         print("✅ End-to-end quantum simulation workflow completed")
         for i, step in enumerate(workflow_steps, 1):
@@ -810,7 +787,7 @@ class TestQuantumAwareIntegration(TestQuantumAwareSimulations):
         ]
 
         for i, check in enumerate(consistency_checks):
-            self.assertTrue(check, f"Consistency check {i + 1} failed")
+            assert check, f"Consistency check {i + 1} failed"
 
         print("✅ Quantum memory consistency validated")
         print(f"   Classical content preserved: {consistency_checks[0]}")
@@ -820,12 +797,6 @@ class TestQuantumAwareIntegration(TestQuantumAwareSimulations):
     def test_timeline_exploration(self):
         """Test exploring alternative memory timelines"""
         # Mock timeline exploration (paths not taken)
-        base_timeline = {
-            "memory_id": "memory_001",
-            "actual_path": "User expressed curiosity → Lyrixa explained quantum basics",
-            "timestamp": datetime.now().isoformat(),
-        }
-
         # Alternative timelines (branches that didn't collapse)
         alternative_timelines = [
             {
@@ -863,7 +834,7 @@ class TestQuantumAwareIntegration(TestQuantumAwareSimulations):
                 alt["probability"] for alt in alternative_timelines
             ),
             "divergence_complexity": len(
-                set(alt["divergence_point"] for alt in alternative_timelines)
+                {alt["divergence_point"] for alt in alternative_timelines}
             ),
             "exploration_depth": max(
                 len(alt["path"].split(" → ")) for alt in alternative_timelines
@@ -871,16 +842,14 @@ class TestQuantumAwareIntegration(TestQuantumAwareSimulations):
         }
 
         # Verify timeline exploration
-        self.assertGreater(timeline_analysis["total_alternatives"], 0)
-        self.assertGreater(timeline_analysis["probability_coverage"], 0.0)
-        self.assertLess(
-            timeline_analysis["probability_coverage"], 1.0
+        assert timeline_analysis["total_alternatives"] > 0
+        assert timeline_analysis["probability_coverage"] > 0.0
+        assert (
+            timeline_analysis["probability_coverage"] < 1.0
         )  # Doesn't cover all possibilities
 
         for feature, available in exploration_features.items():
-            self.assertTrue(
-                available, f"Timeline exploration feature {feature} not available"
-            )
+            assert available, f"Timeline exploration feature {feature} not available"
 
         print("✅ Timeline exploration functional")
         print(f"   Alternative timelines: {timeline_analysis['total_alternatives']}")
@@ -916,22 +885,18 @@ class TestQuantumAwareIntegration(TestQuantumAwareSimulations):
 
             if strategy == "classical_backup":
                 # Classical backup should maintain full fidelity
-                self.assertAlmostEqual(
-                    mitigated_final_coherence, coherence_evolution[-1], delta=0.01
-                )
+                assert abs(mitigated_final_coherence - coherence_evolution[-1]) <= 0.01
             else:
                 # Quantum strategies should improve coherence - but account for decay baseline
                 baseline_coherence = coherence_evolution[-1]
                 if (
                     mitigated_final_coherence > baseline_coherence * 0.9
                 ):  # Allow some tolerance
-                    self.assertGreaterEqual(
-                        mitigated_final_coherence, baseline_coherence * 0.9
-                    )
+                    assert mitigated_final_coherence >= baseline_coherence * 0.9
 
         # Verify decoherence progression
         for i in range(1, len(coherence_evolution)):
-            self.assertLessEqual(coherence_evolution[i], coherence_evolution[i - 1])
+            assert coherence_evolution[i] <= coherence_evolution[i - 1]
 
         print("✅ Quantum decoherence handling validated")
         print(f"   Initial coherence: {initial_coherence:.3f}")

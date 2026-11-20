@@ -29,19 +29,25 @@ from __future__ import annotations
 # Standard library imports
 import asyncio
 import heapq
+import logging
 import os
 import time
 from dataclasses import dataclass, field
 from typing import Any, Awaitable, Callable, List, Optional
 
+logger = logging.getLogger(__name__)
+
 try:  # optional metrics exporter
     # Local imports
-    from .metrics_exporter import inc_workspace_broadcast as _metrics_inc_broadcast
-    from .metrics_exporter import inc_workspace_candidate as _metrics_inc_candidate
-    from .metrics_exporter import initialize_exporter as _metrics_init
-    from .metrics_exporter import observe_workspace_latency as _metrics_obs_latency
-    from .metrics_exporter import update_workspace_queue as _metrics_update_q
-except Exception:  # pragma: no cover
+    from .metrics_exporter import (
+        inc_workspace_broadcast as _metrics_inc_broadcast,
+        inc_workspace_candidate as _metrics_inc_candidate,
+        initialize_exporter as _metrics_init,
+        observe_workspace_latency as _metrics_obs_latency,
+        update_workspace_queue as _metrics_update_q,
+    )
+except Exception as exc:  # pragma: no cover
+    logger.warning("Workspace metrics import failed (%s)", type(exc).__name__)
     _metrics_init = None  # type: ignore
     _metrics_update_q = None  # type: ignore
     _metrics_inc_candidate = None  # type: ignore
@@ -51,7 +57,8 @@ except Exception:  # pragma: no cover
 try:  # optional affect engine biasing
     # Local imports
     from .affect_engine import get_affect_engine as _get_affect_engine
-except Exception:  # pragma: no cover
+except Exception as exc:  # pragma: no cover
+    logger.warning("Workspace affect engine import failed (%s)", type(exc).__name__)
     _get_affect_engine = None  # type: ignore
 
 
@@ -68,8 +75,12 @@ class WorkspaceCandidate:
 class WorkspaceCore:
     def __init__(self):
         self._enabled = os.getenv("AETHERRA_CONSCIOUSNESS_ENABLED", "0") == "1"
-        self._max_candidates = int(os.getenv("AETHERRA_WORKSPACE_MAX_CANDIDATES", "256"))
-        self._select_interval_ms = int(os.getenv("AETHERRA_WORKSPACE_SELECT_INTERVAL_MS", "500"))
+        self._max_candidates = int(
+            os.getenv("AETHERRA_WORKSPACE_MAX_CANDIDATES", "256")
+        )
+        self._select_interval_ms = int(
+            os.getenv("AETHERRA_WORKSPACE_SELECT_INTERVAL_MS", "500")
+        )
         self._max_broadcast_per_min = int(
             os.getenv("AETHERRA_WORKSPACE_MAX_BROADCAST_PER_MIN", "600")
         )
@@ -88,14 +99,19 @@ class WorkspaceCore:
         if self._stream_enabled:
             try:
                 os.makedirs(os.path.dirname(self._stream_path), exist_ok=True)
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning(
+                    "Workspace stream directory creation failed (%s)",
+                    type(exc).__name__,
+                )
         # Initialize metrics exporter if requested
         if _metrics_init:
             try:
                 _metrics_init()
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning(
+                    "Workspace metrics initialization failed (%s)", type(exc).__name__
+                )
 
     def enabled(self) -> bool:
         return self._enabled
@@ -144,13 +160,19 @@ class WorkspaceCore:
         if _metrics_update_q:
             try:
                 _metrics_update_q(len(self._queue))
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning(
+                    "Workspace enqueue queue metric update failed (%s)",
+                    type(exc).__name__,
+                )
         if _metrics_inc_candidate:
             try:
                 _metrics_inc_candidate(source)
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning(
+                    "Workspace enqueue candidate metric increment failed (%s)",
+                    type(exc).__name__,
+                )
         return True
 
     def _compute_sort_key(self, priority: int, weight: float) -> float:
@@ -159,9 +181,14 @@ class WorkspaceCore:
         adj_weight = weight
         if _get_affect_engine and os.getenv("AETHERRA_AFFECT_WEIGHT", "1") == "1":
             try:
-                adj_weight = max(adj_weight, 0.0001) * _get_affect_engine().affect_weight(priority)
-            except Exception:
-                pass
+                adj_weight = max(
+                    adj_weight, 0.0001
+                ) * _get_affect_engine().affect_weight(priority)
+            except Exception as exc:
+                logger.warning(
+                    "Workspace affect weight calculation failed (%s)",
+                    type(exc).__name__,
+                )
         return -(priority) / max(adj_weight, 0.0001)
 
     async def start(self) -> None:
@@ -176,8 +203,11 @@ class WorkspaceCore:
             self._task.cancel()
             try:
                 await self._task
-            except asyncio.CancelledError:
-                pass
+            except asyncio.CancelledError as exc:
+                logger.debug(
+                    "Workspace task cancellation acknowledged (%s)",
+                    type(exc).__name__,
+                )
             self._task = None
 
     async def _loop(self) -> None:
@@ -194,22 +224,29 @@ class WorkspaceCore:
                 if _metrics_update_q:
                     try:
                         _metrics_update_q(len(self._queue))
-                    except Exception:
-                        pass
+                    except Exception as exc:
+                        logger.warning(
+                            "Workspace dequeue queue metric update failed (%s)",
+                            type(exc).__name__,
+                        )
                 # Latency observation
                 if _metrics_obs_latency:
                     try:
                         enqueue_ts = candidate.metadata.get("enqueue_ts")
                         if enqueue_ts:
                             _metrics_obs_latency(time.time() - enqueue_ts)
-                    except Exception:
-                        pass
+                    except Exception as exc:
+                        logger.warning(
+                            "Workspace latency metric observation failed (%s)",
+                            type(exc).__name__,
+                        )
                 await self._broadcast(candidate)
             except asyncio.CancelledError:
                 break
-            except Exception:
-                # swallow for resilience; future: metric/log
-                pass
+            except Exception as exc:
+                logger.warning(
+                    "Workspace selection iteration failed (%s)", type(exc).__name__
+                )
 
     async def _broadcast(self, candidate: WorkspaceCandidate) -> None:
         self._broadcast_count_window += 1
@@ -219,15 +256,19 @@ class WorkspaceCore:
                     await handler(candidate.payload)
                 else:
                     handler(candidate.payload)
-            except Exception:
-                # future: track handler failure metric
+            except Exception as exc:
+                logger.warning(
+                    "Workspace subscriber delivery failed (%s)", type(exc).__name__
+                )
                 continue
         # metrics: broadcast counter per source
         try:
             if _metrics_inc_broadcast:
                 _metrics_inc_broadcast(candidate.source)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning(
+                "Workspace broadcast metric increment failed (%s)", type(exc).__name__
+            )
         # stream tap
         if self._stream_enabled:
             try:
@@ -241,10 +282,15 @@ class WorkspaceCore:
                 if self._stream_hook:
                     try:
                         self._stream_hook(line)
-                    except Exception:
-                        pass
-            except Exception:
-                pass
+                    except Exception as exc:
+                        logger.warning(
+                            "Workspace stream hook delivery failed (%s)",
+                            type(exc).__name__,
+                        )
+            except Exception as exc:
+                logger.warning(
+                    "Workspace stream append failed (%s)", type(exc).__name__
+                )
 
     def _reset_window_if_needed(self) -> None:
         now = time.time()

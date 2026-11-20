@@ -31,22 +31,40 @@ updates:
       include: scope
     labels: [dependencies]
   - package-ecosystem: npm
-    directory: "/frontend"
+    directory: "/Aetherra/lyrixa/gui"
     schedule:
       interval: weekly
     groups:
-      ui-runtime:
+      runtime-observatory:
         applies-to: version-updates
         patterns:
           - "react*"
           - "vite*"
           - "webpack*"
-      ui-tooling:
+      runtime-observatory-tooling:
         applies-to: version-updates
         patterns:
           - "eslint*"
           - "typescript*"
           - "jest*"
+  - package-ecosystem: npm
+    directory: "/Aetherra/aetherra_hub/aetherra_hub"
+    schedule:
+      interval: weekly
+    groups:
+      hub-runtime:
+        applies-to: version-updates
+        patterns:
+          - "express*"
+          - "cors"
+          - "helmet"
+          - "multer"
+      hub-tooling:
+        applies-to: version-updates
+        patterns:
+          - "eslint*"
+          - "jest*"
+          - "nodemon"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

@@ -30,6 +30,6 @@ aiohttp>=3.8.0
 httpx>=0.25.0
 
 # WebSocket support for WS tests
-websockets>=11.0.0
+websockets>=11.0.0,<16
 flask-sock>=0.7.0
 simple-websocket>=1.0.0

@@ -6,25 +6,30 @@
 > A safety-first cognitive operating layer for agentic AI systems.
 
 [![License](https://img.shields.io/badge/License-GPLv3-0891b2)](LICENSE)
-![Version](https://img.shields.io/badge/Version-0.5.0--beta.0-0f766e)
+![Version](https://img.shields.io/badge/Version-0.5.0--beta.1-0f766e)
 ![Language](https://img.shields.io/badge/Language-Python%20%2B%20Aetherra-8b5cf6)
-![Status](https://img.shields.io/badge/Status-Alpha%20Foundation-2563eb)
+![Status](https://img.shields.io/badge/Status-Internal%20Alpha%20Foundation-2563eb)
 ![Safety](https://img.shields.io/badge/Safety-Guardian%20Mediated-22c55e)
 
-Version: **0.5.0-beta.0**
+Version: **0.5.0-beta.1**
 
 Aetherra is an experimental AI operating layer for modular agents, persistent
 memory, policy-mediated execution, auditable decisions, and controlled
 self-improvement.
 
-The project is in an Alpha/Foundation hardening phase. The current goal is not
-unbounded autonomy. The current goal is to complete each core system until it is
-functional, testable, bounded, and safe enough to support later alpha testing.
+In the project architecture, **Aetherra is the entity** and **Lyrixa is the
+persona**. Lyrixa is how Aetherra presents itself to users; it is not a separate
+intelligence.
+
+The project is in an internal Alpha/Foundation hardening phase. The current
+goal is not public release or unbounded autonomy. The current goal is to
+complete each core system until it is functional, testable, bounded, and safe
+enough to support reviewed internal alpha testing.
 
 ## Maturity and Safety Notice
 
 Aetherra is not production-ready autonomous infrastructure. Treat it as an
-active alpha-stage research and engineering codebase.
+active internal alpha-stage research and engineering codebase.
 
 - Run it in a reviewed development environment.
 - Keep Guardian and Security enforcement enabled for privileged paths.
@@ -45,15 +50,17 @@ active alpha-stage research and engineering codebase.
 
 | System | Foundation status | Notes |
 | --- | --- | --- |
-| Security | Functional foundation complete | Capability checks, sandbox policy, signing, audit, and enforcement surfaces. |
-| Guardian | Functional foundation complete | Intent evaluation, risk assessment, approval, containment, audit integration, and performance policy. |
+| Security | Functional complete | Capability checks, sandbox policy, signing, audit, and enforcement surfaces. |
+| Guardian | Functional complete | Intent evaluation, risk assessment, approval, containment, audit integration, and performance policy. |
 | Homeostasis | Functional foundation complete | Observation, diagnosis, recommendations, and Guardian-mediated controlled action paths. |
 | Self-Improvement | Functional foundation complete | Proposal-only loop with Guardian review and execution delegation; no direct mutation in the foundation milestone. |
-| Maintenance | Next target | Umbrella loop for observe, diagnose, propose, review, approve, apply, verify, and learn. |
-| Kernel, Hub, Memory, Plugins, Agents, Lyrixa, Aether Script | In progress | These systems are being completed and cleaned up in focused passes. |
+| Maintenance | Functional foundation complete | Umbrella loop for observe, diagnose, propose, review, approve, apply, verify, and learn. |
+| Self-Incorporation, Memory, Kernel, Agent System, Aether Script, Integration Validation, Runtime UI, Lyrixa, Hub | Functional foundation complete | Current operating foundations with bounded responsibilities and documented safety limits. |
+| Artificial Intelligence, Consciousness, Coding, Chat, AI Trainer | Functional foundation complete | Cognitive and intelligence foundations with governed readiness surfaces. |
 
 Primary system documents live in [`docs/`](docs/), especially:
 
+- [`docs/WHO_IS_AETHERRA.md`](docs/WHO_IS_AETHERRA.md)
 - [`docs/AETHERRA_SECURITY_SYSTEM.md`](docs/AETHERRA_SECURITY_SYSTEM.md)
 - [`docs/AETHERRA_GUARDIAN_SYSTEM.md`](docs/AETHERRA_GUARDIAN_SYSTEM.md)
 - [`docs/AETHERRA_HOMEOSTASIS_SYSTEM.md`](docs/AETHERRA_HOMEOSTASIS_SYSTEM.md)
@@ -80,6 +87,12 @@ Kernel, Hub, service registry, memory, and runtime systems
 
 Important design rule: Self-Improvement proposes. Guardian reviews. Security
 enforces. Execution is delegated only after policy allows it.
+
+The core lifecycle is:
+
+```text
+Observe -> Understand -> Propose -> Review -> Approve -> Execute -> Verify -> Learn
+```
 
 ## Quick Start
 
@@ -170,10 +183,15 @@ as release artifacts instead of source.
 Cleanup tracking is maintained in:
 
 - [`docs/ACTIVE_SYSTEMS.md`](docs/ACTIVE_SYSTEMS.md)
-- [`docs/BUILD_ORDER.md`](docs/BUILD_ORDER.md)
+- [`docs/AETHERRA_MASTER_MAP.md`](docs/AETHERRA_MASTER_MAP.md)
+- [`docs/MASTER_ROADMAP.md`](docs/MASTER_ROADMAP.md)
+- [`docs/ALPHA_READINESS_CHECKLIST.md`](docs/ALPHA_READINESS_CHECKLIST.md)
+- [`docs/ALPHA_OPERATOR_RUNBOOK.md`](docs/ALPHA_OPERATOR_RUNBOOK.md)
+- [`docs/ALPHA_READINESS_DECISION.md`](docs/ALPHA_READINESS_DECISION.md)
 - [`docs/REPOSITORY_STRUCTURE.md`](docs/REPOSITORY_STRUCTURE.md)
 - [`docs/REPOSITORY_CLEANUP_PLAN.md`](docs/REPOSITORY_CLEANUP_PLAN.md)
 - [`docs/ROOT_SCRIPT_WORKFLOW_TRIAGE.md`](docs/ROOT_SCRIPT_WORKFLOW_TRIAGE.md)
+- [`docs/AETHERRA_FILE_MANIFEST.json`](docs/AETHERRA_FILE_MANIFEST.json)
 - [`docs/FILE_INDEX.md`](docs/FILE_INDEX.md)
 
 ## Safety Model

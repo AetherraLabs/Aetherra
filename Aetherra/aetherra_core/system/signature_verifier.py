@@ -17,6 +17,12 @@ from typing import Any, Dict, Optional, Tuple
 logger = logging.getLogger(__name__)
 
 
+def _path_digest(file_path: str) -> str:
+    """Return a stable digest for path correlation without storing full paths."""
+
+    return hashlib.sha256(str(file_path).encode("utf-8")).hexdigest()
+
+
 @dataclass
 class SignatureInfo:
     """Information about a file's signature."""
@@ -129,8 +135,11 @@ class SignatureVerifier:
                 for chunk in iter(lambda: f.read(4096), b""):
                     sha256_hash.update(chunk)
             return sha256_hash.hexdigest()
-        except OSError as e:
-            logger.error(f"Failed to compute hash for {file_path}: {e}")
+        except OSError:
+            logger.exception(
+                "Failed to compute hash for path digest %s",
+                _path_digest(file_path),
+            )
             raise
 
     def _is_trusted_location(self, file_path: str) -> bool:
@@ -193,14 +202,14 @@ class SignatureVerifier:
             self._audit_log(file_path, False, info)
             return False, info
 
-        except Exception as e:
-            logger.error(f"Error during signature verification: {e}")
+        except Exception:
+            logger.exception("Error during signature verification")
             info = SignatureInfo(
                 file_path=file_path,
                 file_hash="error",
                 is_valid=False,
                 method="error",
-                reason=str(e),
+                reason="verification_error",
             )
             self._cache_result(cache_key, info)
             self._audit_log(file_path, False, info)
@@ -272,14 +281,14 @@ class SignatureVerifier:
             self._audit_log(file_path, info.is_valid, info)
             return info.is_valid, info
 
-        except Exception as e:
-            logger.error(f"Manifest verification error: {e}")
+        except Exception:
+            logger.exception("Manifest verification error")
             info = SignatureInfo(
                 file_path=file_path,
                 file_hash="error",
                 is_valid=False,
                 method="manifest",
-                reason=f"Verification error: {str(e)}",
+                reason="manifest_verification_error",
             )
             self._cache_result(file_path, info)
             self._audit_log(file_path, False, info)
@@ -357,7 +366,8 @@ class SignatureVerifier:
         try:
             audit_entry = {
                 "timestamp": datetime.utcnow().isoformat(),
-                "file_path": file_path,
+                "file_path": Path(file_path).name,
+                "file_path_hash": _path_digest(file_path),
                 "is_valid": is_valid,
                 "method": info.method,
                 "reason": info.reason,

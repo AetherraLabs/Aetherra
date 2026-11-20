@@ -8,41 +8,51 @@
         "dev": "vite",
         "build": "tsc && vite build",
         "preview": "vite preview",
-        "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+        "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+        "test": "node --test tests/*.test.mjs"
     },
     "dependencies": {
-        "@radix-ui/react-dialog": "^1.0.5",
-        "@radix-ui/react-progress": "^1.0.3",
-        "@radix-ui/react-slot": "^1.0.2",
-        "@radix-ui/react-tabs": "^1.0.4",
-        "@react-three/drei": "^9.92.3",
-        "@react-three/fiber": "^8.15.11",
+        "@radix-ui/react-dialog": "^1.1.23",
+        "@radix-ui/react-progress": "^1.2.1",
+        "@radix-ui/react-slot": "^1.4.0",
+        "@radix-ui/react-tabs": "^1.2.1",
+        "@react-three/drei": "^10.7.9",
+        "@react-three/fiber": "^9.8.2",
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.0.0",
-        "framer-motion": "^10.16.4",
-        "lucide-react": "^0.292.0",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "recharts": "^2.10.1",
-        "sonner": "^2.0.7",
-        "tailwind-merge": "^2.0.0",
-        "three": "^0.159.0"
+        "framer-motion": "^14.13.0",
+        "lucide-react": "^1.61.0",
+        "react": "^19.3.1",
+        "react-dom": "^19.3.1",
+        "recharts": "^3.10.1",
+        "sonner": "^2.0.8",
+        "tailwind-merge": "^3.7.0",
+        "three": "^0.187.0"
     },
     "devDependencies": {
-        "@types/node": "^20.10.0",
-        "@types/react": "^18.2.37",
-        "@types/react-dom": "^18.2.15",
-        "@types/three": "^0.159.0",
-        "@typescript-eslint/eslint-plugin": "^8.61.1",
-        "@typescript-eslint/parser": "^8.61.1",
-        "@vitejs/plugin-react": "^6.0.2",
-        "autoprefixer": "^10.4.16",
-        "eslint": "^10.5.0",
-        "eslint-plugin-react-hooks": "^4.6.0",
-        "eslint-plugin-react-refresh": "^0.4.4",
-        "postcss": "^8.5.15",
-        "tailwindcss": "^4.3.1",
-        "typescript": "^5.2.2",
-        "vite": "^8.0.16"
+        "@eslint/js": "^10.0.1",
+        "@tailwindcss/postcss": "^4.3.3",
+        "@types/node": "^26.6.6",
+        "@types/react": "^19.3.0",
+        "@types/react-dom": "^19.3.0",
+        "@types/three": "^0.187.0",
+        "@typescript-eslint/eslint-plugin": "^8.72.1",
+        "@typescript-eslint/parser": "^8.72.0",
+        "@vitejs/plugin-react": "^6.1.2",
+        "eslint": "^10.14.0",
+        "eslint-plugin-react-hooks": "^7.1.1",
+        "eslint-plugin-react-refresh": "^0.5.7",
+        "postcss": "^8.5.32",
+        "semver": "^7",
+        "tailwindcss": "^4.3.3",
+        "typescript": "~7.0.2",
+        "vite": "^8.3.8"
+    },
+    "overrides": {
+        "eslint": {
+            "minimatch": {
+                "brace-expansion": "^5.0.12"
+            }
+        }
     }
 }
