@@ -25,8 +25,11 @@ afterward and never pushed. The first new reachable beta tag makes this bootstra
 unnecessary on subsequent releases. The downgrade guard remains active.
 
 Publication always names the calculated tag explicitly; the CLI's default would
-otherwise select the unrelated historical `v1.0.0`. The dry-run workflow now
-executes the same version plan and fails on errors.
+otherwise select the unrelated historical `v1.0.0`. Uploads use checked GitHub CLI
+commands because the pinned semantic-release publisher can swallow HTTP errors.
+Uploaded files are downloaded, compared to the signed build, and cryptographically
+verified before success. The dry-run workflow executes the same version plan and
+fails on errors.
 
 ## Signing and verification
 
@@ -56,6 +59,23 @@ Prefer the automatic workflow. To retry current main after its signed CI passes:
 gh workflow run release.yml --repo AetherraLabs/Aetherra --ref main
 gh run list --repo AetherraLabs/Aetherra --workflow release.yml --limit 3
 ```
+
+If publication failed **after** the bot pushed its version commit, main has
+advanced and retrying the old run correctly fails the exact-SHA preflight.
+The bot's `GITHUB_TOKEN` push does not trigger another CI run. From a clean
+standalone clone of current main, submit an empty recovery commit with your
+normal push credentials:
+
+```powershell
+git pull --ff-only origin main
+git commit --allow-empty -m "chore: retry signed release publication"
+git push origin main
+```
+
+This triggers full CI and a newly signed production bundle for the new exact
+main SHA. Release then rebuilds and signs the existing version, creates the
+GitHub release if missing, replaces partial assets, and verifies downloads.
+Never bypass preflight or force-push historical tags to recover an upload.
 
 Inspect the completed run and GitHub release; a version-plan success alone is not
 publication evidence. Download all assets into an empty directory and verify:

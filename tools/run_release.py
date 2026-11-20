@@ -4,11 +4,14 @@ from __future__ import annotations
 
 # Standard library imports
 import argparse
+import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 import tomllib
 from contextlib import contextmanager
 from pathlib import Path
@@ -103,10 +106,72 @@ def run_release(repo: Path, *, plan: bool = False) -> str:
             if already_released:
                 build_signed(repo)
             subprocess.run([*command, "version"], cwd=repo, check=True)
-            # The default publish target is the globally highest tag, possibly v1.0.0
-            # on the historical branch. Always publish the version just calculated.
-            subprocess.run([*command, "publish", "--tag", tag], cwd=repo, check=True)
+            publish_verified(repo, tag)
         return version
+
+
+def publish_verified(repo: Path, tag: str) -> None:
+    """Use checked uploads: PSR's publish command swallows asset upload failures."""
+    gh = shutil.which("gh")
+    if not gh:
+        raise ValueError("GitHub CLI is required for verified publication")
+    files = sorted(path for path in (repo / "dist").iterdir() if path.is_file())
+    result = subprocess.run(
+        [gh, "release", "view", tag, "--json", "tagName"], cwd=repo, capture_output=True
+    )
+    if result.returncode:
+        subprocess.run(
+            [
+                gh,
+                "release",
+                "create",
+                tag,
+                "--verify-tag",
+                "--generate-notes",
+                "--prerelease",
+            ],
+            cwd=repo,
+            check=True,
+        )
+    subprocess.run(
+        [gh, "release", "upload", tag, "--clobber", *(str(path) for path in files)],
+        cwd=repo,
+        check=True,
+    )
+    with tempfile.TemporaryDirectory(prefix="aetherra-release-verify-") as directory:
+        download = Path(directory)
+        patterns = [arg for path in files for arg in ("--pattern", path.name)]
+        subprocess.run(
+            [gh, "release", "download", tag, "--dir", directory, *patterns],
+            cwd=repo,
+            check=True,
+        )
+        for path in files:
+            with (
+                path.open("rb") as expected,
+                (download / path.name).open("rb") as actual,
+            ):
+                if (
+                    hashlib.file_digest(expected, "sha256").digest()
+                    != hashlib.file_digest(actual, "sha256").digest()
+                ):
+                    raise ValueError(
+                        f"published asset differs from signed build: {path.name}"
+                    )
+        subprocess.run(
+            [
+                sys.executable,
+                "tools/verify_release_manifest.py",
+                "--manifest",
+                str(download / "release-manifest.json"),
+                "--dist",
+                directory,
+                "--pubkey",
+                (repo / "keys/release_signing_ed25519.pub").read_text().strip(),
+            ],
+            cwd=repo,
+            check=True,
+        )
 
 
 def build_signed(repo: Path) -> None:

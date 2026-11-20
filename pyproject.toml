@@ -238,6 +238,7 @@ output = "coverage.xml"
 [tool.semantic_release]
 version_toml = ["pyproject.toml:project.version"]
 build_command = "python tools/run_release.py --build"
+build_command_env = ["AETHERRA_RELEASE_PRIVKEY"]
 assets = ["README.md"]
 major_on_zero = false
 allow_zero_version = true

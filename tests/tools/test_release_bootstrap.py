@@ -6,6 +6,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 
 # Third party imports
@@ -14,6 +15,7 @@ import pytest
 pytest.importorskip("semantic_release")
 
 # Aetherra imports
+import tools.run_release as release_runner
 from tools.run_release import build_signed, package_baseline, run_release
 
 
@@ -186,18 +188,67 @@ def test_runner_publishes_calculated_beta_not_historical_highest_tag(repo, monke
     published = []
 
     def offline_run(command, **kwargs):
-        if command[1:4] == ["-m", "semantic_release", "publish"]:
-            published.append(command[4:])
-            return subprocess.CompletedProcess(command, 0)
         if command[1:] == ["-m", "semantic_release", "version"]:
             command = [*command, "--no-push", "--no-vcs-release", "--skip-build"]
         return original(command, **kwargs)
 
     monkeypatch.setattr(subprocess, "run", offline_run)
+    monkeypatch.setattr(
+        release_runner, "publish_verified", lambda repo, tag: published.append(tag)
+    )
     assert run_release(repo, plan=True) == "0.5.0-beta.1"
     assert published == []
     assert run_release(repo) == "0.5.0-beta.1"
-    assert published == [["--tag", "v0.5.0-beta.1"]]
+    assert published == ["v0.5.0-beta.1"]
+
+
+def test_real_cli_forwards_signing_environment_to_build(repo, monkeypatch):
+    root_config = tomllib.loads(
+        (Path(__file__).parents[2] / "pyproject.toml").read_text()
+    )
+    forwarded = root_config["tool"]["semantic_release"]["build_command_env"]
+    project = repo / "pyproject.toml"
+    project.write_text(
+        project.read_text().replace(
+            'build_command=""',
+            'build_command="python build_probe.py"\nbuild_command_env='
+            + json.dumps(forwarded),
+        )
+    )
+    (repo / "build_probe.py").write_text(
+        "import os\nfrom pathlib import Path\n"
+        'assert os.environ.get("AETHERRA_RELEASE_PRIVKEY") == "synthetic-probe"\n'
+        'Path("build-ran").touch()\n'
+    )
+    monkeypatch.setenv("AETHERRA_RELEASE_PRIVKEY", "synthetic-probe")
+    with package_baseline(repo):
+        assert (
+            semantic(repo, "version", "--no-push", "--no-vcs-release") == "0.5.0-beta.1"
+        )
+    assert (repo / "build-ran").exists()
+
+
+@pytest.mark.parametrize("failure", ["upload", "tampered-download"])
+def test_publish_cannot_succeed_after_upload_or_download_failure(
+    tmp_path, monkeypatch, failure
+):
+    (tmp_path / "dist").mkdir()
+    (tmp_path / "dist/example.whl").write_bytes(b"signed build bytes")
+    monkeypatch.setattr(shutil, "which", lambda name: "gh")
+
+    def gh_transport(command, **kwargs):
+        if command[2] == "upload" and failure == "upload":
+            raise subprocess.CalledProcessError(1, command)
+        if command[2] == "download":
+            (Path(command[command.index("--dir") + 1]) / "example.whl").write_bytes(
+                b"wrong bytes"
+            )
+        return subprocess.CompletedProcess(command, 0)
+
+    monkeypatch.setattr(subprocess, "run", gh_transport)
+    expected = subprocess.CalledProcessError if failure == "upload" else ValueError
+    with pytest.raises(expected):
+        release_runner.publish_verified(tmp_path, "v0.5.0-beta.1")
 
 
 def test_signed_build_rejects_missing_secret_before_build(tmp_path, monkeypatch):
