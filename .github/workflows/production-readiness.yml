@@ -11,7 +11,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: 🐍 Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
@@ -22,7 +22,7 @@ jobs:
           test -f .env.example
 
       - name: 📦 Upload .env.example
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: env-example
           path: .env.example
