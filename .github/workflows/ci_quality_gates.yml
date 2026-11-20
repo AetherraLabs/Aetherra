@@ -43,6 +43,14 @@ jobs:
         run: >-
           python -m pytest tests/acceptance/test_personal_continuity.py -q -o addopts=
           --cov=. --cov-report= --cov-fail-under=0
+      - name: Release signing and bundle regression tests
+        run: >-
+          python -m pytest tests/tools/test_release_signing.py
+          tests/legacy/root_standalone/test_hub_blueprints_standalone.py
+          tests/legacy/root_standalone/test_policy_manager_standalone.py
+          tests/legacy/root_standalone/test_phase5_validation_harness_standalone.py
+          -q -o addopts=
+          --cov=. --cov-append --cov-report= --cov-fail-under=0
       - name: Version badge check
         run: python tools/verify_version_badge.py
       - name: Generate license report
@@ -104,3 +112,7 @@ jobs:
           python tools/verify_phase5_manifest_policy.py \
             --summary .aetherra/reports/phase5/phase5_bundle_ci_prod_manifest.json \
             --require-signature
+          python tools/verify_release_manifest.py \
+            --manifest .aetherra/reports/phase5/phase5_release_manifest_ci_prod_manifest.json \
+            --dist .aetherra/reports/phase5 \
+            --pubkey "$(cat keys/release_signing_ed25519.pub)"

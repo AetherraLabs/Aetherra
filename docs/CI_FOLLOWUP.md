@@ -90,6 +90,25 @@ waits for the newer commit's signed build. PR CI cannot authorize a release.
 Production publication remains unverified until the operator supplies the
 signing secret. Tests use synthetic metadata only and never publish a release.
 
+The dedicated release identity is recorded in [keys/README.md](../keys/README.md).
+It is separate from the API-store Master Key. Secret provisioning must validate
+the derived public key against `keys/release_signing_ed25519.pub`, then send the
+64-character seed to `gh secret set AETHERRA_RELEASE_PRIVKEY --repo AetherraLabs/Aetherra`
+through standard input, never a command-line argument, chat message, or log.
+
+The signer identifies only the public-key fingerprint and signs the complete
+manifest, including signing metadata. Invalid keys or unavailable signing
+dependencies fail the command. Production policy also cryptographically verifies
+the manifest and artifact hashes against the pinned public key; supplying a
+public key makes a missing signature a hard failure.
+
+The full production bundle also runs legacy standalone checks. Their fixtures
+now use the active Hub control-token interface and exact authentication responses,
+the strict policy's 100-line boundary and finite positive ethics weights, and
+scenario filenames rather than interpreter paths when simulating a failed run.
+These checks run on PRs too. Runtime authentication, policy limits, and the full
+bundle's required 100% pass rate are unchanged.
+
 The pinned semantic-release CLI now has explicit root package/build configuration.
 It derives the next version from Git history; a preflight rejects downgrades. The
 build updates both README version markers, and README is included in the release
