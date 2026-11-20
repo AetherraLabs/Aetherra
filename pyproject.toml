@@ -234,6 +234,19 @@ title = "Aetherra Test Coverage Report"
 [tool.coverage.xml]
 output = "coverage.xml"
 
+# The release CLI runs from the repository root, not Aetherra/pyproject.toml.
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+build_command = "python tools/sync_release_version.py && python -m build"
+assets = ["README.md"]
+major_on_zero = false
+allow_zero_version = true
+tag_format = "v{version}"
+
+[tool.semantic_release.branches.main]
+match = "main"
+prerelease_token = "beta"
+
 # Code Formatting and Linting
 [tool.black]
 line-length = 88

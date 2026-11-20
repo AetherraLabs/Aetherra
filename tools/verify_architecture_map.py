@@ -213,7 +213,9 @@ def _find_free_port() -> int:
         return int(s.getsockname()[1])
 
 
-def check_hub_minimal_api_probe(port: int | None = None, timeout: float = 1.5) -> dict:
+def check_hub_minimal_api_probe(port: int | None = None, timeout: float = 10.0) -> dict:
+    # A cold metrics scrape imports optional subsystems and can exceed 1.5s.
+    # Keep a bounded wait without mistaking initialization for an unhealthy Hub.
     try:
         # Aetherra imports
         from aetherra_hub.compat import AetherraHubServer  # updated to compat layer

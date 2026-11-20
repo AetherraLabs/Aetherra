@@ -1,8 +1,10 @@
 """CI formatter commands must honor the repository's shared configuration."""
 
+# Standard library imports
 import tomllib
 from pathlib import Path
 
+# Third party imports
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -26,7 +28,4 @@ def test_ci_formatters_use_the_shared_project_configuration():
     quick = (ROOT / "tools/quick_quality_check.ps1").read_text(encoding="utf-8")
     for commands in (checks, quick):
         assert "--line-length" not in commands
-        assert "ruff check ." in commands
-        assert "ruff format --check ." in commands
-        assert "black --check ." in commands
-        assert "isort --profile black --check-only ." in commands
+        assert "python tools/python_quality.py" in commands

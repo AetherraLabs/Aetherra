@@ -32,7 +32,11 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-from Aetherra.lyrixa.chat.lyrixa_chat_service import ChatOptions, LyrixaChatService
+# Aetherra imports
+from Aetherra.lyrixa.chat.lyrixa_chat_service import (  # noqa: E402 - supports direct execution
+    ChatOptions,
+    LyrixaChatService,
+)
 
 
 @pytest.mark.asyncio
@@ -82,6 +86,6 @@ def test_intelligence_capabilities_reinforced():
 
 
 if __name__ == "__main__":  # Manual debug helper
-    asyncio.run(test_advanced_chat_backend_selected())
+    asyncio.run(test_lyrixa_chat_service_responds())
     test_model_alias_normalization()
     print("Manual run complete.")
