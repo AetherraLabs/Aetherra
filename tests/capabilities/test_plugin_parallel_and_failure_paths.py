@@ -118,6 +118,7 @@ async def test_parallel_fail_fast(tmp_path):
     assert result["success"] is False
     # ensure failure captured
     failure = next(r for r in result["results"] if r["plugin"] == "b")
-    assert failure["success"] is False and "early-fail" in (failure["error"] or "")
+    assert failure["success"] is False
+    assert "early-fail" in (failure["error"] or "")
     # with fail_fast, should have fewer than 3 results (some cancelled)
     assert len(result["results"]) <= 3

@@ -29,4 +29,5 @@ def test_federation_persists_peers(tmp_path, monkeypatch):
     monkeypatch.setenv("AETHERRA_STATE_DIR", str(tmp_path))
 
     peers = {p["url"] for p in mgr2.list_peers()}
-    assert "http://peer1:3001" in peers and "http://peer2:3001" in peers
+    assert "http://peer1:3001" in peers
+    assert "http://peer2:3001" in peers

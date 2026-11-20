@@ -15,7 +15,6 @@ Aetherra/
       agent_executor.py — SPDX-License-Identifier: GPL-3.0-or-later
       agent_orchestrator.py — Task priority levels for orchestration."""
       base.py — Main execution entry point - parses and executes a single line"""
-      chat_router_old.py — Types of user intents"""
       cleanup_project.py — Main cleanup orchestrator for Aetherra project"""
       cognitive_adapters.py — SPDX-License-Identifier: GPL-3.0-or-later
       collaboration.py — Roles for different AI agents"""
@@ -38,7 +37,6 @@ Aetherra/
       goals.py — Goal status enumeration"""
       grammar.py — AetherraCode Abstract Syntax Tree node"""
       learning_loop_integration_agent.py — Represents an autonomous learning goal generated from memory analysis"""
-      lyrixa_aetherra_integration.py — Simple mock of Aetherra engine for basic functionality"""
       lyrixa_assistant.py — Generate a fallback response when core is not available"""
       lyrixa_memory.json
       lyrixa_script_integration.py — Initialize the script integration system"""
@@ -70,9 +68,9 @@ Aetherra/
       __init__.py — Mock AetherraEngine for development when actual engine isn't available."""
       aetherra_engine.py — Raised when an unavailable optional component is used."""
       assistant.py — Create unique session identifier with enhanced metadata"""
-      lyrixa_engine.py — Main Lyrixa execution engine that coordinates all subsystems"""
       lyrixa_memory.json
       prompt_engine.py — Load memory from JSON file"""
+      readiness.py — Read-only readiness contract for the Aetherra AI engine."""
       README.md — engine
       reasoning_engine.py — Compatibility shim for the relocated reasoning engine.
       self_improvement_engine.py — Types of improvements"""
@@ -183,7 +181,6 @@ Aetherra/
       observer_effect_simulator.py — Different types of observers with varying impact levels"""
       optimized_memory_engine.py — SPDX-License-Identifier: GPL-3.0-or-later
       optimized_storage.py — Represents a pending write operation"""
-      qfac_dashboard.py — Start dashboard in 'interactive' (web) or 'text' mode."""
       qfac_integration.py — Automatically analyze and compress if beneficial"""
       qfac_launcher.py — Initialize QFAC components"""
       qfac_policy.py — !/usr/bin/env python3
@@ -208,6 +205,7 @@ Aetherra/
       __init__.py — SPDX-License-Identifier: GPL-3.0-or-later
       hmr_controller.py — Forwarder to the current HMR controller implementation.
       kernel_loop.py — Forwarder to the current OS kernel loop implementation.
+      readiness.py — Read-only readiness contract for the Aetherra OS Kernel."""
       README.md — Aetherra Core OS Kernel (shim)
     personality/
       interfaces/
@@ -242,9 +240,6 @@ Aetherra/
       script_executor.py — Types of workflow steps supported."""
       script_service_logging.py — Script execution phases."""
       script_validator.py — Validation error severity levels."""
-    self_metrics_dashboard/
-      fidelity_metrics.py — SPDX-License-Identifier: GPL-3.0-or-later
-      README.md — self_metrics_dashboard
     system/
       __init__.py — Get the status of the system.
       agent_diagnostics.aether
@@ -277,11 +272,6 @@ Aetherra/
       utils.aether
     __init__.py — Get the status of all core systems."""
     README.md — aetherra_core
-  aetherra_hub/
-    aetherra_hub/
-      package-lock.json
-      package.json
-      README.md — aetherhub - The AI Package Manager
   ai_engine/
     __init__.py — SPDX-License-Identifier: GPL-3.0-or-later
     coordinator.py — AI Coordinator stub for validation - delegates to actual AI runtime"""
@@ -315,11 +305,13 @@ Aetherra/
     plugin.py — Format plugin list for display"""
     policy_bootstrap.py — Create a minimal capabilities.json (deny-by-default unless explicitly granted).
     README.md — cli
+  coding/
+    __init__.py — Coding System readiness foundation.
+    readiness.py — Read-only readiness contract for the Aetherra Coding System."""
   config/
     quantum/
       monitoring_config.json
       quantum_config.json
-      quantum_ui_config.json
       README.md — quantum
       scaling_config.json
     README.md — config
@@ -397,7 +389,7 @@ Aetherra/
       system_sensor.py — System Sensor Stub
     transcendence/
       __init__.py — SPDX-License-Identifier: GPL-3.0-or-later
-      beyond_transcendence_engine.py — Namespaced Beyond Transcendence Engine adapter.
+      beyond_transcendence_engine.py — Advanced cognition metrics adapter with legacy naming.
     active_inference.py — Active Inference Wrapper (MVP)
     affect_engine.py — Affect Engine MVP
     autonomy_governor.py — Autonomy Governor.
@@ -414,7 +406,6 @@ Aetherra/
     ethics_critic.py — Ethics Critic MVP
     event_bus.py — Unified Event Bus (Phase 1)
     explanation_engine.py — Structured explanation record.
-    EXTENDED_ROADMAP.md — 🧠 AETHERRA EXTENDED ROADMAP
     health_checks.py — Probe chat system health via Hub API.
     learning_loop.py — Consciousness Learning Loop.
     metrics_exporter.py — Prometheus Metrics Exporter (Optional)
@@ -424,7 +415,6 @@ Aetherra/
     PHASE_8_3_ACHIEVEMENT_REPORT.md — Phase 8.3: Beyond Transcendence Achievement Report
     policy_reasoner.py — Minimal changes to move a decision toward allowed.
     qualia_learning.py — Learned parameters for qualia update dynamics.
-    ROADMAP.md — Aetherra Consciousness Orchestrator - Meta-Layer Roadmap
     self_model.py — Self-Model API (Phase 1)
     self_model_manager.py — Self-Model Manager
     self_trust.py — Trust metrics for a single subsystem."""
@@ -444,7 +434,6 @@ Aetherra/
     ai_runtime.py — Load environment variables from .env file"""
     chat_router.py — Types of user intents"""
     chat_router_new.py — Types of user intents"""
-    chat_router_old.py — Types of user intents"""
     config.py — Global configuration for Aetherra"""
     disclosure_policy.py — Return a metadata-only representation suitable for the Free tier.
     enhanced_language.py — Parse .aether source code into AST"""
@@ -456,75 +445,12 @@ Aetherra/
     README.md — core
     syntax_tree.py — Calculate the maximum depth of a syntax tree (legacy function)
     webhook_manager.py — Manages webhook registration, triggering, and error handling."""
-  data/
-    contradiction_data/
-      detected_contradictions.json
-      README.md — contradiction_data
-      resolution_strategies.json
-    curiosity_data/
-      curiosity_questions.json
-      knowledge_gaps.json
-      README.md — curiosity_data
-    databases/
-      core/
-        README.md — core
-      lyrixa/
-        README.md — lyrixa
-      shared/
-        README.md — shared
-    growth_trajectory_data/
-      README.md — growth_trajectory_data
-    learning_loop_data/
-      current_cycle.json
-      learning_cycles.json
-      learning_goals.json
-      README.md — learning_loop_data
-    memory_continuity_data/
-      README.md — memory_continuity_data
-    meta_learning_data/
-      current_cycle.json
-      learning_cycles.json
-      learning_goals.json
-      README.md — meta_learning_data
-    metrics_data/
-      README.md — metrics_data
-    operations/
-      README.md — operations
-    qfac_dashboard_data/
-      README.md — qfac_dashboard_data
-    question_generator_data/
-      generated_questions.json
-      question_clusters.json
-      README.md — question_generator_data
-    self_directed_learning_data/
-      current_cycle.json
-      learning_cycles.json
-      learning_goals.json
-      README.md — self_directed_learning_data
-    self_metrics_data/
-      README.md — self_metrics_data
-    share/
-      jupyter/
-        labextensions/
-          jupyterlab-plotly/
-            static/
-              README.md — static
-            install.json
-            package.json
-            README.md — jupyterlab-plotly
-      man/
-        man1/
-          README.md — man1
-  db/
-    README.md — db
   docs/
     aetherra_labs_vision.md — Aetherra Labs Vision
     AETHERRA_MANIFESTO.md — AETHERRA MANIFESTO (v6.0 – July 2025)
     AI_OS_MANIFESTO.md — 🧬 The AI Operating System Manifesto
     README.md — docs
-    SELF_ORGANIZING_INTELLIGENCE.md — 🧠 Aetherra Self-Organizing Intelligence System
-  growth_trajectory_data/
-    README.md — growth_trajectory_data
+    SELF_ORGANIZING_INTELLIGENCE.md — Aetherra Self-Organizing Intelligence
   guardian/
     __init__.py — Aetherra Guardian System public API.
     approval.py — Approval request persistence for Guardian."""
@@ -540,13 +466,6 @@ Aetherra/
     risk.py — Risk scoring for Guardian intent declarations."""
     state.py — Small JSONL state helpers for Guardian approval and containment queues."""
     tiers.py — Decision-tier classification for Guardian intent declarations."""
-  gui/
-    __init__.py — Aetherra GUI compatibility surface.
-    aetherra_os_gui.py — Publish a performance/status metric if event bus available.
-    GUI_CURATION_PLAN.md
-    launch_enhanced_neural_os.py — !/usr/bin/env python3
-    README.md — Aetherra OS Monitor GUI
-    run_aetherra_os.py — Launch the Enhanced Aetherra Neural OS Dashboard
   homeostasis/
     __init__.py — !/usr/bin/env python3
     alert_intelligence.py — Types of detected anomalies."""
@@ -588,13 +507,7 @@ Aetherra/
     protocols/
       README.md — protocols
     __init__.py — Get current integration system status."""
-    agent_registry.json
     README.md — integration
-  interface/
-    launch_aetherra_os.py — Check if required dependencies are installed"""
-    main_window.py — Background thread for monitoring Aetherra OS state"""
-    README.md — interface
-    web_panels.py — Create enhanced dashboard panel HTML"""
   interface_bridge/
     memory_api.py — Clean memory interface for Lyrixa"""
     README.md — interface_bridge
@@ -630,7 +543,7 @@ Aetherra/
       README.md — Awareness Module - Lyrixa System Intelligence
       system_monitor.py — Tracks and reports Aetherra OS system state for Lyrixa"""
     chat/
-      lyrixa_chat_service.py — Capture system metrics broadcasts so Lyrixa can surface them automatically.
+      lyrixa_chat_service.py — Return Lyrixa's bounded, read-only service status."""
     ethics_agent/
       __init__.py — SPDX-License-Identifier: GPL-3.0-or-later
       bias_detector.py — Types of bias that can be detected."""
@@ -638,16 +551,9 @@ Aetherra/
       README.md — ethics_agent
       value_alignment.py — Core human values for alignment."""
     gui/
-      CHANGELOG.md — Lyrixa GUI Changelog
-      consciousness_panel.py — Compatibility exports for legacy consciousness dashboard imports."""
-      main_window.py — Minimal compatibility main window for the legacy Lyrixa GUI import path.
       package-lock.json
       package.json
-      QUICKSTART.md — Lyrixa GUI
-      README.md — Lyrixa GUI
-      SETUP.md — Lyrixa GUI - Installation & Setup Guide
-      STARTUP.md — 🚀 Lyrixa GUI - Startup Guide
-      SUMMARY.md — 🎨 Lyrixa GUI - Complete Setup Summary
+      README.md — Aetherra Runtime Observatory
       tsconfig.json
       tsconfig.node.json
     integrations/
@@ -703,11 +609,6 @@ Aetherra/
       __init__.py — SPDX-License-Identifier: GPL-3.0-or-later
       shadow_state_forker.py — Agent responsible for daily reflections and performance analysis"""
       validation_engine.py — Analyze a single interaction for patterns and insights"""
-    self_metrics_dashboard/
-      __init__.py — Initialize the metrics dashboard."""
-      main_dashboard.py — Get the main dashboard instance.
-      memory_continuity_score.py — SPDX-License-Identifier: GPL-3.0-or-later
-      README.md — self_metrics_dashboard
     __init__.py — Enhanced intelligence stack with full AI capabilities"""
     analytics_dashboard.py — Initialize all dashboard components"""
     analytics_insights_engine.py — Data class for analytics metrics"""
@@ -722,6 +623,12 @@ Aetherra/
     emotional_intelligence_integration.py — Update integration performance metrics"""
     mini_lyrixa_avatar.py — 🔥 AI Presence Projection - Dynamic cognitive avatar"""
     README.md — lyrixa_plugins
+  maintenance/
+    __init__.py — Maintenance loop contracts and lightweight coordination helpers.
+    cycle.py — Thin Maintenance cycle coordinator.
+    paths.py — Path policy helpers for Maintenance-generated reports."""
+    service.py — Runtime-facing Maintenance service facade."""
+    store.py — Persistence helpers for Maintenance cycle records."""
   memory/
     QuantumEnhancedMemoryEngine/
       __init__.py — Compatibility package for legacy quantum memory imports.
@@ -736,10 +643,7 @@ Aetherra/
     aetherra_memory_engine.py — Compatibility shim for legacy ``memory.aetherra_memory_engine`` imports.
     graph_optics.py — SPDX-License-Identifier: GPL-3.0-or-later
     observer_effects.py — Compatibility shim for legacy ``memory.observer_effects`` imports.
-    qfac_dashboard.py — Compatibility shim for legacy ``memory.qfac_dashboard`` imports.
     quantum_web_dashboard.py — Compatibility shim for legacy ``memory.quantum_web_dashboard`` imports.
-  memory_continuity_data/
-    README.md — memory_continuity_data
   observability/
     metrics_service.py — Lightweight in-process metrics exposure service.
   perception_bus/
@@ -757,16 +661,12 @@ Aetherra/
       agent_base.py — Standard response format for all agents"""
       agent_plugin.py — Perform AI agent reflection on a given topic"""
       collaborative_multi_agent_system.py — Different agent roles in the collaborative system"""
-      comprehensive_agent_discovery.py — Comprehensive scan for ALL agents in the entire codebase"""
       curiosity_agent_8.py — Represents an identified gap in understanding"""
       lyrixa_agent_integration.py — Submit a task for execution"""
       multi_agent_system.py — Available agent roles"""
       plugin_agent.py — Agent responsible for plugin discovery, recommendation, and usage assistance"""
       README.md — agent_adapters
-      real_agent_discovery.py — Find actual agents, not every file with 'agent' in the name"""
-      smart_agent_migrator.py — Load the latest agent discovery report"""
     agent_components/
-      agent_bridge.py — Bridge to manage agent integration in clean architecture"""
       agent_discovery_and_integration.py — Information about discovered components"""
       agent_orchestrator.py — Status of an agent"""
     core/
@@ -852,6 +752,16 @@ Aetherra/
     script_registry_loader.py — Load the script registry from file"""
     script_router.py — Suggest scripts based on goal or intent"""
     script_runner.py — SPDX-License-Identifier: GPL-3.0-or-later
+  runtime_ui/
+    __init__.py — Runtime UI foundation for the Aetherra Cognitive Observatory.
+    contract.py — Contract validation helpers for Runtime UI payloads."""
+    manifest.py — Runtime UI manifest contract for Cognitive Observatory clients."""
+    observatory.py — Read-only state contract for the Aetherra Cognitive Observatory.
+    payload.py — Runtime UI payload builders for Hub and future clients."""
+    profiles.py — Subsystem view profiles for the Cognitive Observatory."""
+    query.py — Runtime UI query parsing helpers."""
+    scene.py — Renderer-agnostic scene contract for the Cognitive Observatory."""
+    snapshot.py — Read-only Runtime UI snapshot collection."""
   safety_envelope/
     __init__.py — SPDX-License-Identifier: GPL-3.0-or-later
     actuator.py — Execute plans with safety guarantees.
@@ -863,15 +773,8 @@ Aetherra/
   scripts/
     utilities/
       README.md — utilities
-    audit_file_usage.py — Scan entire project for Python files and their relationships"""
-    check_deployment_readiness.py — Comprehensive deployment readiness validation"""
-    cleanup_project.py — Main cleanup orchestrator for Aetherra project"""
-    conservative_cleanup.py — Move only obviously safe-to-move files"""
-    fast_cleanup.py — Perform quick cleanup of obviously unused files"""
-    organize_system.py — Main launcher for Aetherra self-organizing intelligence."""
-    README.md — scripts
+    README.md — Aetherra Scripts
     self_organizer.aether
-    simple_audit.py — Just count Python files quickly"""
   security/
     api_keys.py — Local API-key storage with encryption-at-rest and scoped retrieval."""
     audit_ledger.py — Tamper-evident append-only JSONL audit ledger."""
@@ -892,22 +795,8 @@ Aetherra/
   telemetry/
     optin.py — Enable/disable Differential Privacy and optionally set epsilon.
   tools/
-    migration/
-      component_migrator.py — Migrates existing components to clean architecture"""
-      migration_plan.json
-      README.md — migration
-    AETHER_SCRIPT_DEMONSTRATION_SUMMARY.md — 🧠 AETHER SCRIPT DEMONSTRATION SUMMARY
-    aether_script_executor.py — Initialize all enhanced autonomous intelligence agents"""
-    aetherra_file_watcher.py — Determine if a file should be processed."""
-    async_memory_integration.py — Decorator to convert async function to sync using event loop"""
-    causal_branch_simulator.py — Represents a potential future memory state with probability weighting"""
-    code_generator.py — Generates .aether code from natural language descriptions"""
     curiosity_conflict_resolution.aether
-    memory_analyzer.py — Analyzes memory patterns and generates insights"""
-    qfac_integration.py — Manages integration between QFAC phases with graceful degradation"""
-    quantum_dashboard_launcher.py — Launch the quantum dashboard in specified mode"""
-    quantum_memory_bridge.py — Compatibility wrapper for execute function"""
-    README.md — tools
+    README.md — Aetherra Package Tools
   utils/
     __init__.py — SPDX-License-Identifier: GPL-3.0-or-later
     launch_utils.py — Check if a port is available for connection"""
@@ -926,12 +815,10 @@ Aetherra/
     __init__.py — Get current web system status."""
     README.md — web
   __init__.py — Aetherra package public API.
-  aetherra_file_router.py — SPDX-License-Identifier: GPL-3.0-or-later
   aetherra_hub_integration.py — Async context manager entry"""
-  file_routing_log.json
-  main.py — SPDX-License-Identifier: GPL-3.0-or-later
-  README.md — Aetherra - AI-Native Development Platform
-  verify_lyrixa_merge.py — !/usr/bin/env python3
+  alpha_boot_validation.py — CI-friendly alpha boot validation for Aetherra.
+  integration_validation.py — Cross-system integration validation for Aetherra foundations.
+  README.md — Aetherra Package
 docs/
   adr/
     ADR-0000-template.md — ADR-0000: SHORT TITLE PLACEHOLDER
@@ -1015,7 +902,7 @@ docs/
     DEPLOYMENT_TIERS.md — Aetherra Deployment Tiers
     HUB_CONTROL_TOKEN.md — Hub Control Token
     OPERATOR_RUNBOOK.md — Aetherra Operator Runbook (Alpha)
-    README_DEPLOY.md — Aetherra Deployment Guide
+    README_DEPLOY.md — Aetherra Pages Deployment
     SMOKE_PROFILE.md — Deterministic Smoke Profile
   prepack/
     PRE_PACK_CHECKLIST_TRACKING.md — Aetherra & Lyrixa — Pre-Pack Validation Tracking
@@ -1027,17 +914,6 @@ docs/
       ENGINE_USAGE_MATRIX.md — Engine Usage Matrix
     release/
       BETA_READINESS_REPORT.md — Aetherra Beta Readiness Report
-  roadmap/
-    Aetherra Memory System Evolution Roadmap.md — 🧠 Aetherra Memory System Evolution Roadmap
-    AETHERRA_CODING_SYSTEM_ROADMAP.md — Aetherra Coding System Roadmap (Lyrixa Code Studio)
-    Aetherra_Living_Roadmap.md — Aetherra Labs — Living Roadmap
-    AETHERRA_PLUGIN_ROADMAP.md — 🔌 Aetherra Plugin Registry Roadmap
-    aetherra_quantum_roadmap_v_1.md — Aetherra • Quantum Roadmap (v1.0)
-    AETHERRA_ROADMAP.md — 🚀 aetherra + LyrixaDevelopment Roadmap
-    FUTURE_ROADMAP.md — 🧬 Aetherra Future Enhancement Strategy
-    MEMORY_SYSTEM_ROADMAP.md — 🧠 Aetherra Memory System Redesign - Implementation Roadmap
-    README.md — Roadmaps Directory
-    Soul Kernel Cognitive Architecture Roadmap.md
   schemas/
     memory_item.schema.json
   sections/
@@ -1046,6 +922,7 @@ docs/
     README.md — Self-Incorporation (v1)
   workflow-fixes/
     README.md — Automated Workflow Failure Fixes
+  ACTIVE_SYSTEMS.md — Active Systems
   Aether_Script_Language_Specification.md — Aether Script Language System (`.aether`) — Legacy Spec (v1.0)
   Aether_Script_Language_System.md — Aether Script Language System (`.aether`)
   Aether_Script_Operator_Guide.md — Aether Script Operator Guide
@@ -1062,26 +939,32 @@ docs/
   AETHERRA_COMPLETE_OVERVIEW_2026-03-12.md — Aetherra: Complete System Overview & Architecture
   AETHERRA_CONSCIOUSNESS_SYSTEM.md — Aetherra Consciousness System
   AETHERRA_EVENT_BUS_SYSTEM.md — Aetherra Kernel Event Bus (KEB) System
+  AETHERRA_FILE_MANIFEST.json
   AETHERRA_GUARDIAN_SYSTEM.md — Aetherra Guardian System
   AETHERRA_HMR_GUIDE.md — Aetherra Hot Module Reload (HMR) Guide
   AETHERRA_HOMEOSTASIS_SYSTEM.md — Aetherra Homeostasis System
   AETHERRA_HUB_API_REFERENCE.md — Aetherra Hub API Reference
   AETHERRA_IDENTITY_SPEC_V1.md — Aetherra Identity Spec v1
+  AETHERRA_INTEGRATION_VALIDATION.md — Aetherra Integration Validation System
   AETHERRA_KERNEL_SYSTEM.md — Aetherra Kernel System
   AETHERRA_LYRIXA_SYSTEM.md — Aetherra Lyrixa System
   AETHERRA_MAINTENANCE_SYSTEM.md — Aetherra Maintenance System
-  AETHERRA_MASTER_MAP.md — 🌌 Aetherra Master Map — Complete System Architecture & Status
+  AETHERRA_MASTER_MAP.md — Aetherra Master Map
   AETHERRA_MEMORY_SYSTEM.md — Aetherra Memory System
   AETHERRA_MIND_MAP.md — 🧠 Aetherra Master Mind Map
   aetherra_os_architecture_map_v_1.md — Aetherra OS • Architecture Map (v1.0)
   AETHERRA_PLUGIN_SYSTEM.md — Aetherra Plugin System
-  aetherra_quantum_roadmap_v_1.md — Aetherra • Quantum Roadmap (v1.0)
+  AETHERRA_RUNTIME_UI_SYSTEM.md — Aetherra Runtime UI System
   AETHERRA_SECURITY_SYSTEM.md — Aetherra Security System
   AETHERRA_SELF-IMPROVEMENT_SYSTEM.md — Aetherra Self-Improvement System
+  AETHERRA_SELF-INCORPORATION_SYSTEM.md — Aetherra Self-Incorporation System
   AETHERRA_SELF_IMPROVEMENT_API.md — Aetherra Self-Improvement API
   AETHERRA_SERVICE_REGISTRY.md — Aetherra Service Registry System
   AETHERRA_WEBSOCKET_API.md — Aetherra WebSocket & SSE Streaming API
+  ALPHA_OPERATOR_RUNBOOK.md — Alpha Operator Runbook
   ALPHA_READINESS.md — Alpha Readiness & Usage Guide
+  ALPHA_READINESS_CHECKLIST.md — Alpha Readiness Checklist
+  ALPHA_READINESS_DECISION.md — Alpha Readiness Decision
   ALPHA_RELEASE_GAP_ANALYSIS.md — Alpha Release Gap Analysis (0.1.0-alpha.2)
   ALPHA_TEST_STRATEGY.md — Alpha Test & Failure Injection Strategy
   api-keys.md — API Keys and Secrets
@@ -1089,12 +972,10 @@ docs/
   AUTONOMY_ACTIVATION_RUNBOOK.md — Aetherra OS Autonomy Activation Runbook
   BACKUP_AND_RECOVERY.md — Aetherra Backup and Recovery Guide
   BETA_MILESTONE.md — Beta Milestone Planning (Draft)
-  BETA_ROADMAP_0.5.0.md — Aetherra 0.5.0 Beta Roadmap & Community Focus
   BUILD_REPRODUCIBILITY.md — Build Reproducibility & Verification (Alpha)
   ci_strict_signing.md — CI/CD Integration for Strict .aether Script Verification
   conf.py — Minimal Sphinx configuration for Aetherra documentation builds.
   CONSCIOUSNESS_PHASE1_COMPLETE.md — Aetherra Consciousness System - Phase 1 Implementation
-  CONSCIOUSNESS_UI_INTEGRATION.md — Consciousness UI Integration — Wiring Guide
   CONSCIOUSNESS_UNIFIED_IDENTITY.md — Unified Identity & Consciousness Layer
   COVERAGE_POLICY.md — Coverage Policy (Alpha)
   Demo_Playbook.md — Aetherra Demo Playbook
@@ -1110,17 +991,16 @@ docs/
   FILE_INDEX.md — Aetherra File Index
   GO_NO_GO_GATES.md — Go / No-Go Gates (Fast Deterministic Suite)
   grafana_dashboard_engine_observability.json
-  GUI_AUDIT_REPORT.md — GUI Audit Report (2025-10-06)
   IMPLEMENTATION_TASKS.md — Phase 1.2 Implementation Tasks
   import_map.md — Import Map & Enforcement (P2 #13)
   INDEX.md — Aetherra Documentation Index
   INTERACTIVE_LYRIXA.md — 🌟 Interactive Lyrixa — Architecture & Implementation
-  INTERACTIVE_LYRIXA_QUICKSTART.md — 🚀 Interactive Lyrixa — Quick Start Integration Guide
   KEY_ROTATION.md — Aetherra Key Rotation & Signing Appendix
   LYRIXA_AI_SETUP.md — Setting Up Lyrixa AI-Powered Chat
   LYRIXA_CHAT_ENDPOINT.md — Lyrixa Chat Endpoint
-  LYRIXA_UI_STANDARDS.md — Lyrixa UI Standards (React/TypeScript)
+  MAINTENANCE_TOOL_INVENTORY.md — Maintenance Tool Inventory
   manifesto.md — AETHERRA MANIFESTO (v6.0 – July 2025)
+  MASTER_ROADMAP.md — Aetherra Master Roadmap
   memory_system.md — Memory System
   METRICS_AND_MONITORING_GUIDE.md — Aetherra Metrics and Monitoring Guide
   METRICS_REFERENCE.md — Aetherra Metrics Reference
@@ -1152,8 +1032,8 @@ docs/
   REPO_CLEANUP_GUIDE.md — Repository Cleanup and Size Reduction
   REPO_SETTINGS.md — Recommended Repository Settings
   REPOSITORY_CLEANUP_PLAN.md — Aetherra Repository Cleanup Plan
+  REPOSITORY_STRUCTURE.md — Repository Structure
   RISK_ACCEPTANCE.md — Risk Acceptance Register (Alpha)
-  ROADMAP_TRACKING.md — Roadmap Tracking Baseline
   ROOT_CLEANUP_PLAN.md — Root Cleanup Plan (Alpha → Beta Hardening)
   ROOT_SCRIPT_WORKFLOW_TRIAGE.md — Root Script and Workflow Triage
   SECURITY_FEDERATION_ENHANCEMENTS_2025-08-12.md — Security, Signing, and Federation Enhancements (2025-08-12)
@@ -1184,11 +1064,12 @@ docs/
   TROUBLESHOOTING_GUIDE.md — Aetherra Troubleshooting Guide
   UI_MIGRATION_MAP.md — UI Migration Map
   UI_REBUILD_AND_CLEANUP_PLAN.md — UI Rebuild and Cleanup Plan
-  ui_syntax_refactor_plan.md — UI Syntax Refactor Plan (Medium-term)
+  UNDERSTANDING_RULE.md — The Understanding Rule
   WAVE_A_COMPLIANCE_REPORT.md — Wave A Production Readiness - Compliance Report
   WAVE_A_DEPLOYMENT_PROCEDURE.md — Wave A Production Deployment Procedure
   WEEK10_VALIDATION_EVIDENCE.md — Week 10 Validation Evidence (Integration Matrix + Regression)
   what_is_Aether_Script.md — Aether Script (`.aether`) Language Overview
+  WHO_IS_AETHERRA.md — Who Is Aetherra?
 tests/
   acceptance/
     test_autonomous_error_correction_golden_paths.py — Setup the error corrector (async)."""
@@ -1295,18 +1176,6 @@ tests/
     test_persist_tasks_corrupted.py
     test_persist_tasks_restart.py
     test_plugin_timeout.py — Failure injection: plugin invoke timeout should increment timeout metrics.
-  gui/
-    Aetherra/
-      lyrixa_core/
-        gui/
-          main_window.py — Minimal compatibility shim for legacy test path expectations.
-    README.md — gui
-    test_gui.py — !/usr/bin/env python3
-    test_hybrid_gui.py — !/usr/bin/env python3
-    test_live_gui_generation.py — Types of UI elements that can be dynamically generated"""
-    test_lyrixa_gui.py — Test the Lyrixa Hybrid GUI directly
-    test_plugin_cards_mode.py — Tests for plugin card mode (feature-flagged).
-    test_theme_fallback.py — Test that LyrixaBasicWindow applies either theme or fallback stylesheet.
   homeostasis/
     manual/
       audit_trace_layer_probe.py — Test basic audit trace workflow."""
@@ -1439,11 +1308,13 @@ tests/
     test_advanced_analyzer_guardian.py
     test_aether_intent_language.py — Comprehensive test suite for .aether Intent Language"""
     test_aether_script_audit.py — SPDX-License-Identifier: GPL-3.0-or-later
+    test_aether_script_guardian.py
     test_aether_script_policy.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_aether_script_require.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_aether_script_signing.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_aether_script_transactions_trace.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_aether_static_risk.py — SPDX-License-Identifier: GPL-3.0-or-later
+    test_aetherra_engine_hardening.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_aetherra_hub_integration_guardian.py
     test_agent_collaboration_guardian.py
     test_agent_goals_guardian.py
@@ -1452,8 +1323,10 @@ tests/
     test_agent_orchestrator_shim.py — Tests for deprecated agent orchestrator shim module.
     test_agents_api_blueprint.py
     test_ai_engine_guardian.py
+    test_ai_readiness.py
     test_ai_stream_debug_frame.py — Standard library imports
     test_ai_stream_replay_and_timeout.py — SPDX-License-Identifier: GPL-3.0-or-later
+    test_alpha_boot_validation.py
     test_api_keys_enforcement.py — Standard library imports
     test_api_keys_prod_encryption_required.py — Standard library imports
     test_audit_ledger_immutability.py
@@ -1463,11 +1336,12 @@ tests/
     test_capability_limits.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_chat_guardian.py
     test_chat_idempotency.py — SPDX-License-Identifier: GPL-3.0-or-later
+    test_chat_status.py
     test_check_architecture_guardian.py
+    test_coding_status.py
     test_complete_organizer_guardian.py
     test_consciousness_continuity_guardian.py
     test_consciousness_core_guardian.py
-    test_consciousness_dashboards.py — Test importing all consciousness dashboard components.
     test_consciousness_episodic_guardian.py
     test_consciousness_learning_loop_guardian.py
     test_consciousness_narrative_guardian.py
@@ -1507,7 +1381,6 @@ tests/
     test_guardian_models.py
     test_guardian_policy_engine.py
     test_guardian_preauthorization.py
-    test_gui_smoke.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_health_checks_guardian.py
     test_hmr_controller_guardian.py
     test_hmr_denied_metrics.py — Standard library imports
@@ -1547,6 +1420,7 @@ tests/
     test_hub_plugin_registration_strict_invalid_sig.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_hub_quantum_and_chat_metrics.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_hub_rate_limit_behavior.py — SPDX-License-Identifier: GPL-3.0-or-later
+    test_hub_readiness.py
     test_hub_script_control_auth.py — Security tests for Hub script control endpoints.
     test_hub_self_improvement_guardian.py
     test_hub_storm_metrics_export.py — Mock STORM metrics object."""
@@ -1554,20 +1428,28 @@ tests/
     test_human_style_layer.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_ignore_pattern_loader.py — Test IgnorePattern dataclass."""
     test_imports.py — !/usr/bin/env python3
+    test_integration_validation.py
     test_invalid_token_metric.py — Standard library imports
     test_kernel_direct_guardian.py
     test_kernel_loop_guards.py — Standard library imports
     test_kernel_loop_self_incorporation.py — Unit tests for kernel loop self-incorporation service registration fix."""
+    test_kernel_readiness.py
     test_kernel_reply_waiter.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_kernel_reply_waiter_timeout_and_error.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_kernel_submit_plugin_invoke.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_klm_keb_control_plane.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_klm_keb_edge_cases.py — SPDX-License-Identifier: GPL-3.0-or-later
+    test_launcher_maintenance_system.py
     test_live_ai_fallback.py — Test the actual AI fallback system with real API calls"""
     test_lyrixa_assistant_guardian.py
     test_lyrixa_chat_service_guardian.py
     test_lyrixa_consciousness_guardian.py
     test_lyrixa_plugin_system_guardian.py
+    test_lyrixa_status.py
+    test_maintenance_cycle.py
+    test_maintenance_paths.py
+    test_maintenance_service.py
+    test_maintenance_store.py
     test_manifest_schema_and_trust.py — .strip()
     test_memory_core_guardian.py
     test_memory_engine_typed_and_policy.py — SPDX-License-Identifier: GPL-3.0-or-later
@@ -1611,7 +1493,6 @@ tests/
     test_prune_lyrixa_gui_guardian.py
     test_qfac_admin_endpoints.py
     test_qfac_compress_and_optimize.py — Unit tests for QFACMemorySystem compress_all_eligible, optimize_system, degraded fidelity handling, search, parity, and policy utilities.
-    test_qfac_dashboard.py — Targeted tests for QFAC dashboard summary paths.
     test_qfac_guardian.py
     test_qfac_modes.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_qfac_policy.py — Standard library imports
@@ -1639,6 +1520,14 @@ tests/
     test_root_cleanup_guardian.py
     test_run_hub_ai_api.py
     test_run_hub_ai_api_script.py — Standard library imports
+    test_runtime_ui_api.py
+    test_runtime_ui_contract.py
+    test_runtime_ui_manifest.py
+    test_runtime_ui_observatory.py
+    test_runtime_ui_payload.py
+    test_runtime_ui_query.py
+    test_runtime_ui_scene.py
+    test_runtime_ui_snapshot.py
     test_safe_cleanup_guardian.py
     test_sandbox_isolation.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_scratchpad_policy_default_redacted.py — Standard library imports
@@ -1670,6 +1559,7 @@ tests/
     test_telemetry_optin.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_temporal_consciousness_guardian.py
     test_trainer_guardian.py
+    test_trainer_readiness.py
     test_transcendence_consolidation_guardian.py
     test_unicode_fix.py — !/usr/bin/env python3
     test_universal_directory_analyzer_guardian.py
@@ -1777,6 +1667,7 @@ tools/
   __init__.py — Repository maintenance and developer tooling package.
   ab_recall_benchmark.py — A/B recall benchmark harness for classical vs quantum-enriched recall.
   agents_probe.py — Agent fabric probe utility (simplified placeholder)."""
+  alpha_boot_validation.py — Run the CI-friendly alpha boot validation.
   analyze_project.py — Detect key subsystems by presence of canonical files and dirs."""
   auto_fix_workflow_failures.py — Main class for fixing workflow failures"""
   auto_prune_unused_imports.py — Bulk prune unused imports reported by ruff F401.
@@ -1816,6 +1707,7 @@ tools/
   generate_beta_readiness_report.py — Generate or update the Beta Readiness Report.
   generate_file_index.py — Return tracked repository files, or None when git is unavailable."""
   generate_integrity_manifest.py — Generate integrity manifest for release artifacts.
+  generate_master_map.py — Generate Aetherra's operational Master Map and file manifest.
   generate_metrics_reference.py — Generate docs/METRICS_REFERENCE.md from live metrics_accum definitions.
   generate_parse_baseline.py — Generate a baseline parse status JSON for all .aether workflows.
   generate_qfac_file_index.py — SPDX-License-Identifier: GPL-3.0-or-later
@@ -1897,34 +1789,25 @@ tools/
 .markdownlint.json
 aether.py — Execute Aether Script content."""
 aetherra_aar_broker.py — !/usr/bin/env python3
-aetherra_adaptive_behavior.py — Represents a learned behavior pattern."""
 aetherra_agent_daemon.py — !/usr/bin/env python3
 aetherra_agent_fabric.py — Register Agent Fabric agents with the AgentOrchestrator for task management."""
-aetherra_cognitive_task_manager.py — Initialize Flask app and routes."""
 aetherra_event_bus.py — !/usr/bin/env python3
-aetherra_file_watcher.py — Determine if a file should be processed."""
 aetherra_hmr_controller.py — Hot Module Reload controller service.
 aetherra_kernel_loop.py — Evaluate production backpressure & plugin safety invariants.
-aetherra_live_monitor.py — !/usr/bin/env python3
-aetherra_meta_memory.py — Initialize the meta-memory database."""
 aetherra_module_manager.py — Minimal, safe module manager with a clear contract."""
 aetherra_os.py — Launch the designated Aetherra GUI interface and start OS backend"""
 aetherra_os_launcher.py — Return the most recent launcher readiness snapshot, if available."""
 aetherra_outbox.py — !/usr/bin/env python3
 aetherra_persistent_memory.py — Individual memory node with cognitive metadata."""
-aetherra_plugin_catalog.json
 aetherra_plugin_discovery.py — Plugin metadata structure."""
-aetherra_plugin_viewer.py — Simple GUI to view discovered plugins."""
-aetherra_quantum_meta_learning.py — Calculate measurement probability for this state."""
 aetherra_registry_client.py — SPDX-License-Identifier: GPL-3.0-or-later
 aetherra_registry_daemon.py — !/usr/bin/env python3
 aetherra_script_service.py — Minimal .aether interpreter with async interface."""
 aetherra_self_incorporation.py — Track user activity patterns for night cycle scheduling."""
-aetherra_self_organizer.py — Comprehensive metadata for each file in the system."""
 aetherra_service_registry.py — Service health status enumeration."""
 aetherra_shared_service_registry.py — Service health status enumeration."""
 aetherra_startup.py — SPDX-License-Identifier: GPL-3.0-or-later
-beyond_transcendence_engine.py — Legacy import shim for BeyondTranscendenceEngine.
+beyond_transcendence_engine.py — Legacy import shim for the advanced cognition metrics adapter.
 CHANGELOG.md — Changelog
 CODE_OF_CONDUCT.md — Code of Conduct
 config.autonomy.production.json
@@ -1932,32 +1815,20 @@ config.autonomy.staging.json
 config.json
 config.production.json
 CONTRIBUTING.md — Contributing
-copyright_header.py — !/usr/bin/env python3
 GOVERNANCE.md — Project Governance
 INSTALL.md — Installation & Quickstart
-intelligence_report_generator.py — Load analysis data from JSON file"""
-launch_aetherra_unicode.py — Legacy shim retained for backward compatibility; delegates to aetherra_os."""
 LEGAL_COMPLIANCE.md — Aetherra Project - Legal Compliance Documentation
 LICENSE_POLICY.md — License Policy & Enforcement Gates
-licenses_unknown_history.json
-licenses_unknown_history.requirements-ci.lock.json
 main.py — Convenience launcher alias for aetherra_os main entry point.
 OWNERSHIP.md — Ownership & Release Authority
-package-lock.json
-package.json
 PRIVACY.md — Privacy Policy (Project Repository)
-PRODUCTION_ROADMAP.md — Aetherra Production Roadmap
 quantum_memory_bridge.py — Quantum memory bridge placeholder (alpha stub)."""
 QUICK_START.md — Aetherra Turn-Key Development Quick Start
 README.md — Aetherra
 RELEASE_NOTES_0.5.0-beta.0.md — Aetherra 0.5.0-beta.0 Release Notes
-ROADMAP.md — Aetherra Roadmap
-sbom.json
 SECURITY.md — Security Policy
 setup.py — !/usr/bin/env python3
-setup_dev.py — Print the Aetherra setup banner"""
 STEWARDSHIP.md — Aetherra Stewardship Statement
 SUPPORT.md — Support
-test_unicode_workflow_fix.py — Test that Unicode issues are resolved
 unicode_logger.py — Unicode-Safe Logging Configuration for Aetherra OS.
 ```

@@ -2,11 +2,12 @@
 import os
 import re
 import subprocess
+import sys
 from pathlib import Path
 
 
 def run_quality_gates(env: dict[str, str]) -> tuple[int, str]:
-    cmd = ["python", "tools/quality_gates.py"]
+    cmd = [sys.executable, "tools/quality_gates.py"]
     env_vars = os.environ.copy()
     env_vars.update(env)
     proc = subprocess.Popen(
@@ -15,8 +16,14 @@ def run_quality_gates(env: dict[str, str]) -> tuple[int, str]:
         stderr=subprocess.STDOUT,
         text=True,
         encoding="utf-8",
+        env=env_vars,
     )
-    out, _ = proc.communicate()
+    try:
+        out, _ = proc.communicate(timeout=90)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        proc.communicate()
+        raise
     return proc.returncode, out
 
 
@@ -31,9 +38,21 @@ def test_pr_description_generation(tmp_path, monkeypatch):
         "ARCH_CHECK": "0",
         "LICENSE_REPORT": "0",
         "TEST_SELECTION": "0",
+        "PACKAGE_SMOKE": "0",
+        "SBOM_GENERATE": "0",
+        "PUBLISH_ARTIFACTS": "0",
+        "REPO_SECURITY_SCAN": "0",
+        "STATIC_SECURITY_SCAN": "0",
+        "FRAGMENTATION_CHECK": "0",
+        "TEST_TARGETS": "tests/tools/test_release_ci.py",
+        "PYTHONUTF8": "1",
+        "PYTEST_ADDOPTS": "",
+        "COVERAGE_FILE": str(tmp_path / ".coverage"),
+        "COVERAGE_FILE_LEVEL": "0",
+        "COVERAGE_REPORT_JSON": str(tmp_path / "coverage_gate_report.json"),
         # Force baseline file with same coverage so no drop gating failure.
         "COVERAGE_BASELINE_FILE": str(tmp_path / ".coverage-baseline"),
-        # Reduce test target to capabilities (if exists) else tests to keep run short.
+        # A bounded real subset avoids recursively invoking this test.
     }
     baseline_file = Path(env["COVERAGE_BASELINE_FILE"])
     baseline_file.write_text("0.0", encoding="utf-8")

@@ -36,7 +36,8 @@ async def test_require_plugin_semver_satisfied():
     assert result["success"] is True
     payload = result["result"]
     req = payload["results"][0]
-    assert req["type"] == "require" and req["kind"] == "plugin"
+    assert req["type"] == "require"
+    assert req["kind"] == "plugin"
     assert req["ok"] is True
     # exposed in payload
     assert any(r.get("name") == "demo" for r in payload.get("requires", []))
@@ -68,7 +69,8 @@ async def test_require_module_present():
     result = await svc.execute_script_content(script, filename="<test>")
     assert result["success"] is True
     req = result["result"]["results"][0]
-    assert req["type"] == "require" and req["kind"] == "module"
+    assert req["type"] == "require"
+    assert req["kind"] == "module"
     assert req["ok"] is True
 
 

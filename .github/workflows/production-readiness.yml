@@ -15,9 +15,10 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: 📦 Verify minimal run scripts
+      - name: Verify minimal runtime files
         run: |
-          test -f Aetherra/gui/aetherra_os_gui.py
+          test -f Aetherra/runtime_ui/__init__.py
+          test -f aetherra_hub/blueprints/runtime_ui.py
           test -f .env.example
 
       - name: 📦 Upload .env.example

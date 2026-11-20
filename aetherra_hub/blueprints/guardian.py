@@ -166,8 +166,8 @@ def change_guardian_mode() -> ResponseReturnValue:
     )
     try:
         result = set_guardian_mode(mode, reason=reason, changed_by=str(changed_by))
-    except ValueError as exc:
-        return jsonify({"ok": False, "error": str(exc)}), 400
+    except ValueError:
+        return jsonify({"ok": False, "error": "invalid_guardian_mode"}), 400
     return jsonify({"ok": True, "mode": result})
 
 

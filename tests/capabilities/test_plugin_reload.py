@@ -70,7 +70,8 @@ async def test_plugin_unregister_and_reregister(tmp_path):
         context={"initial_input": "ping"},
     )
     assert exec1.status == ExecutionStatus.COMPLETED
-    assert exec1.results and len(exec1.results) == 1
+    assert exec1.results
+    assert len(exec1.results) == 1
     r1 = exec1.results[0]
     assert r1.success is True
     first_instance_id = r1.output["instance_id"]
@@ -93,7 +94,8 @@ async def test_plugin_unregister_and_reregister(tmp_path):
         context={"initial_input": "pong"},
     )
     assert exec2.status == ExecutionStatus.COMPLETED
-    assert exec2.results and len(exec2.results) == 1
+    assert exec2.results
+    assert len(exec2.results) == 1
     r2 = exec2.results[0]
     assert r2.success is True
     second_instance_id = r2.output["instance_id"]

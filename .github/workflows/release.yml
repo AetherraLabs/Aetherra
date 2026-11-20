@@ -1,11 +1,14 @@
 name: Release
 
 on:
-  push:
-    branches: [ main ]
+  workflow_run:
+    workflows: [CI Quality Gates]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: write
   discussions: write
   id-token: write
@@ -16,12 +19,21 @@ concurrency:
 
 jobs:
   release:
+    # A green PR or unsigned/skipped build is never a release authorization.
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
+    env:
+      RELEASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: main
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -36,10 +48,18 @@ jobs:
           restore-keys: |
             pip-${{ runner.os }}-
 
+      - name: Require signed CI for this main commit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA" || { echo '::error::Main advanced; wait for its signed build.'; exit 1; }
+          python tools/verify_release_ci.py --repo "$GITHUB_REPOSITORY" --sha "$RELEASE_SHA"
+
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install .[dev]
+          pip install -r requirements/quality.txt python-semantic-release==9.21.1 build pynacl
 
       - name: Quick quality (lint + minimal test)
         run: |
@@ -64,10 +84,9 @@ jobs:
       - name: Semantic Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AETHERRA_RELEASE_PRIVKEY: ${{ secrets.AETHERRA_RELEASE_PRIVKEY }}
         run: |
-          semantic-release version
-          semantic-release changelog
-          semantic-release publish
+          python tools/run_release.py
 
       - name: Format changelog
         if: always()

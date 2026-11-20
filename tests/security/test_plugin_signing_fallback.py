@@ -3,6 +3,7 @@
 
 # Standard library imports
 import base64
+from contextlib import suppress
 from pathlib import Path
 
 # Third party imports
@@ -28,7 +29,8 @@ def test_ed25519_cryptography_fallback_sign_and_verify(tmp_path: Path):
 
         # Generate keypair via cryptography fallback
         pub_b64, sec_b64 = ps.generate_keypair()
-        assert isinstance(pub_b64, str) and isinstance(sec_b64, str)
+        assert isinstance(pub_b64, str)
+        assert isinstance(sec_b64, str)
         assert len(base64.b64decode(pub_b64)) == 32
         assert len(base64.b64decode(sec_b64)) == 32
 
@@ -52,7 +54,5 @@ def test_ed25519_cryptography_fallback_sign_and_verify(tmp_path: Path):
 
     finally:
         # Restore original NACL flag to avoid side effects
-        try:
+        with suppress(Exception):
             ps.NACL = orig_nacl
-        except Exception:
-            pass

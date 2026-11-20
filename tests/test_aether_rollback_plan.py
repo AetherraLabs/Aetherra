@@ -5,8 +5,10 @@
 Transaction rollback plan tests.
 """
 
+# Standard library imports
 import asyncio
 
+# Aetherra imports
 from aetherra_script_service import AetherScriptService
 
 
@@ -70,4 +72,5 @@ def test_transaction_simulated_error_flag():
     assert tx.get("rollback_simulated") is True
     # plan should include both assignments
     plan = tx.get("rollback_plan")
-    assert "x" in plan["delete"] and "y" in plan["delete"]
+    assert "x" in plan["delete"]
+    assert "y" in plan["delete"]

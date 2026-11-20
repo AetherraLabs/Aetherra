@@ -49,6 +49,7 @@ def evaluate_intent(
     preauthorization_id: str | None = None,
     capability_checker: CapabilityChecker | None = None,
     write_audit: bool = True,
+    require_valid_policy: bool = False,
 ) -> GuardianDecision:
     """Evaluate a declared intent and return the Guardian decision."""
 
@@ -97,7 +98,11 @@ def evaluate_intent(
         )
         return _with_audit(intent, risk, decision, write_audit)
 
-    guardian_policy = evaluate_guardian_policy(intent)
+    guardian_policy = (
+        evaluate_guardian_policy(intent, require_valid_policy=True)
+        if require_valid_policy
+        else evaluate_guardian_policy(intent)
+    )
     if not guardian_policy.allowed:
         decision = GuardianDecision(
             status=GuardianStatus.DENY,
