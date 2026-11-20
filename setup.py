@@ -29,7 +29,7 @@ else:
         "flask>=2.3.0",
         "flask-socketio>=5.5.1",
         "requests>=2.31.0",
-        "aiohttp>=3.8.0",
+        "aiohttp>=3.14.4",
         "psutil>=5.9.0",
         "python-dotenv>=1.0.0",
     ]
