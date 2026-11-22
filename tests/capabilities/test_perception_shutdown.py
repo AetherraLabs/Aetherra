@@ -20,12 +20,17 @@ from aetherra_os_launcher import AetherraOSLauncher
 from aetherra_service_registry import shutdown_service_registry
 
 
-@pytest.mark.parametrize("stubborn", [False, True], ids=["quiet", "ignores-terminate"])
-def test_journal_stop_reaps_idle_follower(monkeypatch, stubborn):
+@pytest.mark.parametrize(
+    ("stubborn", "journal_fails"),
+    [(False, False), (True, False), (False, True)],
+    ids=["quiet", "ignores-terminate", "journal-fallback"],
+)
+def test_journal_stop_reaps_idle_follower(monkeypatch, stubborn, journal_fails):
     if stubborn and sys.platform == "win32":
         pytest.skip("Windows terminate does not deliver SIGTERM")
     real_popen = subprocess.Popen
     children = []
+    monkeypatch.setattr(linux.shutil, "which", lambda name: "/usr/bin/journalctl")
     ready = threading.Event()
     bus = PerceptionBus()
 
@@ -42,6 +47,8 @@ def test_journal_stop_reaps_idle_follower(monkeypatch, stubborn):
             + ("signal.signal(signal.SIGTERM, signal.SIG_IGN); " if stubborn else "")
             + "print('ready', flush=True); time.sleep(60)"
         )
+        if journal_fails and _command[0] == "journalctl":
+            code = "raise SystemExit(1)"
         child = real_popen([sys.executable, "-c", code], **kwargs)
         children.append(child)
         return child
@@ -55,7 +62,7 @@ def test_journal_stop_reaps_idle_follower(monkeypatch, stubborn):
         started = time.monotonic()
         adapter.stop()
         assert time.monotonic() - started < 6
-        assert children[0].poll() is not None, "stop left the idle follower alive"
+        assert children[-1].poll() is not None, "stop left the idle follower alive"
         assert not [
             t
             for t in threading.enumerate()

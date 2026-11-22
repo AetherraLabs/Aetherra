@@ -1213,7 +1213,7 @@ class AetherraOSLauncher:
                             # Do not initialize controller in unsafe production posture
                             with contextlib.suppress(Exception):
                                 # Aetherra imports
-                                from aetherra_hub.services import metrics_accum  # type: ignore
+                                from aetherra_hub.services import metrics_accum
 
                                 metrics_accum.inc_hmr_denied("requirements_not_met")
                             raise RuntimeError("hmr_requirements_not_met")

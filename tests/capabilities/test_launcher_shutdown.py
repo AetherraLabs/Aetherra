@@ -59,9 +59,7 @@ async def test_interrupted_boot_closes_started_system(monkeypatch, failure):
         with pytest.raises(RuntimeError if failure else asyncio.CancelledError):
             await task
         assert not server.is_serving(), "interrupted boot left a started system alive"
-        assert (
-            not watchdog.thread.is_alive()
-        ), "interrupted boot left the watchdog alive"
+        assert not watchdog.thread.is_alive(), "startup left watchdog alive"
     finally:
         await shutdown()
         if not task.done():

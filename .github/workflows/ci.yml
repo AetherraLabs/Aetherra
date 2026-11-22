@@ -41,7 +41,8 @@ jobs:
         run: python tools/os_smoke.py
 
       - name: Capabilities tests
-        run: PYTHONPATH=. python tools/diagnose_capability_exit.py
+        timeout-minutes: 5
+        run: pytest -q -o addopts= tests/capabilities
 
       - name: SSE v2 tests
         run: pytest -q -o addopts= tests/test_sse_v2.py

@@ -11,6 +11,7 @@ No simulation—only actual system metrics.
 
 from __future__ import annotations
 
+# Standard library imports
 import contextlib
 import os
 import shutil
@@ -18,8 +19,10 @@ import subprocess
 import threading
 import time
 
+# Aetherra imports
 from Aetherra.consciousness.core.types import Event
 
+# Local imports
 from ..event_types import (
     DISK_STATUS,
     ERR_LOG,
@@ -49,7 +52,7 @@ class LinuxProcAdapter(AdapterBase):
                     # Top CPU process
                     top = subprocess.run(
                         [
-                            "bash",
+                            shutil.which("bash") or "/bin/bash",
                             "-lc",
                             "ps -eo pid,pcpu,comm --sort=-pcpu | head -n 2 | tail -n 1",
                         ],
@@ -141,18 +144,25 @@ class LinuxJournalAdapter(AdapterBase):
                 proc.wait(timeout=2)
 
     def _run(self) -> None:
-        proc = None
         try:
             self.emit_online()
-            # Own the follower directly, without a shell that can leave it orphaned.
-            cmd = (
-                ["journalctl", "-f", "-n", "0"]
-                if shutil.which("journalctl")
-                else ["tail", "-f", "/var/log/syslog"]
-            )
+            # Own followers directly; retain syslog fallback if journald fails.
+            commands = [["tail", "-f", "/var/log/syslog"]]
+            if shutil.which("journalctl"):
+                commands.insert(0, ["journalctl", "-f", "-n", "0"])
+            for cmd in commands:
+                if self._follow(cmd) == 0:
+                    break
+        finally:
+            with self._lock:
+                self.is_running = False
+
+    def _follow(self, cmd) -> int:
+        proc = None
+        try:
             with self._lock:
                 if not self.is_running:
-                    return
+                    return 0
                 proc = subprocess.Popen(
                     cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True
                 )
@@ -168,8 +178,10 @@ class LinuxJournalAdapter(AdapterBase):
                             source=self.name,
                         )
                     )
+            return proc.wait()
         except OSError as exc:
             self.emit_offline(str(exc))
+            return 1
         finally:
             if proc is not None:
                 self._reap(proc)
@@ -177,7 +189,6 @@ class LinuxJournalAdapter(AdapterBase):
                     proc.stdout.close()
             with self._lock:
                 self._process = None
-                self.is_running = False
 
     def stop(self) -> None:
         """Stop an idle follower, reap it, and join its blocked pipe reader."""
@@ -266,7 +277,11 @@ class LinuxServiceAdapter(AdapterBase):
                 with contextlib.suppress(Exception):
                     for svc in self.watch_services:
                         result = subprocess.run(
-                            ["systemctl", "is-active", svc],
+                            [
+                                shutil.which("systemctl") or "/bin/systemctl",
+                                "is-active",
+                                svc,
+                            ],
                             capture_output=True,
                             text=True,
                             timeout=2,
