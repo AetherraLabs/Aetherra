@@ -45,7 +45,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-continuity = ["sentence-transformers==4.1.0"]
+continuity = ["sentence-transformers==5.6.0"]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.1.0",
