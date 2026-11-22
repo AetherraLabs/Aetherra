@@ -1,6 +1,42 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.4 (2026-11-22)
+
+### Bug Fixes
+
+- **runtime**: Close resources when startup is interrupted
+  ([`dcb4f97`](https://github.com/AetherraLabs/Aetherra/commit/dcb4f97c10c48658d2ce56b299e4252a0daa3c6c))
+
+### Chores
+
+- **deps**: Bump sentence-transformers
+  ([`c013ca8`](https://github.com/AetherraLabs/Aetherra/commit/c013ca8717f1e3235a87769c6c9a51cfb47056b0))
+
+Bumps the security-fixes group with 1 update in the / directory:
+  [sentence-transformers](https://github.com/huggingface/sentence-transformers).
+
+Updates `sentence-transformers` from 4.1.0 to 5.6.0 - [Release
+  notes](https://github.com/huggingface/sentence-transformers/releases) -
+  [Commits](https://github.com/huggingface/sentence-transformers/compare/v4.1.0...v5.6.0)
+
+--- updated-dependencies: - dependency-name: sentence-transformers dependency-version: 5.6.0
+
+dependency-type: direct:production
+
+dependency-group: security-fixes ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+### Testing
+
+- **ci**: Diagnose capability process shutdown
+  ([`b4d19f4`](https://github.com/AetherraLabs/Aetherra/commit/b4d19f4716183a9595a58db0bb327da2210ba6d1))
+
+- **runtime**: Verify clean capability shutdown and fallback
+  ([`ea2985b`](https://github.com/AetherraLabs/Aetherra/commit/ea2985b1d2460b062175bdf0d52787f16f067ab5))
+
+
 ## v0.5.0-beta.3 (2026-11-22)
 
 ### Bug Fixes
