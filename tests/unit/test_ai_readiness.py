@@ -1,3 +1,7 @@
+# Third party imports
+import pytest
+
+# Aetherra imports
 from Aetherra.aetherra_core.engine import (
     assess_ai_readiness,
     build_ai_readiness_payload,
@@ -32,6 +36,75 @@ def test_ai_readiness_reports_ready_for_complete_active_status():
     assert payload["safe_for_requests"] is True
     assert payload["reasons"] == ["ready"]
     assert payload["checks"]["status_contract_complete"] is True
+
+
+def test_successful_lifecycle_events_preserve_engine_readiness():
+    payload = assess_ai_readiness(
+        _ready_status(
+            lifecycle={
+                "diagnostics": [
+                    {
+                        "component": "improvement_system",
+                        "code": "started",
+                        "status": "ok",
+                    },
+                    {"component": "introspection", "code": "started", "status": "ok"},
+                    {
+                        "component": "agent_orchestrator",
+                        "code": "started",
+                        "status": "ok",
+                    },
+                ]
+            }
+        )
+    )
+    assert payload["readiness"] == "ready"
+    assert payload["safe_for_requests"] is True
+    assert payload["reasons"] == ["ready"]
+    assert payload["checks"]["lifecycle_diagnostic_count"] == 3
+
+
+@pytest.mark.parametrize("failure_status", ["degraded", "unavailable", "unknown", None])
+def test_lifecycle_failures_remain_visible_among_successful_events(failure_status):
+    failed_event = {"component": "introspection", "code": "component_start_failed"}
+    if failure_status is not None:
+        failed_event["status"] = failure_status
+    payload = assess_ai_readiness(
+        _ready_status(
+            lifecycle={
+                "diagnostics": [
+                    {
+                        "component": "improvement_system",
+                        "code": "started",
+                        "status": "ok",
+                    },
+                    failed_event,
+                ]
+            }
+        )
+    )
+    assert payload["readiness"] == "degraded"
+    assert payload["safe_for_requests"] is False
+    assert "lifecycle_diagnostics_present" in payload["reasons"]
+
+
+@pytest.mark.parametrize(
+    "event",
+    [
+        {"status": "ok"},
+        {"component": "introspection", "code": "unexpected_event", "status": "ok"},
+        {
+            "component": "introspection",
+            "code": "component_start_failed",
+            "status": "ok",
+        },
+        {"component": None, "code": "started", "status": "ok"},
+    ],
+)
+def test_unknown_lifecycle_receipts_cannot_claim_readiness(event):
+    payload = assess_ai_readiness(_ready_status(lifecycle={"diagnostics": [event]}))
+    assert payload["readiness"] == "degraded"
+    assert payload["safe_for_requests"] is False
 
 
 def test_ai_readiness_reports_offline_when_status_missing():

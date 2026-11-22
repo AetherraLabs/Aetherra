@@ -3,7 +3,6 @@
 
 # Standard library imports
 import json
-import os
 import time
 
 # Third party imports
@@ -18,14 +17,14 @@ BASE = f"http://localhost:{PORT}"
 STREAM_URL = f"{BASE}/api/ai/stream"
 
 
-def _ensure_env():
-    os.environ["AETHERRA_AI_API_ENABLED"] = "1"
-    os.environ["AETHERRA_AI_API_STREAM"] = "1"
-    os.environ["AETHERRA_AI_API_REQUIRE_TOKEN"] = "0"
+@pytest.fixture(autouse=True)
+def _ensure_env(monkeypatch):
+    monkeypatch.setenv("AETHERRA_AI_API_ENABLED", "1")
+    monkeypatch.setenv("AETHERRA_AI_API_STREAM", "1")
+    monkeypatch.setenv("AETHERRA_AI_API_REQUIRE_TOKEN", "0")
 
 
 def _start_hub():
-    _ensure_env()
     start_hub_server(PORT)
     # Wait for server
     for _ in range(50):
@@ -93,7 +92,8 @@ def test_stream_event_order_and_envelope_basic():
             eid, etype, data = _parse_envelope(block)
             if eid is None or etype is None or data is None:
                 continue
-            assert isinstance(eid, int) and eid >= 1
+            assert isinstance(eid, int)
+            assert eid >= 1
             assert etype in {
                 "status",
                 "auth",
@@ -161,11 +161,13 @@ def test_last_event_id_resume_monotonic():
                 continue
             resumed_ids.append(eid)
             # ensure starts strictly greater than last_id
-            assert last_id is not None and eid > last_id
+            assert last_id is not None
+            assert eid > last_id
             if etype in ("final",):
                 break
         assert last_id is not None
-        assert resumed_ids and resumed_ids[0] == last_id + 1
+        assert resumed_ids
+        assert resumed_ids[0] == last_id + 1
 
 
 @pytest.mark.integration
@@ -208,7 +210,8 @@ def test_last_event_id_gap_resume_skips_seen_and_remains_monotonic():
             assert eid > seen[0]
             if etype == "final":
                 break
-        assert resumed and resumed[0] == seen[0] + 1
+        assert resumed
+        assert resumed[0] == seen[0] + 1
 
 
 @pytest.mark.integration
@@ -246,7 +249,8 @@ def test_last_event_id_far_stale_starts_from_next():
                 continue
             first = eid
             break
-        assert first is not None and first >= 1
+        assert first is not None
+        assert first >= 1
 
 
 @pytest.mark.integration
@@ -269,7 +273,8 @@ def test_usage_presence_and_shape():
                 saw_usage = True
                 inner = data["data"]
                 for key in ("tokens_in", "tokens_out", "chars_in", "chars_out"):
-                    assert key in inner and isinstance(inner[key], int)
+                    assert key in inner
+                    assert isinstance(inner[key], int)
             if etype == "error":
                 saw_error = True
             if etype == "final":
@@ -334,7 +339,7 @@ def test_get_stream_echoes_scratchpad_policy_in_final():
 
 
 @pytest.mark.integration
-def test_stream_resume_after_rate_limit_with_last_event_id():
+def test_stream_resume_after_rate_limit_with_last_event_id(monkeypatch):
     _start_hub()
     # Standard library imports
     import asyncio
@@ -355,7 +360,7 @@ def test_stream_resume_after_rate_limit_with_last_event_id():
         await reg.register_service("aetherra_engine", engine)
 
     # Configure short retry-after for fast test and register a rate-limited engine
-    os.environ["AETHERRA_RETRY_AFTER_SEC"] = "1"
+    monkeypatch.setenv("AETHERRA_RETRY_AFTER_SEC", "1")
     asyncio.run(_register_engine(RateLimitedEngine()))
 
     # First attempt: expect an error event with code=rate_limited
@@ -379,7 +384,8 @@ def test_stream_resume_after_rate_limit_with_last_event_id():
                     saw_rate_limited = True
             if etype == "final":
                 break
-        assert saw_rate_limited and isinstance(last_id, int)
+        assert saw_rate_limited
+        assert isinstance(last_id, int)
 
     # Swap engine to success and wait for minimal backoff
     asyncio.run(_register_engine(SuccessEngine()))
@@ -408,4 +414,5 @@ def test_stream_resume_after_rate_limit_with_last_event_id():
                 inner = data.get("data") or {}
                 saw_final_ok = bool(inner.get("ok", False))
                 break
-        assert isinstance(first_eid, int) and saw_final_ok
+        assert isinstance(first_eid, int)
+        assert saw_final_ok

@@ -20,6 +20,7 @@ This module:
 Author: Aetherra Labs
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -84,6 +85,12 @@ class ClusterNode:
     api_endpoints: Dict[str, str]
     discovery_timestamp: str
     trust_level: float  # 0.0 to 1.0
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize node state as its protocol value for discovery messages."""
+        node_info = asdict(self)
+        node_info["node_state"] = self.node_state.value
+        return node_info
 
 
 @dataclass
@@ -179,7 +186,9 @@ class ClusterDiscovery:
         logger.info(f"🌐 Cluster discovery initialized for node {self.node_id}")
 
     async def start_discovery(
-        self, advertise_address: Optional[str] = None, seed_nodes: Optional[List[str]] = None
+        self,
+        advertise_address: Optional[str] = None,
+        seed_nodes: Optional[List[str]] = None,
     ):
         """Start cluster discovery process."""
         if self.discovery_active:
@@ -213,8 +222,13 @@ class ClusterDiscovery:
 
             # Start discovery server
             self.discovery_server = await asyncio.start_server(
-                self._handle_discovery_connection, "0.0.0.0", self.discovery_port
+                self._handle_discovery_connection,
+                "0.0.0.0",  # noqa: S104 - cluster discovery must accept remote peers
+                self.discovery_port,
             )
+            # Advertise the bound port when the caller requests an ephemeral one.
+            self.discovery_port = self.discovery_server.sockets[0].getsockname()[1]
+            self.local_node.port = self.discovery_port
 
             # Add seed nodes to known addresses
             if seed_nodes:
@@ -229,7 +243,9 @@ class ClusterDiscovery:
             self.local_node.node_state = NodeState.HEALTHY
             self.cluster_nodes[self.node_id] = self.local_node
 
-            logger.info(f"🌐 Cluster discovery started on {hostname}:{self.discovery_port}")
+            logger.info(
+                f"🌐 Cluster discovery started on {hostname}:{self.discovery_port}"
+            )
 
         except Exception as e:
             logger.error(f"❌ Failed to start cluster discovery: {e}")
@@ -245,6 +261,7 @@ class ClusterDiscovery:
         # Stop background tasks
         if self.discovery_task:
             self.discovery_task.cancel()
+            # Standard library imports
             import contextlib
 
             with contextlib.suppress(asyncio.CancelledError):
@@ -252,6 +269,7 @@ class ClusterDiscovery:
 
         if self.heartbeat_task:
             self.heartbeat_task.cancel()
+            # Standard library imports
             import contextlib
 
             with contextlib.suppress(asyncio.CancelledError):
@@ -267,11 +285,17 @@ class ClusterDiscovery:
     def get_cluster_status(self) -> Dict[str, Any]:
         """Get current cluster status."""
         healthy_nodes = sum(
-            1 for node in self.cluster_nodes.values() if node.node_state == NodeState.HEALTHY
+            1
+            for node in self.cluster_nodes.values()
+            if node.node_state == NodeState.HEALTHY
         )
 
-        total_stability = sum(node.stability_score for node in self.cluster_nodes.values())
-        avg_stability = total_stability / len(self.cluster_nodes) if self.cluster_nodes else 0.0
+        total_stability = sum(
+            node.stability_score for node in self.cluster_nodes.values()
+        )
+        avg_stability = (
+            total_stability / len(self.cluster_nodes) if self.cluster_nodes else 0.0
+        )
 
         available_assistants = sum(
             1
@@ -293,7 +317,9 @@ class ClusterDiscovery:
         }
 
     def get_assistance_candidates(
-        self, required_capabilities: Optional[List[str]] = None, min_stability: float = 0.6
+        self,
+        required_capabilities: Optional[List[str]] = None,
+        min_stability: float = 0.6,
     ) -> List[ClusterNode]:
         """Get nodes available for assistance."""
         candidates = []
@@ -382,7 +408,7 @@ class ClusterDiscovery:
                 # Send our node info back
                 response = {
                     "type": "discovery_response",
-                    "node_info": asdict(self.local_node) if self.local_node else {},
+                    "node_info": self.local_node.to_dict() if self.local_node else {},
                 }
 
                 writer.write(json.dumps(response).encode())
@@ -392,7 +418,8 @@ class ClusterDiscovery:
                 # Process heartbeat
                 node_id = message.get("node_id")
                 if node_id in self.cluster_nodes:
-                    self.cluster_nodes[node_id].last_heartbeat = datetime.now().isoformat()
+                    node = self.cluster_nodes[node_id]
+                    node.last_heartbeat = datetime.now().isoformat()
                     self.heartbeats_received += 1
 
                 # Send heartbeat response
@@ -432,6 +459,7 @@ class ClusterDiscovery:
 
     async def _contact_discovery_peer(self, address: str):
         """Contact a specific peer for discovery."""
+        writer = None
         try:
             host, port = address.split(":")
             port_num = int(port)
@@ -447,7 +475,7 @@ class ClusterDiscovery:
             # Send discovery message
             discovery_msg = {
                 "type": "discovery",
-                "node_info": asdict(self.local_node) if self.local_node else {},
+                "node_info": self.local_node.to_dict() if self.local_node else {},
             }
 
             writer.write(json.dumps(discovery_msg).encode())
@@ -462,11 +490,17 @@ class ClusterDiscovery:
                 if node_info:
                     await self._process_discovered_node(node_info)
 
-            writer.close()
-            await writer.wait_closed()
-
         except Exception as e:
             logger.debug(f"Discovery contact failed for {address}: {e}")
+        finally:
+            if writer is not None:
+                writer.close()
+                try:
+                    await writer.wait_closed()
+                except OSError as e:
+                    logger.debug(
+                        f"Discovery connection close failed for {address}: {e}"
+                    )
 
     async def _process_discovered_node(self, node_data: Dict[str, Any]):
         """Process a discovered node."""
@@ -474,6 +508,9 @@ class ClusterDiscovery:
             node_id = node_data.get("node_id")
             if not node_id or node_id == self.node_id:
                 return  # Skip self
+
+            node_data = dict(node_data)
+            node_data["node_state"] = NodeState(node_data["node_state"])
 
             # Create or update node
             if node_id not in self.cluster_nodes:
@@ -564,12 +601,15 @@ class ClusterDiscovery:
         candidates = [
             node
             for node in self.cluster_nodes.values()
-            if node.node_state == NodeState.HEALTHY and "coordination" in node.capabilities
+            if node.node_state == NodeState.HEALTHY
+            and "coordination" in node.capabilities
         ]
 
         if candidates:
             # Sort by stability score and discovery time
-            candidates.sort(key=lambda n: (n.stability_score, n.discovery_timestamp), reverse=True)
+            candidates.sort(
+                key=lambda n: (n.stability_score, n.discovery_timestamp), reverse=True
+            )
             new_coordinator = candidates[0].node_id
 
             if new_coordinator != self.cluster_coordinator:
@@ -582,7 +622,8 @@ class ClusterDiscovery:
             # Update metrics - in practice, these would come from actual monitoring
             self.local_node.last_heartbeat = datetime.now().isoformat()
             self.local_node.stability_score = max(
-                0.1, self.local_node.stability_score + (0.05 * (2 * (time.time() % 1) - 1))
+                0.1,
+                self.local_node.stability_score + (0.05 * (2 * (time.time() % 1) - 1)),
             )  # Simulated variation
 
             # Update in cluster registry
@@ -637,6 +678,7 @@ class DistributedHomeostasisCoordinator:
 
         if self.coordination_task:
             self.coordination_task.cancel()
+            # Standard library imports
             import contextlib
 
             with contextlib.suppress(asyncio.CancelledError):
@@ -670,7 +712,9 @@ class DistributedHomeostasisCoordinator:
             signal = DistributedStabilitySignal(
                 signal_id=signal_id,
                 source_node_id=self.cluster_discovery.node_id,
-                target_nodes=[node.node_id for node in candidates[:3]],  # Limit to top 3
+                target_nodes=[
+                    node.node_id for node in candidates[:3]
+                ],  # Limit to top 3
                 signal_type="assistance_request",
                 severity=severity,
                 urgency=urgency,
@@ -696,7 +740,9 @@ class DistributedHomeostasisCoordinator:
             self.signals_distributed += 1
             self.assistance_requests_sent += 1
 
-            logger.info(f"🌐 Distributed assistance request {signal_id} to {len(candidates)} nodes")
+            logger.info(
+                f"🌐 Distributed assistance request {signal_id} to {len(candidates)} nodes"
+            )
 
             return signal_id
 
@@ -730,7 +776,9 @@ class DistributedHomeostasisCoordinator:
                     offered_assistance=signal.assistance_type,
                     available_resources={"cpu": 0.3, "memory": 0.4, "network": 0.5},
                     estimated_capacity=offered_capacity,
-                    offer_expires_at=(datetime.now() + timedelta(minutes=5)).isoformat(),
+                    offer_expires_at=(
+                        datetime.now() + timedelta(minutes=5)
+                    ).isoformat(),
                     conditions=conditions or [],
                     confidence=0.8,
                     offer_status="pending",
@@ -742,7 +790,9 @@ class DistributedHomeostasisCoordinator:
                 # Send offer to requesting node
                 await self._send_assistance_offer(signal.source_node_id, offer)
 
-                logger.info(f"🌐 Sent assistance offer {offer_id} for signal {signal_id}")
+                logger.info(
+                    f"🌐 Sent assistance offer {offer_id} for signal {signal_id}"
+                )
             else:
                 # Send decline response
                 await self._send_assistance_decline(signal.source_node_id, signal_id)
@@ -764,7 +814,9 @@ class DistributedHomeostasisCoordinator:
         )
 
         pending_offers = sum(
-            1 for offer in self.assistance_offers.values() if offer.offer_status == "pending"
+            1
+            for offer in self.assistance_offers.values()
+            if offer.offer_status == "pending"
         )
 
         return {
@@ -811,7 +863,9 @@ class DistributedHomeostasisCoordinator:
             except Exception as e:
                 logger.error(f"Failed to send signal to {target_node_id}: {e}")
 
-    async def _send_signal_to_node(self, node_id: str, signal: DistributedStabilitySignal):
+    async def _send_signal_to_node(
+        self, node_id: str, signal: DistributedStabilitySignal
+    ):
         """Send signal to a specific node."""
         # In practice, this would use the node's API endpoint
         # For now, we'll simulate the communication
@@ -830,11 +884,15 @@ class DistributedHomeostasisCoordinator:
     async def _send_assistance_offer(self, target_node_id: str, offer: AssistanceOffer):
         """Send assistance offer to requesting node."""
         # Simulate sending offer
-        logger.debug(f"🌐 Sending assistance offer {offer.offer_id} to {target_node_id}")
+        logger.debug(
+            f"🌐 Sending assistance offer {offer.offer_id} to {target_node_id}"
+        )
 
     async def _send_assistance_decline(self, target_node_id: str, signal_id: str):
         """Send assistance decline to requesting node."""
-        logger.debug(f"🌐 Sending assistance decline for {signal_id} to {target_node_id}")
+        logger.debug(
+            f"🌐 Sending assistance decline for {signal_id} to {target_node_id}"
+        )
 
     async def _process_pending_signals(self):
         """Process pending signals for timeouts and status updates."""
@@ -853,14 +911,9 @@ class DistributedHomeostasisCoordinator:
 
     async def _process_assistance_offers(self):
         """Process assistance offers for acceptance/decline."""
-        # This would handle the logic for accepting offers and coordinating assistance
-        if not self.active_signals:
-            return 0
-        accepted = 0
-        for signal in self.active_signals.values():
-            if signal.status == "active" and signal.severity >= 0.5:
-                accepted += 1
-        return accepted
+        # Offer transport and acceptance are not implemented yet. Keep running
+        # signal expiry/cleanup without reporting assistance that did not occur.
+        return 0
 
     async def _cleanup_expired_items(self):
         """Clean up expired signals and offers."""
@@ -900,7 +953,9 @@ class DistributedHomeostasisCoordinator:
         """Calculate priority for assistance request."""
         base_priority = int(severity * 100)
 
-        urgency_bonus = {"low": 0, "medium": 25, "high": 50, "critical": 100}.get(urgency, 0)
+        urgency_bonus = {"low": 0, "medium": 25, "high": 50, "critical": 100}.get(
+            urgency, 0
+        )
 
         return base_priority + urgency_bonus
 
@@ -931,7 +986,9 @@ def get_distributed_coordinator() -> DistributedHomeostasisCoordinator:
         with _multi_node_lock:
             if _distributed_coordinator_instance is None:
                 discovery = get_cluster_discovery()
-                _distributed_coordinator_instance = DistributedHomeostasisCoordinator(discovery)
+                _distributed_coordinator_instance = DistributedHomeostasisCoordinator(
+                    discovery
+                )
 
     return _distributed_coordinator_instance
 

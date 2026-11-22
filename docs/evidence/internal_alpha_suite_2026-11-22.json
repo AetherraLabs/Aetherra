@@ -1,0 +1,1415 @@
+{
+  "date": "2026-11-22",
+  "timezone": "America/Denver",
+  "candidate": {
+    "base_commit": "d00120e8d8fb5f14f5b1f5fa1bd295ceb9c25930",
+    "branch": "codex/alpha-chat-contracts",
+    "uncommitted": true,
+    "full_suite_snapshot": "verified_final",
+    "python_file_sha256": {
+      "Aetherra/aetherra_core/engine/readiness.py": "d3839ff94d776760accd3a3f8576d777330bc8d719fcb9784cbcdec1cc7a3898",
+      "Aetherra/consciousness/quantum/test_phase_7_4_integration.py": "3344538d60703b03eae817fa05545cbd5331fe8d37a4c7111270859989954993",
+      "Aetherra/consciousness/self_model.py": "c7784f04c2fc7b7ab1ffb1332fb7b63494808e8fd64a6eaffaa24bc1c81f346e",
+      "Aetherra/homeostasis/alert_intelligence.py": "2301ec99aa22b4088fd0c1b433909576f6232615c3783f224a176799b6dddc97",
+      "Aetherra/homeostasis/intelligent_alert_manager.py": "c0be8aa34f933091af3f1cf62ffb7c568a595f96b45868dd2472c21ee5528927",
+      "Aetherra/homeostasis/multi_node_coordination.py": "8cdea6155960905e6e9522786914b871a306ddafd010d6e395b8f11a87d9d614",
+      "aetherra_hub/blueprints/ai_ask.py": "ecd2b6124f22b5ab10bdf0551d5b3b73b5181e9aa4656ef2a5755f08019565e8",
+      "aetherra_hub/blueprints/ai_stream.py": "d78c16eb99cfe592992eb4d02cbbee275b4015e05c08b00ca00fba4e64e4c333",
+      "aetherra_hub/blueprints/chat.py": "b45c13d609a6409f73a71d9db6bb3ffb29337cbda7aa63533d41229a5325ec9c",
+      "aetherra_hub/services/ai_stream.py": "3decf650ea6e27290d567af0616214d2750f1f8be28d7d94fb11f700b6f70db3",
+      "aetherra_hub/services/chat_bridge.py": "4e2f5c6fcecb9a6b775b9a3089de34eaa71692fe836f5d1a531d5f3780cc579e",
+      "aetherra_hub/services/chat_contract.py": "44641a18385776660d0f162fddf157ff4dbe5d5e5f280b51d45737a713db5196",
+      "tests/consciousness/test_active_inference_integration.py": "34319a30e4a6bfe5ffa94bcb9799da89a14879db0ab38c06293c7bf2e53f3028",
+      "tests/consciousness/test_identity_unified.py": "05e954fd572b28a668f4e3c075808744aa9b3593a185f9f201684caf81acb2b5",
+      "tests/consciousness/test_self_model.py": "d01df581013f5d8b916e6d126c3411816511787b6158e36a03e9bcb994f2e45a",
+      "tests/storm/test_storm_security.py": "92fbb576168eb9cff89d7328895fff00a37afe4025c0d639358e1eb45718c200",
+      "tests/test_aether_capabilities_strict.py": "841b95a164c05291514a371a9c3095676adea20461a37be2e81cf2f1e3d85a1a",
+      "tests/test_headers_and_expiry.py": "40de76b2cc2c9995974e838d30533c191c47408b305aa4d8ad449e70165d36cd",
+      "tests/test_multi_node_coordination.py": "ed54b1af486b4440a66f5fa903724745ad9da17c2fb082f328d44cbd57f8985f",
+      "tests/test_quiesce_drain.py": "3d019bbb8cf2b0bec8b29ed7a70bb7f5caf95e1655be83b72279948d423af490",
+      "tests/test_sse_v2.py": "37691e53f66219828a5e90fa4df22df7c56813ef402394da677591acecdd4af5",
+      "tests/unit/test_ai_readiness.py": "d7de1293c50a5e56f79fc02acfa308c067eac929993947a3c6a963f821920d68",
+      "tests/unit/test_alert_intelligence_connections.py": "a1436fd04d43c047c794aafbed7c31d90760b2cf6dfecdfa05dbb33a55788c84",
+      "tests/unit/test_chat_request_contract.py": "04055666869192d8de5a8e9b536d2549a7344f4acec012fd776b84aec046cfef",
+      "tests/unit/test_phase74_integration_guardian.py": "94eff1ef42af637200e3243755378d74296e373ebdd12324b5d4eaa40fdc96ab"
+    },
+    "remote_ci": "not run for unpublished candidate"
+  },
+  "documentation_file_sha256": {
+    "ALPHA_READINESS_DECISION.md": "c3fb337a816adf9cd8536d9d66952fca1ebf1af27a208d08cb689f9efe4eaaa7",
+    "ALPHA_READINESS_CHECKLIST.md": "031bc604e2414d8e777d42e30afe0a99d5ef3e20708f4c3816b7b34a8d25d921",
+    "ALPHA_OPERATOR_RUNBOOK.md": "a8225ae82036bbf4b302b4cf7d8210761ad14e0a4902584cab27f460e2da2049",
+    "BUILD_ORDER.md": "9112515df790984edeba943d2232ecf905af1b1da802238d38cf260eda3d60e3",
+    "MASTER_ROADMAP.md": "daa1c08325fedb2a29a1d3cf5099ce1ac200be098145782d16ed70e1d7e091a7"
+  },
+  "environment": {
+    "python": "3.13.7",
+    "node": "22.18.0",
+    "baseline_style": {
+      "ruff_metadata": "0.16.0",
+      "resolved_ruff_binary": "0.12.1",
+      "black": "23.12.1",
+      "isort": "5.13.2"
+    },
+    "verified_style": {
+      "ruff_metadata": "0.17.6",
+      "resolved_ruff_binary": "0.17.6",
+      "black": "26.10.1",
+      "isort": "9.0.2"
+    },
+    "provisioning": "Task-local venv overlays the provisioned runtime and quality dependencies; own exact-pin tool install. Shared environments unchanged; not a fresh desktop dependency install."
+  },
+  "checks": {
+    "baseline-full": {
+      "check": "baseline-full",
+      "exit_code": 1,
+      "seconds": 1813.47,
+      "pytest_summary": "5 failed, 3059 passed, 44 skipped, 21 errors in 1786.84s (0:29:46)",
+      "counts": {
+        "failed": 5,
+        "passed": 3059,
+        "skipped": 44,
+        "errors": 21
+      },
+      "log_sha256": "6d48c7a82a5c4aa80464fda105b113a30dab1e982094ec01951c62fb89a20608",
+      "command": "python -m pytest --junitxml <artifact.xml> (default addopts, coverage and collection)",
+      "coverage": {
+        "required_percent": 22.0,
+        "measured_percent": 45.54,
+        "scope": [
+          "aetherra_script_service",
+          "Aetherra.core"
+        ],
+        "whole_repository_coverage": false
+      },
+      "observed_failures": [
+        "tests/test_alert_intelligence.py::TestAdaptiveThresholdEngine::test_engine_lifecycle",
+        "tests/test_alert_intelligence.py::TestAdaptiveThresholdEngine::test_engine_status",
+        "tests/test_alert_intelligence.py::TestAdaptiveThresholdEngine::test_metric_sample_processing",
+        "tests/test_alert_intelligence.py::TestAdaptiveThresholdEngine::test_pattern_learning",
+        "tests/test_alert_intelligence.py::TestIntegrationFlow::test_end_to_end_alert_flow",
+        "tests/test_alert_intelligence.py::TestIntelligentAlertManager::test_alert_acknowledgment",
+        "tests/test_alert_intelligence.py::TestIntelligentAlertManager::test_alert_filtering",
+        "tests/test_alert_intelligence.py::TestIntelligentAlertManager::test_alert_resolution",
+        "tests/test_alert_intelligence.py::TestIntelligentAlertManager::test_alert_statistics",
+        "tests/test_alert_intelligence.py::TestIntelligentAlertManager::test_manager_lifecycle",
+        "tests/test_alert_intelligence.py::TestIntelligentAlertManager::test_metric_processing_workflow",
+        "tests/test_multi_node_coordination.py::TestIntegrationFlow::test_cluster_assistance_flow",
+        "tests/test_multi_node_coordination.py::TestMultiNodeHomeostasisIntegration::test_should_request_assistance_conditions",
+        "tests/test_quiesce_drain.py::test_quiesce_waits_for_inflight_to_drain",
+        "tests/tools/test_python_quality.py::test_cleaned_source_is_allowed_and_removed_debt_is_reported",
+        "tests/tools/test_python_quality.py::test_edited_or_new_source_cannot_borrow_a_legacy_allowance[new.py]",
+        "tests/tools/test_python_quality.py::test_edited_or_new_source_cannot_borrow_a_legacy_allowance[old.py]",
+        "tests/tools/test_python_quality.py::test_exact_legacy_source_passes_without_rewriting_baseline",
+        "tests/tools/test_python_quality.py::test_generated_ignored_fixture_is_not_repository_source",
+        "tests/tools/test_python_quality.py::test_gitignore_cannot_hide_tracked_critical_error",
+        "tests/tools/test_python_quality.py::test_missing_or_different_tool_version_fails_closed",
+        "tests/tools/test_python_quality.py::test_nested_configuration_cannot_hide_a_new_violation",
+        "tests/tools/test_python_quality.py::test_weaker_configuration_cannot_reuse_the_baseline",
+        "tests/tools/test_python_quality.py::test_windows_line_endings_do_not_change_the_allowance",
+        "tests/unit/test_ai_stream_engine_failures.py::test_stream_sanitizes_rate_limit_exception",
+        "tests/unit/test_phase74_integration_guardian.py::test_phase74_initialization_is_guardian_audited"
+      ],
+      "skips": [
+        {
+          "test": "::tests.capabilities.test_reflection_memory_stability",
+          "reason": "collection skipped"
+        },
+        {
+          "test": "::tests.tools.test_release_bootstrap",
+          "reason": "collection skipped"
+        },
+        {
+          "test": "::tests.unit.test_ws_idempotency",
+          "reason": "collection skipped"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestNeuralInterfaceCore::test_main_interface_initialization",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestNeuralInterfaceCore::test_tab_creation",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestChatInterface::test_chat_interface_initialization",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestChatInterface::test_message_sending",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestMemoryGraphVisualization::test_memory_graph_controls",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestMemoryGraphVisualization::test_memory_graph_initialization",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestMemoryGraphVisualization::test_memory_node_creation",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestPluginManagement::test_dependency_tree_display",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestPluginManagement::test_plugin_inspector_initialization",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestPluginManagement::test_plugin_status_display",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestAuraEffects::test_aura_animation_timer",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestAuraEffects::test_aura_state_updates",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestAuraEffects::test_aura_widget_initialization",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestLyrixaCore::test_cognitive_metrics_display",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestLyrixaCore::test_goals_list_display",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestLyrixaCore::test_lyrixa_core_initialization",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestCommandPalette::test_command_filtering",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestCommandPalette::test_command_palette_initialization",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestCommandPalette::test_command_population",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestAnalyticsDashboard::test_analytics_panel_initialization",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestAnalyticsDashboard::test_metrics_display",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestIntegrationFlow::test_live_updates",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestIntegrationFlow::test_status_bar_updates",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestIntegrationFlow::test_tab_switching",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestPerformanceMetrics::test_interface_load_time",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestPerformanceMetrics::test_memory_usage",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.capabilities.test_perception_shutdown::test_journal_stop_reaps_idle_follower[ignores-terminate]",
+          "reason": "Windows terminate does not deliver SIGTERM"
+        },
+        {
+          "test": "tests.capabilities.test_qfac_in_os::test_qfac_optional_service_registration",
+          "reason": "QFAC not available in this environment"
+        },
+        {
+          "test": "tests.capabilities.test_self_maintenance_services::test_self_maintenance_services_registration_and_basic_ops",
+          "reason": "Self-maintenance services unavailable in this environment"
+        },
+        {
+          "test": "tests.capabilities.test_storm_acceptance.TestSTORMAcceptanceCriteria::test_storm_sheaf_consistency_stable",
+          "reason": "STORM not enabled"
+        },
+        {
+          "test": "tests.capabilities.test_storm_acceptance.TestSTORMAcceptanceCriteria::test_storm_evidence_tags_present",
+          "reason": "STORM not enabled"
+        },
+        {
+          "test": "tests.capabilities.test_storm_acceptance.TestSTORMProductionReadiness::test_storm_full_lifecycle",
+          "reason": "Memory system not returning results - persistence issue"
+        },
+        {
+          "test": "tests.consciousness.test_metrics_exporter::test_metrics_exporter_basic",
+          "reason": "Prometheus client not available or exporter inactive"
+        },
+        {
+          "test": "tests.consciousness.test_metrics_scrape::test_metrics_scrape_endpoint",
+          "reason": "Exporter inactive (missing prometheus_client)"
+        },
+        {
+          "test": "tests.unit.test_hub_quantum_and_chat_metrics::test_memory_status_endpoint_shape",
+          "reason": "Flask not available in test env"
+        },
+        {
+          "test": "tests.unit.test_hub_quantum_and_chat_metrics::test_prometheus_metrics_includes_memory_and_chat",
+          "reason": "Flask not available in test env"
+        },
+        {
+          "test": "tests.unit.test_signature_verifier.TestSignatureVerifierEdgeCases::test_symlink_handling",
+          "reason": "Symlinks not supported on this system"
+        },
+        {
+          "test": "tests.unit.test_sse_replay_gap_metric::test_replay_gap_metric_increments",
+          "reason": "Flask dependency or environment heavy; placeholder smoke"
+        }
+      ],
+      "scope_note": "Diagnostic run after package-isolation repair, from the editable candidate while follow-up repairs were developed; not an immutable baseline. Targeted red runs establish each reproduced defect."
+    },
+    "verified_final-full": {
+      "check": "verified_final-full",
+      "exit_code": 0,
+      "seconds": 1740.01,
+      "pytest_summary": "3115 passed, 40 skipped in 1716.83s (0:28:36)",
+      "counts": {
+        "passed": 3115,
+        "skipped": 40
+      },
+      "log_sha256": "f851c4f0fc28425269265a18a45b848906de97155692bfdc042c7b9ec2fe7fc4",
+      "command": "python -m pytest --junitxml <artifact.xml> (default addopts, coverage and collection)",
+      "coverage": {
+        "required_percent": 22.0,
+        "measured_percent": 45.54,
+        "scope": [
+          "aetherra_script_service",
+          "Aetherra.core"
+        ],
+        "whole_repository_coverage": false
+      },
+      "observed_failures": [],
+      "skips": [
+        {
+          "test": "::tests.capabilities.test_reflection_memory_stability",
+          "reason": "collection skipped"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestNeuralInterfaceCore::test_main_interface_initialization",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestNeuralInterfaceCore::test_tab_creation",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestChatInterface::test_chat_interface_initialization",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestChatInterface::test_message_sending",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestMemoryGraphVisualization::test_memory_graph_controls",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestMemoryGraphVisualization::test_memory_graph_initialization",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestMemoryGraphVisualization::test_memory_node_creation",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestPluginManagement::test_dependency_tree_display",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestPluginManagement::test_plugin_inspector_initialization",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestPluginManagement::test_plugin_status_display",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestAuraEffects::test_aura_animation_timer",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestAuraEffects::test_aura_state_updates",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestAuraEffects::test_aura_widget_initialization",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestLyrixaCore::test_cognitive_metrics_display",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestLyrixaCore::test_goals_list_display",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestLyrixaCore::test_lyrixa_core_initialization",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestCommandPalette::test_command_filtering",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestCommandPalette::test_command_palette_initialization",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestCommandPalette::test_command_population",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestAnalyticsDashboard::test_analytics_panel_initialization",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestAnalyticsDashboard::test_metrics_display",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestIntegrationFlow::test_live_updates",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestIntegrationFlow::test_status_bar_updates",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestIntegrationFlow::test_tab_switching",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestPerformanceMetrics::test_interface_load_time",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.ai.test_neural_interface.TestPerformanceMetrics::test_memory_usage",
+          "reason": "GUI components not available"
+        },
+        {
+          "test": "tests.capabilities.test_perception_shutdown::test_journal_stop_reaps_idle_follower[ignores-terminate]",
+          "reason": "Windows terminate does not deliver SIGTERM"
+        },
+        {
+          "test": "tests.capabilities.test_qfac_in_os::test_qfac_optional_service_registration",
+          "reason": "QFAC not available in this environment"
+        },
+        {
+          "test": "tests.capabilities.test_self_maintenance_services::test_self_maintenance_services_registration_and_basic_ops",
+          "reason": "Self-maintenance services unavailable in this environment"
+        },
+        {
+          "test": "tests.capabilities.test_storm_acceptance.TestSTORMAcceptanceCriteria::test_storm_sheaf_consistency_stable",
+          "reason": "STORM not enabled"
+        },
+        {
+          "test": "tests.capabilities.test_storm_acceptance.TestSTORMAcceptanceCriteria::test_storm_evidence_tags_present",
+          "reason": "STORM not enabled"
+        },
+        {
+          "test": "tests.capabilities.test_storm_acceptance.TestSTORMProductionReadiness::test_storm_full_lifecycle",
+          "reason": "Memory system not returning results - persistence issue"
+        },
+        {
+          "test": "tests.consciousness.test_metrics_exporter::test_metrics_exporter_basic",
+          "reason": "Prometheus client not available or exporter inactive"
+        },
+        {
+          "test": "tests.consciousness.test_metrics_scrape::test_metrics_scrape_endpoint",
+          "reason": "Exporter inactive (missing prometheus_client)"
+        },
+        {
+          "test": "tests.unit.test_hub_quantum_and_chat_metrics::test_memory_status_endpoint_shape",
+          "reason": "Flask not available in test env"
+        },
+        {
+          "test": "tests.unit.test_hub_quantum_and_chat_metrics::test_prometheus_metrics_includes_memory_and_chat",
+          "reason": "Flask not available in test env"
+        },
+        {
+          "test": "tests.unit.test_signature_verifier.TestSignatureVerifierEdgeCases::test_symlink_handling",
+          "reason": "Symlinks not supported on this system"
+        },
+        {
+          "test": "tests.unit.test_sse_replay_gap_metric::test_replay_gap_metric_increments",
+          "reason": "Flask dependency or environment heavy; placeholder smoke"
+        }
+      ],
+      "processes": [
+        {
+          "pid": 47856,
+          "create_time": 1795387090.635086,
+          "name": "python.exe",
+          "process_gone": true
+        },
+        {
+          "pid": 48336,
+          "create_time": 1795387090.6469607,
+          "name": "python.exe",
+          "process_gone": true
+        }
+      ],
+      "scope_note": "Completed from frozen source copy after correcting the wrapper cwd; candidate Python hashes match this copy."
+    },
+    "quality": {
+      "check": "quality",
+      "exit_code": 0,
+      "seconds": 130.0,
+      "log_sha256": "6cf379d1384f084edf6dee4800c4e37106b244db56aa0b65d88b9bf65839c03b"
+    },
+    "quality-tooling": {
+      "check": "quality-tooling",
+      "exit_code": 0,
+      "seconds": 29.01,
+      "pytest_summary": "12 passed in 27.84s",
+      "counts": {
+        "passed": 12
+      },
+      "log_sha256": "d8a5836e1b060ee29e096f8b8d4f0087ef6790a56ffd090e888452e75bc29783"
+    },
+    "readiness-red": {
+      "check": "readiness-red",
+      "exit_code": 1,
+      "seconds": 3.69,
+      "pytest_summary": "1 failed, 14 passed in 2.31s",
+      "counts": {
+        "failed": 1,
+        "passed": 14
+      },
+      "log_sha256": "0a1467555260fe6363a54b6066350ce3f4eaa9e0da7d8fbc9593ac3e681ad91c"
+    },
+    "readiness-review-red": {
+      "check": "readiness-review-red",
+      "exit_code": 1,
+      "seconds": 6.77,
+      "pytest_summary": "4 failed, 15 passed in 4.03s",
+      "counts": {
+        "failed": 4,
+        "passed": 15
+      },
+      "log_sha256": "6758533d92e58900620c4aa61582afb60cccb76c7a0465d64be784c5ea44380d"
+    },
+    "readiness-review-green": {
+      "check": "readiness-review-green",
+      "exit_code": 0,
+      "seconds": 4.44,
+      "pytest_summary": "19 passed in 2.50s",
+      "counts": {
+        "passed": 19
+      },
+      "log_sha256": "45aceba23c11ce236b2571b6bc6bf995871924a6c8f236fcca8fc55ef3f38ec1"
+    },
+    "coord-red": {
+      "check": "coord-red",
+      "exit_code": 1,
+      "seconds": 2.5,
+      "pytest_summary": "2 failed, 20 passed in 1.50s",
+      "counts": {
+        "failed": 2,
+        "passed": 20
+      },
+      "log_sha256": "ae607d407238573e46e7405bb755b9668fc9f621b3b3a3f86211c73f7a7c262a"
+    },
+    "coord-close-reset-red": {
+      "check": "coord-close-reset-red",
+      "exit_code": 1,
+      "seconds": 2.84,
+      "pytest_summary": "2 failed in 0.98s",
+      "counts": {
+        "failed": 2
+      },
+      "log_sha256": "9d655c14affc7f8793e440432c15d9967fb4d1bd23df461090a42183e9966fc1"
+    },
+    "coord-final-green": {
+      "check": "coord-final-green",
+      "exit_code": 0,
+      "seconds": 6.93,
+      "pytest_summary": "30 passed in 4.78s",
+      "counts": {
+        "passed": 30
+      },
+      "log_sha256": "7ed8e51ad98540dc9b90c508e949099fb4d64fb4745cc40cc99e7ebac59b5eb4"
+    },
+    "sqlite-before": {
+      "check": "sqlite-before",
+      "exit_code": 1,
+      "seconds": 9.7,
+      "pytest_summary": "16 passed, 11 errors in 8.23s",
+      "counts": {
+        "passed": 16,
+        "errors": 11
+      },
+      "log_sha256": "1bdcf4730d9634c58e463ea5a5ee2e504989c65eae250f6753058dc3e88335b3"
+    },
+    "sqlite-regression-before": {
+      "check": "sqlite-regression-before",
+      "exit_code": 1,
+      "seconds": 5.29,
+      "pytest_summary": "7 failed in 3.50s",
+      "counts": {
+        "failed": 7
+      },
+      "log_sha256": "094f8945f919bb55e4dc0f74ad8c188690bdd8b49b47094e97eab102dc762872"
+    },
+    "sqlite-pinned-final": {
+      "check": "sqlite-pinned-final",
+      "exit_code": 0,
+      "seconds": 16.7,
+      "pytest_summary": "28 passed in 15.02s",
+      "counts": {
+        "passed": 28
+      },
+      "log_sha256": "0437e57d1efbdc4eeb7021c30c2a9fb2b740cd2a0b73ec61f07d44d033df97df"
+    },
+    "loop-temporal-order-red": {
+      "check": "loop-temporal-order-red",
+      "exit_code": 1,
+      "seconds": 2.02,
+      "pytest_summary": "2 failed, 2 passed in 0.88s",
+      "counts": {
+        "failed": 2,
+        "passed": 2
+      },
+      "log_sha256": "975f678c44655f21de306f88f41ec4203351e4c08ed21e55b671d8148004f9cd"
+    },
+    "temporal-real-engine-red": {
+      "check": "temporal-real-engine-red",
+      "exit_code": 1,
+      "seconds": 1.72,
+      "pytest_summary": "1 failed, 3 passed in 0.58s",
+      "counts": {
+        "failed": 1,
+        "passed": 3
+      },
+      "log_sha256": "e7a3c23b759c71b3664318ff510b71f9f0311f4ab4a247c75cfbcc24f4fd5bd1"
+    },
+    "loop-temporal-pinned-green": {
+      "check": "loop-temporal-pinned-green",
+      "exit_code": 0,
+      "seconds": 3.62,
+      "pytest_summary": "25 passed in 2.40s",
+      "counts": {
+        "passed": 25
+      },
+      "log_sha256": "d479a9e8b3fcdd7233e47556c8f89ac9413a73dab3d5a01b5117043bdad057ce"
+    },
+    "boot": {
+      "check": "boot",
+      "exit_code": 0,
+      "seconds": 3.48,
+      "log_sha256": "4f4a43d00ea9e95a2fd897f9428d9a63a9715dd39528cb4ea7a88e8c771ac436"
+    },
+    "integration": {
+      "check": "integration",
+      "exit_code": 0,
+      "seconds": 1.96,
+      "log_sha256": "e82418826dba898dee6a7dd9809450e84cb7916e655e3f06a23fa377cc650735"
+    },
+    "imports": {
+      "check": "imports",
+      "exit_code": 0,
+      "seconds": 6.52,
+      "log_sha256": "afbfe0297a2829830598a53ad693b6855fdc5f6fa4b0212e69f27b4141fcd922"
+    },
+    "rate-order-red": {
+      "check": "rate-order-red",
+      "exit_code": 1,
+      "seconds": 11.0,
+      "pytest_summary": "1 failed, 1 passed in 9.34s",
+      "counts": {
+        "failed": 1,
+        "passed": 1
+      },
+      "log_sha256": "9acbe04209517a7710b6b894f5bd6da4466cbf8ab83bea93563f9cc8c1ddbed5"
+    },
+    "rate-order-green": {
+      "check": "rate-order-green",
+      "exit_code": 0,
+      "seconds": 81.93,
+      "pytest_summary": "14 passed in 80.14s (0:01:20)",
+      "counts": {
+        "passed": 14
+      },
+      "log_sha256": "de65b85e404722ec47d4604e3f650e94028d2465e6196837dbc5fd3abc4ac764"
+    },
+    "hygiene": {
+      "check": "hygiene",
+      "exit_code": 0,
+      "seconds": 0.12,
+      "log_sha256": "25271b821dd7d3d03ea7aa26cdc15239e14b4bc6e9bfcfc5ddb045847eab4a5c"
+    },
+    "gui-test": {
+      "check": "gui-test",
+      "exit_code": 0,
+      "seconds": 20.63,
+      "log_sha256": "554b6839571a5c719059a8f080c384fe85e8d3d2c89fd2b0e0cbe2f5ebc406dd"
+    },
+    "gui-build": {
+      "check": "gui-build",
+      "exit_code": 0,
+      "seconds": 6.13,
+      "log_sha256": "079f0c36ff9c87f1e94be446e7f6c527a2f48c4b6d67d53c486f5488db652414"
+    },
+    "gui-lint": {
+      "check": "gui-lint",
+      "exit_code": 0,
+      "seconds": 5.6,
+      "log_sha256": "464a431dfa2cb62c8e3b074fcb9fff6c3cdd482027479c0930a14414b15c02a5"
+    },
+    "published-signature": {
+      "check": "published-signature",
+      "exit_code": 0,
+      "seconds": 0.29,
+      "log_sha256": "d23deeb9a2bf8956063fcff4bcdf45bf0966528fa6c20aee45bbcd7001fc24d6"
+    },
+    "environment-pip-check": {
+      "check": "environment-pip-check",
+      "exit_code": 1,
+      "seconds": 1.81,
+      "log_sha256": "fc1ba0ac16954563db8e6816d71d07a800af0e863d78d1bd21c16b34327832af"
+    },
+    "docs": {
+      "check": "docs",
+      "exit_code": 0,
+      "seconds": 4.27,
+      "log_sha256": "c7a702317995c1840d172687103c5c9c9a6509ec4ae5370c9efa680040d135c6"
+    },
+    "markdown": {
+      "check": "markdown",
+      "exit_code": 0,
+      "seconds": 0.52,
+      "log_sha256": "ab659c401d9474a7faf890b1f2bf221eb8a6d640168ba7f96a6f53cfa902e3b3"
+    }
+  },
+  "runtime": [
+    {
+      "sample": "offline-start",
+      "timestamp": "2026-11-22T22:11:02.272655+00:00",
+      "http_statuses": {
+        "/health": 200,
+        "/api/hub/readiness": 200,
+        "/api/kernel/readiness": 200,
+        "/api/runtime-ui/status": 200,
+        "/api/runtime-ui/bootstrap?mode=first_launch&user=Alpha&limit=8": 200,
+        "/api/homeostasis/status": 200,
+        "/api/maintenance/status": 200,
+        "/api/selfinc/status": 200,
+        "/api/guardian/status": 200,
+        "/api/security/policy": 200,
+        "/api/selfinc/audit": 200,
+        "/api/ai/status": 200
+      },
+      "readiness": {
+        "readiness": "degraded",
+        "safe_for_requests": false,
+        "reasons": [
+          "lifecycle_diagnostics_present"
+        ]
+      },
+      "lifecycle_events": 4,
+      "lifecycle_problems": 1,
+      "guardian": {
+        "enabled": true,
+        "mode": "enforcing",
+        "audit_integrity_ok": true
+      },
+      "homeostasis": {
+        "mode": "observe_only",
+        "actuators": {
+          "actions_attempted": 0,
+          "actions_blocked": 0,
+          "actions_executed": 0,
+          "last_action_time": null,
+          "policy_loaded": false,
+          "registry_cache_valid": false,
+          "rollback_actions_available": 0
+        },
+        "running": true,
+        "recoveries": 0,
+        "restarts": 0
+      }
+    },
+    {
+      "sample": "offline-steady",
+      "timestamp": "2026-11-22T22:12:59.775365+00:00",
+      "http_statuses": {
+        "/health": 200,
+        "/api/hub/readiness": 200,
+        "/api/kernel/readiness": 200,
+        "/api/runtime-ui/status": 200,
+        "/api/runtime-ui/bootstrap?mode=first_launch&user=Alpha&limit=8": 200,
+        "/api/homeostasis/status": 200,
+        "/api/maintenance/status": 200,
+        "/api/selfinc/status": 200,
+        "/api/guardian/status": 200,
+        "/api/security/policy": 200,
+        "/api/selfinc/audit": 200,
+        "/api/ai/status": 200
+      },
+      "readiness": {
+        "readiness": "degraded",
+        "safe_for_requests": false,
+        "reasons": [
+          "lifecycle_diagnostics_present"
+        ]
+      },
+      "lifecycle_events": 4,
+      "lifecycle_problems": 1,
+      "guardian": {
+        "enabled": true,
+        "mode": "enforcing",
+        "audit_integrity_ok": true
+      },
+      "homeostasis": {
+        "mode": "observe_only",
+        "actuators": {
+          "actions_attempted": 0,
+          "actions_blocked": 0,
+          "actions_executed": 0,
+          "last_action_time": null,
+          "policy_loaded": false,
+          "registry_cache_valid": false,
+          "rollback_actions_available": 0
+        },
+        "running": true,
+        "recoveries": 0,
+        "restarts": 0
+      }
+    },
+    {
+      "sample": "live-start",
+      "timestamp": "2026-11-22T22:17:12.463329+00:00",
+      "http_statuses": {
+        "/health": 200,
+        "/api/hub/readiness": 200,
+        "/api/kernel/readiness": 200,
+        "/api/runtime-ui/status": 200,
+        "/api/runtime-ui/bootstrap?mode=first_launch&user=Alpha&limit=8": 200,
+        "/api/homeostasis/status": 200,
+        "/api/maintenance/status": 200,
+        "/api/selfinc/status": 200,
+        "/api/guardian/status": 200,
+        "/api/security/policy": 200,
+        "/api/selfinc/audit": 200,
+        "/api/ai/status": 200
+      },
+      "readiness": {
+        "readiness": "ready",
+        "safe_for_requests": true,
+        "reasons": [
+          "ready"
+        ]
+      },
+      "lifecycle_events": 3,
+      "lifecycle_problems": 0,
+      "guardian": {
+        "enabled": true,
+        "mode": "enforcing",
+        "audit_integrity_ok": true
+      },
+      "homeostasis": {
+        "mode": "observe_only",
+        "actuators": {
+          "actions_attempted": 0,
+          "actions_blocked": 0,
+          "actions_executed": 0,
+          "last_action_time": null,
+          "policy_loaded": false,
+          "registry_cache_valid": false,
+          "rollback_actions_available": 0
+        },
+        "running": true,
+        "recoveries": 0,
+        "restarts": 0
+      }
+    },
+    {
+      "sample": "live-steady",
+      "timestamp": "2026-11-22T22:18:08.008374+00:00",
+      "http_statuses": {
+        "/health": 200,
+        "/api/hub/readiness": 200,
+        "/api/kernel/readiness": 200,
+        "/api/runtime-ui/status": 200,
+        "/api/runtime-ui/bootstrap?mode=first_launch&user=Alpha&limit=8": 200,
+        "/api/homeostasis/status": 200,
+        "/api/maintenance/status": 200,
+        "/api/selfinc/status": 200,
+        "/api/guardian/status": 200,
+        "/api/security/policy": 200,
+        "/api/selfinc/audit": 200,
+        "/api/ai/status": 200
+      },
+      "readiness": {
+        "readiness": "ready",
+        "safe_for_requests": true,
+        "reasons": [
+          "ready"
+        ]
+      },
+      "lifecycle_events": 3,
+      "lifecycle_problems": 0,
+      "guardian": {
+        "enabled": true,
+        "mode": "enforcing",
+        "audit_integrity_ok": true
+      },
+      "homeostasis": {
+        "mode": "observe_only",
+        "actuators": {
+          "actions_attempted": 0,
+          "actions_blocked": 0,
+          "actions_executed": 0,
+          "last_action_time": null,
+          "policy_loaded": false,
+          "registry_cache_valid": false,
+          "rollback_actions_available": 0
+        },
+        "running": true,
+        "recoveries": 0,
+        "restarts": 0
+      }
+    }
+  ],
+  "continuity": {
+    "write_pid": 43068,
+    "recall_pid": 3740,
+    "saved_id": "b0eec83f8b8578e96b912f3079739a84",
+    "write_responder": "explicit no-provider fallback (not a live-model pass)",
+    "live_turns": [
+      {
+        "question": "What nickname did I give the place where I watch the stars?",
+        "reply": "You call the little observatory in your garden the Lantern Room. What would you like to try next?",
+        "retrieved_ids": [
+          "b0eec83f8b8578e96b912f3079739a84"
+        ],
+        "generation_evidence_ids": [
+          "b0eec83f8b8578e96b912f3079739a84"
+        ],
+        "provider": "openai/gpt-4o",
+        "fallback": false
+      },
+      {
+        "question": "What color did I paint its door?",
+        "reply": "I haven't been told what color you painted its door. If you share this detail with me, I can remember it for the future.",
+        "retrieved_ids": [],
+        "generation_evidence_ids": [],
+        "provider": "openai/gpt-4o",
+        "fallback": false
+      },
+      {
+        "question": "Who are you, and how does Lyrixa relate to Aetherra?",
+        "reply": "I'm Lyrixa, the user-facing persona of Aetherra, which is the underlying cognitive system. I interact with you directly, helping to bridge your needs and the capabilities of Aetherra. What would you like to try next?",
+        "retrieved_ids": [
+          "7dc83037d5fe172f93371e1af5a6e7f7",
+          "f933c718c0027e687700d1b6ed99f4c2"
+        ],
+        "generation_evidence_ids": [
+          "7dc83037d5fe172f93371e1af5a6e7f7",
+          "f933c718c0027e687700d1b6ed99f4c2"
+        ],
+        "provider": "openai/gpt-4o",
+        "fallback": false
+      }
+    ],
+    "storage_scope": "isolated local directories; not account isolation",
+    "prior_varied_paraphrase_matrix": "internal_alpha_2026-11-22.json (historical 35-turn evidence; not rerun in this pass)",
+    "raw_synthetic_dialogue_in_ordinary_runtime_logs": false
+  },
+  "verification_wrapper": "An initial final attempt launched in the editable candidate due to a bound default cwd; stopped and excluded. Final rerun passes cwd explicitly and verifies pytest rootdir against the frozen snapshot.",
+  "expired_requests": {
+    "offline": {
+      "passed": true,
+      "stored_ids_before": [
+        "7dc83037d5fe172f93371e1af5a6e7f7",
+        "7f3425f3dd5ea037a3704cf7b2009e3c",
+        "893452576a895cfd7e787c7495f27be4",
+        "935585872a77d740c18b3ce030f9f960",
+        "b0eec83f8b8578e96b912f3079739a84"
+      ],
+      "stored_ids_after": [
+        "7dc83037d5fe172f93371e1af5a6e7f7",
+        "7f3425f3dd5ea037a3704cf7b2009e3c",
+        "893452576a895cfd7e787c7495f27be4",
+        "935585872a77d740c18b3ce030f9f960",
+        "b0eec83f8b8578e96b912f3079739a84"
+      ],
+      "storage_unchanged": true,
+      "receipt_contains_conversation": false,
+      "requests": [
+        {
+          "method": "POST",
+          "endpoint": "/api/ai/ask",
+          "status": 409,
+          "headers": {
+            "X-Aetherra-Chat-Version": "2",
+            "X-Aetherra-Trace-Id": "synthetic-alpha-expiry",
+            "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+          },
+          "body": {
+            "error": {
+              "code": "invalid_request",
+              "message": "Request expired"
+            },
+            "ok": false,
+            "trace_id": "synthetic-alpha-expiry"
+          }
+        },
+        {
+          "method": "POST",
+          "endpoint": "/api/ai/stream",
+          "status": 200,
+          "headers": {
+            "X-Aetherra-Chat-Version": "2",
+            "X-Aetherra-Trace-Id": "synthetic-alpha-expiry",
+            "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+          },
+          "body": [
+            {
+              "id": 1,
+              "trace_id": "synthetic-alpha-expiry",
+              "ts": "2026-11-22T22:11:14.011822",
+              "type": "error",
+              "data": {
+                "error": {
+                  "code": "invalid_request",
+                  "message": "Request expired"
+                }
+              },
+              "client_message_id": "synthetic-expired"
+            },
+            {
+              "id": 2,
+              "trace_id": "synthetic-alpha-expiry",
+              "ts": "2026-11-22T22:11:14.012306",
+              "type": "final",
+              "data": {
+                "ok": false,
+                "error": {
+                  "code": "invalid_request",
+                  "message": "Request expired"
+                },
+                "trace_id": "synthetic-alpha-expiry"
+              },
+              "client_message_id": "synthetic-expired"
+            }
+          ]
+        },
+        {
+          "method": "GET",
+          "endpoint": "/api/ai/stream",
+          "status": 200,
+          "headers": {
+            "X-Aetherra-Chat-Version": "2",
+            "X-Aetherra-Trace-Id": "synthetic-alpha-expiry",
+            "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+          },
+          "body": [
+            {
+              "id": 1,
+              "trace_id": "synthetic-alpha-expiry",
+              "ts": "2026-11-22T22:11:14.048015",
+              "type": "error",
+              "data": {
+                "error": {
+                  "code": "invalid_request",
+                  "message": "Request expired"
+                }
+              },
+              "client_message_id": "synthetic-expired"
+            },
+            {
+              "id": 2,
+              "trace_id": "synthetic-alpha-expiry",
+              "ts": "2026-11-22T22:11:14.048402",
+              "type": "final",
+              "data": {
+                "ok": false,
+                "error": {
+                  "code": "invalid_request",
+                  "message": "Request expired"
+                },
+                "trace_id": "synthetic-alpha-expiry"
+              },
+              "client_message_id": "synthetic-expired"
+            }
+          ]
+        },
+        {
+          "method": "POST",
+          "endpoint": "/api/lyrixa/chat",
+          "status": 409,
+          "headers": {
+            "X-Aetherra-Chat-Version": "2",
+            "X-Aetherra-Trace-Id": "synthetic-alpha-expiry",
+            "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+          },
+          "body": {
+            "error": {
+              "code": "invalid_request",
+              "message": "Request expired"
+            },
+            "ok": false,
+            "trace_id": "synthetic-alpha-expiry"
+          }
+        }
+      ]
+    },
+    "live": {
+      "passed": true,
+      "stored_ids_before": [
+        "2e175cb683e63b31de0cf4d46090d412",
+        "2eb3a9c087f5637b93a59da4bb3c8d3d",
+        "7dc83037d5fe172f93371e1af5a6e7f7",
+        "7f3425f3dd5ea037a3704cf7b2009e3c",
+        "893452576a895cfd7e787c7495f27be4",
+        "935585872a77d740c18b3ce030f9f960",
+        "aff12ad37953d894fa7c7bde166f5a98",
+        "b0eec83f8b8578e96b912f3079739a84",
+        "bfb49d8e01ee53440c92b690ba398a3c",
+        "d365c480f86408ff3783ff7732c34a91",
+        "d53e3379a1d19d835722d85156431e99",
+        "ddb7d530920da56a80731816c7abf627",
+        "f933c718c0027e687700d1b6ed99f4c2",
+        "fb141b1353225063ad9415b2908f90a7"
+      ],
+      "stored_ids_after": [
+        "2e175cb683e63b31de0cf4d46090d412",
+        "2eb3a9c087f5637b93a59da4bb3c8d3d",
+        "7dc83037d5fe172f93371e1af5a6e7f7",
+        "7f3425f3dd5ea037a3704cf7b2009e3c",
+        "893452576a895cfd7e787c7495f27be4",
+        "935585872a77d740c18b3ce030f9f960",
+        "aff12ad37953d894fa7c7bde166f5a98",
+        "b0eec83f8b8578e96b912f3079739a84",
+        "bfb49d8e01ee53440c92b690ba398a3c",
+        "d365c480f86408ff3783ff7732c34a91",
+        "d53e3379a1d19d835722d85156431e99",
+        "ddb7d530920da56a80731816c7abf627",
+        "f933c718c0027e687700d1b6ed99f4c2",
+        "fb141b1353225063ad9415b2908f90a7"
+      ],
+      "storage_unchanged": true,
+      "receipt_contains_conversation": false,
+      "requests": [
+        {
+          "method": "POST",
+          "endpoint": "/api/ai/ask",
+          "status": 409,
+          "headers": {
+            "X-Aetherra-Chat-Version": "2",
+            "X-Aetherra-Trace-Id": "synthetic-alpha-expiry",
+            "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+          },
+          "body": {
+            "error": {
+              "code": "invalid_request",
+              "message": "Request expired"
+            },
+            "ok": false,
+            "trace_id": "synthetic-alpha-expiry"
+          }
+        },
+        {
+          "method": "POST",
+          "endpoint": "/api/ai/stream",
+          "status": 200,
+          "headers": {
+            "X-Aetherra-Chat-Version": "2",
+            "X-Aetherra-Trace-Id": "synthetic-alpha-expiry",
+            "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+          },
+          "body": [
+            {
+              "id": 1,
+              "trace_id": "synthetic-alpha-expiry",
+              "ts": "2026-11-22T22:17:22.493080",
+              "type": "error",
+              "data": {
+                "error": {
+                  "code": "invalid_request",
+                  "message": "Request expired"
+                }
+              },
+              "client_message_id": "synthetic-expired"
+            },
+            {
+              "id": 2,
+              "trace_id": "synthetic-alpha-expiry",
+              "ts": "2026-11-22T22:17:22.493638",
+              "type": "final",
+              "data": {
+                "ok": false,
+                "error": {
+                  "code": "invalid_request",
+                  "message": "Request expired"
+                },
+                "trace_id": "synthetic-alpha-expiry"
+              },
+              "client_message_id": "synthetic-expired"
+            }
+          ]
+        },
+        {
+          "method": "GET",
+          "endpoint": "/api/ai/stream",
+          "status": 200,
+          "headers": {
+            "X-Aetherra-Chat-Version": "2",
+            "X-Aetherra-Trace-Id": "synthetic-alpha-expiry",
+            "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+          },
+          "body": [
+            {
+              "id": 1,
+              "trace_id": "synthetic-alpha-expiry",
+              "ts": "2026-11-22T22:17:22.509222",
+              "type": "error",
+              "data": {
+                "error": {
+                  "code": "invalid_request",
+                  "message": "Request expired"
+                }
+              },
+              "client_message_id": "synthetic-expired"
+            },
+            {
+              "id": 2,
+              "trace_id": "synthetic-alpha-expiry",
+              "ts": "2026-11-22T22:17:22.509508",
+              "type": "final",
+              "data": {
+                "ok": false,
+                "error": {
+                  "code": "invalid_request",
+                  "message": "Request expired"
+                },
+                "trace_id": "synthetic-alpha-expiry"
+              },
+              "client_message_id": "synthetic-expired"
+            }
+          ]
+        },
+        {
+          "method": "POST",
+          "endpoint": "/api/lyrixa/chat",
+          "status": 409,
+          "headers": {
+            "X-Aetherra-Chat-Version": "2",
+            "X-Aetherra-Trace-Id": "synthetic-alpha-expiry",
+            "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+          },
+          "body": {
+            "error": {
+              "code": "invalid_request",
+              "message": "Request expired"
+            },
+            "ok": false,
+            "trace_id": "synthetic-alpha-expiry"
+          }
+        }
+      ]
+    }
+  },
+  "guards": {
+    "offline": [
+      {
+        "path": "/api/ai/ask",
+        "status": 403
+      },
+      {
+        "path": "/api/kernel/control/pause",
+        "status": 501
+      },
+      {
+        "path": "/api/selfinc/audit",
+        "status": 401
+      },
+      {
+        "path": "/api/selfinc/audit?limit=0",
+        "status": 400
+      },
+      {
+        "path": "/api/selfinc/audit?limit=999999999999999999999",
+        "status": 400
+      },
+      {
+        "path": "/api/selfinc/audit?action=register_workflow&status=applied&limit=20",
+        "status": 200
+      }
+    ],
+    "live": [
+      {
+        "path": "/api/ai/ask",
+        "status": 403
+      },
+      {
+        "path": "/api/kernel/control/pause",
+        "status": 501
+      },
+      {
+        "path": "/api/selfinc/audit",
+        "status": 401
+      },
+      {
+        "path": "/api/selfinc/audit?limit=0",
+        "status": 400
+      },
+      {
+        "path": "/api/selfinc/audit?limit=999999999999999999999",
+        "status": 400
+      },
+      {
+        "path": "/api/selfinc/audit?action=register_workflow&status=applied&limit=20",
+        "status": 200
+      }
+    ]
+  },
+  "browser": {
+    "offline": {
+      "screenshot": "browser-offline.jpg",
+      "sha256": "e57e8e3f7b3b1f249438fc7cd81462215f18bbecf4ad5ebcda4b86174240183e",
+      "console": [
+        {
+          "level": "warn",
+          "message": "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+          "timestamp": "2026-11-22T22:13:14.017Z",
+          "url": "http://127.0.0.1:13300/@vite/client"
+        }
+      ]
+    },
+    "stopped": {
+      "screenshot": "browser-stopped.jpg",
+      "sha256": "95c85b0654b02059125ecac9b44e303d2d85ebac9795390aa349b1535381b430",
+      "console": [
+        {
+          "level": "warn",
+          "message": "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+          "timestamp": "2026-11-22T22:13:14.017Z",
+          "url": "http://127.0.0.1:13300/@vite/client"
+        }
+      ]
+    },
+    "reconnected": {
+      "screenshot": "browser-reconnected.jpg",
+      "sha256": "2b2b78e7e3a9fbd0376c3a2bdc78568b26eac7d6cbf6902426cfdea3fd324adb",
+      "console": [
+        {
+          "level": "warn",
+          "message": "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+          "timestamp": "2026-11-22T22:13:14.017Z",
+          "url": "http://127.0.0.1:13300/@vite/client"
+        }
+      ]
+    },
+    "observations": [
+      "No-provider Engine degradation and three observation titles",
+      "Automatic unavailable state after stop: all systems unknown, empty feed",
+      "Automatic reconnect: Engine active, service readiness ready, registry healthy, read-only Runtime API evidence",
+      "Unavailable Security/Maintenance/Integration Validation evidence remains unknown; no all-services-ready claim"
+    ]
+  },
+  "shutdown": {
+    "processes": [
+      {
+        "label": "offline",
+        "pid": 43068,
+        "process_gone": true,
+        "exit_code": 0,
+        "forced": false
+      },
+      {
+        "label": "live",
+        "pid": 3740,
+        "process_gone": true,
+        "exit_code": 0,
+        "forced": false
+      }
+    ],
+    "ports_closed": {
+      "13300": true,
+      "13301": true
+    }
+  },
+  "review": {
+    "findings": [
+      "connection-reset cleanup could mask cancellation",
+      "malformed success receipts could claim readiness",
+      "background discovery tests contacted fixed localhost port"
+    ],
+    "disposition": "All reproduced and corrected; independent final review found no remaining blockers"
+  },
+  "signing": {
+    "strict_runtime_flags": [
+      "AETHERRA_SIGNING_STRICT=1",
+      "AETHERRA_SCRIPT_VERIFY_STRICT=1"
+    ],
+    "published_release": "v0.5.0-beta.4",
+    "verification": "Ed25519 signature and wheel/sdist hashes verified with trusted public key",
+    "private_key_touched": false,
+    "policies_workflows_and_fixed_style_baseline_changed": false,
+    "unchanged_protected_paths": [
+      ".github/workflows",
+      "keys",
+      "Aetherra/security",
+      "Aetherra/guardian",
+      "policies",
+      ".ci/python-quality-baseline.json",
+      "aetherra_script_service.py",
+      "pyproject.toml",
+      "requirements*",
+      "tools/sign_release_manifest.py",
+      "tools/verify_release_manifest.py"
+    ]
+  },
+  "preservation": [
+    {
+      "workspace": "root checkout",
+      "files_checked": 1959,
+      "changed_files": [],
+      "head_unchanged": true,
+      "branch_unchanged": true,
+      "status_unchanged": true,
+      "index_unchanged": true
+    },
+    {
+      "workspace": "original user workspace",
+      "files_checked": 1952,
+      "changed_files": [],
+      "head_unchanged": true,
+      "branch_unchanged": true,
+      "status_unchanged": true,
+      "index_unchanged": true
+    }
+  ],
+  "limits": [
+    "Candidate CI, merge and clean-main verification pending",
+    "Legacy desktop dependency security debt in BUILD_REPRODUCIBILITY.md remains; CI lock audit is a separate graph",
+    "Provisioned environment pip check reports pyxnat 1.6.3 requiring missing pathlib distribution",
+    "Remote assistance execution remains simulated; only discovery and request creation were verified",
+    "No unattended operation, privileged live mutation, soak/load or fresh desktop install verified"
+  ],
+  "record_scope": "Verification checkpoint before commit and push; candidate fields describe the state at verification."
+}

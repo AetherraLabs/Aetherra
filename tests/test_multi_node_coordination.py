@@ -13,6 +13,7 @@ and integration with local homeostasis systems.
 Author: Aetherra Labs
 """
 
+# Standard library imports
 import asyncio
 import tempfile
 import time
@@ -20,8 +21,10 @@ from datetime import datetime
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 # Import the modules we're testing
 from Aetherra.homeostasis.multi_node_coordination import (
     ClusterDiscovery,
@@ -36,6 +39,12 @@ from Aetherra.homeostasis.multi_node_integration import (
     MultiNodeHomeostasisIntegration,
     get_multi_node_integration,
 )
+
+
+@pytest.fixture
+def isolated_discovery_scans(monkeypatch):
+    """Keep background scans away from local services outside this test."""
+    monkeypatch.setattr(ClusterDiscovery, "_discover_peers", AsyncMock())
 
 
 class TestClusterDiscovery:
@@ -64,24 +73,85 @@ class TestClusterDiscovery:
         assert self.discovery.local_node is None
 
     @pytest.mark.asyncio
-    async def test_start_stop_discovery(self):
+    async def test_start_stop_discovery(self, isolated_discovery_scans):
         """Test starting and stopping discovery."""
+        self.discovery.discovery_port = 0
         # Start discovery
         await self.discovery.start_discovery(
             advertise_address="localhost", seed_nodes=[]
         )
 
-        assert self.discovery.discovery_active
-        assert self.discovery.local_node is not None
-        assert self.discovery.local_node.node_id == "test_node_1"
-        assert self.discovery.local_node.hostname == "localhost"
-        assert self.discovery.local_node.node_state == NodeState.HEALTHY
-        assert len(self.discovery.cluster_nodes) == 1  # Self
-
-        # Stop discovery
-        await self.discovery.stop_discovery()
+        try:
+            assert self.discovery.discovery_active
+            assert self.discovery.local_node is not None
+            assert self.discovery.local_node.node_id == "test_node_1"
+            assert self.discovery.local_node.hostname == "localhost"
+            assert self.discovery.local_node.node_state == NodeState.HEALTHY
+            assert self.discovery.discovery_port > 0
+            assert self.discovery.local_node.port == self.discovery.discovery_port
+            assert len(self.discovery.cluster_nodes) == 1  # Self
+        finally:
+            await self.discovery.stop_discovery()
 
         assert not self.discovery.discovery_active
+
+    @pytest.mark.asyncio
+    async def test_discovery_closes_connection_after_invalid_response(self):
+        """A malformed peer response must not leave its TCP connection open."""
+        connected_writers = []
+        open_connection = asyncio.open_connection
+
+        async def retain_connection(*args, **kwargs):
+            reader, writer = await open_connection(*args, **kwargs)
+            connected_writers.append(writer)
+            return reader, writer
+
+        async def malformed_peer(reader, writer):
+            try:
+                await reader.read(4096)
+                writer.write(b"not-json")
+                await writer.drain()
+            finally:
+                writer.close()
+                await writer.wait_closed()
+
+        server = await asyncio.start_server(malformed_peer, "127.0.0.1", 0)
+        try:
+            port = server.sockets[0].getsockname()[1]
+            with patch("asyncio.open_connection", side_effect=retain_connection):
+                await self.discovery._contact_discovery_peer(f"127.0.0.1:{port}")
+
+            assert len(connected_writers) == 1
+            assert connected_writers[0].is_closing()
+        finally:
+            for writer in connected_writers:
+                writer.close()
+                await writer.wait_closed()
+            server.close()
+            await server.wait_closed()
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("cancelled", [False, True])
+    async def test_discovery_close_reset_preserves_exchange_result(self, cancelled):
+        """A reset during cleanup must not escape or mask cancellation."""
+        reader = MagicMock()
+        reader.read = AsyncMock(
+            return_value=b"not-json",
+            side_effect=asyncio.CancelledError if cancelled else None,
+        )
+        writer = MagicMock()
+        writer.drain = AsyncMock()
+        writer.wait_closed = AsyncMock(side_effect=ConnectionResetError("peer reset"))
+
+        with patch(
+            "asyncio.open_connection",
+            new=AsyncMock(return_value=(reader, writer)),
+        ):
+            if cancelled:
+                with pytest.raises(asyncio.CancelledError):
+                    await self.discovery._contact_discovery_peer("127.0.0.1:43210")
+            else:
+                await self.discovery._contact_discovery_peer("127.0.0.1:43210")
 
     def test_get_cluster_status(self):
         """Test cluster status reporting."""
@@ -267,9 +337,13 @@ class TestDistributedHomeostasisCoordinator:
     async def test_start_stop_coordination(self):
         """Test starting and stopping coordination."""
         await self.coordinator.start_coordination()
-        assert self.coordinator.coordination_active
-
-        await self.coordinator.stop_coordination()
+        try:
+            assert self.coordinator.coordination_active
+            # Let the real loop complete its first maintenance cycle.
+            await asyncio.sleep(0)
+            assert not self.coordinator.coordination_task.done()
+        finally:
+            await self.coordinator.stop_coordination()
         assert not self.coordinator.coordination_active
 
     @pytest.mark.asyncio
@@ -432,13 +506,13 @@ class TestMultiNodeHomeostasisIntegration:
         assert self.integration.assistance_request_cooldown == 300.0
 
     @pytest.mark.asyncio
-    async def test_start_stop_integration(self):
+    async def test_start_stop_integration(self, isolated_discovery_scans):
         """Test starting and stopping integration."""
         # Mock the port to avoid conflicts
         with patch("socket.getfqdn", return_value="localhost"):
             await self.integration.start_integration(
                 node_id="integration_test",
-                discovery_port=8768,
+                discovery_port=0,
                 advertise_address="localhost",
             )
 
@@ -520,12 +594,25 @@ class TestMultiNodeHomeostasisIntegration:
         # Test cooldown behavior
         self.integration.last_assistance_request["memory_pressure"] = time.time()
         assert not asyncio.run(
-            self.integration._should_request_assistance(0.7, "memory_pressure")
+            self.integration._should_request_assistance(0.8, "memory_pressure")
         )
 
         # Different instability type should not be affected by cooldown
         assert asyncio.run(
-            self.integration._should_request_assistance(0.7, "cpu_overload")
+            self.integration._should_request_assistance(0.8, "cpu_overload")
+        )
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        ("severity", "expected"),
+        [(0.49, False), (0.5, False), (0.7, False), (0.700001, True), (0.8, True)],
+    )
+    async def test_assistance_requires_high_severity_without_degradation(
+        self, severity, expected
+    ):
+        assert (
+            await self.integration._should_request_assistance(severity, "cpu_overload")
+            is expected
         )
 
     def test_can_provide_assistance(self):
@@ -621,8 +708,8 @@ class TestIntegrationFlow:
     """Test end-to-end integration scenarios."""
 
     @pytest.mark.asyncio
-    async def test_cluster_assistance_flow(self):
-        """Test complete cluster assistance flow."""
+    async def test_cluster_assistance_flow(self, isolated_discovery_scans):
+        """Discover a capable peer and record a real assistance request."""
         # Create two nodes
         node1 = MultiNodeHomeostasisIntegration()
         node2 = MultiNodeHomeostasisIntegration()
@@ -631,33 +718,56 @@ class TestIntegrationFlow:
             # Start both nodes
             with patch("socket.getfqdn", return_value="localhost"):
                 await node1.start_integration(
-                    node_id="node1", discovery_port=8769, advertise_address="localhost"
+                    node_id="node1", discovery_port=0, advertise_address="localhost"
                 )
 
                 await node2.start_integration(
                     node_id="node2",
-                    discovery_port=8770,
+                    discovery_port=0,
                     advertise_address="localhost",
-                    seed_nodes=["localhost:8769"],
                 )
 
-            # Wait for discovery
-            await asyncio.sleep(1.0)
+            # This helper explicitly supports the requested workload. Generic
+            # homeostasis capability alone must not bypass capability checks.
+            node2.cluster_discovery.local_node.capabilities.extend(
+                ["memory_management", "load_balancing"]
+            )
+            peer_address = f"localhost:{node2.cluster_discovery.discovery_port}"
+            await node1.cluster_discovery._contact_discovery_peer(peer_address)
 
-            # Simulate instability on node1
-            with patch.object(node1, "_should_request_assistance", return_value=True):
-                with patch.object(
-                    node1.distributed_coordinator, "_distribute_signal"
-                ) as mock_distribute:
-                    result = await node1.handle_local_instability(
-                        severity=0.8,
-                        instability_type="memory_pressure",
-                        context={"memory_usage": 0.85},
-                    )
+            peer = node1.cluster_discovery.cluster_nodes["node2"]
+            assert peer.node_state is NodeState.HEALTHY
+            assert (
+                node2.cluster_discovery.cluster_nodes["node1"].node_state
+                is NodeState.HEALTHY
+            )
 
-                    assert result
-                    assert node1.cluster_assistance_requests > 0
-                    mock_distribute.assert_called_once()
+            # Refreshed wire data must preserve the enum used by candidate
+            # selection, just as first-time discovery does.
+            node2.cluster_discovery.local_node.node_state = NodeState.DEGRADED
+            await node1.cluster_discovery._contact_discovery_peer(peer_address)
+            assert peer.node_state is NodeState.DEGRADED
+
+            result = await node1.handle_local_instability(
+                severity=0.8,
+                instability_type="memory_pressure",
+                context={"memory_usage": 0.85},
+            )
+
+            assert result
+            assert node1.cluster_assistance_requests == 1
+            signals = list(node1.distributed_coordinator.pending_signals.values())
+            assert len(signals) == 1
+            signal = signals[0]
+            assert signal.source_node_id == "node1"
+            assert signal.target_nodes == ["node2"]
+            assert signal.assistance_type is DistributedAction.LOAD_REDISTRIBUTION
+            assert signal.required_capabilities == [
+                "memory_management",
+                "load_balancing",
+            ]
+            assert signal.context_data == {"memory_usage": 0.85}
+            assert signal.status == "pending"
 
         finally:
             # Clean up

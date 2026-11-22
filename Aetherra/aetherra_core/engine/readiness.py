@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+# Standard library imports
 from collections.abc import Mapping
 from contextlib import suppress
 from typing import Any
@@ -54,7 +55,15 @@ def _diagnostic_state(value: Any) -> str:
         return "degraded"
     if status in {"pending", "preflight", "approved"}:
         return "pending"
-    if status in {"stored", "recorded", "ready", "submitted", "emitted", "ok", "started"}:
+    if status in {
+        "stored",
+        "recorded",
+        "ready",
+        "submitted",
+        "emitted",
+        "ok",
+        "started",
+    }:
         return "available"
     if status in {"disabled", "not_requested", "not_attempted", "not_sampled"}:
         return "not_required"
@@ -88,15 +97,17 @@ def _public_engine_status(status: Mapping[str, Any] | None) -> dict[str, Any] | 
         "session_active": bool(status_map.get("session_active", False)),
         "components": {
             "memory_system": _component_state(status_map.get("memory_system")),
-            "improvement_system": _component_state(status_map.get("improvement_system")),
-            "agent_orchestrator": _component_state(status_map.get("agent_orchestrator")),
+            "improvement_system": _component_state(
+                status_map.get("improvement_system")
+            ),
+            "agent_orchestrator": _component_state(
+                status_map.get("agent_orchestrator")
+            ),
             "health_monitoring": _component_state(status_map.get("health_monitoring")),
         },
         "engine_import_error": _engine_import_error_code(status_map),
         "diagnostics": {
-            "persistent_memory": _diagnostic_state(
-                status_map.get("persistent_memory")
-            ),
+            "persistent_memory": _diagnostic_state(status_map.get("persistent_memory")),
             "task_execution": _diagnostic_state(status_map.get("task_execution")),
             "lifecycle_diagnostics": len(
                 _mapping(status_map.get("lifecycle")).get("diagnostics", []) or []
@@ -157,13 +168,24 @@ def assess_ai_readiness(status: Mapping[str, Any] | None) -> dict[str, Any]:
     if task_execution_state == "degraded":
         reasons.append("task_execution_degraded")
 
-    lifecycle_diagnostics = _mapping(status_map.get("lifecycle")).get(
-        "diagnostics", []
-    )
+    lifecycle_diagnostics = _mapping(status_map.get("lifecycle")).get("diagnostics", [])
     lifecycle_diagnostic_count = (
         len(lifecycle_diagnostics) if isinstance(lifecycle_diagnostics, list) else 0
     )
-    if lifecycle_diagnostic_count:
+    # Successful startup/shutdown receipts are history, not degraded health.
+    # Unknown or malformed events remain conservative readiness failures.
+    lifecycle_problem_count = (
+        sum(
+            event.get("status") != "ok"
+            or event.get("code") not in ("started", "stopped")
+            or not isinstance(event.get("component"), str)
+            or not event["component"].strip()
+            for event in map(_mapping, lifecycle_diagnostics)
+        )
+        if isinstance(lifecycle_diagnostics, list)
+        else 0
+    )
+    if lifecycle_problem_count:
         reasons.append("lifecycle_diagnostics_present")
 
     degraded_diagnostics: list[str] = []
@@ -179,7 +201,9 @@ def assess_ai_readiness(status: Mapping[str, Any] | None) -> dict[str, Any]:
         if _diagnostic_state(status_map.get(key)) == "degraded":
             degraded_diagnostics.append(key)
         else:
-            degraded_diagnostics.extend(_nested_degraded_paths(status_map.get(key), key))
+            degraded_diagnostics.extend(
+                _nested_degraded_paths(status_map.get(key), key)
+            )
     for path in degraded_diagnostics:
         reasons.append(f"diagnostic_degraded:{path}")
 
@@ -198,7 +222,7 @@ def assess_ai_readiness(status: Mapping[str, Any] | None) -> dict[str, Any]:
         or safety_filters > 0
         or persistent_memory_state == "degraded"
         or task_execution_state == "degraded"
-        or lifecycle_diagnostic_count
+        or lifecycle_problem_count
         or degraded_diagnostics
     ):
         readiness = "degraded"
@@ -222,6 +246,7 @@ def assess_ai_readiness(status: Mapping[str, Any] | None) -> dict[str, Any]:
             "persistent_memory": persistent_memory_state,
             "task_execution": task_execution_state,
             "lifecycle_diagnostic_count": lifecycle_diagnostic_count,
+            "lifecycle_problem_count": lifecycle_problem_count,
             "degraded_diagnostics": sorted(set(degraded_diagnostics)),
         },
         "authority": {
@@ -243,6 +268,7 @@ def assess_ai_readiness(status: Mapping[str, Any] | None) -> dict[str, Any]:
             ],
         },
     }
+
 
 def build_ai_readiness_payload(status: Mapping[str, Any] | None) -> dict[str, Any]:
     """Build the public AI status/readiness response."""

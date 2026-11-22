@@ -88,22 +88,26 @@ Internal alpha requires:
 
 ## Current Next Work
 
-The current full-launcher and policy retests close ALPHA-01 through ALPHA-06 in the working
-patch on `b1b7ae12`: observation-only, truthful Observatory state, event rendering
-and the repaired operator APIs pass their scoped checks.
-The final local CI selection passes (1,916 passed, 8 skipped).
-**No-go for broader internal alpha operation** remains pending disposition of
-legacy limitations and reviewed-commit/current-remote-CI acceptance.
-See `docs/ALPHA_READINESS_DECISION.md`. Stage 21 remains Active; stages 22 and 23
-remain Planned. Personal continuity remains a completed bounded milestone.
+Candidate `codex/alpha-chat-contracts` is based on main `d00120e8`
+(`v0.5.0-beta.4`). ALPHA-07, the original nine legacy cases and the remaining
+reproduced full-suite/readiness defects are repaired. The final frozen-source
+default suite finished with **3,115 passed / 40 skipped**, process exit 0. Fresh CLI restart,
+browser reconnect, three gpt-4o turns without fallback and strict signing pass.
+The previous 35-turn continuity matrix remains historical evidence.
+
+**Go for supervised synthetic verification; no-go for broader internal alpha.**
+Evidence records verification before publication; required CI, merge, clean-main
+verification and desktop dependency disposition remain. See
+`docs/ALPHA_READINESS_DECISION.md`. Stage 21 stays Active; stages 22 and 23 stay
+Planned. Personal continuity remains a completed bounded milestone.
 
 | Priority | Work | Required Outcome |
 | --- | --- | --- |
-| 1 | Regression assessment | Assess legacy failures outside the passing local CI selection |
-| 2 | Regression preservation | Keep passing observation-only and connected/degraded/stopped/restarted browser evidence |
-| 3 | GitHub quality/security review | Keep remote checks green and triage active findings |
-| 4 | Repository hygiene | Continue removing stale generated, runtime, and deprecated non-plugin UI artifacts |
-| 5 | Alpha acceptance | Verify a reviewed commit, current CI and clean checkout; reconsider No-go only with evidence |
+| 1 | Candidate integration | When work resumes: required CI, approved merge, then clean-main verification |
+| 2 | Desktop dependencies | Resolve or explicitly disposition security debt and fresh-install limits |
+| 3 | Regression preservation | Retain green default suite, observation-only, live-model and browser evidence |
+| 4 | Signing | Preserve enforced signatures; do not treat prior main CI as candidate CI |
+| 5 | Alpha acceptance | Reconsider broader no-go only against completed gates and accepted limits |
 
 ## Change Rule
 

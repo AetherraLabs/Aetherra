@@ -8,23 +8,21 @@ import importlib
 
 def test_quiesce_waits_for_inflight_to_drain():
     mod = importlib.import_module("Aetherra.aetherra_core.os_kernel")
-    kernel = mod.get_kernel()
-
-    # simulate some in-flight work for adapter:plugin
-    if not hasattr(kernel, "_inflight_inc"):
-        return  # skip if not available
-
+    kernel = mod.AetherraKernelLoop()
     kernel._inflight_inc("adapter:plugin")
 
-    async def drain_later():
-        await asyncio.sleep(0.1)
-        kernel._inflight_dec("adapter:plugin")
-
-    loop = asyncio.get_event_loop()
-    loop.create_task(drain_later())
-
     async def run_quiesce():
-        return await kernel.quiesce_for_target("adapter:plugin", timeout_sec=5)
+        task = asyncio.create_task(
+            kernel.quiesce_for_target("adapter:plugin", timeout_sec=5)
+        )
+        try:
+            # Let quiesce start while work is still in flight.
+            await asyncio.sleep(0)
+            assert not task.done()
+            kernel._inflight_dec("adapter:plugin")
+            assert await asyncio.wait_for(task, timeout=1) is True
+        finally:
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
 
-    ok = loop.run_until_complete(run_quiesce())
-    assert ok is True
+    asyncio.run(run_quiesce())

@@ -16,11 +16,16 @@ Test Coverage:
 - No direct STORM writes bypass security layer
 """
 
+# Standard library imports
+import json
+import sqlite3
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.aetherra_core.memory.aetherra_memory_engine import (
     AetherraMemoryEngineAdvanced,
     MemorySystemConfig,
@@ -61,17 +66,9 @@ class TestSTORMSecurityGates:
 
         assert result.success, "Memory storage should succeed"
 
-        # Verify redaction happened (check in-memory store)
-        stored_content = None
-        for mem in engine._mem:
-            if "config" in str(mem):
-                stored_content = str(mem)
-                break
-
-        # The stored content should have redacted version
-        # (Note: actual verification depends on storage implementation)
-        # For now, verify the hook was callable
-        assert callable(redact_hook), "Redaction hook should be configured"
+        # Inspect the written record rather than only checking hook callability.
+        stored = engine.fractal_mesh.fragments[result.fragment_id]
+        assert stored.content["text"] == "User config: API_KEY=[REDACTED]"
 
     @pytest.mark.asyncio
     async def test_storm_respects_privacy_classes(self):
@@ -184,13 +181,12 @@ class TestSTORMSecurityGates:
         assert len(hook_called) > 0, "Hook should have been called"
         metadata = hook_called[0]
         assert metadata.get("sensitive") is True, "Sensitive flag should be set"
-        assert "sensitive" in metadata.get("tags", []), (
-            "Tags should include 'sensitive'"
-        )
+        assert "sensitive" in metadata.get("tags", [])
 
     def test_storm_storage_schema_prevents_content_exposure(self):
         """Verify STORM storage schema doesn't store full content"""
 
+        # Aetherra imports
         from Aetherra.aetherra_core.memory.storm.persistence import StormStorage
 
         storage = StormStorage(":memory:")
@@ -245,6 +241,7 @@ class TestSTORMDataFlowSecurity:
     async def test_storm_hybrid_mode_preserves_base_fallback_security(self):
         """Verify hybrid mode preserves security properties of base fallback"""
 
+        # Aetherra imports
         from Aetherra.aetherra_core.memory.models import MemoryRecallResult
 
         # Create a base fallback with policy-processed items
@@ -276,40 +273,66 @@ class TestSTORMSecurityIntegration:
     """End-to-end security verification for STORM integration"""
 
     @pytest.mark.asyncio
-    async def test_full_remember_recall_security_flow(self):
+    async def test_full_remember_recall_security_flow(self, monkeypatch, tmp_path):
         """Verify complete data flow: remember -> redact -> store -> recall"""
 
-        redaction_log = []
+        monkeypatch.chdir(tmp_path)
+        for name in (
+            "HOME",
+            "USERPROFILE",
+            "AETHERRA_STATE_DIR",
+            "AETHERRA_POLICY_HOME",
+        ):
+            monkeypatch.setenv(name, str(tmp_path))
+        monkeypatch.setenv("AETHERRA_MEMORY_STORM", "0")
 
         def audit_redaction(content: Any, metadata: dict) -> tuple[Any, dict | None]:
-            redaction_log.append({"content": str(content), "metadata": metadata.copy()})
             # Redact API keys
             if isinstance(content, str):
-                redacted = content.replace("sk-", "sk-[REDACTED]")
+                redacted = content.replace("sk-secret123", "[REDACTED]")
                 return redacted, {"redacted": "sk-" in content}
             return content, None
 
-        config = MemorySystemConfig(redact_before_persist=audit_redaction)
+        config = MemorySystemConfig(
+            redact_before_persist=audit_redaction,
+            persist_sensitive_only_if_signed=True,
+            auto_narrative_generation=False,
+            auto_pulse_monitoring=False,
+        )
         engine = AetherraMemoryEngineAdvanced(config=config)
 
         # Store with sensitive content
-        await engine.remember(
+        saved = await engine.remember(
             content="API Key: sk-secret123",
             tags=["config", "sensitive"],
             category="credentials",
+            metadata={"signed": True},
         )
+        assert saved.success
+        engine.core_memory.close()
 
-        # Verify redaction happened
-        assert len(redaction_log) > 0, "Redaction hook should have been called"
-        assert redaction_log[0]["metadata"].get("redacted") is True
+        # Inspect the persisted result, not the hook's pre-redaction input copy.
+        with sqlite3.connect(config.core_db_path) as connection:
+            rows = connection.execute(
+                "SELECT content, context FROM memories"
+            ).fetchall()
+        assert len(rows) == 1
+        assert json.loads(rows[0][0])["text"] == "API Key: [REDACTED]"
+        assert json.loads(rows[0][1])["redacted"] is True
+        engine = AetherraMemoryEngineAdvanced(config=config)
 
         # Recall - should get redacted version
-        result = await engine.recall_typed(
-            query="API Key",
-            recall_strategy="base",  # Use base to check stored content
-            limit=5,
-        )
+        try:
+            result = await engine.recall_typed(
+                query="API Key", recall_strategy="base", limit=5
+            )
+        finally:
+            engine.core_memory.close()
 
         # STORM would build on this same pre-redacted data
         # (cannot test directly without enabling STORM, but data path is verified)
         assert result.items, "Should have recall results"
+        assert all(
+            item["content"]["text"] == "API Key: [REDACTED]" for item in result.items
+        )
+        assert "sk-secret123" not in json.dumps(result.items)

@@ -7,13 +7,14 @@ Capability verification tests:
 - Strict mode: AETHERRA_REQUIRE_CAPABILITIES=1 causes failure on missing capabilities
 """
 
+# Standard library imports
 import asyncio
-import os
-import sys
-import types
 
+# Third party imports
 import pytest
 
+# Aetherra imports
+from Aetherra.security import capabilities
 from aetherra_script_service import AetherScriptService
 
 
@@ -29,20 +30,13 @@ def run(script: str) -> dict:
     )
 
 
-def install_fake_capabilities_module(grants: dict[str, bool]):
-    """Install a temporary Aetherra.security.capabilities module exposing has_capability()."""
-    pkg = types.ModuleType("Aetherra")
-    security = types.ModuleType("Aetherra.security")
-    caps = types.ModuleType("Aetherra.security.capabilities")
+def install_fake_capabilities_module(grants: dict[str, bool], monkeypatch):
+    """Restore the real capability checker after each test; keep packages importable."""
 
     def has_capability(requester: str, capability: str) -> bool:
         return bool(grants.get(capability, False))
 
-    # Direct attribute assignment is sufficient
-    caps.has_capability = has_capability  # type: ignore[attr-defined]
-    sys.modules["Aetherra"] = pkg
-    sys.modules["Aetherra.security"] = security
-    sys.modules["Aetherra.security.capabilities"] = caps
+    monkeypatch.setattr(capabilities, "has_capability", has_capability)
 
 
 @pytest.mark.parametrize(
@@ -55,7 +49,7 @@ def install_fake_capabilities_module(grants: dict[str, bool]):
 def test_capabilities_soft_mode(monkeypatch, grants, missing):
     # Ensure strict mode is disabled
     monkeypatch.delenv("AETHERRA_REQUIRE_CAPABILITIES", raising=False)
-    install_fake_capabilities_module(grants)
+    install_fake_capabilities_module(grants, monkeypatch)
 
     script = """
 goal "soft capability check"
@@ -79,7 +73,7 @@ require
 def test_capabilities_strict_failure(monkeypatch):
     # Enable strict mode and simulate one missing capability
     monkeypatch.setenv("AETHERRA_REQUIRE_CAPABILITIES", "1")
-    install_fake_capabilities_module({"alpha": True, "beta": False})
+    install_fake_capabilities_module({"alpha": True, "beta": False}, monkeypatch)
 
     script = """
 goal "strict capability check"

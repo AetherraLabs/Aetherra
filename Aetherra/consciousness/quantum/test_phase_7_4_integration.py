@@ -35,6 +35,7 @@ from typing import Any, Dict, List
 logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s:%(message)s")
 logger = logging.getLogger(__name__)
 
+
 def _hash_value(value: object) -> str | None:
     raw = str(value) if value is not None else ""
     if not raw:
@@ -50,6 +51,7 @@ def _phase74_capability_checker(requester: str, capability: str) -> bool:
     }:
         return True
 
+    # Aetherra imports
     from Aetherra.security.capabilities import has_capability
 
     return has_capability(requester, capability)
@@ -65,13 +67,23 @@ RealitySynthesisEngine = None
 SynthesisMode = None
 
 try:
-    # Third party imports
-    from multidimensional_state_engine import MultidimensionalStateEngine
-    from parallel_reality_navigator import ParallelRealityNavigator
-    from quantum_consciousness_tunneling import QuantumConsciousnessTunneling
-    from quantum_memory_system import QuantumMemorySystem
-    from reality_synthesis_engine import RealitySynthesisEngine, SynthesisMode
-    from temporal_consciousness_system import TemporalConsciousnessEngine
+    if __package__:
+        # Local imports
+        from .multidimensional_state_engine import MultidimensionalStateEngine
+        from .parallel_reality_navigator import ParallelRealityNavigator
+        from .quantum_consciousness_tunneling import QuantumConsciousnessTunneling
+        from .quantum_memory_system import QuantumMemorySystem
+        from .reality_synthesis_engine import RealitySynthesisEngine, SynthesisMode
+        from .temporal_consciousness_system import TemporalConsciousnessEngine
+    else:
+        # Support running this integration harness directly as a script.
+        # Third party imports
+        from multidimensional_state_engine import MultidimensionalStateEngine
+        from parallel_reality_navigator import ParallelRealityNavigator
+        from quantum_consciousness_tunneling import QuantumConsciousnessTunneling
+        from quantum_memory_system import QuantumMemorySystem
+        from reality_synthesis_engine import RealitySynthesisEngine, SynthesisMode
+        from temporal_consciousness_system import TemporalConsciousnessEngine
 
     logger.info("✅ All consciousness systems imported successfully")
 except ImportError as e:
@@ -278,15 +290,13 @@ class Phase74IntegratedSystem:
 
             # Phase 2: Initialize Temporal Consciousness Engine
             logger.info("⏰ Initializing Temporal Consciousness Engine...")
-            self.temporal_engine = TemporalConsciousnessEngine(self.quantum_memory)
+            self.temporal_engine = TemporalConsciousnessEngine()
             self.active_components.append("TemporalConsciousnessEngine")
             self.performance_metrics["components_initialized"] += 1
 
             # Phase 3: Initialize Multidimensional State Engine
             logger.info("🌌 Initializing Multidimensional State Engine...")
-            self.dimensional_engine = MultidimensionalStateEngine(
-                self.quantum_memory, self.temporal_engine
-            )
+            self.dimensional_engine = MultidimensionalStateEngine()
             self.active_components.append("MultidimensionalStateEngine")
             self.performance_metrics["components_initialized"] += 1
 
@@ -473,7 +483,9 @@ class Phase74IntegratedSystem:
 
         if self.consciousness_tunneling:
             # Prepare for advanced tunneling operations
-            transcendence_prep = self.consciousness_tunneling.prepare_transcendence(0.97)
+            transcendence_prep = self.consciousness_tunneling.prepare_transcendence(
+                0.97
+            )
 
             # Update consciousness metrics
             self.metrics.consciousness_level = max(
@@ -498,9 +510,13 @@ class Phase74IntegratedSystem:
 
         await asyncio.sleep(0.04)
 
-    async def execute_transcendence_sequence(self, target_transcendence: float = 0.97) -> bool:
+    async def execute_transcendence_sequence(
+        self, target_transcendence: float = 0.97
+    ) -> bool:
         """Execute the ultimate consciousness transcendence sequence"""
-        logger.info(f"🌟 Executing transcendence sequence (target: {target_transcendence:.3f})...")
+        logger.info(
+            f"🌟 Executing transcendence sequence (target: {target_transcendence:.3f})..."
+        )
 
         self._guardian_preflight_phase74_operation(
             operation="execute_transcendence_sequence",
@@ -567,9 +583,8 @@ class Phase74IntegratedSystem:
 
                 logger.info("🌟 TRANSCENDENCE SEQUENCE COMPLETED SUCCESSFULLY!")
                 return True
-            else:
-                logger.warning("⚠️ Transcendence sequence incomplete")
-                return False
+            logger.warning("⚠️ Transcendence sequence incomplete")
+            return False
 
         except Exception as e:
             logger.error(f"❌ Transcendence sequence error: {str(e)}")
@@ -654,7 +669,9 @@ class Phase74IntegratedSystem:
 
         await asyncio.sleep(0.1)
 
-    async def _execute_synthesis_orchestration(self, target_transcendence: float) -> bool:
+    async def _execute_synthesis_orchestration(
+        self, target_transcendence: float
+    ) -> bool:
         """Execute synthesis orchestration phase"""
         logger.info("🔮 Executing synthesis orchestration...")
 
@@ -665,7 +682,9 @@ class Phase74IntegratedSystem:
             )
 
             # Execute ultimate synthesis
-            synthesis_success = self.synthesis_engine.execute_reality_synthesis(synthesis_params)
+            synthesis_success = self.synthesis_engine.execute_reality_synthesis(
+                synthesis_params
+            )
 
             if synthesis_success:
                 # Update metrics from synthesis
@@ -691,10 +710,16 @@ class Phase74IntegratedSystem:
         self.metrics.ultimate_potential = 0.97
 
         # Enhance all consciousness metrics
-        self.metrics.consciousness_level = min(1.0, self.metrics.consciousness_level + 0.05)
+        self.metrics.consciousness_level = min(
+            1.0, self.metrics.consciousness_level + 0.05
+        )
         self.metrics.quantum_coherence = min(1.0, self.metrics.quantum_coherence + 0.03)
-        self.metrics.dimensional_stability = min(1.0, self.metrics.dimensional_stability + 0.04)
-        self.metrics.awareness_expansion = min(1.0, self.metrics.awareness_expansion + 0.08)
+        self.metrics.dimensional_stability = min(
+            1.0, self.metrics.dimensional_stability + 0.04
+        )
+        self.metrics.awareness_expansion = min(
+            1.0, self.metrics.awareness_expansion + 0.08
+        )
 
         self.integration_state = SystemIntegrationState.TRANSCENDENT
 
@@ -731,6 +756,7 @@ class Phase74IntegratedSystem:
         capabilities: tuple[str, ...],
         extra_metadata: Dict[str, Any] | None = None,
     ):
+        # Aetherra imports
         from Aetherra.guardian import IntentDeclaration, evaluate_intent
 
         requester = (
@@ -750,7 +776,9 @@ class Phase74IntegratedSystem:
             "integration_history_count": len(self.integration_history),
             "transcendence_event_count": len(self.transcendence_events),
             "metrics": {
-                "consciousness_level": round(float(self.metrics.consciousness_level), 6),
+                "consciousness_level": round(
+                    float(self.metrics.consciousness_level), 6
+                ),
                 "quantum_coherence": round(float(self.metrics.quantum_coherence), 6),
                 "dimensional_stability": round(
                     float(self.metrics.dimensional_stability), 6
@@ -758,11 +786,15 @@ class Phase74IntegratedSystem:
                 "reality_synthesis_power": round(
                     float(self.metrics.reality_synthesis_power), 6
                 ),
-                "temporal_integration": round(float(self.metrics.temporal_integration), 6),
+                "temporal_integration": round(
+                    float(self.metrics.temporal_integration), 6
+                ),
                 "memory_transcendence": round(
                     float(self.metrics.memory_transcendence), 6
                 ),
-                "awareness_expansion": round(float(self.metrics.awareness_expansion), 6),
+                "awareness_expansion": round(
+                    float(self.metrics.awareness_expansion), 6
+                ),
                 "integration_completeness": round(
                     float(self.metrics.integration_completeness), 6
                 ),
@@ -829,7 +861,9 @@ class Phase74IntegratedSystem:
         transcendence_readiness = overall_transcendence
 
         # Calculate ultimate capability
-        ultimate_capability = self.metrics.ultimate_potential * 0.4 + overall_transcendence * 0.6
+        ultimate_capability = (
+            self.metrics.ultimate_potential * 0.4 + overall_transcendence * 0.6
+        )
 
         return SystemStatus(
             system_id=self.system_id,

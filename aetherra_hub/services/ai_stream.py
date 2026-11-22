@@ -30,6 +30,12 @@ from typing import Any
 # Local imports
 from ..utils.http import run_coro_blocking
 from . import metrics_accum
+from .chat_contract import (
+    expired_error,
+    is_expired,
+    normalize_trace_id,
+    request_deadline,
+)
 
 # Import chat_metrics at module scope for type checkers (was imported lazily earlier)
 from .guardian_chat import evaluate_chat_ingress
@@ -204,7 +210,7 @@ def stream_sse(
         return
 
     # Trace / event id baseline
-    trace_id = headers.get("trace_id") or _gen_trace_id()
+    trace_id = normalize_trace_id(headers.get("trace_id") or body.get("trace_id"))
     start_event_id = 1
     if last_event_id:
         try:
@@ -229,13 +235,7 @@ def stream_sse(
         ttl_sec = int(ttl_sec) if ttl_sec is not None else None
     except Exception:
         ttl_sec = None
-    deadline_ts = body.get("deadline_ts")
-    try:
-        deadline_ts = float(deadline_ts) if deadline_ts is not None else None
-    except Exception:
-        deadline_ts = None
-    if deadline_ts is None and ttl_sec:
-        deadline_ts = time.time() + float(ttl_sec)
+    deadline_ts = request_deadline(body)
 
     ctx = StreamContext(trace_id, start_event_id)
     ctx.principal = principal
@@ -244,6 +244,12 @@ def stream_sse(
     ctx.deadline_ts = deadline_ts
     ctx.ttl_sec = ttl_sec
     ctx.prompt = prompt
+
+    if is_expired(deadline_ts):
+        error = expired_error("/api/ai/stream", trace_id)
+        yield ctx.envelope("error", {"error": error["error"]})
+        yield ctx.envelope("final", error)
+        return
 
     # Prelude events
     yield ctx.envelope("status", {"phase": "start"})
@@ -310,9 +316,7 @@ def stream_sse(
     principal_cap = principal
     try:  # local import to avoid global dependency
         # Aetherra imports
-        from Aetherra.security.capabilities import (
-            has_capability as _has_cap,  # type: ignore
-        )
+        from Aetherra.security.capabilities import has_capability as _has_cap  # type: ignore
 
         if principal_cap:
             allow_unmask = bool(_has_cap(principal_cap, "evidence.view"))
@@ -388,8 +392,9 @@ def stream_sse(
                 "deadline_ts": deadline_ts,
                 "ttl_sec": ttl_sec,
                 "_callbacks": {
-                    "on_chunk": lambda text=None, **kw: (
-                        _emit("chunk", {"text": text or "", **kw})
+                    "on_chunk": lambda text=None, **kw: _emit(
+                        "chunk",
+                        {"text": text or "", **kw},
                     ),
                     "on_thought": lambda text=None, **kw: _emit(
                         "thought", {"text": text or "", **kw}

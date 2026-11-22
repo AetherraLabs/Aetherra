@@ -1,23 +1,29 @@
 from __future__ import annotations
 
-# Third party imports
-import contextlib
-
 # Standard library imports
+import contextlib
 import ipaddress
 import json
 import os
 
+# Third party imports
 from flask import Blueprint, Response, jsonify, request
 
 # Local imports
 from ..services import metrics_accum
 from ..services.ai_stream import stream_sse
+from ..services.chat_contract import (
+    add_response_headers,
+    is_expired,
+    request_deadline,
+    request_trace_id,
+)
 from ..services.control_auth import authorize_token_request
 from ..services.idempotency import manager as idempotency_manager
 from ..services.security import policy_snapshot
 
 bp = Blueprint("ai_stream", __name__)
+bp.after_request(add_response_headers)
 
 _DEFAULT_PROD_NETWORK_ALLOWLIST = ("localhost", "127.0.0.1", "::1")
 
@@ -188,6 +194,9 @@ def _duplicate_response(body: dict, headers):
 
 
 def _duplicate_ws_message(body: dict, headers: dict[str, str]) -> dict | None:
+    body["deadline_ts"] = request_deadline(body)
+    if is_expired(body["deadline_ts"]):
+        return None
     client_message_id = str(body.get("client_message_id") or "").strip()
     if not client_message_id:
         return None
@@ -244,7 +253,9 @@ def register_websocket_routes(app) -> bool:
             return
 
         last_event_id_raw = body.get("last_event_id")
-        last_event_id = str(last_event_id_raw) if last_event_id_raw is not None else None
+        last_event_id = (
+            str(last_event_id_raw) if last_event_id_raw is not None else None
+        )
         for frame in stream_sse(
             body,
             headers,
@@ -283,7 +294,7 @@ def ai_stream_post():
     last_event_id = request.headers.get("Last-Event-ID")
     # Pass trace id if client supplied for continuity
     hdrs = {
-        "trace_id": request.headers.get("X-Aetherra-Trace-Id", ""),
+        "trace_id": request_trace_id(),
         "X-Aetherra-Principal": request.headers.get("X-Aetherra-Principal", ""),
     }
 
@@ -307,7 +318,12 @@ def ai_stream_post():
     auth_error = _authorize_ai_request()
     if auth_error is not None:
         return auth_error
-    duplicate_error = _duplicate_response(body, request.headers)
+    body["deadline_ts"] = request_deadline(body)
+    duplicate_error = (
+        None
+        if is_expired(body["deadline_ts"])
+        else _duplicate_response(body, request.headers)
+    )
     if duplicate_error is not None:
         return duplicate_error
 
@@ -324,7 +340,7 @@ def ai_stream_get():
     args = dict(request.args.items())
     last_event_id = request.headers.get("Last-Event-ID")
     hdrs = {
-        "trace_id": request.headers.get("X-Aetherra-Trace-Id", ""),
+        "trace_id": request_trace_id(),
         "X-Aetherra-Principal": request.headers.get("X-Aetherra-Principal", ""),
     }
 
@@ -346,7 +362,12 @@ def ai_stream_get():
     auth_error = _authorize_ai_request()
     if auth_error is not None:
         return auth_error
-    duplicate_error = _duplicate_response(args, request.headers)
+    args["deadline_ts"] = request_deadline(args)
+    duplicate_error = (
+        None
+        if is_expired(args["deadline_ts"])
+        else _duplicate_response(args, request.headers)
+    )
     if duplicate_error is not None:
         return duplicate_error
 

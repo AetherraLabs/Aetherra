@@ -7,6 +7,7 @@ Captures latency + TTFT (placeholder) observations into metrics_accum.ChatMetric
 from __future__ import annotations
 
 # Standard library imports
+import contextlib
 import time
 from collections.abc import Mapping
 from typing import Any
@@ -14,14 +15,22 @@ from typing import Any
 # Local imports
 from ..utils.http import run_coro_blocking
 
-# Aetherra imports
 try:  # Centralized disclosure policy (optional at import time)
+    # Aetherra imports
     from Aetherra.core import disclosure_policy as dp  # type: ignore
 except Exception:  # pragma: no cover - defensive import fallback
     dp = None  # type: ignore
+# Local imports
+from .chat_contract import (
+    expired_error,
+    is_expired,
+    normalize_trace_id,
+    request_deadline,
+    standard_headers,
+)
 from .guardian_chat import evaluate_chat_ingress
 from .metrics_accum import chat_metrics
-from .security import policy_snapshot, safety_precheck
+from .security import safety_precheck
 from .tokenizer import count_tokens
 
 OFFLINE_TEXT = "Lyrixa chat service is not online right now. I can still answer identity and Aetherra questions."  # noqa: E501
@@ -154,35 +163,17 @@ def handle_chat(payload: dict[str, Any]) -> tuple[dict[str, Any], int, dict[str,
         ttl_sec = int(ttl_sec) if ttl_sec is not None else None
     except Exception:
         ttl_sec = None
-    deadline_ts = payload.get("deadline_ts")
-    try:
-        deadline_ts = float(deadline_ts) if deadline_ts is not None else None
-    except Exception:
-        deadline_ts = None
-    if deadline_ts is None and ttl_sec is not None and ttl_sec > 0:
-        deadline_ts = time.time() + float(ttl_sec)
+    deadline_ts = request_deadline(payload)
 
     # Input stats
     chat_metrics.inc_request()
     chat_metrics.add_input_stats(message, count_tokens(message))
 
-    trace_id = payload.get("trace_id") or _gen_trace_id()
-    # Sanitize trace_id to prevent header injection
-    if trace_id and isinstance(trace_id, str):
-        # Remove any characters that could cause header injection
-        trace_id = "".join(c for c in trace_id if c.isprintable() and c not in "\r\n\0")
-        # Limit length to prevent abuse
-        trace_id = trace_id[:64] if trace_id else _gen_trace_id()
-    else:
-        trace_id = _gen_trace_id()
+    trace_id = normalize_trace_id(payload.get("trace_id"))
 
     # Expiry check
-    if deadline_ts and deadline_ts < time.time():
-        body = {
-            "error": "invalid_request",
-            "message": "Request expired",
-            "trace_id": trace_id,
-        }
+    if is_expired(deadline_ts):
+        body = expired_error("/api/lyrixa/chat", trace_id)
         headers = _std_headers(trace_id)
         return body, 409, headers
 
@@ -253,7 +244,7 @@ def handle_chat(payload: dict[str, Any]) -> tuple[dict[str, Any], int, dict[str,
         result = {"text": str(result)}
 
     # Normalize identity -> persona
-    try:
+    with contextlib.suppress(Exception):
         if (
             "identity" in result
             and "persona" not in result
@@ -265,25 +256,21 @@ def handle_chat(payload: dict[str, Any]) -> tuple[dict[str, Any], int, dict[str,
             about = None
 
             # Safely extract name, title, about from identity dict-like object
-            try:
+            with contextlib.suppress(Exception):
                 if isinstance(ident, dict):
                     name = str(ident.get("name") or name)
                 elif hasattr(ident, "get"):
                     val = ident.get("name")
                     if val:
                         name = str(val)
-            except Exception:
-                pass
 
-            try:
+            with contextlib.suppress(Exception):
                 if isinstance(ident, dict):
                     title = str(ident.get("title") or title)
                 elif hasattr(ident, "get"):
                     val = ident.get("title")
                     if val:
                         title = str(val)
-            except Exception:
-                pass
 
             try:
                 if isinstance(ident, dict) or hasattr(ident, "get"):
@@ -295,8 +282,6 @@ def handle_chat(payload: dict[str, Any]) -> tuple[dict[str, Any], int, dict[str,
             if about:
                 persona["about"] = about
             result["persona"] = persona  # type: ignore[index]
-    except Exception:
-        pass
     if "persona" not in result or not isinstance(result.get("persona"), dict):
         result["persona"] = {"name": "Lyrixa", "title": "Lyrixa AI Assistant"}  # type: ignore[index]
 
@@ -315,6 +300,7 @@ def handle_chat(payload: dict[str, Any]) -> tuple[dict[str, Any], int, dict[str,
 
     # Apply disclosure controls for Free tier without breaking schema
     # Never fail response due to redaction errors
+    # Standard library imports
     from contextlib import suppress
 
     with suppress(Exception):
@@ -331,11 +317,9 @@ def handle_chat(payload: dict[str, Any]) -> tuple[dict[str, Any], int, dict[str,
 
 
 def _observe_latency(t0: float):
-    try:
+    with contextlib.suppress(Exception):
         dt_ms = (time.time() - t0) * 1000.0
         chat_metrics.observe_latency_ms(dt_ms)
-    except Exception:
-        pass
 
 
 def _gen_trace_id() -> str:
@@ -346,15 +330,7 @@ def _gen_trace_id() -> str:
 
 
 def _std_headers(trace_id: str, policy=None) -> dict[str, str]:
-    # Standard library imports
-    import json
-
-    pol = policy or policy_snapshot()
-    return {
-        "X-Aetherra-Trace-Id": trace_id,
-        "X-Aetherra-Chat-Version": "2",
-        "X-Aetherra-Policy": json.dumps(pol),
-    }
+    return standard_headers(trace_id, policy)
 
 
 def _apply_free_tier_redaction_inplace(result: dict[str, Any]) -> None:
@@ -410,10 +386,8 @@ def _apply_free_tier_redaction_inplace(result: dict[str, Any]) -> None:
                 # Preserve high-level hints if present; drop code/diff details
                 for k in ("title", "action", "file", "path"):
                     if k in it:
-                        try:
+                        with contextlib.suppress(Exception):
                             entry[k] = str(it[k])
-                        except Exception:
-                            pass
                 entry.setdefault("summary", "details available in higher tiers")
                 safe.append(entry)
             else:
@@ -426,11 +400,11 @@ def _apply_free_tier_redaction_inplace(result: dict[str, Any]) -> None:
             result[key] = _summarize_items(orig)
 
     # Ensure edit_plan mirrors suggestions length-wise for schema expectations
-    if isinstance(result.get("suggestions"), list):
-        if not isinstance(result.get("edit_plan"), list) or (
-            len(result.get("edit_plan") or []) != len(result.get("suggestions") or [])
-        ):
-            result["edit_plan"] = list(result.get("suggestions") or [])
+    if isinstance(result.get("suggestions"), list) and (
+        not isinstance(result.get("edit_plan"), list)
+        or len(result.get("edit_plan") or []) != len(result.get("suggestions") or [])
+    ):
+        result["edit_plan"] = list(result.get("suggestions") or [])
 
     # Add disclosure marker
     result.setdefault("disclosure_tier", "free")
