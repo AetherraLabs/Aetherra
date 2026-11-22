@@ -4,6 +4,7 @@ Quick test to verify engine metrics are present in /api/metrics endpoint.
 Starts Hub, processes a message, checks metrics output.
 """
 
+# Standard library imports
 import asyncio
 import sys
 from pathlib import Path
@@ -12,11 +13,12 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT_DIR))
 
-from aetherra_hub.app_factory import create_app
-
 
 async def test_metrics():
     """Test that engine metrics are exported."""
+    # Aetherra imports
+    from aetherra_hub.app import create_app
+
     print("Creating Hub app...")
     app = create_app()
 
@@ -37,9 +39,8 @@ async def test_metrics():
     # Get metrics
     print("\nFetching /api/metrics...")
     response = client.get("/api/metrics")
-    assert response.status_code == 200, (
-        f"Metrics request failed: {response.status_code}"
-    )
+    failure = f"Metrics request failed: {response.status_code}"
+    assert response.status_code == 200, failure
 
     metrics_text = response.data.decode("utf-8")
     lines = metrics_text.split("\n")

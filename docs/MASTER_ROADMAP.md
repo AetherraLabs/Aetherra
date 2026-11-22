@@ -1,6 +1,6 @@
 # Aetherra Master Roadmap
 
-Updated: 2026-07-18
+Updated: 2026-11-22
 
 This is the single source of truth for Aetherra roadmap planning.
 
@@ -169,26 +169,39 @@ Primary gate:
 Current alpha status:
 
 - Core system foundations are documented as complete or foundation complete.
-- Boot validation passes.
-- Integration Validation passes.
-- Runtime UI builds and focused tests pass.
-- Repository hygiene has improved significantly.
-- Final alpha decision is still pending.
+- Boot and Integration Validation contracts pass (4 and 5 checks).
+- Full CLI boot, Hub/Kernel readiness and process restart were demonstrated on
+  `b1b7ae12` with an isolated synthetic profile; Engine degrades without a model.
+- The working patch closes ALPHA-01/02/03: Homeostasis remains observation-only
+  with zero actuator attempts; browser connected/degraded/stopped/restart checks pass.
+- The operator API follow-up closes ALPHA-04/05: Hub sees the running Homeostasis
+  instance and authenticated audit reads honor filters and limits after restart.
+- The configured-memory policy follow-up closes ALPHA-06: redacted output
+  reaches both stores, hook failures deny persistence and authority is preserved.
+- 194 focused alpha regressions, 112 final Homeostasis/UI regressions (overlap),
+  3 continuity acceptance tests, 13 signing tests and 17 GUI tests pass.
+- Old CI/signed release checks predate this patch; current remote CI is pending.
+- The final local CI test selection passes: 1,916 passed, 8 skipped. All 81
+  combined follow-up regressions and 13 final signing tests pass.
+- The current decision remains **No-go for broader internal alpha operation**
+  pending disposition of legacy limitations and reviewed-commit/current-remote-CI acceptance.
+  Collection now succeeds with 3,093 tests; full execution is not a pass.
+  See `docs/ALPHA_READINESS_DECISION.md` for evidence and limits.
 
 Open alpha work:
 
 | Gate | Status | What Remains |
 | --- | --- | --- |
-| Identity and scope | In progress | Final review after roadmap consolidation |
-| System foundation status | In progress | Confirm `SYSTEM_INDEX` and this roadmap remain synchronized |
-| Safety and governance | In progress | Keep Guardian/Security checks passing in CI |
-| Runtime boot path | In progress | Optional live runtime smoke remains |
-| Runtime UI Observatory | In progress | Address build warnings if they become CI blockers |
-| Integration Validation | In progress | Keep runner non-destructive and CI-usable |
-| Repository hygiene | In progress | Continue removing stale generated/runtime artifacts carefully |
-| CI and security checks | Pending | Confirm GitHub Actions are green after merge |
-| Operator runbook | In progress | Final usability review |
-| Alpha decision | Pending | Fill `docs/ALPHA_READINESS_DECISION.md` |
+| Identity and scope | Reviewed | Maintain entity/persona and authority boundaries |
+| System foundation status | Reviewed | Foundation completion is not integrated readiness |
+| Safety and governance | Bounded retest passes | Preserve observation-only, Guardian/Security, authenticated audit and signing |
+| Runtime boot path | Fresh/restart retest passes | Provider and registry heartbeat coverage limits remain |
+| Runtime UI Observatory | Browser retest passes | ALPHA-02/03 resolved; preserve truthful evidence and read-only controls |
+| Integration Validation | Contracts pass | Add runtime coverage for observed integration gaps |
+| Repository hygiene | Focused checks pass | Continue scoped hygiene without disturbing user changes |
+| CI and security checks | Local selection passes | Verify current remote CI on the reviewed commit; desktop dependency debt remains |
+| Operator runbook | Bounded procedure verified | Preserve repaired operator API evidence and documented limitations |
+| Alpha decision | No-go retained | Verify regression acceptance, reviewed commit and current CI before acceptance |
 
 ## Beta Hardening Roadmap
 

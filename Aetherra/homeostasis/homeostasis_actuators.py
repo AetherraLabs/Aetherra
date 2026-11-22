@@ -41,7 +41,9 @@ import yaml
 # Aetherra imports
 from aetherra_service_registry import get_service_registry
 
+# Local imports
 from .audit_trace_layer import get_audit_layer
+from .operating_policy import observe_only_requested
 
 logger = logging.getLogger(__name__)
 
@@ -67,12 +69,16 @@ class HomeostasisActuators:
 
     def __init__(self, policy_path: Optional[str] = None):
         """Initialize the homeostasis actuators."""
-        self.policy_path = policy_path or "Aetherra/homeostasis/configs/homeostasis_policy.yaml"
+        self.policy_path = (
+            policy_path or "Aetherra/homeostasis/configs/homeostasis_policy.yaml"
+        )
         self.policy = self._load_policy()
 
         # Track action history for rollback
         self.action_history: List[Dict[str, Any]] = []
         self.rollback_stack: List[Dict[str, Any]] = []
+        self.actions_attempted = 0
+        self.actions_blocked = 0
 
         # Cache for service registry and other frequently accessed services
         self._registry_cache: Optional[Any] = None
@@ -95,7 +101,9 @@ class HomeostasisActuators:
                         return {}
                     return cast(Dict[str, Any], data)
             else:
-                logger.warning(f"Policy file not found at {self.policy_path}, using defaults")
+                logger.warning(
+                    f"Policy file not found at {self.policy_path}, using defaults"
+                )
                 return {}
         except Exception as e:
             logger.error(f"Failed to load policy from {self.policy_path}: {e}")
@@ -117,7 +125,11 @@ class HomeostasisActuators:
             return None
 
     def _record_action(
-        self, action_type: str, target: str, parameters: Dict[str, Any], result: ActuatorResult
+        self,
+        action_type: str,
+        target: str,
+        parameters: Dict[str, Any],
+        result: ActuatorResult,
     ):
         """Record action in history for audit and rollback."""
         action_record = {
@@ -156,6 +168,7 @@ class HomeostasisActuators:
             "security:modify",
         }:
             return True
+        # Aetherra imports
         from Aetherra.security.capabilities import has_capability
 
         return has_capability(requester, capability)
@@ -165,11 +178,14 @@ class HomeostasisActuators:
         target_service = str(getattr(action, "target_service", "") or "")
         capabilities = ["homeostasis:actuate"]
         target_lower = f"{target_service} {action_type}".lower()
-        if any(marker in target_lower for marker in ("security", "policy", "capability")):
+        if any(
+            marker in target_lower for marker in ("security", "policy", "capability")
+        ):
             capabilities.append("security:modify")
         return tuple(capabilities)
 
     def _guardian_preflight_action(self, action: Any) -> None:
+        # Aetherra imports
         from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
 
         action_type = str(getattr(action, "action_type", "") or "").strip()
@@ -220,6 +236,7 @@ class HomeostasisActuators:
             )
 
     def _guardian_preflight_rollback(self, requester: str = "homeostasis") -> None:
+        # Aetherra imports
         from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
 
         decision = evaluate_intent(
@@ -248,6 +265,10 @@ class HomeostasisActuators:
     async def execute_action(self, action) -> bool:
         """Execute a control action with comprehensive audit tracing."""
         self._guardian_preflight_action(action)
+        if observe_only_requested():
+            self.actions_blocked += 1
+            return False
+        self.actions_attempted += 1
         start_time = time.time()
         audit_layer = get_audit_layer()
 
@@ -284,21 +305,33 @@ class HomeostasisActuators:
         try:
             # Route to appropriate actuator method
             if action.action_type == "increase_plugin_timeouts":
-                result = await self.adjust_plugin_timeouts(action.target_service, action.parameters)
+                result = await self.adjust_plugin_timeouts(
+                    action.target_service, action.parameters
+                )
             elif action.action_type == "optimize_plugin_timeouts":
                 result = await self.optimize_plugin_timeouts(
                     action.target_service, action.parameters
                 )
             elif action.action_type == "optimize_memory_cache":
-                result = await self.optimize_memory_cache(action.target_service, action.parameters)
+                result = await self.optimize_memory_cache(
+                    action.target_service, action.parameters
+                )
             elif action.action_type == "increase_task_workers":
-                result = await self.adjust_task_workers(action.target_service, action.parameters)
+                result = await self.adjust_task_workers(
+                    action.target_service, action.parameters
+                )
             elif action.action_type == "adjust_learning_rate":
-                result = await self.adjust_learning_rate(action.target_service, action.parameters)
+                result = await self.adjust_learning_rate(
+                    action.target_service, action.parameters
+                )
             elif action.action_type == "reconnect_hub":
-                result = await self.reconnect_hub(action.target_service, action.parameters)
+                result = await self.reconnect_hub(
+                    action.target_service, action.parameters
+                )
             elif action.action_type == "restart_service_registry":
-                result = await self.restart_service(action.target_service, action.parameters)
+                result = await self.restart_service(
+                    action.target_service, action.parameters
+                )
             else:
                 result = ActuatorResult(
                     success=False, message=f"Unknown action type: {action.action_type}"
@@ -356,18 +389,27 @@ class HomeostasisActuators:
 
         Falls back to direct execute_action if kernel submission isn't available.
         """
+        if observe_only_requested():
+            self.actions_blocked += 1
+            return False
         try:
             # Local import to avoid hard dependency at module import time
+            # Aetherra imports
             from aetherra_kernel_loop import get_kernel  # type: ignore
 
             kernel = get_kernel()
             # Map action priority to kernel queue priority
             priority = "normal"
             try:
+                # Local imports
                 from .homeostasis_core import ActionPriority  # type: ignore
 
                 pr = getattr(action, "priority", None)
-                if pr in (ActionPriority.CRITICAL, ActionPriority.EMERGENCY, ActionPriority.HIGH):
+                if pr in (
+                    ActionPriority.CRITICAL,
+                    ActionPriority.EMERGENCY,
+                    ActionPriority.HIGH,
+                ):
                     priority = "high"
                 elif pr == ActionPriority.LOW:
                     priority = "background"
@@ -390,7 +432,9 @@ class HomeostasisActuators:
                 return bool(res.get("ok"))
             return bool(res)
         except Exception as e:
-            logger.debug(f"[ACT] Kernel submission unavailable, executing directly: {e}")
+            logger.debug(
+                f"[ACT] Kernel submission unavailable, executing directly: {e}"
+            )
             return await self.execute_action(action)
 
     # Plugin System Actuators
@@ -408,7 +452,9 @@ class HomeostasisActuators:
 
             registry = await self._get_service_registry()
             if not registry:
-                return ActuatorResult(success=False, message="Service registry not available")
+                return ActuatorResult(
+                    success=False, message="Service registry not available"
+                )
 
             # Find plugin-related services
             plugin_services = []
@@ -417,7 +463,9 @@ class HomeostasisActuators:
                     plugin_services.append((service_name, service_info))
 
             if not plugin_services:
-                return ActuatorResult(success=True, message="No plugin services found to adjust")
+                return ActuatorResult(
+                    success=True, message="No plugin services found to adjust"
+                )
 
             # Adjust timeouts for each plugin service
             adjusted_services = []
@@ -447,11 +495,14 @@ class HomeostasisActuators:
                     message=f"Adjusted timeouts for {len(adjusted_services)} plugin services",
                     rollback_data=rollback_data,
                 )
-            else:
-                return ActuatorResult(success=True, message="No plugin timeouts needed adjustment")
+            return ActuatorResult(
+                success=True, message="No plugin timeouts needed adjustment"
+            )
 
         except Exception as e:
-            return ActuatorResult(success=False, message=f"Failed to adjust plugin timeouts: {e}")
+            return ActuatorResult(
+                success=False, message=f"Failed to adjust plugin timeouts: {e}"
+            )
 
     async def optimize_plugin_timeouts(
         self, target: str, parameters: Dict[str, Any]
@@ -461,12 +512,15 @@ class HomeostasisActuators:
             reduction_factor = parameters.get("reduction_factor", 0.9)
             if reduction_factor <= 0.5 or reduction_factor >= 1.0:
                 return ActuatorResult(
-                    success=False, message=f"Invalid reduction factor: {reduction_factor}"
+                    success=False,
+                    message=f"Invalid reduction factor: {reduction_factor}",
                 )
 
             registry = await self._get_service_registry()
             if not registry:
-                return ActuatorResult(success=False, message="Service registry not available")
+                return ActuatorResult(
+                    success=False, message="Service registry not available"
+                )
 
             # Find plugin services with high success rates
             optimized_services = []
@@ -481,7 +535,9 @@ class HomeostasisActuators:
                     current_timeout = getattr(
                         service_info.instance.timeout_config, "default_timeout", 30.0
                     )
-                    new_timeout = max(5.0, current_timeout * reduction_factor)  # Minimum 5 seconds
+                    new_timeout = max(
+                        5.0, current_timeout * reduction_factor
+                    )  # Minimum 5 seconds
 
                     # Store original for rollback
                     rollback_data["original_timeouts"][service_name] = current_timeout
@@ -509,7 +565,9 @@ class HomeostasisActuators:
 
         except Exception as e:
             logger.warning(f"Failed to optimize plugin timeouts: {e}", exc_info=True)
-            return ActuatorResult(success=False, message=f"Failed to optimize plugin timeouts: {e}")
+            return ActuatorResult(
+                success=False, message=f"Failed to optimize plugin timeouts: {e}"
+            )
 
     # Memory System Actuators
 
@@ -521,21 +579,28 @@ class HomeostasisActuators:
             cache_size_multiplier = parameters.get("cache_size_multiplier", 1.5)
             if cache_size_multiplier <= 0 or cache_size_multiplier > 3.0:
                 return ActuatorResult(
-                    success=False, message=f"Invalid cache size multiplier: {cache_size_multiplier}"
+                    success=False,
+                    message=f"Invalid cache size multiplier: {cache_size_multiplier}",
                 )
 
             registry = await self._get_service_registry()
             if not registry:
-                return ActuatorResult(success=False, message="Service registry not available")
+                return ActuatorResult(
+                    success=False, message="Service registry not available"
+                )
 
             # Find memory system service
             engine_service = registry.get_service_info("aetherra_engine")
             if not engine_service or not engine_service.instance:
-                return ActuatorResult(success=False, message="Aetherra engine service not found")
+                return ActuatorResult(
+                    success=False, message="Aetherra engine service not found"
+                )
 
             memory_system = getattr(engine_service.instance, "memory_system", None)
             if not memory_system:
-                return ActuatorResult(success=False, message="Memory system not found in engine")
+                return ActuatorResult(
+                    success=False, message="Memory system not found in engine"
+                )
 
             # Adjust cache configuration
             rollback_data: Dict[str, Any] = {"original_cache_config": {}}
@@ -551,42 +616,52 @@ class HomeostasisActuators:
                 new_size = int(original_size * cache_size_multiplier)
                 cache_config.max_cache_size = new_size
 
-                logger.debug(f"Adjusted memory cache size: {original_size} → {new_size}")
+                logger.debug(
+                    f"Adjusted memory cache size: {original_size} → {new_size}"
+                )
 
                 return ActuatorResult(
                     success=True,
                     message=f"Optimized memory cache size from {original_size} to {new_size}",
                     rollback_data=rollback_data,
                 )
-            else:
-                return ActuatorResult(
-                    success=True, message="Memory system does not support cache optimization"
-                )
+            return ActuatorResult(
+                success=True,
+                message="Memory system does not support cache optimization",
+            )
 
         except Exception as e:
-            return ActuatorResult(success=False, message=f"Failed to optimize memory cache: {e}")
+            return ActuatorResult(
+                success=False, message=f"Failed to optimize memory cache: {e}"
+            )
 
     # Task and Kernel Actuators
 
-    async def adjust_task_workers(self, target: str, parameters: Dict[str, Any]) -> ActuatorResult:
+    async def adjust_task_workers(
+        self, target: str, parameters: Dict[str, Any]
+    ) -> ActuatorResult:
         """Adjust the number of task workers to manage latency."""
         try:
             worker_count_delta = parameters.get("worker_count_delta", 1)
             if abs(worker_count_delta) > 5:
                 return ActuatorResult(
-                    success=False, message=f"Worker count delta too large: {worker_count_delta}"
+                    success=False,
+                    message=f"Worker count delta too large: {worker_count_delta}",
                 )
 
             registry = await self._get_service_registry()
             if not registry:
-                return ActuatorResult(success=False, message="Service registry not available")
+                return ActuatorResult(
+                    success=False, message="Service registry not available"
+                )
 
             # Find kernel or task management service
             kernel_service = registry.get_service_info("aetherra_kernel")
             if not kernel_service or not kernel_service.instance:
                 # Service doesn't exist - not a failure, just nothing to do
                 return ActuatorResult(
-                    success=True, message="Kernel service not found - no workers to adjust"
+                    success=True,
+                    message="Kernel service not found - no workers to adjust",
                 )
 
             kernel_instance = kernel_service.instance
@@ -601,26 +676,31 @@ class HomeostasisActuators:
 
                 pool_config.max_workers = new_workers
 
-                logger.debug(f"Adjusted task workers: {current_workers} → {new_workers}")
+                logger.debug(
+                    f"Adjusted task workers: {current_workers} → {new_workers}"
+                )
 
                 return ActuatorResult(
                     success=True,
                     message=f"Adjusted task workers from {current_workers} to {new_workers}",
                     rollback_data=rollback_data,
                 )
-            else:
-                # Kernel exists but doesn't support worker adjustment - success with info
-                return ActuatorResult(
-                    success=True, message="Kernel does not support worker adjustment"
-                )
+            # Kernel exists but doesn't support worker adjustment - success with info
+            return ActuatorResult(
+                success=True, message="Kernel does not support worker adjustment"
+            )
 
         except Exception as e:
             logger.warning(f"Failed to adjust task workers: {e}", exc_info=True)
-            return ActuatorResult(success=False, message=f"Failed to adjust task workers: {e}")
+            return ActuatorResult(
+                success=False, message=f"Failed to adjust task workers: {e}"
+            )
 
     # Cognitive System Actuators
 
-    async def adjust_learning_rate(self, target: str, parameters: Dict[str, Any]) -> ActuatorResult:
+    async def adjust_learning_rate(
+        self, target: str, parameters: Dict[str, Any]
+    ) -> ActuatorResult:
         """Adjust learning rate for cognitive systems."""
         try:
             new_learning_rate = parameters.get("new_learning_rate", 0.01)
@@ -628,17 +708,22 @@ class HomeostasisActuators:
             # Safety check
             if new_learning_rate < 0.0001 or new_learning_rate > 0.2:
                 return ActuatorResult(
-                    success=False, message=f"Learning rate outside safe bounds: {new_learning_rate}"
+                    success=False,
+                    message=f"Learning rate outside safe bounds: {new_learning_rate}",
                 )
 
             registry = await self._get_service_registry()
             if not registry:
-                return ActuatorResult(success=False, message="Service registry not available")
+                return ActuatorResult(
+                    success=False, message="Service registry not available"
+                )
 
             # Find cognitive/learning services
             engine_service = registry.get_service_info("aetherra_engine")
             if not engine_service or not engine_service.instance:
-                return ActuatorResult(success=False, message="Aetherra engine service not found")
+                return ActuatorResult(
+                    success=False, message="Aetherra engine service not found"
+                )
 
             engine_instance = engine_service.instance
 
@@ -651,36 +736,44 @@ class HomeostasisActuators:
 
                 learning_config.learning_rate = new_learning_rate
 
-                logger.debug(f"Adjusted learning rate: {current_rate} → {new_learning_rate}")
+                logger.debug(
+                    f"Adjusted learning rate: {current_rate} → {new_learning_rate}"
+                )
 
                 return ActuatorResult(
                     success=True,
                     message=f"Adjusted learning rate from {current_rate} to {new_learning_rate}",
                     rollback_data=rollback_data,
                 )
-            else:
-                return ActuatorResult(
-                    success=True, message="Engine does not support learning rate adjustment"
-                )
+            return ActuatorResult(
+                success=True, message="Engine does not support learning rate adjustment"
+            )
 
         except Exception as e:
-            return ActuatorResult(success=False, message=f"Failed to adjust learning rate: {e}")
+            return ActuatorResult(
+                success=False, message=f"Failed to adjust learning rate: {e}"
+            )
 
     # Hub and Connectivity Actuators
 
-    async def reconnect_hub(self, target: str, parameters: Dict[str, Any]) -> ActuatorResult:
+    async def reconnect_hub(
+        self, target: str, parameters: Dict[str, Any]
+    ) -> ActuatorResult:
         """Reconnect to the Aetherra Hub."""
         try:
             registry = await self._get_service_registry()
             if not registry:
-                return ActuatorResult(success=False, message="Service registry not available")
+                return ActuatorResult(
+                    success=False, message="Service registry not available"
+                )
 
             # Find Hub service
             hub_service = registry.get_service_info("aetherra_hub")
             if not hub_service or not hub_service.instance:
                 # Hub not found - not a failure if it's not registered
                 return ActuatorResult(
-                    success=True, message="Hub service not found in registry - nothing to reconnect"
+                    success=True,
+                    message="Hub service not found in registry - nothing to reconnect",
                 )
 
             hub_instance = hub_service.instance
@@ -693,36 +786,47 @@ class HomeostasisActuators:
                 await asyncio.sleep(2.0)
 
                 # Check connection status
-                if hasattr(hub_instance, "is_connected") and hub_instance.is_connected():
-                    return ActuatorResult(success=True, message="Successfully reconnected to Hub")
-                else:
+                if (
+                    hasattr(hub_instance, "is_connected")
+                    and hub_instance.is_connected()
+                ):
                     return ActuatorResult(
-                        success=False,
-                        message="Reconnection attempted but connection not established",
+                        success=True, message="Successfully reconnected to Hub"
                     )
-            else:
-                # Hub exists but doesn't support reconnect - success with info
                 return ActuatorResult(
-                    success=True, message="Hub service does not support reconnection"
+                    success=False,
+                    message="Reconnection attempted but connection not established",
                 )
+            # Hub exists but doesn't support reconnect - success with info
+            return ActuatorResult(
+                success=True, message="Hub service does not support reconnection"
+            )
 
         except Exception as e:
             logger.warning(f"Failed to reconnect Hub: {e}", exc_info=True)
-            return ActuatorResult(success=False, message=f"Failed to reconnect Hub: {e}")
+            return ActuatorResult(
+                success=False, message=f"Failed to reconnect Hub: {e}"
+            )
 
     # Service Management Actuators
 
-    async def restart_service(self, target: str, parameters: Dict[str, Any]) -> ActuatorResult:
+    async def restart_service(
+        self, target: str, parameters: Dict[str, Any]
+    ) -> ActuatorResult:
         """Restart a specific service."""
         try:
             # This is a high-impact action, proceed carefully
             registry = await self._get_service_registry()
             if not registry:
-                return ActuatorResult(success=False, message="Service registry not available")
+                return ActuatorResult(
+                    success=False, message="Service registry not available"
+                )
 
             service_info = registry.get_service_info(target)
             if not service_info:
-                return ActuatorResult(success=False, message=f"Service not found: {target}")
+                return ActuatorResult(
+                    success=False, message=f"Service not found: {target}"
+                )
 
             # Store pre-restart state for rollback
             rollback_data = {
@@ -746,26 +850,33 @@ class HomeostasisActuators:
                         message=f"Successfully restarted service: {target}",
                         rollback_data=rollback_data,
                     )
-                else:
-                    return ActuatorResult(
-                        success=False,
-                        message=f"Service restart completed but service not healthy: {target}",
-                    )
-            else:
                 return ActuatorResult(
-                    success=False, message=f"Service does not support restart: {target}"
+                    success=False,
+                    message=f"Service restart completed but service not healthy: {target}",
                 )
+            return ActuatorResult(
+                success=False, message=f"Service does not support restart: {target}"
+            )
 
         except Exception as e:
-            return ActuatorResult(success=False, message=f"Failed to restart service {target}: {e}")
+            return ActuatorResult(
+                success=False, message=f"Failed to restart service {target}: {e}"
+            )
 
     # Rollback and Recovery
 
     async def rollback_last_action(self) -> ActuatorResult:
         """Rollback the last successful action."""
         self._guardian_preflight_rollback()
+        if observe_only_requested():
+            self.actions_blocked += 1
+            return ActuatorResult(
+                success=False, message="Observation-only mode blocks rollback"
+            )
         if not self.rollback_stack:
-            return ActuatorResult(success=False, message="No actions available for rollback")
+            return ActuatorResult(
+                success=False, message="No actions available for rollback"
+            )
 
         try:
             last_action = self.rollback_stack.pop()
@@ -774,32 +885,39 @@ class HomeostasisActuators:
 
             if not rollback_data:
                 return ActuatorResult(
-                    success=False, message=f"No rollback data available for action: {action_type}"
+                    success=False,
+                    message=f"No rollback data available for action: {action_type}",
                 )
 
             # Perform rollback based on action type
             if action_type in ["increase_plugin_timeouts", "optimize_plugin_timeouts"]:
                 return await self._rollback_plugin_timeouts(rollback_data)
-            elif action_type == "optimize_memory_cache":
+            if action_type == "optimize_memory_cache":
                 return await self._rollback_memory_cache(rollback_data)
-            elif action_type == "adjust_task_workers":
+            if action_type == "adjust_task_workers":
                 return await self._rollback_task_workers(rollback_data)
-            elif action_type == "adjust_learning_rate":
+            if action_type == "adjust_learning_rate":
                 return await self._rollback_learning_rate(rollback_data)
-            else:
-                return ActuatorResult(
-                    success=False, message=f"Rollback not implemented for action: {action_type}"
-                )
+            return ActuatorResult(
+                success=False,
+                message=f"Rollback not implemented for action: {action_type}",
+            )
 
         except Exception as e:
-            return ActuatorResult(success=False, message=f"Failed to rollback action: {e}")
+            return ActuatorResult(
+                success=False, message=f"Failed to rollback action: {e}"
+            )
 
-    async def _rollback_plugin_timeouts(self, rollback_data: Dict[str, Any]) -> ActuatorResult:
+    async def _rollback_plugin_timeouts(
+        self, rollback_data: Dict[str, Any]
+    ) -> ActuatorResult:
         """Rollback plugin timeout changes."""
         try:
             registry = await self._get_service_registry()
             if not registry:
-                return ActuatorResult(success=False, message="Service registry not available")
+                return ActuatorResult(
+                    success=False, message="Service registry not available"
+                )
 
             original_timeouts = rollback_data.get("original_timeouts", {})
             restored_count = 0
@@ -807,22 +925,29 @@ class HomeostasisActuators:
             for service_name, original_timeout in original_timeouts.items():
                 service_info = registry.get_service_info(service_name)
                 if service_info and hasattr(service_info.instance, "timeout_config"):
-                    service_info.instance.timeout_config.default_timeout = original_timeout
+                    service_info.instance.timeout_config.default_timeout = (
+                        original_timeout
+                    )
                     restored_count += 1
 
             return ActuatorResult(
-                success=True, message=f"Rolled back timeouts for {restored_count} services"
+                success=True,
+                message=f"Rolled back timeouts for {restored_count} services",
             )
 
         except Exception as e:
             return ActuatorResult(success=False, message=f"Rollback failed: {e}")
 
-    async def _rollback_memory_cache(self, rollback_data: Dict[str, Any]) -> ActuatorResult:
+    async def _rollback_memory_cache(
+        self, rollback_data: Dict[str, Any]
+    ) -> ActuatorResult:
         """Rollback memory cache changes."""
         try:
             registry = await self._get_service_registry()
             if not registry:
-                return ActuatorResult(success=False, message="Service registry not available")
+                return ActuatorResult(
+                    success=False, message="Service registry not available"
+                )
 
             engine_service = registry.get_service_info("aetherra_engine")
             if not engine_service:
@@ -830,7 +955,9 @@ class HomeostasisActuators:
 
             memory_system = getattr(engine_service.instance, "memory_system", None)
             if not memory_system or not hasattr(memory_system, "cache_config"):
-                return ActuatorResult(success=False, message="Memory cache config not found")
+                return ActuatorResult(
+                    success=False, message="Memory cache config not found"
+                )
 
             original_config = rollback_data.get("original_cache_config", {})
             original_size = original_config.get("max_cache_size")
@@ -838,7 +965,8 @@ class HomeostasisActuators:
             if original_size:
                 memory_system.cache_config.max_cache_size = original_size
                 return ActuatorResult(
-                    success=True, message=f"Rolled back memory cache size to {original_size}"
+                    success=True,
+                    message=f"Rolled back memory cache size to {original_size}",
                 )
 
             return ActuatorResult(success=False, message="No original cache size found")
@@ -846,12 +974,16 @@ class HomeostasisActuators:
         except Exception as e:
             return ActuatorResult(success=False, message=f"Rollback failed: {e}")
 
-    async def _rollback_task_workers(self, rollback_data: Dict[str, Any]) -> ActuatorResult:
+    async def _rollback_task_workers(
+        self, rollback_data: Dict[str, Any]
+    ) -> ActuatorResult:
         """Rollback task worker changes."""
         try:
             registry = await self._get_service_registry()
             if not registry:
-                return ActuatorResult(success=False, message="Service registry not available")
+                return ActuatorResult(
+                    success=False, message="Service registry not available"
+                )
 
             kernel_service = registry.get_service_info("aetherra_kernel")
             if not kernel_service:
@@ -861,7 +993,8 @@ class HomeostasisActuators:
             if original_count and hasattr(kernel_service.instance, "task_pool_config"):
                 kernel_service.instance.task_pool_config.max_workers = original_count
                 return ActuatorResult(
-                    success=True, message=f"Rolled back worker count to {original_count}"
+                    success=True,
+                    message=f"Rolled back worker count to {original_count}",
                 )
 
             return ActuatorResult(success=False, message="Cannot rollback worker count")
@@ -869,12 +1002,16 @@ class HomeostasisActuators:
         except Exception as e:
             return ActuatorResult(success=False, message=f"Rollback failed: {e}")
 
-    async def _rollback_learning_rate(self, rollback_data: Dict[str, Any]) -> ActuatorResult:
+    async def _rollback_learning_rate(
+        self, rollback_data: Dict[str, Any]
+    ) -> ActuatorResult:
         """Rollback learning rate changes."""
         try:
             registry = await self._get_service_registry()
             if not registry:
-                return ActuatorResult(success=False, message="Service registry not available")
+                return ActuatorResult(
+                    success=False, message="Service registry not available"
+                )
 
             engine_service = registry.get_service_info("aetherra_engine")
             if not engine_service:
@@ -884,10 +1021,13 @@ class HomeostasisActuators:
             if original_rate and hasattr(engine_service.instance, "learning_config"):
                 engine_service.instance.learning_config.learning_rate = original_rate
                 return ActuatorResult(
-                    success=True, message=f"Rolled back learning rate to {original_rate}"
+                    success=True,
+                    message=f"Rolled back learning rate to {original_rate}",
                 )
 
-            return ActuatorResult(success=False, message="Cannot rollback learning rate")
+            return ActuatorResult(
+                success=False, message="Cannot rollback learning rate"
+            )
 
         except Exception as e:
             return ActuatorResult(success=False, message=f"Rollback failed: {e}")
@@ -898,10 +1038,12 @@ class HomeostasisActuators:
         """Get status of the actuator system."""
         return {
             "actions_executed": len(self.action_history),
+            "actions_attempted": self.actions_attempted,
+            "actions_blocked": self.actions_blocked,
             "rollback_actions_available": len(self.rollback_stack),
-            "last_action_time": self.action_history[-1]["timestamp"]
-            if self.action_history
-            else None,
+            "last_action_time": (
+                self.action_history[-1]["timestamp"] if self.action_history else None
+            ),
             "policy_loaded": bool(self.policy),
             "registry_cache_valid": self._cache_expire_time > time.time(),
         }
@@ -919,6 +1061,7 @@ class HomeostasisActuators:
 
 if __name__ == "__main__":
     # Test the actuators
+    # Standard library imports
     import asyncio
 
     async def test_actuators():

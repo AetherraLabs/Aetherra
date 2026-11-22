@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+# Standard library imports
 from dataclasses import asdict, dataclass
 
+# Local imports
 from .observatory import ObservatoryState, SubsystemStatus
 
 
@@ -136,14 +138,43 @@ def _connection_thickness(status: SubsystemStatus) -> float:
 _NODE_LAYOUT: dict[str, dict[str, object]] = {
     "guardian": {"group": "governance", "position": (0.62, 0.34, 0.0), "radius": 0.16},
     "security": {"group": "governance", "position": (0.88, 0.04, 0.0), "radius": 0.14},
-    "homeostasis": {"group": "regulation", "position": (0.58, -0.42, 0.0), "radius": 0.15},
-    "maintenance": {"group": "regulation", "position": (0.0, -0.72, 0.0), "radius": 0.14},
-    "self_improvement": {"group": "evolution", "position": (-0.42, -0.46, 0.0), "radius": 0.14},
-    "self_incorporation": {"group": "evolution", "position": (0.02, -0.24, 0.08), "radius": 0.13},
+    "homeostasis": {
+        "group": "regulation",
+        "position": (0.58, -0.42, 0.0),
+        "radius": 0.15,
+    },
+    "maintenance": {
+        "group": "regulation",
+        "position": (0.0, -0.72, 0.0),
+        "radius": 0.14,
+    },
+    "self_improvement": {
+        "group": "evolution",
+        "position": (-0.42, -0.46, 0.0),
+        "radius": 0.14,
+    },
+    "self_incorporation": {
+        "group": "evolution",
+        "position": (0.02, -0.24, 0.08),
+        "radius": 0.13,
+    },
     "memory": {"group": "cognition", "position": (-0.7, 0.16, 0.0), "radius": 0.16},
-    "consciousness": {"group": "cognition", "position": (-0.22, 0.62, 0.0), "radius": 0.17},
+    "consciousness": {
+        "group": "cognition",
+        "position": (-0.22, 0.62, 0.0),
+        "radius": 0.17,
+    },
     "agents": {"group": "runtime", "position": (-0.78, -0.32, 0.0), "radius": 0.13},
-    "aether_script": {"group": "runtime", "position": (-0.34, -0.08, 0.0), "radius": 0.12},
+    "aether_script": {
+        "group": "runtime",
+        "position": (-0.34, -0.08, 0.0),
+        "radius": 0.12,
+    },
     "kernel": {"group": "runtime", "position": (0.24, 0.66, 0.0), "radius": 0.14},
-    "integration_validation": {"group": "readiness", "position": (0.0, 0.92, -0.02), "radius": 0.11},
+    "engine": {"group": "runtime", "position": (0.3, 0.3, 0.08), "radius": 0.14},
+    "integration_validation": {
+        "group": "readiness",
+        "position": (0.0, 0.92, -0.02),
+        "radius": 0.11,
+    },
 }

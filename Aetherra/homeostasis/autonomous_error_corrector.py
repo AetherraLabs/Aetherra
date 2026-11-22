@@ -40,6 +40,9 @@ from typing import Any, Dict, List, Optional
 # Aetherra imports
 from aetherra_service_registry import get_service_registry
 
+# Local imports
+from .operating_policy import observe_only_requested
+
 logger = logging.getLogger(__name__)
 
 
@@ -77,12 +80,10 @@ class LogMonitorHandler(logging.Handler):
 
     def emit(self, record: logging.LogRecord):
         """Process each log record."""
-        try:
+        # Reporting a failure here could recursively invoke this log handler.
+        with contextlib.suppress(Exception):
             msg = self.format(record)
             self.error_corrector.process_log_message(record, msg)
-        except Exception:
-            # Never let log handling crash
-            pass
 
 
 class AutonomousErrorCorrector:
@@ -128,7 +129,9 @@ class AutonomousErrorCorrector:
         self.patterns.append(
             ErrorPattern(
                 name="deprecated_module_import",
-                pattern=re.compile(r"([\w.]+) is deprecated; use ([\w.]+)\. Temporarily aliasing"),
+                pattern=re.compile(
+                    r"([\w.]+) is deprecated; use ([\w.]+)\. Temporarily aliasing"
+                ),
                 severity="low",
                 fix_handler="fix_deprecated_import",
                 cooldown_seconds=600,
@@ -259,8 +262,12 @@ class AutonomousErrorCorrector:
             # Queue fix asynchronously
             asyncio.create_task(self._attempt_fix(pattern, error, match))
 
-    async def _attempt_fix(self, pattern: ErrorPattern, error: DetectedError, match: re.Match):
+    async def _attempt_fix(
+        self, pattern: ErrorPattern, error: DetectedError, match: re.Match
+    ):
         """Attempt to fix a detected error."""
+        if observe_only_requested():
+            return
         try:
             self.stats["fixes_attempted"] += 1
             error.fix_attempted = True
@@ -313,11 +320,15 @@ class AutonomousErrorCorrector:
 
     # ==================== Fix Handlers ====================
 
-    async def fix_service_registration(self, match: re.Match, error: DetectedError) -> bool:
+    async def fix_service_registration(
+        self, match: re.Match, error: DetectedError
+    ) -> bool:
         """Fix service registration API mismatch."""
         try:
             param_name = match.group(1)
-            logger.info(f"[AEC] Service registration using invalid parameter: {param_name}")
+            logger.info(
+                f"[AEC] Service registration using invalid parameter: {param_name}"
+            )
 
             # Get homeostasis integration to patch its registration call
             registry = await get_service_registry()
@@ -340,7 +351,9 @@ class AutonomousErrorCorrector:
             logger.error(f"[AEC] Service registration fix error: {e}")
             return False
 
-    async def fix_deprecated_import(self, match: re.Match, error: DetectedError) -> bool:
+    async def fix_deprecated_import(
+        self, match: re.Match, error: DetectedError
+    ) -> bool:
         """Fix deprecated module import."""
         try:
             old_module = match.group(1)
@@ -348,7 +361,9 @@ class AutonomousErrorCorrector:
             logger.info(f"[AEC] Deprecation: {old_module} → {new_module}")
 
             # Log guidance for manual fix
-            logger.warning(f"[AEC] To fix: Update imports from {old_module} to {new_module}")
+            logger.warning(
+                f"[AEC] To fix: Update imports from {old_module} to {new_module}"
+            )
 
             return True  # Reported successfully
 
@@ -384,7 +399,9 @@ class AutonomousErrorCorrector:
             logger.error(f"[AEC] Missing module fix error: {e}")
             return False
 
-    async def fix_missing_capability(self, match: re.Match, error: DetectedError) -> bool:
+    async def fix_missing_capability(
+        self, match: re.Match, error: DetectedError
+    ) -> bool:
         """Handle missing capability/method errors."""
         try:
             object_type = match.group(1)
@@ -409,7 +426,9 @@ class AutonomousErrorCorrector:
                 return True  # Known issue, no fix needed
 
             # Log guidance
-            logger.warning(f"[AEC] To fix: Implement {method_name} method in {object_type} class")
+            logger.warning(
+                f"[AEC] To fix: Implement {method_name} method in {object_type} class"
+            )
 
             return True  # Reported successfully
 
@@ -417,7 +436,9 @@ class AutonomousErrorCorrector:
             logger.error(f"[AEC] Missing capability fix error: {e}")
             return False
 
-    async def fix_plugin_dependency(self, match: re.Match, error: DetectedError) -> bool:
+    async def fix_plugin_dependency(
+        self, match: re.Match, error: DetectedError
+    ) -> bool:
         """Handle plugin dependency issues."""
         try:
             plugin_name = match.group(1)

@@ -40,9 +40,12 @@ from Aetherra.aetherra_core.system.security_system import (
     is_safe_mode_enabled,
 )
 
+# Local imports
+from .operating_policy import observe_only_requested
 from .stability_metrics import MetricSnapshot, StabilityMetrics, get_stability_metrics
 
 if TYPE_CHECKING:
+    # Local imports
     from .homeostasis_actuators import HomeostasisActuators
 
 logger = logging.getLogger(__name__)
@@ -145,7 +148,9 @@ class HomeostasisController:
 
         # Configuration paths
         self.config_path = config_path or "Aetherra/homeostasis/configs/setpoints.yaml"
-        self.policy_path = policy_path or "Aetherra/homeostasis/configs/homeostasis_policy.yaml"
+        self.policy_path = (
+            policy_path or "Aetherra/homeostasis/configs/homeostasis_policy.yaml"
+        )
 
         # Load configurations
         self.setpoints = self._load_config(self.config_path)
@@ -197,7 +202,9 @@ class HomeostasisController:
                         return {}
                     return data
             else:
-                logger.warning(f"Config file not found at {config_path}, using defaults")
+                logger.warning(
+                    f"Config file not found at {config_path}, using defaults"
+                )
                 return {}
         except Exception as e:
             logger.error(f"Failed to load config from {config_path}: {e}")
@@ -395,7 +402,9 @@ class HomeostasisController:
             if not control_loop.enabled:
                 continue
 
-            loop_actions = await self._process_control_loop(control_loop, snapshot, current_time)
+            loop_actions = await self._process_control_loop(
+                control_loop, snapshot, current_time
+            )
             actions.extend(loop_actions)
 
         # Filter and prioritize actions
@@ -424,7 +433,10 @@ class HomeostasisController:
             if isinstance(metrics, MetricSnapshot)
             else self._snapshot_from_metric_dict(metrics)
         )
-        if self.mode in (ControllerMode.DISABLED, ControllerMode.OBSERVE_ONLY):
+        if observe_only_requested() or self.mode in (
+            ControllerMode.DISABLED,
+            ControllerMode.OBSERVE_ONLY,
+        ):
             return []
 
         current_time = time.time()
@@ -520,7 +532,9 @@ class HomeostasisController:
             return []
 
         # Generate appropriate action
-        actions = self._generate_actions_for_controller(control_loop, output, current_time)
+        actions = self._generate_actions_for_controller(
+            control_loop, output, current_time
+        )
 
         # Update action tracking
         if actions:
@@ -529,11 +543,15 @@ class HomeostasisController:
 
         return actions
 
-    def _calculate_pid_output(self, control_loop: ControlLoop, current_time: float) -> float:
+    def _calculate_pid_output(
+        self, control_loop: ControlLoop, current_time: float
+    ) -> float:
         """Calculate PID controller output."""
         state = control_loop.state
         if state is None:
-            logger.error(f"ControllerState is None for control loop: {control_loop.name}")
+            logger.error(
+                f"ControllerState is None for control loop: {control_loop.name}"
+            )
             return 0.0
         dt = current_time - state.last_update
 
@@ -546,7 +564,8 @@ class HomeostasisController:
         # Integral term with clamping
         state.integral_error += state.error * dt
         state.integral_error = max(
-            control_loop.integral_min, min(control_loop.integral_max, state.integral_error)
+            control_loop.integral_min,
+            min(control_loop.integral_max, state.integral_error),
         )
         i_term = control_loop.ki * state.integral_error
 
@@ -577,20 +596,28 @@ class HomeostasisController:
         state = control_loop.state
 
         if state is None:
-            logger.error(f"ControllerState is None for control loop: {control_loop.name}")
+            logger.error(
+                f"ControllerState is None for control loop: {control_loop.name}"
+            )
             return 0.0
 
         if abs(state.error) > control_loop.action_threshold:
             # Full output in direction to correct error
-            output = control_loop.output_max if state.error > 0 else control_loop.output_min
+            output = (
+                control_loop.output_max if state.error > 0 else control_loop.output_min
+            )
         else:
             output = 0.0
 
-        logger.debug(f"Bang-bang {control_loop.name}: Error={state.error:.3f}, Out={output:.3f}")
+        logger.debug(
+            f"Bang-bang {control_loop.name}: Error={state.error:.3f}, Out={output:.3f}"
+        )
 
         return output
 
-    def _check_action_rate_limit(self, controller_name: str, current_time: float) -> bool:
+    def _check_action_rate_limit(
+        self, controller_name: str, current_time: float
+    ) -> bool:
         """Check if controller action rate is within limits."""
         # Clean old timestamps (older than 1 hour)
         hour_ago = current_time - 3600.0
@@ -625,9 +652,11 @@ class HomeostasisController:
                         priority=ActionPriority.MEDIUM,
                         timestamp=current_time,
                         controller_name=control_loop.name,
-                        reason=f"Plugin success rate {control_loop.state.current_value:.1f}% below target {control_loop.setpoint:.1f}%"
-                        if control_loop.state is not None
-                        else f"Plugin success rate below target {control_loop.setpoint:.1f}%",
+                        reason=(
+                            f"Plugin success rate {control_loop.state.current_value:.1f}% below target {control_loop.setpoint:.1f}%"
+                            if control_loop.state is not None
+                            else f"Plugin success rate below target {control_loop.setpoint:.1f}%"
+                        ),
                     )
                 )
             elif output < -2.0:  # Plugin success is too high, can optimize
@@ -639,9 +668,11 @@ class HomeostasisController:
                         priority=ActionPriority.LOW,
                         timestamp=current_time,
                         controller_name=control_loop.name,
-                        reason=f"Plugin success rate {control_loop.state.current_value:.1f}% allows optimization"
-                        if control_loop.state is not None
-                        else "Plugin success rate allows optimization",
+                        reason=(
+                            f"Plugin success rate {control_loop.state.current_value:.1f}% allows optimization"
+                            if control_loop.state is not None
+                            else "Plugin success rate allows optimization"
+                        ),
                     )
                 )
 
@@ -657,9 +688,11 @@ class HomeostasisController:
                         priority=ActionPriority.MEDIUM,
                         timestamp=current_time,
                         controller_name=control_loop.name,
-                        reason=f"Memory RTT {control_loop.state.current_value:.1f}ms above target {control_loop.setpoint:.1f}ms"
-                        if control_loop.state is not None
-                        else f"Memory RTT above target {control_loop.setpoint:.1f}ms",
+                        reason=(
+                            f"Memory RTT {control_loop.state.current_value:.1f}ms above target {control_loop.setpoint:.1f}ms"
+                            if control_loop.state is not None
+                            else f"Memory RTT above target {control_loop.setpoint:.1f}ms"
+                        ),
                     )
                 )
 
@@ -675,9 +708,11 @@ class HomeostasisController:
                         priority=ActionPriority.MEDIUM,
                         timestamp=current_time,
                         controller_name=control_loop.name,
-                        reason=f"Task latency {control_loop.state.current_value:.1f}ms above target {control_loop.setpoint:.1f}ms"
-                        if control_loop.state is not None
-                        else f"Task latency above target {control_loop.setpoint:.1f}ms",
+                        reason=(
+                            f"Task latency {control_loop.state.current_value:.1f}ms above target {control_loop.setpoint:.1f}ms"
+                            if control_loop.state is not None
+                            else f"Task latency above target {control_loop.setpoint:.1f}ms"
+                        ),
                     )
                 )
 
@@ -692,9 +727,11 @@ class HomeostasisController:
                         priority=ActionPriority.LOW,
                         timestamp=current_time,
                         controller_name=control_loop.name,
-                        reason=f"Learning rate {control_loop.state.current_value:.4f} needs adjustment"
-                        if control_loop.state is not None
-                        else "Learning rate needs adjustment",
+                        reason=(
+                            f"Learning rate {control_loop.state.current_value:.4f} needs adjustment"
+                            if control_loop.state is not None
+                            else "Learning rate needs adjustment"
+                        ),
                     )
                 )
 
@@ -712,7 +749,9 @@ class HomeostasisController:
                     )
                 )
 
-        elif control_loop.name == "registry_health_control" and output > 0:  # Registry not healthy
+        elif (
+            control_loop.name == "registry_health_control" and output > 0
+        ):  # Registry not healthy
             actions.append(
                 ControlAction(
                     action_type="restart_service_registry",
@@ -728,7 +767,9 @@ class HomeostasisController:
 
         return actions
 
-    def _filter_and_prioritize_actions(self, actions: List[ControlAction]) -> List[ControlAction]:
+    def _filter_and_prioritize_actions(
+        self, actions: List[ControlAction]
+    ) -> List[ControlAction]:
         """Filter duplicate actions and sort by priority."""
         # Remove duplicates based on action_type and target_service
         unique_actions: Dict[Tuple[str, str], ControlAction] = {}
@@ -741,26 +782,30 @@ class HomeostasisController:
                 unique_actions[key] = action
 
         # Sort by priority (highest first)
-        sorted_actions = sorted(
+        return sorted(
             unique_actions.values(), key=lambda a: a.priority.value, reverse=True
         )
 
-        return sorted_actions
-
-    def _apply_policy_constraints(self, actions: List[ControlAction]) -> List[ControlAction]:
+    def _apply_policy_constraints(
+        self, actions: List[ControlAction]
+    ) -> List[ControlAction]:
         """Apply policy constraints and safety checks to actions."""
         constrained_actions = []
 
         for action in actions:
             # Check if action is allowed in current mode
             if not self._is_action_allowed(action):
-                logger.info(f"🚫 Action blocked by operating mode: {action.action_type}")
+                logger.info(
+                    f"🚫 Action blocked by operating mode: {action.action_type}"
+                )
                 self.stats["actions_blocked"] += 1
                 continue
 
             # Check safety guardrails
             if not self._check_safety_guardrails(action):
-                logger.warning(f"⚠️ Action blocked by safety guardrails: {action.action_type}")
+                logger.warning(
+                    f"⚠️ Action blocked by safety guardrails: {action.action_type}"
+                )
                 self.stats["actions_blocked"] += 1
                 self._record_policy_violation("safety_guardrail", action)
                 continue
@@ -768,7 +813,9 @@ class HomeostasisController:
             # Check human confirmation requirements
             if self._requires_human_confirmation(action):
                 action.requires_confirmation = True
-                logger.info(f"🤔 Action requires human confirmation: {action.action_type}")
+                logger.info(
+                    f"🤔 Action requires human confirmation: {action.action_type}"
+                )
 
             if not self._guardian_allows_control_action(action):
                 logger.warning(
@@ -795,18 +842,24 @@ class HomeostasisController:
             "security:modify",
         }:
             return True
+        # Aetherra imports
         from Aetherra.security.capabilities import has_capability
 
         return has_capability(requester, capability)
 
-    def _guardian_capabilities_for_action(self, action: ControlAction) -> tuple[str, ...]:
+    def _guardian_capabilities_for_action(
+        self, action: ControlAction
+    ) -> tuple[str, ...]:
         capabilities = ["homeostasis:actuate"]
         target_lower = f"{action.target_service} {action.action_type}".lower()
-        if any(marker in target_lower for marker in ("security", "policy", "capability")):
+        if any(
+            marker in target_lower for marker in ("security", "policy", "capability")
+        ):
             capabilities.append("security:modify")
         return tuple(capabilities)
 
     def _guardian_allows_control_action(self, action: ControlAction) -> bool:
+        # Aetherra imports
         from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
 
         parameters = action.parameters if isinstance(action.parameters, dict) else {}
@@ -816,7 +869,8 @@ class HomeostasisController:
                 subsystem="homeostasis",
                 action="homeostasis.plan_action",
                 target="homeostasis:control_action",
-                purpose=action.reason or f"Plan Homeostasis control action {action.action_type}",
+                purpose=action.reason
+                or f"Plan Homeostasis control action {action.action_type}",
                 capabilities=self._guardian_capabilities_for_action(action),
                 evidence=(
                     f"homeostasis_action:{action.action_type}",
@@ -839,6 +893,8 @@ class HomeostasisController:
 
     def _should_take_action(self, current_time: float) -> bool:
         """Check if actions should be taken based on mode and time windows."""
+        if observe_only_requested():
+            return False
         if self.mode == ControllerMode.DISABLED:
             return False
 
@@ -866,6 +922,8 @@ class HomeostasisController:
 
     def _is_action_allowed(self, action: ControlAction) -> bool:
         """Check if action is allowed in current operating mode."""
+        if observe_only_requested():
+            return False
         if self.mode == ControllerMode.OBSERVE_ONLY:
             return False
 
@@ -879,7 +937,10 @@ class HomeostasisController:
             limited_mode = modes.get("active_limited", {})
             allowed_actuators = limited_mode.get("allowed_actuators", [])
 
-            if "all" not in allowed_actuators and action.action_type not in allowed_actuators:
+            if (
+                "all" not in allowed_actuators
+                and action.action_type not in allowed_actuators
+            ):
                 return False
 
         return True
@@ -908,7 +969,9 @@ class HomeostasisController:
         human_confirmation = self.policy.get("human_confirmation", {})
         require_confirmation = human_confirmation.get("require_confirmation", [])
 
-        return any(action.action_type == req.get("action_type") for req in require_confirmation)
+        return any(
+            action.action_type == req.get("action_type") for req in require_confirmation
+        )
 
     def _record_policy_violation(self, violation_type: str, action: ControlAction):
         """Record a policy violation."""
@@ -934,10 +997,28 @@ class HomeostasisController:
         results = []
 
         while self.pending_actions:
+            # Recheck at dispatch: a mode change can occur after evaluation or
+            # while the previous action is awaiting completion.
+            if (
+                observe_only_requested()
+                or self._emergency_stop
+                or self.mode
+                in (
+                    ControllerMode.DISABLED,
+                    ControllerMode.OBSERVE_ONLY,
+                    ControllerMode.ADVISORY,
+                )
+            ):
+                self.stats["actions_blocked"] += len(self.pending_actions)
+                self.pending_actions.clear()
+                break
             action = self.pending_actions.popleft()
 
             # Check if action requires confirmation and is pending
-            if action.requires_confirmation and action not in self.confirmation_pending.values():
+            if (
+                action.requires_confirmation
+                and action not in self.confirmation_pending.values()
+            ):
                 self.confirmation_pending[action.action_type] = action
                 logger.info(f"🤔 Action pending confirmation: {action.action_type}")
                 continue
@@ -947,6 +1028,7 @@ class HomeostasisController:
                 # Prefer kernel envelope for DLQ/backpressure handling
                 exec_method = getattr(self.actuators, "execute_action_via_kernel", None)
                 if callable(exec_method):
+                    # Standard library imports
                     import asyncio as _asyncio  # local to avoid top-level import churn
 
                     _res = exec_method(action)
@@ -983,12 +1065,16 @@ class HomeostasisController:
     def set_mode(self, mode: ControllerMode):
         """Set the operating mode of the controller."""
         if is_safe_mode_enabled() or is_homeostasis_restricted():
-            logger.warning("🚫 Homeostasis mode change blocked by security restrictions")
+            logger.warning(
+                "🚫 Homeostasis mode change blocked by security restrictions"
+            )
             self.mode = ControllerMode.OBSERVE_ONLY
             self.pending_actions.clear()
             return
 
         old_mode = self.mode
+        if observe_only_requested() and mode != ControllerMode.DISABLED:
+            mode = ControllerMode.OBSERVE_ONLY
         self.mode = mode
         logger.info(f"🎛️ Controller mode changed: {old_mode.value} → {mode.value}")
 
@@ -1000,7 +1086,9 @@ class HomeostasisController:
     def emergency_stop(self):
         """Trigger emergency stop of all homeostasis actions."""
         if is_safe_mode_enabled() or is_homeostasis_restricted():
-            logger.warning("🚫 Homeostasis emergency stop blocked by security restrictions")
+            logger.warning(
+                "🚫 Homeostasis emergency stop blocked by security restrictions"
+            )
             return
 
         self._emergency_stop = True
@@ -1059,7 +1147,7 @@ class HomeostasisController:
             return
 
         self.running = True
-        self.mode = ControllerMode.ACTIVE  # Start in active mode
+        self.set_mode(ControllerMode.ACTIVE)  # Apply startup policy before the loop.
 
         logger.info("🚀 Homeostasis controller started")
 
@@ -1090,6 +1178,7 @@ class HomeostasisController:
 
 if __name__ == "__main__":
     # Test the controller
+    # Standard library imports
     import asyncio
 
     async def test_controller():

@@ -28,12 +28,13 @@ from pathlib import Path
 from typing import Any
 
 # Early .env loader: ensure API keys and config from .env are available at startup
-try:
+with contextlib.suppress(Exception):
     _testing = str(os.environ.get("TESTING", "")).strip().lower() in ("true", "1")
     _skip = os.environ.get("AETHERRA_SKIP_DOTENV", "0") == "1"
     if not _testing and not _skip:
         try:
             # Prefer python-dotenv if available
+            # Third party imports
             from dotenv import find_dotenv, load_dotenv  # type: ignore
 
             # Use find_dotenv to locate the project root .env reliably
@@ -41,7 +42,7 @@ try:
             load_dotenv(dotenv_path=_env_path or None, override=False)
         except Exception:
             # Fallback: light manual parser for .env at project root
-            try:
+            with contextlib.suppress(Exception):
                 _root_env = os.path.join(os.getcwd(), ".env")
                 if os.path.exists(_root_env):
                     with open(_root_env, encoding="utf-8", errors="ignore") as _f:
@@ -51,11 +52,6 @@ try:
                                 continue
                             _k, _v = _line.split("=", 1)
                             os.environ.setdefault(_k.strip(), _v.strip())
-            except Exception:
-                pass
-except Exception:
-    # Never block launcher on env loading issues
-    pass
 
 # [DEV] Auto-configure shared registry for development
 # This ensures Hub and OS use the same registry without requiring env vars
@@ -280,7 +276,6 @@ class EngineAdapter:
         if hasattr(self.impl, "shutdown"):
             await self.impl.shutdown()
 
-
     async def process_message(self, content):
         if hasattr(self.impl, "process_message"):
             return await self.impl.process_message(str(content))
@@ -288,14 +283,12 @@ class EngineAdapter:
 
     async def reflect_on_day(self):
         # Night cycle evaluation harness hook
-        try:
+        with contextlib.suppress(Exception):
             if hasattr(self.impl, "reflect_on_day"):
                 return await self.impl.reflect_on_day()
             # Fallback to a lightweight status touch
             if hasattr(self.impl, "get_system_status"):
                 return await self.impl.get_system_status()
-        except Exception:
-            pass
         return {"status": "ok"}
 
     async def get_health_status(self):
@@ -539,7 +532,7 @@ class AetherraOSLauncher:
 
     def _apply_logging_mode(self, config: dict[str, Any]):
         """Adjust logging levels based on config/env (quiet mode, log level)."""
-        try:
+        with contextlib.suppress(Exception):
             # Determine log level
             quiet = bool(config.get("quiet") or os.getenv("AETHERRA_QUIET"))
             level_name = (
@@ -572,9 +565,6 @@ class AetherraOSLauncher:
                     logging.getLogger(name).setLevel(logging.WARNING)
                 # Also disable Hub request logging in quiet mode
                 os.environ.setdefault("AETH_LOG_REQUESTS", "0")
-        except Exception:
-            # Never fail launch due to logging tweaks
-            pass
 
     async def _emit_boot_presence(self, config: dict[str, Any]):
         """Emit the initial Aetherra presence message before subsystem startup."""
@@ -664,16 +654,19 @@ class AetherraOSLauncher:
         async def _hub_scan() -> dict[str, Any]:
             hub_url = os.environ.get("AETHERRA_HUB_URL", "http://localhost:3001")
             try:
+                # Third party imports
                 import aiohttp  # type: ignore
 
                 timeout = aiohttp.ClientTimeout(total=1.5)
-                async with aiohttp.ClientSession(timeout=timeout) as session:
-                    async with session.get(f"{hub_url}/health") as response:
-                        return {
-                            "url": hub_url,
-                            "ok": response.status == 200,
-                            "status_code": response.status,
-                        }
+                async with (
+                    aiohttp.ClientSession(timeout=timeout) as session,
+                    session.get(f"{hub_url}/health") as response,
+                ):
+                    return {
+                        "url": hub_url,
+                        "ok": response.status == 200,
+                        "status_code": response.status,
+                    }
             except Exception as exc:
                 return {"url": hub_url, "ok": False, "error": type(exc).__name__}
 
@@ -727,9 +720,11 @@ class AetherraOSLauncher:
             "phase": "ready" if status == "ready" else "stabilizing",
             "phase_detail": "readiness",
             "progress": 100,
-            "message": "Diagnostics complete. Ready for commands and questions."
-            if status == "ready"
-            else "Diagnostics complete with issues. Running in degraded mode.",
+            "message": (
+                "Diagnostics complete. Ready for commands and questions."
+                if status == "ready"
+                else "Diagnostics complete with issues. Running in degraded mode."
+            ),
             "system_scan": {
                 "registry": registry,
                 "kernel": kernel,
@@ -811,9 +806,10 @@ class AetherraOSLauncher:
         logger.info("[OK] Service Registry online")
 
         # Best-effort: If a local Registry Daemon is configured but not running, start it automatically
-        try:
+        with contextlib.suppress(Exception):
             reg_url = os.environ.get("AETHERRA_REGISTRY_URL", "").strip()
             if reg_url:
+                # Standard library imports
                 from urllib.parse import urlparse
 
                 parsed = urlparse(reg_url)
@@ -822,6 +818,7 @@ class AetherraOSLauncher:
 
                 async def _daemon_reachable() -> bool:
                     try:
+                        # Third party imports
                         import aiohttp  # type: ignore
 
                         timeout = aiohttp.ClientTimeout(total=1.5)
@@ -872,9 +869,6 @@ class AetherraOSLauncher:
                             "[REGISTRY_DAEMON] Auto-start failed (continuing with in-process registry): %s",
                             _rd_exc,
                         )
-        except Exception:
-            # Never block launcher on auxiliary daemon startup
-            pass
 
         # Ultra-early QFAC stub registration (pre-Phase 2) so tests with very tight timeouts
         # can observe the optional service even if later phases run long when the full suite
@@ -942,12 +936,10 @@ class AetherraOSLauncher:
                         "early": True,
                     },
                 )
-                try:
+                with contextlib.suppress(Exception):
                     await self.service_registry.update_service_status(
                         "qfac_memory_system", ServiceStatus.HEALTHY
                     )
-                except Exception:
-                    pass
                 self.systems["qfac_memory"] = early_stub
                 logger.info("[OK] QFAC early stub registered (pre-core systems)")
             elif enable_qfac_early and use_fast_stub:
@@ -962,7 +954,7 @@ class AetherraOSLauncher:
                         existing.status,
                         list((existing.metadata or {}).keys()),
                     )
-                    try:
+                    with contextlib.suppress(Exception):
                         await self.service_registry.update_service_status(
                             "qfac_memory_system",
                             ServiceStatus.HEALTHY,
@@ -970,15 +962,15 @@ class AetherraOSLauncher:
                                 **(existing.metadata or {}),
                                 "qfac_mode": os.getenv(
                                     "AETHERRA_QFAC_MODE",
-                                    existing.metadata.get("qfac_mode", "classical")
-                                    if existing.metadata
-                                    else "classical",
+                                    (
+                                        existing.metadata.get("qfac_mode", "classical")
+                                        if existing.metadata
+                                        else "classical"
+                                    ),
                                 ),
                                 "refreshed": True,
                             },
                         )
-                    except Exception:
-                        pass
                     inst = existing.instance
                     # If the instance doesn't expose required API, attach a lightweight adapter for launcher use
                     required_methods = [
@@ -1035,9 +1027,11 @@ class AetherraOSLauncher:
                         self.systems["qfac_memory"] = inst
                         logger.info(
                             "[QFAC] Existing QFAC service refreshed and bound (mode=%s)",
-                            existing.metadata.get("qfac_mode")
-                            if existing.metadata
-                            else "?",
+                            (
+                                existing.metadata.get("qfac_mode")
+                                if existing.metadata
+                                else "?"
+                            ),
                         )
                 else:
                     logger.info(
@@ -1125,12 +1119,10 @@ class AetherraOSLauncher:
                         },
                     )
                     # Mark immediately healthy (no deps) so capability test passes
-                    try:
+                    with contextlib.suppress(Exception):
                         await reg.update_service_status(
                             "qfac_memory_system", ServiceStatus.HEALTHY
                         )
-                    except Exception:
-                        pass
                     self.systems["qfac_memory"] = stub
                     logger.info("[OK] QFAC stub service pre-registered (fast path)")
                 else:
@@ -1138,14 +1130,12 @@ class AetherraOSLauncher:
                     # stub usage for deterministic fast operations in capability test (real system may still
                     # be initializing and is heavyweight). We DO NOT replace the registered instance to avoid
                     # races; we only override the launcher-facing handle.
-                    try:
+                    with contextlib.suppress(Exception):
                         await reg.update_service_status(
                             "qfac_memory_system",
                             ServiceStatus.HEALTHY,
                             metadata={"qfac_mode": qfac_mode, "stub": True},
                         )
-                    except Exception:
-                        pass
                     # Always prefer stub for launcher.systems access
                     self.systems["qfac_memory"] = stub
                     logger.info(
@@ -1216,15 +1206,13 @@ class AetherraOSLauncher:
                                 "[HMR][DENY] Production profile requires AETHERRA_HMR_STRICT=1 and non-empty AETHERRA_HMR_ALLOWED_SOURCES; HMR disabled"
                             )
                             # Do not initialize controller in unsafe production posture
-                            try:  # metrics instrumentation (Phase 0 security observability)
+                            with contextlib.suppress(Exception):
                                 # Aetherra imports
                                 from aetherra_hub.services import (
                                     metrics_accum,  # type: ignore
                                 )
 
                                 metrics_accum.inc_hmr_denied("requirements_not_met")
-                            except Exception:
-                                pass
                             raise RuntimeError("hmr_requirements_not_met")
                     self.systems["hmr_controller"] = await get_hmr_controller(
                         self.service_registry, self.kernel_loop, strict=strict
@@ -1236,14 +1224,12 @@ class AetherraOSLauncher:
             except Exception as e:
                 logger.warning(f"[HMR] Controller not available: {e}")
                 # Increment metrics for any initialization failure distinct from the explicit requirements gate
-                try:
+                with contextlib.suppress(Exception):
                     if str(e) != "hmr_requirements_not_met":
                         # Aetherra imports
                         from aetherra_hub.services import metrics_accum  # type: ignore
 
                         metrics_accum.inc_hmr_denied("init_failure")
-                except Exception:
-                    pass
         logger.info("[OK] All core systems loaded")
 
     async def _load_self_maintenance_systems(self, config: dict[str, Any]):
@@ -1355,7 +1341,9 @@ class AetherraOSLauncher:
                             ),
                         }
                     if mt.endswith("learning_outcomes"):
-                        proposal_id = str(payload.get("proposal_id") or "").strip() or None
+                        proposal_id = (
+                            str(payload.get("proposal_id") or "").strip() or None
+                        )
                         status = str(payload.get("status") or "").strip() or None
                         limit = self._bounded_limit(
                             payload.get("limit"),
@@ -1409,8 +1397,10 @@ class AetherraOSLauncher:
 
         # Self-Incorporation Service - Autonomous codebase perception and integration
         try:
+            # Standard library imports
             from pathlib import Path
 
+            # Aetherra imports
             from aetherra_self_incorporation import (
                 SelfIncorporationConfig,
                 SelfIncorporationService,
@@ -1541,7 +1531,7 @@ class AetherraOSLauncher:
                                 "status": {"summary": status},
                                 "ts": time.time(),
                             }
-                            try:
+                            with contextlib.suppress(Exception):
                                 hub_base = os.environ.get(
                                     "AETHERRA_HUB_URL", "http://localhost:3001"
                                 )
@@ -1553,8 +1543,6 @@ class AetherraOSLauncher:
                                     ) as resp,
                                 ):
                                     _ = await resp.text()
-                            except Exception:
-                                pass
 
                     await asyncio.sleep(
                         int(os.getenv("AETHERRA_SIE_TELEMETRY_INTERVAL", "120"))
@@ -1664,6 +1652,7 @@ class AetherraOSLauncher:
                     # Immediately mark healthy to satisfy optional service capability test
                     # Best-effort status update; ignore failures
                     if self.service_registry:
+                        # Standard library imports
                         from contextlib import suppress
 
                         with suppress(Exception):
@@ -1764,10 +1753,8 @@ class AetherraOSLauncher:
                             ):
                                 return value
                             if hasattr(value, "isoformat"):
-                                try:
+                                with contextlib.suppress(Exception):
                                     return value.isoformat()
-                                except Exception:
-                                    pass
                             return str(value)
 
                         async def store_memory(
@@ -1825,7 +1812,9 @@ class AetherraOSLauncher:
                             self, query_text, limit=3, *, exclude_id=None
                         ):
                             core_memory = getattr(self.engine, "core_memory", None)
-                            chat_recall = getattr(core_memory, "recall_chat_memories", None)
+                            chat_recall = getattr(
+                                core_memory, "recall_chat_memories", None
+                            )
                             if callable(chat_recall):
                                 return await chat_recall(
                                     query_text, limit=limit, exclude_id=exclude_id
@@ -2004,7 +1993,7 @@ class AetherraOSLauncher:
             logger.info("[ADAPT] Loading Adaptive Behavior System...")
 
             try:
-                # Aetherra imports
+                # Third party imports
                 from aetherra_adaptive_behavior import get_adaptive_behavior_system
 
                 behavior_system = await get_adaptive_behavior_system(
@@ -2215,6 +2204,7 @@ class AetherraOSLauncher:
             logger.error(
                 f"[ERROR] Phase 1 ConsciousnessCore failed to start: {phase1_error}"
             )
+            # Standard library imports
             import traceback
 
             traceback.print_exc()
@@ -2386,8 +2376,10 @@ class AetherraOSLauncher:
         Consciousness tab in the Lyrixa GUI via the /api/consciousness/state endpoint.
         """
         try:
+            # Standard library imports
             import platform
 
+            # Aetherra imports
             from Aetherra.consciousness.core import ConsciousnessCore
             from Aetherra.consciousness.core import config as consciousness_config
             from Aetherra.perception_bus.bus import PerceptionBus
@@ -2400,6 +2392,7 @@ class AetherraOSLauncher:
             # Start OS adapters based on platform
             if platform.system() == "Windows":
                 logger.info("[CONSCIOUSNESS] Starting Windows perception adapters...")
+                # Aetherra imports
                 from Aetherra.perception_bus.adapters.windows import (
                     WindowsDiskAdapter,
                     WindowsEventLogAdapter,
@@ -2417,6 +2410,7 @@ class AetherraOSLauncher:
 
             elif platform.system() == "Linux":
                 logger.info("[CONSCIOUSNESS] Starting Linux perception adapters...")
+                # Aetherra imports
                 from Aetherra.perception_bus.adapters.linux import (
                     LinuxDiskAdapter,
                     LinuxFSAdapter,
@@ -2472,6 +2466,7 @@ class AetherraOSLauncher:
 
         except Exception as e:
             logger.error(f"[ERROR] Failed to start Phase 1 ConsciousnessCore: {e}")
+            # Standard library imports
             import traceback
 
             traceback.print_exc()
@@ -2484,6 +2479,7 @@ class AetherraOSLauncher:
             core: ConsciousnessCore instance
         """
         try:
+            # Aetherra imports
             from Aetherra.consciousness.core import config as consciousness_config
 
             tick_interval = 1.0 / consciousness_config.TICK_HZ
@@ -2507,6 +2503,7 @@ class AetherraOSLauncher:
             raise
         except Exception as e:
             logger.error(f"[CONSCIOUSNESS] Tick loop error: {e}")
+            # Standard library imports
             import traceback
 
             traceback.print_exc()
@@ -2551,6 +2548,7 @@ class AetherraOSLauncher:
 
             def _parse_port_from_url(url: str) -> int:
                 try:
+                    # Standard library imports
                     from urllib.parse import urlparse
 
                     p = urlparse(url)
@@ -2562,6 +2560,7 @@ class AetherraOSLauncher:
 
             def _is_port_in_use(port: int) -> bool:
                 try:
+                    # Standard library imports
                     import socket
 
                     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -2572,6 +2571,7 @@ class AetherraOSLauncher:
 
             async def _hub_reachable(base_url: str) -> bool:
                 try:
+                    # Third party imports
                     import aiohttp  # type: ignore
 
                     timeout = aiohttp.ClientTimeout(total=1.5)
@@ -2601,11 +2601,11 @@ class AetherraOSLauncher:
                         return True
 
                 # Persist runtime hub URL/port for external tools
-                try:
-                    with open("hub_runtime_url.txt", "w", encoding="utf-8") as f:
-                        f.write(desired_url)
-                except Exception:
-                    pass
+                with (
+                    contextlib.suppress(Exception),
+                    open("hub_runtime_url.txt", "w", encoding="utf-8") as f,
+                ):
+                    f.write(desired_url)
 
                 remote_hub = _RemoteHub(desired_url)
                 self.systems["aetherra_hub"] = remote_hub
@@ -2683,14 +2683,15 @@ class AetherraOSLauncher:
                     hub_url = f"http://127.0.0.1:{chosen_port}"
                     os.environ["AETHERRA_HUB_URL"] = hub_url
                     # Persist runtime hub URL/port for external tools
-                    try:
-                        with open("hub_runtime_url.txt", "w", encoding="utf-8") as f:
-                            f.write(hub_url)
-                    except Exception:
-                        pass
+                    with (
+                        contextlib.suppress(Exception),
+                        open("hub_runtime_url.txt", "w", encoding="utf-8") as f,
+                    ):
+                        f.write(hub_url)
 
                     # Optionally wait briefly for /health
                     try:
+                        # Third party imports
                         import aiohttp  # type: ignore
 
                         for _ in range(10):  # ~2s total
@@ -2727,6 +2728,7 @@ class AetherraOSLauncher:
                     # Post-boot STORM status confirmation (after services are up)
                     if getattr(self, "_storm_enabled", False):
                         try:
+                            # Third party imports
                             import aiohttp  # type: ignore
 
                             timeout = aiohttp.ClientTimeout(total=2.5)
@@ -2775,6 +2777,7 @@ class AetherraOSLauncher:
             except Exception as hub_error:
                 logger.warning(f"[WARN] Failed to start Aetherra Hub: {hub_error}")
                 # Create a placeholder service anyway
+                # Aetherra imports
                 from aetherra_hub.compat import AetherraHubServer
 
                 mock_hub = AetherraHubServer(desired_port)
@@ -2830,6 +2833,7 @@ class AetherraOSLauncher:
                 try:
                     # Transitional native GUI support remains available while the
                     # canonical Aetherra frontend continues to consolidate.
+                    # Aetherra imports
                     from Aetherra.gui import aetherra_os_gui  # noqa: F401, F811
 
                     logger.info(
@@ -2869,6 +2873,7 @@ class AetherraOSLauncher:
 
             # Also register with Registry Daemon if configured
             try:
+                # Aetherra imports
                 from aetherra_registry_client import (
                     http_heartbeat,
                     http_register_service,
@@ -2938,6 +2943,7 @@ class AetherraOSLauncher:
 
             # Also register with Registry Daemon if configured
             try:
+                # Aetherra imports
                 from aetherra_registry_client import (
                     http_heartbeat,
                     http_register_service,
@@ -3027,12 +3033,13 @@ class AetherraOSLauncher:
             logger.info("[SYS] Loading Homeostasis System...")
 
             # Load homeostasis orchestrator
+            # Aetherra imports
             from Aetherra.homeostasis.homeostasis_integration import (
-                HomeostasisOrchestrator,
+                get_homeostasis_orchestrator,
             )
 
-            # Create orchestrator (it will handle service registry internally)
-            homeostasis = HomeostasisOrchestrator()
+            # Share ownership with Hub status/control and other integrations.
+            homeostasis = get_homeostasis_orchestrator()
 
             # Initialize the system
             await homeostasis.initialize()
@@ -3075,6 +3082,7 @@ class AetherraOSLauncher:
 
             logger.info("[MAINT] Loading Maintenance System...")
 
+            # Aetherra imports
             from Aetherra.maintenance import register_maintenance_service
 
             maintenance = await register_maintenance_service(project_root=Path("."))
@@ -3163,6 +3171,7 @@ class AetherraOSLauncher:
 
         # Also register with Registry Daemon if configured
         try:
+            # Aetherra imports
             from aetherra_registry_client import (
                 http_heartbeat,
                 http_register_service,
@@ -3196,13 +3205,11 @@ class AetherraOSLauncher:
             logger.debug("[REGISTRY_DAEMON] registration skipped: %s", _daemon_exc)
 
         # If HMR controller was created in Phase 2, wire it into the kernel now
-        try:
+        with contextlib.suppress(Exception):
             hmr = self.systems.get("hmr_controller")
             if hmr is not None:
                 self.kernel_loop.hmr_controller = hmr
                 logger.info("[HMR] Controller wired into kernel loop")
-        except Exception:
-            pass
 
         # Inject core systems into Self-Incorporation for integration capabilities
         try:
@@ -3241,6 +3248,7 @@ class AetherraOSLauncher:
 
             # Also register with Registry Daemon if configured
             try:
+                # Aetherra imports
                 from aetherra_registry_client import (
                     http_heartbeat,
                     http_register_service,
@@ -3480,6 +3488,7 @@ class AetherraOSLauncher:
         # Optionally launch a lightweight monitor window (separate process)
         try:
             if os.getenv("AETHERRA_KEEP_MONITOR", "0") == "1":
+                # Standard library imports
                 import subprocess
                 import sys as _sys
 
@@ -3598,7 +3607,7 @@ class AetherraOSLauncher:
             except Exception:
                 grace = 300
             if os.path.exists(status_file):
-                try:
+                with contextlib.suppress(Exception):
                     with open(status_file) as f:
                         data = json.load(f)
                     last_hb = data.get("last_heartbeat")
@@ -3612,8 +3621,6 @@ class AetherraOSLauncher:
                             logger.debug(
                                 "[STATUS] Removed stale previous OS status file"
                             )
-                except Exception:
-                    pass
 
             if os.path.exists(status_file):
                 os.remove(status_file)
@@ -3642,7 +3649,6 @@ class AetherraOSLauncher:
                 except TimeoutError:
                     process.kill()
                     await asyncio.wait_for(process.wait(), timeout=2)
-
 
     async def _graceful_shutdown(self):
         """🛑 Perform graceful system shutdown."""
@@ -3684,11 +3690,9 @@ class AetherraOSLauncher:
 
         # Force shutdown all systems
         for _system_name, system in self.systems.items():
-            try:
+            with contextlib.suppress(Exception):
                 if hasattr(system, "emergency_stop"):
                     await system.emergency_stop()
-            except Exception:
-                pass
 
         logger.error("🚨 Emergency shutdown complete")
 
@@ -4348,6 +4352,7 @@ async def main():
 
     if want_boot_menu:
         try:
+            # Standard library imports
             import importlib.util
 
             boot_menu_path = Path(__file__).parent / "Aetherra" / "gui" / "boot_menu.py"

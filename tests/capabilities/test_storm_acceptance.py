@@ -12,20 +12,39 @@ Validates STORM meets production acceptance criteria:
 These tests verify STORM is production-ready.
 """
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.aetherra_core.memory.aetherra_memory_engine import (
     AetherraMemoryEngineAdvanced,
 )
+
+
+@pytest.fixture
+def engine(monkeypatch, tmp_path):
+    """Each acceptance case owns fresh storage and closes its database handles."""
+    monkeypatch.chdir(tmp_path)
+    for name in ("HOME", "USERPROFILE", "AETHERRA_WORKSPACE_ROOT"):
+        monkeypatch.setenv(name, str(tmp_path))
+    monkeypatch.setenv("AETHERRA_STATE_DIR", str(tmp_path / "state"))
+    monkeypatch.setenv("AETHERRA_POLICY_HOME", str(tmp_path / "policy"))
+    monkeypatch.setenv("AETHERRA_STORM_SQLITE_PATH", str(tmp_path / "storm.db"))
+    memory = AetherraMemoryEngineAdvanced()
+    try:
+        yield memory
+    finally:
+        memory.core_memory.close()
+        if memory._storm_engine and memory._storm_engine._storage:
+            memory._storm_engine._storage.close()
 
 
 @pytest.mark.asyncio
 class TestSTORMAcceptanceCriteria:
     """Production acceptance tests for STORM"""
 
-    async def test_storm_recall_quality_meets_baseline(self):
+    async def test_storm_recall_quality_meets_baseline(self, engine):
         """Acceptance: STORM recall quality >= baseline"""
-        engine = AetherraMemoryEngineAdvanced()
 
         # Populate test data with await to ensure persistence
         test_memories = [
@@ -76,19 +95,21 @@ class TestSTORMAcceptanceCriteria:
                 "programming" in storm_text.lower() or "tutorial" in storm_text.lower()
             ), "STORM should be relevant"
 
-    async def test_storm_latency_acceptable(self):
+    async def test_storm_latency_acceptable(self, engine):
         """Acceptance: STORM latency p95 < 500ms"""
+        # Standard library imports
         import time
-
-        engine = AetherraMemoryEngineAdvanced()
 
         # Populate with enough data for realistic test
         for i in range(20):
-            await engine.remember(
+            result = await engine.remember(
                 content=f"Test memory item {i} with various content",
                 tags=["test"],
                 category="benchmark",
             )
+            assert result.success
+        assert (await engine.core_memory.get_memory_stats())["total_memories"] == 20
+        assert len(engine.fractal_mesh.fragments) == 20
 
         # Measure latency for multiple queries
         latencies = []
@@ -106,13 +127,11 @@ class TestSTORMAcceptanceCriteria:
         p95_latency = latencies[p95_index]
 
         # Acceptance criterion: p95 < 500ms
-        assert p95_latency < 500.0, (
-            f"p95 latency {p95_latency:.2f}ms exceeds 500ms threshold"
-        )
+        message = f"p95 latency {p95_latency:.2f}ms exceeds 500ms threshold"
+        assert p95_latency < 500.0, message
 
-    async def test_storm_sheaf_consistency_stable(self):
+    async def test_storm_sheaf_consistency_stable(self, engine):
         """Acceptance: Sheaf inconsistency < 0.3"""
-        engine = AetherraMemoryEngineAdvanced()
 
         # Check if STORM enabled
         if not engine._storm_engine or not engine._storm_engine.config.enabled:
@@ -137,13 +156,11 @@ class TestSTORMAcceptanceCriteria:
         inconsistency = storm_meta.get("sheaf_inconsistency", 0.0)
 
         # Acceptance criterion: inconsistency < 0.3
-        assert inconsistency < 0.3, (
-            f"Sheaf inconsistency {inconsistency:.4f} exceeds 0.3 threshold"
-        )
+        message = f"Sheaf inconsistency {inconsistency:.4f} exceeds 0.3 threshold"
+        assert inconsistency < 0.3, message
 
-    async def test_storm_graceful_degradation_on_failure(self):
+    async def test_storm_graceful_degradation_on_failure(self, engine):
         """Acceptance: STORM degrades gracefully when core memory fails"""
-        engine = AetherraMemoryEngineAdvanced()
 
         # Test with empty core memory (edge case)
         result = await engine.recall_typed(
@@ -160,9 +177,8 @@ class TestSTORMAcceptanceCriteria:
             "hybrid",
         ), "Should have valid source"
 
-    async def test_storm_metadata_structure_correct(self):
+    async def test_storm_metadata_structure_correct(self, engine):
         """Acceptance: STORM metadata includes required fields"""
-        engine = AetherraMemoryEngineAdvanced()
 
         # Store and recall
         await engine.remember(
@@ -182,9 +198,8 @@ class TestSTORMAcceptanceCriteria:
             # Should have some STORM metadata fields
             assert isinstance(storm_meta, dict), "storm_meta should be dict"
 
-    async def test_storm_evidence_tags_present(self):
+    async def test_storm_evidence_tags_present(self, engine):
         """Acceptance: STORM includes evidence tags in results"""
-        engine = AetherraMemoryEngineAdvanced()
 
         # Check if STORM enabled
         if not engine._storm_engine or not engine._storm_engine.config.enabled:
@@ -206,9 +221,8 @@ class TestSTORMAcceptanceCriteria:
         # Should have transport cost (ot evidence)
         assert "transport_cost" in storm_meta, "Should have transport_cost evidence"
 
-    async def test_storm_handles_large_result_sets(self):
+    async def test_storm_handles_large_result_sets(self, engine):
         """Acceptance: STORM handles large recall limits efficiently"""
-        engine = AetherraMemoryEngineAdvanced()
 
         # Populate with more data
         for i in range(50):
@@ -225,9 +239,8 @@ class TestSTORMAcceptanceCriteria:
         assert result is not None, "Should handle large limits"
         assert len(result.items) <= 30, "Should respect limit"
 
-    async def test_storm_respects_recall_strategy_parameter(self):
+    async def test_storm_respects_recall_strategy_parameter(self, engine):
         """Acceptance: STORM respects recall_strategy parameter"""
-        engine = AetherraMemoryEngineAdvanced()
 
         await engine.remember(
             content="Strategy test content", tags=["strategy"], category="test"
@@ -264,9 +277,8 @@ class TestSTORMProductionReadiness:
     """Integration tests for production deployment"""
 
     @pytest.mark.asyncio
-    async def test_storm_full_lifecycle(self):
+    async def test_storm_full_lifecycle(self, engine):
         """End-to-end test: store -> recall -> verify quality"""
-        engine = AetherraMemoryEngineAdvanced()
 
         # Simulate realistic workflow
         memories = [
@@ -295,16 +307,14 @@ class TestSTORMProductionReadiness:
 
         # Verify quality
         assert result.scores, "Should have relevance scores"
-        assert all(s >= 0 for s in result.scores), (
-            "Scores should be non-negative"
-        )  # Basic sanity
+        # Basic sanity
+        assert all(s >= 0 for s in result.scores), "Scores should be non-negative"
 
     @pytest.mark.asyncio
-    async def test_storm_concurrent_recalls(self):
+    async def test_storm_concurrent_recalls(self, engine):
         """Test STORM handles concurrent recall requests"""
+        # Standard library imports
         import asyncio
-
-        engine = AetherraMemoryEngineAdvanced()
 
         # Populate data
         for i in range(20):
@@ -327,9 +337,8 @@ class TestSTORMProductionReadiness:
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # All should succeed
-        assert all(not isinstance(r, Exception) for r in results), (
-            "All concurrent recalls should succeed"
-        )
+        message = "All concurrent recalls should succeed"
+        assert all(not isinstance(r, Exception) for r in results), message
         assert all(r is not None for r in results), "All should return results"
 
 

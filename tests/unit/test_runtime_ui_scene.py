@@ -1,3 +1,4 @@
+# Aetherra imports
 from Aetherra.runtime_ui import (
     ObservatoryMode,
     SubsystemStatus,
@@ -47,8 +48,21 @@ def test_observatory_scene_reflects_status_in_emphasis_and_connections():
 
     assert nodes["guardian"].status == SubsystemStatus.CONTAINED
     assert nodes["guardian"].emphasis == 1.0
-    assert (
-        connections[("guardian", "security")].status
-        == SubsystemStatus.CONTAINED
-    )
+    assert connections[("guardian", "security")].status == SubsystemStatus.CONTAINED
     assert connections[("guardian", "security")].thickness == 0.9
+
+
+def test_engine_readiness_is_visible_as_a_connected_runtime_node():
+    state = build_observatory_state(system_status={"engine": {"status": "degraded"}})
+    scene = build_observatory_scene(state)
+    nodes = {node.name: node for node in scene.nodes}
+
+    assert nodes["engine"].label == "Engine"
+    assert nodes["engine"].group == "runtime"
+    assert nodes["engine"].status == SubsystemStatus.DEGRADED
+    assert any(
+        connection.source == "kernel"
+        and connection.target == "engine"
+        and connection.status == SubsystemStatus.DEGRADED
+        for connection in scene.connections
+    )

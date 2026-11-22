@@ -33,10 +33,12 @@ from typing import Any, Dict, List, Optional
 # Aetherra imports
 from aetherra_service_registry import get_service_registry, register_service
 
+# Local imports
 from .audit_trace_layer import get_audit_layer
 from .autonomous_error_corrector import AutonomousErrorCorrector
 from .homeostasis_actuators import HomeostasisActuators
 from .homeostasis_core import ControllerMode, HomeostasisController
+from .operating_policy import observe_only_requested
 from .self_improvement_metrics_bridge import SelfImprovementMetricsBridge
 from .self_incorporation_metrics_bridge import SelfIncorporationMetricsBridge
 
@@ -181,7 +183,9 @@ class HomeostasisWatchdog:
             logger.error(f"❌ Watchdog check failed: {e}")
             raise
 
-    async def _check_component_health(self, orchestrator: "HomeostasisOrchestrator") -> str:
+    async def _check_component_health(
+        self, orchestrator: "HomeostasisOrchestrator"
+    ) -> str:
         """Check health of core homeostasis components."""
         try:
             components = {
@@ -196,36 +200,40 @@ class HomeostasisWatchdog:
 
             if healthy_count == total_count:
                 return "healthy"
-            elif healthy_count > 0:
+            if healthy_count > 0:
                 return f"degraded({healthy_count}/{total_count})"
-            else:
-                return "failed"
+            return "failed"
 
         except Exception as e:
             logger.error(f"Component health check failed: {e}")
             return "error"
 
-    async def _check_background_tasks(self, orchestrator: "HomeostasisOrchestrator") -> str:
+    async def _check_background_tasks(
+        self, orchestrator: "HomeostasisOrchestrator"
+    ) -> str:
         """Check if background tasks are running properly."""
         try:
             if not orchestrator.background_tasks:
                 return "no_tasks"
 
-            running_tasks = sum(1 for task in orchestrator.background_tasks if not task.done())
+            running_tasks = sum(
+                1 for task in orchestrator.background_tasks if not task.done()
+            )
             total_tasks = len(orchestrator.background_tasks)
 
             if running_tasks == total_tasks:
                 return "healthy"
-            elif running_tasks > 0:
+            if running_tasks > 0:
                 return f"degraded({running_tasks}/{total_tasks})"
-            else:
-                return "failed"
+            return "failed"
 
         except Exception as e:
             logger.error(f"Background task check failed: {e}")
             return "error"
 
-    async def _check_supervisor_health(self, orchestrator: "HomeostasisOrchestrator") -> str:
+    async def _check_supervisor_health(
+        self, orchestrator: "HomeostasisOrchestrator"
+    ) -> str:
         """Check if system supervisor is responding."""
         try:
             if not orchestrator.supervisor:
@@ -235,8 +243,7 @@ class HomeostasisWatchdog:
             status = orchestrator.supervisor.get_supervisor_status()
             if status and status.get("running"):
                 return "healthy"
-            else:
-                return "not_running"
+            return "not_running"
 
         except Exception as e:
             logger.error(f"Supervisor health check failed: {e}")
@@ -244,6 +251,8 @@ class HomeostasisWatchdog:
 
     async def _restart_orchestrator(self, orchestrator: "HomeostasisOrchestrator"):
         """Attempt to restart the orchestrator."""
+        if observe_only_requested():
+            return
         try:
             logger.info("🔄 Attempting orchestrator restart...")
 
@@ -265,14 +274,18 @@ class HomeostasisWatchdog:
     async def _emergency_restart_orchestrator(self):
         """Emergency restart when watchdog has too many errors."""
         try:
-            logger.error("🚨 EMERGENCY: Too many watchdog errors - attempting full restart")
+            logger.error(
+                "🚨 EMERGENCY: Too many watchdog errors - attempting full restart"
+            )
 
             # Get fresh orchestrator reference
             global _homeostasis_instance
             if _homeostasis_instance:
                 await self._restart_orchestrator(_homeostasis_instance)
             else:
-                logger.error("❌ No global orchestrator instance available for emergency restart")
+                logger.error(
+                    "❌ No global orchestrator instance available for emergency restart"
+                )
 
         except Exception as e:
             logger.error(f"❌ Emergency restart failed: {e}")
@@ -381,6 +394,7 @@ class DLQMonitor:
                 # Some kernels may not accept keyword args
                 items = self.kernel_loop.get_dlq_items()  # type: ignore[call-arg]
 
+            # Standard library imports
             import inspect
 
             if inspect.isawaitable(items):
@@ -529,7 +543,9 @@ class DLQMonitor:
         if hasattr(self.actuators, "disable_actuator"):
             try:
                 await self.actuators.disable_actuator(action_type)
-                logger.error(f"[DLQ] Actuator '{action_type}' QUARANTINED due to high failure rate")
+                logger.error(
+                    f"[DLQ] Actuator '{action_type}' QUARANTINED due to high failure rate"
+                )
 
                 # Log failure reasons
                 reasons = {f.get("reason", "unknown") for f in failures[:10]}
@@ -632,6 +648,7 @@ class HomeostasisOrchestrator:
         }:
             return True
 
+        # Aetherra imports
         from Aetherra.security.capabilities import has_capability
 
         return has_capability(requester, capability)
@@ -648,6 +665,7 @@ class HomeostasisOrchestrator:
         metadata: dict[str, Any],
         rollback_plan: str,
     ) -> None:
+        # Aetherra imports
         from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
 
         decision = evaluate_intent(
@@ -759,7 +777,9 @@ class HomeostasisOrchestrator:
             # Phase 3: Integrate with AetherRuntime scheduler if available
             await self._integrate_with_scheduler()
 
-            logger.info("✅ Homeostasis system started successfully with watchdog protection")
+            logger.info(
+                "✅ Homeostasis system started successfully with watchdog protection"
+            )
 
         except Exception as e:
             logger.error(f"❌ Failed to start homeostasis system: {e}")
@@ -785,7 +805,9 @@ class HomeostasisOrchestrator:
             # Try to get the scheduler service
             registry = await get_service_registry()
             if not registry:
-                logger.warning("⚠️ Service registry not available for scheduler integration")
+                logger.warning(
+                    "⚠️ Service registry not available for scheduler integration"
+                )
                 return
 
             scheduler_info = registry.get_service_info("scheduler")
@@ -806,7 +828,9 @@ class HomeostasisOrchestrator:
                 )
 
                 self.scheduler_integration = True
-                logger.info("✅ Integrated with AetherRuntime scheduler for guaranteed execution")
+                logger.info(
+                    "✅ Integrated with AetherRuntime scheduler for guaranteed execution"
+                )
 
             else:
                 logger.warning("⚠️ Scheduler doesn't support persistent tasks")
@@ -819,7 +843,11 @@ class HomeostasisOrchestrator:
         try:
             # Verify homeostasis is still running
             if not self.running:
-                logger.error("🚨 Homeostasis detected as stopped by scheduler - attempting restart")
+                if observe_only_requested():
+                    return
+                logger.error(
+                    "🚨 Homeostasis detected as stopped by scheduler - attempting restart"
+                )
                 await self.start()
                 return
 
@@ -827,7 +855,9 @@ class HomeostasisOrchestrator:
             if self.supervisor:
                 health = self.supervisor.get_system_health()
                 if health.get("runlevel") == "FAILED":
-                    logger.error("🚨 System supervisor reports FAILED state - triggering recovery")
+                    logger.error(
+                        "🚨 System supervisor reports FAILED state - triggering recovery"
+                    )
                     await self._emergency_recovery()
 
             # Verify watchdog is alive
@@ -859,6 +889,8 @@ class HomeostasisOrchestrator:
 
     async def _emergency_recovery(self):
         """Emergency recovery procedure (Phase 3)."""
+        if observe_only_requested():
+            return
         try:
             self.error_recovery_count += 1
             logger.error(f"🚨 EMERGENCY RECOVERY #{self.error_recovery_count}")
@@ -934,22 +966,33 @@ class HomeostasisOrchestrator:
         """Get comprehensive orchestrator status including watchdog info (Phase 3)."""
         current_time = time.time()
 
-        status = {
+        return {
             "running": self.running,
             "initialized": self.initialized,
             "start_time": self.start_time,
             "uptime": current_time - self.uptime_start if self.uptime_start else 0,
             "restart_count": self.restart_count,
             "error_recovery_count": self.error_recovery_count,
+            "observe_only_requested": observe_only_requested(),
+            "controller": (
+                self.controller.get_controller_status() if self.controller else None
+            ),
+            "actuators": (
+                self.actuators.get_actuator_status() if self.actuators else None
+            ),
             # Phase 3: Watchdog status
             "watchdog": {
                 "active": self.watchdog is not None and self.watchdog.running,
-                "last_heartbeat": self.watchdog.last_heartbeat if self.watchdog else None,
+                "last_heartbeat": (
+                    self.watchdog.last_heartbeat if self.watchdog else None
+                ),
                 "cycle_count": self.watchdog.cycle_count if self.watchdog else 0,
                 "error_count": self.watchdog.error_count if self.watchdog else 0,
-                "thread_alive": self.watchdog.thread.is_alive()
-                if self.watchdog and self.watchdog.thread
-                else False,
+                "thread_alive": (
+                    self.watchdog.thread.is_alive()
+                    if self.watchdog and self.watchdog.thread
+                    else False
+                ),
             },
             # Scheduler integration
             "scheduler_integration": self.scheduler_integration,
@@ -967,8 +1010,6 @@ class HomeostasisOrchestrator:
                 "completed": sum(1 for task in self.background_tasks if task.done()),
             },
         }
-
-        return status
 
     async def shutdown(self):
         """Alias for stop() - used by OS launcher during graceful shutdown."""
@@ -1001,7 +1042,9 @@ class HomeostasisOrchestrator:
 
         # Start metrics collection
         if self.metrics:
-            metrics_task = asyncio.create_task(self.metrics.start_continuous_collection())
+            metrics_task = asyncio.create_task(
+                self.metrics.start_continuous_collection()
+            )
             self.background_tasks.append(metrics_task)
 
         # Start controller (it depends on metrics and actuators)
@@ -1071,13 +1114,16 @@ class HomeostasisOrchestrator:
             self.background_tasks.append(validation_task)
 
         # Start system verification loop (Phase 2 requirement)
-        verification_task = asyncio.create_task(self._continuous_system_verification_loop())
+        verification_task = asyncio.create_task(
+            self._continuous_system_verification_loop()
+        )
         self.background_tasks.append(verification_task)
 
         # Phase 2C: Start DLQ monitoring loop
         if self.dlq_monitor:
             # Inject kernel reference dynamically
             try:
+                # Aetherra imports
                 from aetherra_kernel_loop import get_kernel  # type: ignore
 
                 kernel = get_kernel()
@@ -1104,7 +1150,9 @@ class HomeostasisOrchestrator:
             try:
                 # Run comprehensive system verification
                 if self.supervisor:
-                    verification_result = await self.supervisor.verify_all_systems_active()
+                    verification_result = (
+                        await self.supervisor.verify_all_systems_active()
+                    )
 
                     # Log any issues found
                     if verification_result.get("overall_status") != "healthy":
@@ -1132,12 +1180,14 @@ class HomeostasisOrchestrator:
                 logger.error(f"❌ System verification loop error: {e}")
                 await asyncio.sleep(verification_interval)
 
-    async def _auto_restart_inactive_services(self, verification_result: Dict[str, Any]):
+    async def _auto_restart_inactive_services(
+        self, verification_result: Dict[str, Any]
+    ):
         """
         Auto-restart logic for any inactive critical service (Phase 2 requirement).
         """
         try:
-            if not self.supervisor:
+            if not self.supervisor or observe_only_requested():
                 return
 
             systems = verification_result.get("systems", {})
@@ -1178,19 +1228,11 @@ class HomeostasisOrchestrator:
 
     def _determine_initial_mode(self) -> ControllerMode:
         """Determine initial controller mode based on system state."""
-        # EMERGENCY FIX: Always start in ACTIVE mode for proper self-healing
-        # The system should be able to self-heal from the moment it starts
-        logger.info(
-            "🚨 EMERGENCY MODE: Starting homeostasis in ACTIVE mode for immediate self-healing"
-        )
+        if observe_only_requested():
+            logger.info("Starting homeostasis in requested observation-only mode")
+            return ControllerMode.OBSERVE_ONLY
+        # Preserve the existing self-healing default when observation is not requested.
         return ControllerMode.ACTIVE
-
-        # Original logic (commented out):
-        # Start in observe mode and transition based on system health
-        # if self.supervisor and self.supervisor.is_system_online():
-        #     return ControllerMode.ACTIVE
-        # else:
-        #     return ControllerMode.OBSERVE_ONLY
 
     async def _health_reporting_loop(self):
         """Background loop for health reporting to external systems."""
@@ -1224,12 +1266,20 @@ class HomeostasisOrchestrator:
                     current_mode = self.controller.mode
 
                     # Adjust controller mode based on system state
-                    if (
+                    if observe_only_requested():
+                        if current_mode not in (
+                            ControllerMode.OBSERVE_ONLY,
+                            ControllerMode.DISABLED,
+                        ):
+                            self.controller.set_mode(ControllerMode.OBSERVE_ONLY)
+                    elif (
                         supervisor_state.value == "FAILED"
                         and current_mode != ControllerMode.EMERGENCY
                     ):
                         self.controller.set_mode(ControllerMode.EMERGENCY)
-                        logger.warning("🚨 Switched to emergency mode due to system failure")
+                        logger.warning(
+                            "🚨 Switched to emergency mode due to system failure"
+                        )
 
                     elif (
                         supervisor_state.value == "ONLINE"
@@ -1260,7 +1310,9 @@ class HomeostasisOrchestrator:
             registry = await get_service_registry()
             if registry:
                 lyrixa_service = registry.get_service_info("lyrixa_basic")
-                if lyrixa_service and hasattr(lyrixa_service.instance, "receive_health_update"):
+                if lyrixa_service and hasattr(
+                    lyrixa_service.instance, "receive_health_update"
+                ):
                     await lyrixa_service.instance.receive_health_update(health_status)
 
         except Exception as e:
@@ -1272,7 +1324,9 @@ class HomeostasisOrchestrator:
             registry = await get_service_registry()
             if registry:
                 hub_service = registry.get_service_info("aetherra_hub")
-                if hub_service and hasattr(hub_service.instance, "receive_health_update"):
+                if hub_service and hasattr(
+                    hub_service.instance, "receive_health_update"
+                ):
                     await hub_service.instance.receive_health_update(health_status)
 
         except Exception as e:
@@ -1290,7 +1344,9 @@ class HomeostasisOrchestrator:
                 if self.feedback_system:
                     # Check if it's time to collect feedback
                     current_time = time.time()
-                    time_since_last = current_time - self.feedback_system.last_feedback_collection
+                    time_since_last = (
+                        current_time - self.feedback_system.last_feedback_collection
+                    )
 
                     if time_since_last >= self.feedback_system.feedback_interval:
                         # Collect feedback from all systems
@@ -1304,7 +1360,9 @@ class HomeostasisOrchestrator:
                             )
 
                     # Sleep for a portion of the feedback interval
-                    await asyncio.sleep(min(30.0, self.feedback_system.feedback_interval / 2))
+                    await asyncio.sleep(
+                        min(30.0, self.feedback_system.feedback_interval / 2)
+                    )
                 else:
                     # If feedback system is not available, sleep longer
                     await asyncio.sleep(60.0)
@@ -1336,8 +1394,12 @@ class HomeostasisOrchestrator:
                         )
 
                         # Log significant validation results
-                        effectiveness = validation_report.get("overall_effectiveness", 0.0)
-                        tuning_required = validation_report.get("tuning_required", False)
+                        effectiveness = validation_report.get(
+                            "overall_effectiveness", 0.0
+                        )
+                        tuning_required = validation_report.get(
+                            "tuning_required", False
+                        )
 
                         if tuning_required:
                             logger.warning(
@@ -1349,7 +1411,9 @@ class HomeostasisOrchestrator:
                             )
 
                     # Sleep for a portion of the validation interval
-                    await asyncio.sleep(min(60.0, self.validator.validation_interval / 2))
+                    await asyncio.sleep(
+                        min(60.0, self.validator.validation_interval / 2)
+                    )
                 else:
                     # If validator is not available, sleep longer
                     await asyncio.sleep(120.0)
@@ -1371,10 +1435,14 @@ class HomeostasisOrchestrator:
             try:
                 if self.supervisor:
                     # Verify all systems are active
-                    verification_result = await self.supervisor.verify_all_systems_active()
+                    verification_result = (
+                        await self.supervisor.verify_all_systems_active()
+                    )
 
                     if not verification_result:
-                        logger.warning("⚠️ System verification failed - triggering heartbeat")
+                        logger.warning(
+                            "⚠️ System verification failed - triggering heartbeat"
+                        )
                         # Trigger heartbeat to attempt corrections
                         await self.supervisor.heartbeat_all()
 
@@ -1397,6 +1465,7 @@ class HomeostasisOrchestrator:
                 "initialized": self.initialized,
                 "start_time": self.start_time,
                 "uptime": time.time() - self.start_time if self.start_time else 0.0,
+                "observe_only_requested": observe_only_requested(),
             }
         }
 
@@ -1415,6 +1484,9 @@ class HomeostasisOrchestrator:
         if self.actuators:
             status["actuators"] = self.actuators.get_actuator_status()
             status["recent_actions"] = self.actuators.get_action_history(10)
+
+        if self.error_corrector:
+            status["error_corrector"] = self.error_corrector.stats.copy()
 
         # Add supervisor status
         if self.supervisor:
@@ -1446,7 +1518,9 @@ class HomeostasisOrchestrator:
         )
         if self.controller:
             self.controller.set_mode(mode)
-            logger.info(f"🎛️ Controller mode set to {mode.value}: {reason}")
+            logger.info(
+                f"🎛️ Controller mode set to {self.controller.mode.value}: {reason}"
+            )
         else:
             logger.warning("Cannot set controller mode: controller not initialized")
 
@@ -1473,7 +1547,8 @@ class HomeostasisOrchestrator:
 
         if self.supervisor:
             self.supervisor.force_runlevel_transition(
-                self.supervisor.current_runlevel.__class__.FAILED, f"Emergency stop: {reason}"
+                self.supervisor.current_runlevel.__class__.FAILED,
+                f"Emergency stop: {reason}",
             )
 
     async def reset_emergency_stop(self, requester: str | None = None):
@@ -1502,7 +1577,9 @@ class HomeostasisOrchestrator:
 
     # Phase 4: Cross-System Feedback API Methods
 
-    async def receive_system_feedback(self, source: str, feedback_data: Dict[str, Any]) -> bool:
+    async def receive_system_feedback(
+        self, source: str, feedback_data: Dict[str, Any]
+    ) -> bool:
         """
         Receive feedback from external systems for adaptive tuning (Phase 4).
 
@@ -1514,10 +1591,11 @@ class HomeostasisOrchestrator:
             bool: True if feedback was processed successfully
         """
         if self.feedback_system:
-            return await self.feedback_system.receive_system_feedback(source, feedback_data)
-        else:
-            logger.warning("Feedback system not initialized - ignoring feedback")
-            return False
+            return await self.feedback_system.receive_system_feedback(
+                source, feedback_data
+            )
+        logger.warning("Feedback system not initialized - ignoring feedback")
+        return False
 
     async def collect_all_system_feedback(self) -> Dict[str, Dict[str, Any]]:
         """
@@ -1528,9 +1606,8 @@ class HomeostasisOrchestrator:
         """
         if self.feedback_system:
             return await self.feedback_system.collect_feedback_from_systems()
-        else:
-            logger.warning("Feedback system not initialized")
-            return {}
+        logger.warning("Feedback system not initialized")
+        return {}
 
     def get_feedback_summary(self) -> Dict[str, Any]:
         """
@@ -1541,8 +1618,7 @@ class HomeostasisOrchestrator:
         """
         if self.feedback_system:
             return self.feedback_system.get_feedback_summary()
-        else:
-            return {"error": "Feedback system not initialized"}
+        return {"error": "Feedback system not initialized"}
 
     async def trigger_adaptive_tuning(self) -> Dict[str, Any]:
         """
@@ -1578,8 +1654,7 @@ class HomeostasisOrchestrator:
         """
         if self.validator:
             return await self.validator.validate_homeostasis_effectiveness()
-        else:
-            return {"error": "Validation system not initialized"}
+        return {"error": "Validation system not initialized"}
 
     def get_validation_summary(self) -> Dict[str, Any]:
         """
@@ -1590,8 +1665,7 @@ class HomeostasisOrchestrator:
         """
         if self.validator:
             return self.validator.get_validation_summary()
-        else:
-            return {"error": "Validation system not initialized"}
+        return {"error": "Validation system not initialized"}
 
     async def trigger_self_tuning(self) -> Dict[str, Any]:
         """
@@ -1612,7 +1686,9 @@ class HomeostasisOrchestrator:
         return {
             "tuning_triggered": True,
             "validation_report": validation_report,
-            "effectiveness_after_tuning": validation_report.get("overall_effectiveness", 0.0),
+            "effectiveness_after_tuning": validation_report.get(
+                "overall_effectiveness", 0.0
+            ),
         }
 
     def get_effectiveness_metrics(self) -> Dict[str, Any]:
@@ -1627,9 +1703,11 @@ class HomeostasisOrchestrator:
 
         return {
             "effectiveness_metrics": self.validator.effectiveness_metrics.copy(),
-            "recent_validations": self.validator.validation_history[-5:]
-            if self.validator.validation_history
-            else [],
+            "recent_validations": (
+                self.validator.validation_history[-5:]
+                if self.validator.validation_history
+                else []
+            ),
             "validation_interval": self.validator.validation_interval,
             "effectiveness_threshold": self.validator.min_effectiveness_score,
         }
@@ -1677,9 +1755,8 @@ class HomeostasisOrchestrator:
         if self.observability:
             await self.observability.start_live_monitoring()
             return True
-        else:
-            logger.warning("Observability system not initialized")
-            return False
+        logger.warning("Observability system not initialized")
+        return False
 
     async def stop_live_monitoring(self) -> bool:
         """
@@ -1691,8 +1768,7 @@ class HomeostasisOrchestrator:
         if self.observability:
             await self.observability.stop_live_monitoring()
             return True
-        else:
-            return False
+        return False
 
     def get_live_dashboard(self) -> str:
         """
@@ -1703,8 +1779,7 @@ class HomeostasisOrchestrator:
         """
         if self.observability:
             return self.observability.generate_live_dashboard()
-        else:
-            return "❌ Live observability not initialized"
+        return "❌ Live observability not initialized"
 
     def get_metrics_summary(self, minutes: int = 5) -> Dict[str, Any]:
         """
@@ -1718,10 +1793,11 @@ class HomeostasisOrchestrator:
         """
         if self.observability:
             return self.observability.get_metrics_summary(minutes)
-        else:
-            return {"error": "Observability system not initialized"}
+        return {"error": "Observability system not initialized"}
 
-    def export_observability_data(self, filepath: Optional[str] = None) -> Optional[str]:
+    def export_observability_data(
+        self, filepath: Optional[str] = None
+    ) -> Optional[str]:
         """
         Export observability data to file (Phase 6).
 
@@ -1754,7 +1830,9 @@ class HomeostasisOrchestrator:
 
 
 # Phase 3: Singleton Pattern Implementation
-def get_homeostasis_orchestrator(config_dir: Optional[str] = None) -> HomeostasisOrchestrator:
+def get_homeostasis_orchestrator(
+    config_dir: Optional[str] = None,
+) -> HomeostasisOrchestrator:
     """
     Get the singleton homeostasis orchestrator instance (Phase 3 requirement).
 
@@ -1802,13 +1880,16 @@ def get_homeostasis_status() -> Optional[Dict[str, Any]]:
 
 
 # Legacy compatibility function
-def HomeostasisOrchestrator_factory(config_dir: Optional[str] = None) -> HomeostasisOrchestrator:
+def HomeostasisOrchestrator_factory(  # noqa: N802 - preserve legacy API
+    config_dir: Optional[str] = None,
+) -> HomeostasisOrchestrator:
     """Factory function for backward compatibility."""
     return get_homeostasis_orchestrator(config_dir)
 
 
 if __name__ == "__main__":
     # Test the homeostasis orchestrator
+    # Standard library imports
     import asyncio
 
     async def test_orchestrator():
@@ -1829,10 +1910,8 @@ if __name__ == "__main__":
             snapshot = await self.metrics.collect_snapshot()
             if snapshot is not None and hasattr(snapshot, "__dict__"):
                 return dict(snapshot.__dict__)
-            else:
-                return {}
-        else:
             return {}
+        return {}
 
     async def rollback_last_action(self) -> bool:
         """Rollback the last homeostasis action."""
@@ -1848,11 +1927,14 @@ if __name__ == "__main__":
             if isinstance(result, list):
                 # Ensure all elements are dicts
                 return [
-                    dict(item) if not isinstance(item, dict) and hasattr(item, "__dict__") else item
+                    (
+                        dict(item)
+                        if not isinstance(item, dict) and hasattr(item, "__dict__")
+                        else item
+                    )
                     for item in result
                 ]
-            else:
-                return []
+            return []
         return []
 
     def get_runlevel(self) -> str:
@@ -1884,7 +1966,8 @@ if __name__ == "__main__":
     async def export_health_report(self, filepath: Optional[str] = None) -> str:
         """Export comprehensive health report."""
         report_path = (
-            filepath or f"homeostasis_health_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            filepath
+            or f"homeostasis_health_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         )
 
         try:
@@ -1898,6 +1981,7 @@ if __name__ == "__main__":
             }
 
             # Write to file
+            # Standard library imports
             import json
 
             with open(report_path, "w", encoding="utf-8") as f:
@@ -1937,7 +2021,9 @@ class SystemFeedback:
 
         logger.info("🔄 Cross-system feedback mechanism initialized")
 
-    async def receive_system_feedback(self, source: str, feedback_data: Dict[str, Any]) -> bool:
+    async def receive_system_feedback(
+        self, source: str, feedback_data: Dict[str, Any]
+    ) -> bool:
         """
         Receive feedback from monitored systems for adaptive tuning.
 
@@ -1988,7 +2074,9 @@ class SystemFeedback:
         required_fields = ["metrics", "timestamp"]
         return all(field in data for field in required_fields)
 
-    async def _process_feedback_for_adaptation(self, source: str, feedback_data: Dict[str, Any]):
+    async def _process_feedback_for_adaptation(
+        self, source: str, feedback_data: Dict[str, Any]
+    ):
         """
         Process feedback to adapt homeostasis thresholds and parameters.
 
@@ -2026,14 +2114,16 @@ class SystemFeedback:
                     # Slow response - increase intervention frequency
                     adjustment = min(0.2, (metric_value - 2.0) / 10.0 * weight)
                     source_adjustments["intervention_frequency"] = (
-                        source_adjustments.get("intervention_frequency", 1.0) + adjustment
+                        source_adjustments.get("intervention_frequency", 1.0)
+                        + adjustment
                     )
 
                 elif metric_name == "error_rate" and metric_value > 5.0:
                     # High error rate - increase correction aggressiveness
                     adjustment = min(0.25, (metric_value - 5.0) / 20.0 * weight)
                     source_adjustments["correction_aggressiveness"] = (
-                        source_adjustments.get("correction_aggressiveness", 1.0) + adjustment
+                        source_adjustments.get("correction_aggressiveness", 1.0)
+                        + adjustment
                     )
 
         # Apply adjustments to homeostasis controller if available
@@ -2042,9 +2132,13 @@ class SystemFeedback:
 
         # Log significant adjustments
         if source_adjustments:
-            logger.info(f"🎯 Applied adaptive adjustments for {source}: {source_adjustments}")
+            logger.info(
+                f"🎯 Applied adaptive adjustments for {source}: {source_adjustments}"
+            )
 
-    async def _apply_adaptive_adjustments(self, source: str, adjustments: Dict[str, float]):
+    async def _apply_adaptive_adjustments(
+        self, source: str, adjustments: Dict[str, float]
+    ):
         """Apply calculated adjustments to the homeostasis controller."""
         try:
             # Apply CPU sensitivity adjustments
@@ -2107,7 +2201,9 @@ class SystemFeedback:
                 await self.receive_system_feedback("os", os_feedback)
 
             self.last_feedback_collection = time.time()
-            logger.debug(f"📊 Collected feedback from {len(feedback_collection)} systems")
+            logger.debug(
+                f"📊 Collected feedback from {len(feedback_collection)} systems"
+            )
 
         except Exception as e:
             logger.error(f"Failed to collect system feedback: {e}")
@@ -2118,7 +2214,9 @@ class SystemFeedback:
         """Collect performance feedback from Lyrixa."""
         try:
             lyrixa_service = registry.get_service_info("lyrixa_basic")
-            if lyrixa_service and hasattr(lyrixa_service.instance, "get_performance_metrics"):
+            if lyrixa_service and hasattr(
+                lyrixa_service.instance, "get_performance_metrics"
+            ):
                 metrics = await lyrixa_service.instance.get_performance_metrics()
                 return {
                     "timestamp": datetime.now().isoformat(),
@@ -2147,6 +2245,7 @@ class SystemFeedback:
     async def _collect_os_feedback(self) -> Optional[Dict[str, Any]]:
         """Collect performance feedback from OS/system metrics."""
         try:
+            # Third party imports
             import psutil
 
             # Collect basic system metrics
@@ -2161,9 +2260,9 @@ class SystemFeedback:
                     "memory_usage": memory.percent,
                     "disk_usage": disk.percent,
                     "memory_available": memory.available,
-                    "load_average": psutil.getloadavg()[0]
-                    if hasattr(psutil, "getloadavg")
-                    else 0.0,
+                    "load_average": (
+                        psutil.getloadavg()[0] if hasattr(psutil, "getloadavg") else 0.0
+                    ),
                 },
                 "source_type": "operating_system",
             }
@@ -2177,7 +2276,9 @@ class SystemFeedback:
             "total_feedback_entries": len(self.feedback_history),
             "last_collection": self.last_feedback_collection,
             "active_adjustments": self.threshold_adjustments.copy(),
-            "recent_feedback": self.feedback_history[-10:] if self.feedback_history else [],
+            "recent_feedback": (
+                self.feedback_history[-10:] if self.feedback_history else []
+            ),
             "adaptation_weights": self.adaptation_weights.copy(),
         }
 
@@ -2228,10 +2329,14 @@ class ContinuousValidator:
             current_metrics = await self._collect_validation_metrics()
 
             # Calculate effectiveness scores
-            effectiveness_scores = await self._calculate_effectiveness_scores(current_metrics)
+            effectiveness_scores = await self._calculate_effectiveness_scores(
+                current_metrics
+            )
 
             # Determine if homeostasis is helping or hurting
-            overall_effectiveness = self._compute_overall_effectiveness(effectiveness_scores)
+            overall_effectiveness = self._compute_overall_effectiveness(
+                effectiveness_scores
+            )
 
             # Generate validation report
             validation_report = {
@@ -2259,7 +2364,9 @@ class ContinuousValidator:
 
             self.last_validation = time.time()
 
-            logger.info(f"🔍 Validation complete: {overall_effectiveness:.2f} effectiveness")
+            logger.info(
+                f"🔍 Validation complete: {overall_effectiveness:.2f} effectiveness"
+            )
             return validation_report
 
         except Exception as e:
@@ -2275,7 +2382,9 @@ class ContinuousValidator:
             if self.orchestrator.supervisor:
                 health = self.orchestrator.supervisor.get_system_health()
                 metrics["system_health"] = health
-                metrics["runlevel"] = str(self.orchestrator.supervisor.get_runlevel().value)
+                metrics["runlevel"] = str(
+                    self.orchestrator.supervisor.get_runlevel().value
+                )
 
             # Stability metrics
             if self.orchestrator.metrics:
@@ -2290,19 +2399,22 @@ class ContinuousValidator:
 
             # Feedback system metrics
             if self.orchestrator.feedback_system:
-                feedback_summary = self.orchestrator.feedback_system.get_feedback_summary()
+                feedback_summary = (
+                    self.orchestrator.feedback_system.get_feedback_summary()
+                )
                 metrics["feedback_summary"] = feedback_summary
 
             # OS-level metrics for baseline comparison
             try:
+                # Third party imports
                 import psutil
 
                 metrics["os_metrics"] = {
                     "cpu_percent": psutil.cpu_percent(interval=1),
                     "memory_percent": psutil.virtual_memory().percent,
-                    "load_average": psutil.getloadavg()[0]
-                    if hasattr(psutil, "getloadavg")
-                    else 0.0,
+                    "load_average": (
+                        psutil.getloadavg()[0] if hasattr(psutil, "getloadavg") else 0.0
+                    ),
                 }
             except Exception:
                 metrics["os_metrics"] = {}
@@ -2321,7 +2433,9 @@ class ContinuousValidator:
 
         try:
             # Stability improvement score
-            scores["stability_improvement"] = self._calculate_stability_improvement(current_metrics)
+            scores["stability_improvement"] = self._calculate_stability_improvement(
+                current_metrics
+            )
 
             # Response time improvement score
             scores["response_time_improvement"] = self._calculate_response_improvement(
@@ -2332,25 +2446,27 @@ class ContinuousValidator:
             scores["error_reduction"] = self._calculate_error_reduction(current_metrics)
 
             # Resource efficiency score
-            scores["resource_efficiency"] = self._calculate_resource_efficiency(current_metrics)
+            scores["resource_efficiency"] = self._calculate_resource_efficiency(
+                current_metrics
+            )
 
             # Adaptation effectiveness score (how well feedback adaptations are working)
-            scores["adaptation_effectiveness"] = self._calculate_adaptation_effectiveness(
-                current_metrics
+            scores["adaptation_effectiveness"] = (
+                self._calculate_adaptation_effectiveness(current_metrics)
             )
 
         except Exception as e:
             logger.error(f"Failed to calculate effectiveness scores: {e}")
-            scores = {
-                key: 0.0
-                for key in [
+            scores = dict.fromkeys(
+                [
                     "stability_improvement",
                     "response_time_improvement",
                     "error_reduction",
                     "resource_efficiency",
                     "adaptation_effectiveness",
-                ]
-            }
+                ],
+                0.0,
+            )
 
         return scores
 
@@ -2395,7 +2511,9 @@ class ContinuousValidator:
 
             if len(response_times) >= 2:
                 # If response times are decreasing, score higher
-                trend = (response_times[0] - response_times[-1]) / max(response_times[0], 0.1)
+                trend = (response_times[0] - response_times[-1]) / max(
+                    response_times[0], 0.1
+                )
                 return min(1.0, max(0.0, 0.5 + float(trend)))
 
             return 0.5
@@ -2463,9 +2581,8 @@ class ContinuousValidator:
                 # But too many might indicate instability
                 if systems_with_adjustments <= 3:
                     return min(1.0, 0.3 + (systems_with_adjustments * 0.2))
-                else:
-                    # Too many adjustments might indicate problems
-                    return max(0.3, 1.0 - ((systems_with_adjustments - 3) * 0.1))
+                # Too many adjustments might indicate problems
+                return max(0.3, 1.0 - ((systems_with_adjustments - 3) * 0.1))
 
             return 0.5  # Neutral if no adjustments
 
@@ -2496,7 +2613,9 @@ class ContinuousValidator:
 
         return weighted_sum / total_weight if total_weight > 0 else 0.0
 
-    def _generate_recommendations(self, effectiveness_scores: Dict[str, float]) -> List[str]:
+    def _generate_recommendations(
+        self, effectiveness_scores: Dict[str, float]
+    ) -> List[str]:
         """Generate recommendations based on effectiveness scores."""
         recommendations = []
 
@@ -2515,12 +2634,18 @@ class ContinuousValidator:
                         "Increase error detection sensitivity and correction aggressiveness"
                     )
                 elif score_name == "resource_efficiency":
-                    recommendations.append("Optimize resource monitoring and allocation algorithms")
+                    recommendations.append(
+                        "Optimize resource monitoring and allocation algorithms"
+                    )
                 elif score_name == "adaptation_effectiveness":
-                    recommendations.append("Fine-tune feedback adaptation weights and thresholds")
+                    recommendations.append(
+                        "Fine-tune feedback adaptation weights and thresholds"
+                    )
 
         if not recommendations:
-            recommendations.append("Homeostasis effectiveness is good - continue current operation")
+            recommendations.append(
+                "Homeostasis effectiveness is good - continue current operation"
+            )
 
         return recommendations
 
@@ -2532,14 +2657,16 @@ class ContinuousValidator:
 
                 # Keep only last N measurements for baseline
                 if len(self.effectiveness_metrics[metric_name]) > self.baseline_window:
-                    self.effectiveness_metrics[metric_name] = self.effectiveness_metrics[
-                        metric_name
-                    ][-self.baseline_window :]
+                    self.effectiveness_metrics[metric_name] = (
+                        self.effectiveness_metrics[metric_name][-self.baseline_window :]
+                    )
 
     async def _trigger_self_tuning(self, validation_report: Dict[str, Any]):
         """Trigger self-tuning based on validation results (Phase 5 core feature)."""
         try:
-            logger.info("🎯 Triggering homeostasis self-tuning based on validation results")
+            logger.info(
+                "🎯 Triggering homeostasis self-tuning based on validation results"
+            )
 
             effectiveness_scores = validation_report.get("effectiveness_scores", {})
             recommendations = validation_report.get("recommendations", [])
@@ -2549,7 +2676,9 @@ class ContinuousValidator:
                 if score_value < self.min_effectiveness_score:
                     await self._apply_specific_tuning(score_name, score_value)
 
-            logger.info(f"🔧 Self-tuning completed: {len(recommendations)} adjustments made")
+            logger.info(
+                f"🔧 Self-tuning completed: {len(recommendations)} adjustments made"
+            )
 
         except Exception as e:
             logger.error(f"Failed to trigger self-tuning: {e}")
@@ -2563,39 +2692,59 @@ class ContinuousValidator:
 
             if score_type == "stability_improvement" and self.orchestrator.controller:
                 # Increase controller sensitivity
-                logger.info(f"🎛️ Increasing controller sensitivity by {adjustment_factor:.2f}")
+                logger.info(
+                    f"🎛️ Increasing controller sensitivity by {adjustment_factor:.2f}"
+                )
 
-            elif score_type == "response_time_improvement" and self.orchestrator.feedback_system:
+            elif (
+                score_type == "response_time_improvement"
+                and self.orchestrator.feedback_system
+            ):
                 # Adjust response time weight in feedback system
-                current_weight = self.orchestrator.feedback_system.adaptation_weights.get(
-                    "response_time", 0.2
+                current_weight = (
+                    self.orchestrator.feedback_system.adaptation_weights.get(
+                        "response_time", 0.2
+                    )
                 )
                 new_weight = min(0.5, current_weight + adjustment_factor)
-                self.orchestrator.feedback_system.adaptation_weights["response_time"] = new_weight
+                self.orchestrator.feedback_system.adaptation_weights[
+                    "response_time"
+                ] = new_weight
                 logger.info(f"📊 Adjusted response_time weight to {new_weight:.2f}")
 
             elif score_type == "error_reduction" and self.orchestrator.feedback_system:
                 # Increase error rate sensitivity
-                current_weight = self.orchestrator.feedback_system.adaptation_weights.get(
-                    "error_rate", 0.2
+                current_weight = (
+                    self.orchestrator.feedback_system.adaptation_weights.get(
+                        "error_rate", 0.2
+                    )
                 )
                 new_weight = min(0.4, current_weight + adjustment_factor)
-                self.orchestrator.feedback_system.adaptation_weights["error_rate"] = new_weight
+                self.orchestrator.feedback_system.adaptation_weights["error_rate"] = (
+                    new_weight
+                )
                 logger.info(f"🚨 Adjusted error_rate weight to {new_weight:.2f}")
 
-            elif score_type == "resource_efficiency" and self.orchestrator.feedback_system:
+            elif (
+                score_type == "resource_efficiency"
+                and self.orchestrator.feedback_system
+            ):
                 # Adjust CPU and memory monitoring weights
                 cpu_weight = self.orchestrator.feedback_system.adaptation_weights.get(
                     "cpu_usage", 0.3
                 )
-                memory_weight = self.orchestrator.feedback_system.adaptation_weights.get(
-                    "memory_usage", 0.3
+                memory_weight = (
+                    self.orchestrator.feedback_system.adaptation_weights.get(
+                        "memory_usage", 0.3
+                    )
                 )
 
                 new_cpu_weight = min(0.5, cpu_weight + adjustment_factor)
                 new_memory_weight = min(0.5, memory_weight + adjustment_factor)
 
-                self.orchestrator.feedback_system.adaptation_weights["cpu_usage"] = new_cpu_weight
+                self.orchestrator.feedback_system.adaptation_weights["cpu_usage"] = (
+                    new_cpu_weight
+                )
                 self.orchestrator.feedback_system.adaptation_weights["memory_usage"] = (
                     new_memory_weight
                 )
@@ -2619,7 +2768,9 @@ class ContinuousValidator:
                 }
                 for name, values in self.effectiveness_metrics.items()
             },
-            "recent_validations": self.validation_history[-5:] if self.validation_history else [],
+            "recent_validations": (
+                self.validation_history[-5:] if self.validation_history else []
+            ),
             "validation_interval": self.validation_interval,
             "min_effectiveness_threshold": self.min_effectiveness_score,
         }
@@ -2629,15 +2780,18 @@ class ContinuousValidator:
         if len(values) < 2:
             return "insufficient_data"
 
-        recent_avg = sum(values[-3:]) / len(values[-3:]) if len(values) >= 3 else values[-1]
-        older_avg = sum(values[:-3]) / len(values[:-3]) if len(values) > 3 else values[0]
+        recent_avg = (
+            sum(values[-3:]) / len(values[-3:]) if len(values) >= 3 else values[-1]
+        )
+        older_avg = (
+            sum(values[:-3]) / len(values[:-3]) if len(values) > 3 else values[0]
+        )
 
         if recent_avg > older_avg + 0.05:
             return "improving"
-        elif recent_avg < older_avg - 0.05:
+        if recent_avg < older_avg - 0.05:
             return "declining"
-        else:
-            return "stable"
+        return "stable"
 
 
 # Phase 6: Live Observability Implementation
@@ -2706,7 +2860,9 @@ class LiveObservability:
 
                 # Trim history if too large
                 if len(self.live_metrics_history) > self.max_history_size:
-                    self.live_metrics_history = self.live_metrics_history[-self.max_history_size :]
+                    self.live_metrics_history = self.live_metrics_history[
+                        -self.max_history_size :
+                    ]
 
                 # Check for alerts
                 alerts = self._check_alerts(metrics)
@@ -2761,10 +2917,16 @@ class LiveObservability:
 
                 # Phase 4: Feedback status
                 if self.orchestrator.feedback_system:
-                    feedback_summary = self.orchestrator.feedback_system.get_feedback_summary()
+                    feedback_summary = (
+                        self.orchestrator.feedback_system.get_feedback_summary()
+                    )
                     metrics["feedback"] = {
-                        "total_entries": feedback_summary.get("total_feedback_entries", 0),
-                        "active_adjustments": len(feedback_summary.get("active_adjustments", {})),
+                        "total_entries": feedback_summary.get(
+                            "total_feedback_entries", 0
+                        ),
+                        "active_adjustments": len(
+                            feedback_summary.get("active_adjustments", {})
+                        ),
                         "systems_with_adjustments": list(
                             feedback_summary.get("active_adjustments", {}).keys()
                         ),
@@ -2772,9 +2934,13 @@ class LiveObservability:
 
                 # Phase 5: Validation status
                 if self.orchestrator.validator:
-                    validation_summary = self.orchestrator.validator.get_validation_summary()
+                    validation_summary = (
+                        self.orchestrator.validator.get_validation_summary()
+                    )
                     metrics["validation"] = {
-                        "total_validations": validation_summary.get("total_validations", 0),
+                        "total_validations": validation_summary.get(
+                            "total_validations", 0
+                        ),
                         "last_validation": validation_summary.get("last_validation", 0),
                         "effectiveness_metrics": validation_summary.get(
                             "effectiveness_metrics", {}
@@ -2792,15 +2958,16 @@ class LiveObservability:
 
             # OS metrics
             try:
+                # Third party imports
                 import psutil
 
                 metrics["os"] = {
                     "cpu_percent": psutil.cpu_percent(interval=0.1),
                     "memory_percent": psutil.virtual_memory().percent,
                     "disk_percent": psutil.disk_usage("/").percent,
-                    "load_average": psutil.getloadavg()[0]
-                    if hasattr(psutil, "getloadavg")
-                    else 0.0,
+                    "load_average": (
+                        psutil.getloadavg()[0] if hasattr(psutil, "getloadavg") else 0.0
+                    ),
                     "process_count": len(psutil.pids()),
                 }
             except Exception:
@@ -2879,7 +3046,9 @@ class LiveObservability:
 
             # Component failure alerts
             components = metrics.get("components", {})
-            inactive_components = [name for name, active in components.items() if not active]
+            inactive_components = [
+                name for name, active in components.items() if not active
+            ]
             if inactive_components:
                 alerts.append(
                     {
@@ -2924,7 +3093,9 @@ class LiveObservability:
         dashboard.append("=" * 80)
         dashboard.append(f"Last Updated: {latest_metrics.get('timestamp', 'Unknown')}")
         dashboard.append(f"Uptime: {latest_metrics.get('uptime', 0):.1f}s")
-        dashboard.append(f"Monitoring: {'🔴 LIVE' if self.monitoring_active else '⚫ STOPPED'}")
+        dashboard.append(
+            f"Monitoring: {'🔴 LIVE' if self.monitoring_active else '⚫ STOPPED'}"
+        )
         dashboard.append("")
 
         # System Overview
@@ -2965,8 +3136,12 @@ class LiveObservability:
         if feedback:
             dashboard.append("🔄 CROSS-SYSTEM FEEDBACK")
             dashboard.append("-" * 40)
-            dashboard.append(f"Total Feedback Entries: {feedback.get('total_entries', 0)}")
-            dashboard.append(f"Active Adjustments: {feedback.get('active_adjustments', 0)}")
+            dashboard.append(
+                f"Total Feedback Entries: {feedback.get('total_entries', 0)}"
+            )
+            dashboard.append(
+                f"Active Adjustments: {feedback.get('active_adjustments', 0)}"
+            )
             dashboard.append(
                 f"Systems with Adjustments: {', '.join(feedback.get('systems_with_adjustments', []))}"
             )
@@ -2977,7 +3152,9 @@ class LiveObservability:
         if validation:
             dashboard.append("🔍 CONTINUOUS VALIDATION")
             dashboard.append("-" * 40)
-            dashboard.append(f"Total Validations: {validation.get('total_validations', 0)}")
+            dashboard.append(
+                f"Total Validations: {validation.get('total_validations', 0)}"
+            )
 
             effectiveness = validation.get("effectiveness_metrics", {})
             for metric_name, metric_data in effectiveness.items():
@@ -2995,7 +3172,9 @@ class LiveObservability:
             dashboard.append("❤️ SYSTEM HEALTH")
             dashboard.append("-" * 40)
             dashboard.append(f"Runlevel: {system_health.get('runlevel', 'UNKNOWN')}")
-            dashboard.append(f"Health Score: {system_health.get('health_score', 0.0):.2f}")
+            dashboard.append(
+                f"Health Score: {system_health.get('health_score', 0.0):.2f}"
+            )
             dashboard.append("")
 
         # OS Metrics
@@ -3004,7 +3183,9 @@ class LiveObservability:
             dashboard.append("💻 SYSTEM RESOURCES")
             dashboard.append("-" * 40)
             dashboard.append(f"CPU Usage: {os_metrics.get('cpu_percent', 0.0):.1f}%")
-            dashboard.append(f"Memory Usage: {os_metrics.get('memory_percent', 0.0):.1f}%")
+            dashboard.append(
+                f"Memory Usage: {os_metrics.get('memory_percent', 0.0):.1f}%"
+            )
             dashboard.append(f"Disk Usage: {os_metrics.get('disk_percent', 0.0):.1f}%")
             dashboard.append(f"Load Average: {os_metrics.get('load_average', 0.0):.2f}")
             dashboard.append(f"Process Count: {os_metrics.get('process_count', 0)}")
@@ -3053,7 +3234,9 @@ class LiveObservability:
             "summary": self._calculate_metrics_summary(recent_metrics),
         }
 
-    def _calculate_metrics_summary(self, metrics_list: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def _calculate_metrics_summary(
+        self, metrics_list: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """Calculate summary statistics from metrics list."""
         if not metrics_list:
             return {}
@@ -3090,10 +3273,12 @@ class LiveObservability:
 
     def export_metrics(self, filepath: Optional[str] = None) -> str:
         """Export collected metrics to JSON file."""
+        # Standard library imports
         import json
 
         export_path = (
-            filepath or f"homeostasis_metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            filepath
+            or f"homeostasis_metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         )
 
         try:
@@ -3134,6 +3319,7 @@ async def stop_homeostasis_system():
 
 if __name__ == "__main__":
     # Test the homeostasis integration
+    # Standard library imports
     import asyncio
 
     async def test_homeostasis():

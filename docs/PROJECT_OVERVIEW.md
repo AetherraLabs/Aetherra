@@ -1,8 +1,10 @@
 # Aetherra Project Overview
 
-This document provides a comprehensive overview of the Aetherra AI Operating System: core subsystems, services, modules, configuration, and how to validate end-to-end.
+This document provides a comprehensive overview of the Aetherra AI Operating System: core subsystems, services, modules, configuration,
+and how to validate end-to-end.
 
-For details on documentation parity enforcement (environment variables, endpoints, metrics) see: [Docs Consistency Verification](DOCS_CONSISTENCY.md).
+For details on documentation parity enforcement (environment variables, endpoints, metrics) see: [Docs Consistency
+Verification](DOCS_CONSISTENCY.md).
 
 ## Scope and Structure
 
@@ -27,7 +29,8 @@ Generated at: 2025-09-11 (manual refresh of key deltas)
 
 ### Deprecation Notice (Active)
 
-The monolithic legacy hub launcher script `aetherra_hub_server.py` is deprecated and retained only as a thin shim issuing a `DeprecationWarning`. Invoke the Hub via:
+The monolithic legacy hub launcher script `aetherra_hub_server.py` is deprecated and retained only as a thin shim issuing a
+`DeprecationWarning`. Invoke the Hub via:
 
 ```bash
 python -m aetherra_hub.compat
@@ -37,17 +40,23 @@ Enforcement layers prevent new imports of the legacy script (quality gate + pre-
 
 ### Repository Analysis Summary
 
-This repository contains the Aetherra AI Operating System and Lyrixa assistant. It comprises ~1128 Python modules, with ~142 in the core OS and ~81 in Lyrixa.
+This repository contains the Aetherra AI Operating System and Lyrixa assistant. It comprises ~1128 Python modules, with ~142 in the core
+OS and ~81 in Lyrixa.
 
-Core (Aetherra/aetherra_core) includes engine, kernel, memory, plugins, config. The primary memory engine (AetherraMemoryEngine) wraps the QuantumEnhancedMemoryEngine, providing compatibility while delegating persistence and recall to the canonical engine.
+Core (Aetherra/aetherra_core) includes engine, kernel, memory, plugins, config. The primary memory engine (AetherraMemoryEngine) wraps the
+QuantumEnhancedMemoryEngine, providing compatibility while delegating persistence and recall to the canonical engine.
 
-Lyrixa (assistant) spans intelligence, gui, plugins, memory, launcher and integrates with the OS through the registry and Hub. The chat service is workspace-aware and can suggest/apply safe fixes with deterministic fallbacks when offline.
+Lyrixa (assistant) spans intelligence, gui, plugins, memory, launcher and integrates with the OS through the registry and Hub. The chat
+service is workspace-aware and can suggest/apply safe fixes with deterministic fallbacks when offline.
 
-Hub & Federation includes the Flask compatibility entry, blueprint API layer, service adapters, and federation support. When Flask is present, the local Hub exposes health, stats, plugin registry, federation sync, and a Lyrixa chat bridge.
+Hub & Federation includes the Flask compatibility entry, blueprint API layer, service adapters, and federation support. When Flask is
+present, the local Hub exposes health, stats, plugin registry, federation sync, and a Lyrixa chat bridge.
 
-QFAC (Quantum Fractal Adaptive Compression) is present (integration, dashboard, analyzer). It is an optional extension that can be enabled via environment flags and verified via capability tests.
+QFAC (Quantum Fractal Adaptive Compression) is present (integration, dashboard, analyzer). It is an optional extension that can be enabled
+via environment flags and verified via capability tests.
 
-Metrics determinism update: Kernel and Orchestrator latency histograms now export zero-value buckets on first scrape to stabilize CI tests (`test_metrics_histograms_end_to_end`).
+Metrics determinism update: Kernel and Orchestrator latency histograms now export zero-value buckets on first scrape to stabilize CI tests
+(`test_metrics_histograms_end_to_end`).
 
 Endpoints summary (Hub Flask server):
 
@@ -64,9 +73,11 @@ Endpoints summary (Hub Flask server):
 - /api/trainer/status
 - /api/trainer/evals
 - /api/trainer/evals/<eval_id>
-Tests provide end-to-end validation (capabilities: 8) and unit coverage (unit: 18), including OS boot, registry collaboration, hub endpoints/federation, memory recall, QFAC-in-OS, and self-maintenance wiring.
+Tests provide end-to-end validation (capabilities: 8) and unit coverage (unit: 18), including OS boot, registry collaboration, hub
+endpoints/federation, memory recall, QFAC-in-OS, and self-maintenance wiring.
 
-Additional parity test added: `tests/integration/test_hub_compat_parity.py` (ensures deprecated shim emits warning & surface parity until removal).
+Additional parity test added: `tests/integration/test_hub_compat_parity.py` (ensures deprecated shim emits warning & surface parity until
+removal).
 
 - AETHERRA_PROFILE
 - AETHERRA_DETERMINISTIC
@@ -85,6 +96,8 @@ Additional parity test added: `tests/integration/test_hub_compat_parity.py` (ens
 - AETHERRA_FEDERATION_INTERVAL_SEC
 - AETHERRA_GUI_ENABLED
 - AETHERRA_HUB_ENABLED
+- AETHERRA_HOMEOSTASIS_OBSERVE_ONLY — `1`, `true`, `yes`, or `on` enforces observation-only Homeostasis.
+- AETHERRA_HOMEOSTASIS_MODE — `observe_only` also enforces observation; it wins over conflicting active settings.
 - AETHERRA_IMPORT_UPDATE_REPORT
 - AETHERRA_INTELLIGENCE_PROVIDER
 - AETHERRA_LOG_LEVEL
@@ -240,10 +253,13 @@ Set (minimum):
 - `AETHERRA_PROFILE=prod`
 - `AETHERRA_AI_API_ENABLED=1` only if AI developer endpoints required; otherwise leave unset
 - `AETHERRA_AI_API_REQUIRE_TOKEN=1` and set `AETHERRA_AI_API_TOKEN` to strong random value (32+ chars)
-- `AETHERRA_NET_STRICT=1` (or rely on auto-enable) and define `AETHERRA_NETWORK_ALLOWLIST` minimally (e.g. `localhost,127.0.0.1,.aetherra.dev`)
-- `AETHERRA_HMR_STRICT=1` with explicit `AETHERRA_HMR_ALLOWED_SOURCES` (comma list of vetted paths/repos); omit entirely to disable HMR in prod
+- `AETHERRA_NET_STRICT=1` (or rely on auto-enable) and define `AETHERRA_NETWORK_ALLOWLIST` minimally (e.g.
+  `localhost,127.0.0.1,.aetherra.dev`)
+- `AETHERRA_HMR_STRICT=1` with explicit `AETHERRA_HMR_ALLOWED_SOURCES` (comma list of vetted paths/repos); omit entirely to disable HMR in
+  prod
 - `AETHERRA_SCRIPT_VERIFY_STRICT=1` and `AETHERRA_SIGNING_STRICT=1` to enforce script + plugin signature verification
-- Kernel queue sizes explicitly sized if high throughput expected: `AETHERRA_KERNEL_QSIZE_HIGH`, `AETHERRA_KERNEL_QSIZE_NORMAL`, `AETHERRA_KERNEL_QSIZE_BACKGROUND` (avoid relying solely on defaults for capacity planning)
+- Kernel queue sizes explicitly sized if high throughput expected: `AETHERRA_KERNEL_QSIZE_HIGH`, `AETHERRA_KERNEL_QSIZE_NORMAL`,
+  `AETHERRA_KERNEL_QSIZE_BACKGROUND` (avoid relying solely on defaults for capacity planning)
 
 Avoid / Monitor:
 
@@ -256,7 +272,8 @@ Audit Procedure (CI or runtime):
 2. Query for unexpected increments:
    - `increase(aetherra_chat_auth_invalid_token_total[5m]) > 0` — possible probing.
    - `increase(aetherra_hmr_denied_total[10m]) > 0` — repeated HMR misconfig attempts.
-3. Periodically verify exported `aetherra_kernel_plugin_invoke_timeout_sec` within accepted SLO window (e.g. <= 60s) — alerts on drift above 60.
+3. Periodically verify exported `aetherra_kernel_plugin_invoke_timeout_sec` within accepted SLO window (e.g. <= 60s) — alerts on drift
+above 60.
 4. Check for unsafe override gauges:
 
 - `aetherra_unsafe_override_present == 1` — at least one override set (critical)
@@ -307,10 +324,13 @@ groups:
           severity: critical
         annotations:
           summary: "Unsafe production override detected"
-          description: "One or more unsafe overrides enabled. Inspect aetherra_unsafe_override_info{override=...} and remove environment vars (AETHERRA_PROD_UNSAFE_ALLOW / AETHERRA_ALLOW_UNBOUNDED)."
+          description: >-
+            One or more unsafe overrides enabled. Inspect aetherra_unsafe_override_info{override=...} and remove environment vars
+            (AETHERRA_PROD_UNSAFE_ALLOW / AETHERRA_ALLOW_UNBOUNDED).
 ```
 
-Note: Unsafe override gauges are emitted only when at least one of the overrides is present; in normal production they will be absent or `aetherra_unsafe_override_present` = 0.
+Note: Unsafe override gauges are emitted only when at least one of the overrides is present; in normal production they will be absent or
+`aetherra_unsafe_override_present` = 0.
 Note: Optional Agents endpoints (disabled by default)
 
 - /api/agents
@@ -328,7 +348,8 @@ In production (`AETHERRA_PROFILE=prod`):
 - HMR only enables if `AETHERRA_HMR_STRICT=1` and `AETHERRA_HMR_ALLOWED_SOURCES` is non-empty.
 - When unset, audit rotation uses safe defaults: `AETHERRA_HMR_AUDIT_MAX_BYTES=5242880` and `AETHERRA_HMR_AUDIT_MAX_BACKUPS=3`.
 - The Hub exposes HMR configuration on:
-  - Prometheus `/metrics` as `aetherra_hmr_enabled`, `aetherra_hmr_strict`, `aetherra_hmr_allowed_sources_count`, `aetherra_hmr_audit_max_bytes`, and `aetherra_hmr_audit_max_backups`.
+  - Prometheus `/metrics` as `aetherra_hmr_enabled`, `aetherra_hmr_strict`, `aetherra_hmr_allowed_sources_count`,
+`aetherra_hmr_audit_max_bytes`, and `aetherra_hmr_audit_max_backups`.
   - JSON `/api/kernel/metrics` under the `hmr` key.
 
 #### Services
@@ -358,7 +379,8 @@ The following environment variables control quantum features, recall A/B experim
 
 ### Environment Variables — Observer-Aware Policy (Q4)
 
-These flags control the orchestrator’s observer-aware safety gates, coherence thresholds, and drift alerts exposed via the Hub metrics exporter (if enabled).
+These flags control the orchestrator’s observer-aware safety gates, coherence thresholds, and drift alerts exposed via the Hub metrics
+exporter (if enabled).
 
 - `AETHERRA_OBSERVER_AWARE_ENABLED` — 1/0 to enable policy gating (default: 1)
 - `AETHERRA_COHERENCE_GATE_MIN` — soft gate min coherence score (default: 0.65)
@@ -379,7 +401,8 @@ These flags control the orchestrator’s observer-aware safety gates, coherence 
 
 ### Q4: Observer-aware policy and coherence telemetry
 
-The orchestrator enforces observer-aware gating based on task sensitivity and engine-estimated coherence, and exports gauges and counters via the Hub metrics exporter (if enabled).
+The orchestrator enforces observer-aware gating based on task sensitivity and engine-estimated coherence, and exports gauges and counters
+via the Hub metrics exporter (if enabled).
 
 Environment flags:
 
@@ -500,7 +523,8 @@ Core toggles and networking:
 - `AETHERRA_HUB_STRICT`
 - `AETHERRA_HUB_WS_PORT`
 - `AETHERRA_NET_STRICT`
-- `AETHERRA_POLICY_HOME` — Override directory for security policy files (capabilities.json, net_policy.json); default: `~/.aetherra/policy`. Useful for CI/tests or sharing policy across instances.
+- `AETHERRA_POLICY_HOME` — Override directory for security policy files (capabilities.json, net_policy.json); default:
+  `~/.aetherra/policy`. Useful for CI/tests or sharing policy across instances.
 - `AETHERRA_PEERS`
 - `AETHERRA_QFAC_IN_OS`
 - `AETHERRA_QFAC_MODE`
@@ -511,7 +535,8 @@ Core toggles and networking:
 - `AETHERRA_SIGN_PLUGINS`
 - `AETHERRA_STATE_DIR`
 - `AETHERRA_STRICT`
-- `AETHERRA_STRICT_SPDX` — Set to `1` to enable strict SPDX header verification (scans tests/frontend and optional dirs). Default lenient mode when unset.
+- `AETHERRA_STRICT_SPDX` — Set to `1` to enable strict SPDX header verification (scans tests/frontend and optional dirs). Default lenient
+  mode when unset.
 - `AETHERRA_TELEMETRY`
 - `AETHERRA_TEMPLATE_DIR`
 - `AETHERRA_WEB_PORT`
@@ -697,10 +722,12 @@ and workspace scheduling.
 
 Operational Guidance:
 
-Families for experiments (A/B recall) and qhash hashing helpers should remain unset in production unless an active experiment is rolling out.
+Families for experiments (A/B recall) and qhash hashing helpers should remain unset in production unless an active experiment is rolling
+out.
 
 - Quantum provider flags should be paired with explicit budgeting (`AETHERRA_QUANTUM_BUDGET_USD`) to prevent runaway costs.
-- Disabling backpressure (`AETHERRA_BACKPRESSURE_GUARD_DISABLE=1`) can cause unbounded memory growth under burst load—only for controlled benchmarking.
+- Disabling backpressure (`AETHERRA_BACKPRESSURE_GUARD_DISABLE=1`) can cause unbounded memory growth under burst load—only for controlled
+  benchmarking.
 - Narrative / episodic retention tuning should align with storage and privacy budgets; shorten windows for high-velocity event streams.
 - Workspace scheduling intervals below 100ms may increase CPU overhead without tangible latency benefit.
 

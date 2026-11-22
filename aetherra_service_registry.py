@@ -140,6 +140,7 @@ class AetherraServiceRegistry:
             "registry:subscribe",
         }:
             return True
+        # Aetherra imports
         from Aetherra.security.capabilities import has_capability
 
         return has_capability(requester, capability)
@@ -156,6 +157,7 @@ class AetherraServiceRegistry:
         rollback_plan: str,
         metadata: dict[str, Any],
     ) -> None:
+        # Aetherra imports
         from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
 
         decision = evaluate_intent(
@@ -299,7 +301,9 @@ class AetherraServiceRegistry:
                     "service_name": cname,
                     "already_registered": cname in self._services,
                     "metadata_keys": tuple(sorted(str(key) for key in md)),
-                    "dependency_names": tuple(sorted(str(dep) for dep in dependencies or [])),
+                    "dependency_names": tuple(
+                        sorted(str(dep) for dep in dependencies or [])
+                    ),
                     "instance_type": self._service_instance_type(instance),
                 },
             )
@@ -385,8 +389,12 @@ class AetherraServiceRegistry:
                 metadata={
                     "service_name": cname,
                     "status": service_info.status.value,
-                    "metadata_keys": tuple(sorted(str(key) for key in service_info.metadata)),
-                    "dependency_names": tuple(sorted(str(dep) for dep in service_info.dependencies)),
+                    "metadata_keys": tuple(
+                        sorted(str(key) for key in service_info.metadata)
+                    ),
+                    "dependency_names": tuple(
+                        sorted(str(dep) for dep in service_info.dependencies)
+                    ),
                     "instance_type": self._service_instance_type(service_info.instance),
                 },
             )
@@ -528,7 +536,8 @@ class AetherraServiceRegistry:
 
         service_info = self._services[cname]
         self._guardian_preflight(
-            requester=str(requester or "service_registry").strip() or "service_registry",
+            requester=str(requester or "service_registry").strip()
+            or "service_registry",
             action="service_registry.heartbeat_update",
             service_name=cname,
             purpose=f"Update heartbeat for service {cname}",
@@ -559,7 +568,8 @@ class AetherraServiceRegistry:
             return False
         try:
             self._guardian_preflight(
-                requester=str(requester or "service_registry").strip() or "service_registry",
+                requester=str(requester or "service_registry").strip()
+                or "service_registry",
                 action="service_registry.self_heartbeat_flag",
                 service_name=cname,
                 purpose=f"Update self-heartbeat flag for service {cname}",
@@ -665,7 +675,8 @@ class AetherraServiceRegistry:
         """
         exclude = exclude or []
         self._guardian_preflight(
-            requester=str(requester or "service_registry").strip() or "service_registry",
+            requester=str(requester or "service_registry").strip()
+            or "service_registry",
             action="service_registry.broadcast_message",
             service_name="*",
             purpose=f"Broadcast registry message {message_type}",
@@ -717,7 +728,8 @@ class AetherraServiceRegistry:
             handler: Event handler function
         """
         self._guardian_preflight(
-            requester=str(requester or "service_registry").strip() or "service_registry",
+            requester=str(requester or "service_registry").strip()
+            or "service_registry",
             action="service_registry.subscribe",
             service_name="event_bus",
             purpose=f"Subscribe handler to registry event {event_type}",
@@ -747,7 +759,8 @@ class AetherraServiceRegistry:
             handler: Event handler function to remove
         """
         self._guardian_preflight(
-            requester=str(requester or "service_registry").strip() or "service_registry",
+            requester=str(requester or "service_registry").strip()
+            or "service_registry",
             action="service_registry.unsubscribe",
             service_name="event_bus",
             purpose=f"Unsubscribe handler from registry event {event_type}",
@@ -789,9 +802,13 @@ class AetherraServiceRegistry:
 
                 for service_name, service_info in self._services.items():
                     # Check for stale heartbeats (no update in configured window)
-                    if (
+                    heartbeat_age = (
                         current_time - service_info.last_heartbeat
-                    ).total_seconds() > self._stale_sec and service_info.status == ServiceStatus.HEALTHY:
+                    ).total_seconds()
+                    if (
+                        heartbeat_age > self._stale_sec
+                        and service_info.status == ServiceStatus.HEALTHY
+                    ):
                         logger.warning(
                             f"[WARN] Service '{service_name}' heartbeat stale (> {self._stale_sec}s), marking as degraded"
                         )
@@ -870,6 +887,11 @@ class AetherraServiceRegistry:
 
 # Global service registry instance
 _service_registry: AetherraServiceRegistry | None = None
+
+
+def get_existing_service_registry() -> AetherraServiceRegistry | None:
+    """Return the existing registry without creating or starting any service."""
+    return _service_registry
 
 
 async def get_service_registry() -> AetherraServiceRegistry:
