@@ -572,8 +572,7 @@ class AuditLedger:
         conn = sqlite3.connect(self.db_path)
         try:
             # Create table if missing (latest schema)
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS audit_records (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     plan_id TEXT,
@@ -588,8 +587,7 @@ class AuditLedger:
                     prev_hash TEXT,
                     entry_hash TEXT
                 )
-                """
-            )
+                """)
             # Lightweight migration: ensure required columns exist on legacy DBs
             try:
                 cur = conn.execute("PRAGMA table_info(audit_records)")
@@ -685,6 +683,7 @@ class AuditLedger:
                 prev_hash_str,
             ]
         )
+        # Standard library imports
         import hashlib as _hl
 
         entry_hash = _hl.sha256(base.encode("utf-8")).hexdigest()
@@ -825,11 +824,32 @@ class AuditLedger:
             ]
         return []
 
-    def summary(self) -> dict[str, Any]:
+    def summary(
+        self,
+        *,
+        action_filter: str | None = None,
+        status_filter: str | None = None,
+        limit: int | None = None,
+    ) -> dict[str, int]:
+        """Count statuses for the newest matching records, or all if unbounded."""
         conn = sqlite3.connect(self.db_path)
         try:
             cur = conn.execute(
-                "SELECT COUNT(*), status FROM audit_records GROUP BY status"
+                """
+                SELECT COUNT(*), status FROM (
+                    SELECT status FROM audit_records
+                    WHERE (? IS NULL OR action = ?)
+                      AND (? IS NULL OR status = ?)
+                    ORDER BY id DESC LIMIT ?
+                ) GROUP BY status
+                """,
+                (
+                    action_filter,
+                    action_filter,
+                    status_filter,
+                    status_filter,
+                    limit if limit is not None else -1,
+                ),
             )
             return {row[1]: row[0] for row in cur.fetchall()}
         finally:
@@ -955,6 +975,7 @@ class AuditLedger:
         (or 'genesis' for the first row), and entry hashes recompute correctly.
         """
         conn = sqlite3.connect(self.db_path)
+        # Standard library imports
         import hashlib as _hl
 
         try:
@@ -1083,8 +1104,7 @@ class CodeIndex:
         """Initialize SQLite database schema."""
         conn = sqlite3.connect(self.db_path)
         try:
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS files (
                     id TEXT PRIMARY KEY,
                     path TEXT NOT NULL,
@@ -1097,26 +1117,19 @@ class CodeIndex:
                     discovered_at TEXT NOT NULL,
                     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
                 )
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_files_path ON files(path)
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_files_type ON files(type)
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_files_hash ON files(hash)
-            """
-            )
+            """)
 
             conn.commit()
         finally:
@@ -1357,11 +1370,11 @@ class HeuristicClassifier:
                     "classes": class_count,
                     "functions": function_count,
                     "lines": len(content.splitlines()),
-                    "complexity": "high"
-                    if (class_count + function_count) > 10
-                    else "medium"
-                    if (class_count + function_count) > 3
-                    else "low",
+                    "complexity": (
+                        "high"
+                        if (class_count + function_count) > 10
+                        else ("medium" if (class_count + function_count) > 3 else "low")
+                    ),
                 }
             )
 
@@ -1450,9 +1463,11 @@ class HeuristicClassifier:
                 metadata.update(
                     {
                         "keys": len(data.keys()) if isinstance(data, dict) else 0,
-                        "type": "config"
-                        if any(key in data for key in ["version", "name", "config"])
-                        else "data",
+                        "type": (
+                            "config"
+                            if any(key in data for key in ["version", "name", "config"])
+                            else "data"
+                        ),
                     }
                 )
 
@@ -1477,8 +1492,7 @@ class ClassificationIndex:
         """Initialize classification database schema."""
         conn = sqlite3.connect(self.db_path)
         try:
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS classifications (
                     file_id TEXT PRIMARY KEY,
                     type TEXT NOT NULL,
@@ -1489,20 +1503,15 @@ class ClassificationIndex:
                     confidence REAL DEFAULT 0.0,
                     classified_at TEXT DEFAULT CURRENT_TIMESTAMP
                 )
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_classifications_type ON classifications(type)
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_classifications_confidence ON classifications(confidence)
-            """
-            )
+            """)
 
             conn.commit()
         finally:
@@ -2042,8 +2051,7 @@ class SafetyIndex:
         """Initialize safety decisions database schema."""
         conn = sqlite3.connect(self.db_path)
         try:
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS safety_decisions (
                     file_id TEXT PRIMARY KEY,
                     verified INTEGER NOT NULL,
@@ -2055,20 +2063,15 @@ class SafetyIndex:
                     timestamp TEXT NOT NULL,
                     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
                 )
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_safety_trust_tier ON safety_decisions(trust_tier)
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_safety_verified ON safety_decisions(verified)
-            """
-            )
+            """)
 
             conn.commit()
         finally:
@@ -2158,12 +2161,10 @@ class DependencyAnalyzer:
 
     def __init__(self, config: SelfIncorporationConfig):
         self.config = config
-        self.dependency_graph: dict[
-            str, list[str]
-        ] = {}  # file_id -> list of dependency file_ids
-        self.reverse_deps: dict[
-            str, list[str]
-        ] = {}  # file_id -> list of files that depend on it
+        # file_id -> list of dependency file_ids
+        self.dependency_graph: dict[str, list[str]] = {}
+        # file_id -> list of files that depend on it
+        self.reverse_deps: dict[str, list[str]] = {}
 
     def analyze_dependencies(
         self,
@@ -2645,7 +2646,9 @@ class CoreIntegrator:
     def action_scope_hash(cls, actions: list[Any]) -> str:
         """Hash the exact action scope that may be executed."""
 
-        canonical_actions = [cls._action_to_canonical_dict(action) for action in actions]
+        canonical_actions = [
+            cls._action_to_canonical_dict(action) for action in actions
+        ]
         payload = json.dumps(
             canonical_actions,
             sort_keys=True,
@@ -2991,9 +2994,7 @@ class CoreIntegrator:
                     {
                         "status": "error",
                         "action": "plan_scope",
-                        "error": scope_validation.get(
-                            "reason", "plan_scope_mismatch"
-                        ),
+                        "error": scope_validation.get("reason", "plan_scope_mismatch"),
                     }
                 ],
             }
@@ -3031,9 +3032,7 @@ class CoreIntegrator:
                     if res.get("status") == "applied":
                         res["rollback_token"] = rollback_token
                         with contextlib.suppress(Exception):
-                            self.service.metrics["last_rollback_token"] = (
-                                rollback_token
-                            )
+                            self.service.metrics["last_rollback_token"] = rollback_token
                 else:
                     res = await self._dispatch_action(
                         action_type, target, deps, dry_run
@@ -3067,9 +3066,11 @@ class CoreIntegrator:
                     {
                         "status": "error",
                         "error": str(e)[:200],
-                        "action": getattr(act, "action", None)
-                        if hasattr(act, "action")
-                        else act.get("action"),
+                        "action": (
+                            getattr(act, "action", None)
+                            if hasattr(act, "action")
+                            else act.get("action")
+                        ),
                     }
                 )
 
@@ -3368,8 +3369,7 @@ class LearningEngine:
         """Initialize the insights database."""
         conn = sqlite3.connect(self.insights_db_path)
         try:
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS learning_insights (
                     insight_id TEXT PRIMARY KEY,
                     category TEXT NOT NULL,
@@ -3382,11 +3382,9 @@ class LearningEngine:
                     applied INTEGER DEFAULT 0,
                     validated INTEGER DEFAULT 0
                 )
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS night_cycle_history (
                     cycle_id TEXT PRIMARY KEY,
                     start_time TEXT NOT NULL,
@@ -3399,8 +3397,7 @@ class LearningEngine:
                     quality_score REAL DEFAULT 0.0,
                     insights_generated TEXT
                 )
-            """
-            )
+            """)
 
             conn.commit()
         finally:
@@ -3438,13 +3435,15 @@ class LearningEngine:
                     {
                         "type": "integration_success",
                         "files": [c.file_id for c in high_complexity_success],
-                        "avg_complexity": sum(
-                            getattr(c, "complexity_score", 0.0)
-                            for c in high_complexity_success
-                        )
-                        / len(high_complexity_success)
-                        if high_complexity_success
-                        else 0.0,
+                        "avg_complexity": (
+                            sum(
+                                getattr(c, "complexity_score", 0.0)
+                                for c in high_complexity_success
+                            )
+                            / len(high_complexity_success)
+                            if high_complexity_success
+                            else 0.0
+                        ),
                     }
                 ],
                 suggested_actions=[
@@ -3765,9 +3764,11 @@ class NightCycleProcessor:
                     "category": insight.category,
                     "confidence": insight.confidence,
                     "priority": insight.priority,
-                    "description": insight.description[:100] + "..."
-                    if len(insight.description) > 100
-                    else insight.description,
+                    "description": (
+                        insight.description[:100] + "..."
+                        if len(insight.description) > 100
+                        else insight.description
+                    ),
                 }
                 for insight in insights
             ],
@@ -3819,6 +3820,7 @@ class QuarantineManager:
         }:
             return True
 
+        # Aetherra imports
         from Aetherra.security.capabilities import has_capability
 
         return has_capability(requester, capability)
@@ -3835,6 +3837,7 @@ class QuarantineManager:
         requester: str,
         approval_id: str | None,
     ):
+        # Aetherra imports
         from Aetherra.guardian import IntentDeclaration, evaluate_intent
 
         return evaluate_intent(
@@ -3942,11 +3945,13 @@ class QuarantineManager:
             action="maintenance.quarantine_release",
             purpose="Release or reject a self-incorporation quarantine item",
             capabilities=(
-                "maintenance:quarantine",
-                "maintenance:deploy",
-            )
-            if approved
-            else ("maintenance:quarantine",),
+                (
+                    "maintenance:quarantine",
+                    "maintenance:deploy",
+                )
+                if approved
+                else ("maintenance:quarantine",)
+            ),
             metadata={
                 "approved": bool(approved),
                 "escalation_level": int(item.get("escalation_level") or 0),
@@ -4005,6 +4010,7 @@ class SelfIncorporationService:
         self._optimization_hints: dict[str, Any] = {}
 
         # Security Layer (Phase 2B) - lazy import to avoid circular dependencies
+        # Aetherra imports
         from Aetherra.homeostasis.self_incorporation_security import (  # noqa: E402
             SelfIncorporationSecurity,
         )
@@ -4015,6 +4021,7 @@ class SelfIncorporationService:
 
         # Guard Policies (Phase 2B)
         try:
+            # Aetherra imports
             from Aetherra.homeostasis.guard_policy_enforcer import (  # noqa: E402
                 GuardPolicyEnforcer,
             )
@@ -4188,6 +4195,7 @@ class SelfIncorporationService:
         Returns a result dict with fields:
         { "status": "accepted"|"rejected"|"error", "plan_id": str, "details": { ... } }
         """
+        # Standard library imports
         import uuid
         from datetime import datetime as _dt
 
@@ -4265,6 +4273,7 @@ class SelfIncorporationService:
             }
 
         # Increment executed proposals counter (attempt)
+        # Standard library imports
         from contextlib import suppress
 
         with suppress(Exception):
@@ -4345,6 +4354,7 @@ class SelfIncorporationService:
                     actions = params["integration_plan"].get("actions")
 
                 if actions:
+
                     async def _proposal_plan(include_experimental=False):
                         return {
                             "plan_id": plan_id,
@@ -4366,9 +4376,11 @@ class SelfIncorporationService:
 
                     if not exec_res.get("ok"):
                         action_status = "rejected"
-                        details["reason"] = exec_res.get("reason") or exec_res.get(
-                            "status"
-                        ) or "integration_rejected"
+                        details["reason"] = (
+                            exec_res.get("reason")
+                            or exec_res.get("status")
+                            or "integration_rejected"
+                        )
                     details["integration"] = {
                         "applied": exec_res.get("applied"),
                         "skipped": exec_res.get("skipped"),
@@ -4901,6 +4913,7 @@ class SelfIncorporationService:
 
         plan["approved_scope"] = self.core_integrator.plan_scope_lock(plan)
 
+        # Aetherra imports
         from Aetherra.guardian import GuardianStatus
 
         guardian_decision = self._guardian_preflight_integrate(
@@ -5104,6 +5117,7 @@ class SelfIncorporationService:
             "system:reload",
         }:
             return True
+        # Aetherra imports
         from Aetherra.security.capabilities import has_capability
 
         return has_capability(requester, capability)
@@ -5180,6 +5194,7 @@ class SelfIncorporationService:
         requester: str,
         approval_id: str | None,
     ):
+        # Aetherra imports
         from Aetherra.guardian import IntentDeclaration, evaluate_intent
 
         generated_plan_id_hash = self._guardian_hash_value(plan.get("plan_id"))
@@ -5221,6 +5236,7 @@ class SelfIncorporationService:
         requester: str,
         approval_id: str | None,
     ):
+        # Aetherra imports
         from Aetherra.guardian import IntentDeclaration, evaluate_intent
 
         generated_plan_id_hash = self._guardian_hash_value(plan.get("plan_id"))
@@ -5298,12 +5314,16 @@ class SelfIncorporationService:
                 if not self.core_integrator._hmr_supports_token_rollback(
                     hmr_controller
                 ):
-                    return f"rollback_unavailable:{action}:hmr_token_rollback_unsupported"
+                    return (
+                        f"rollback_unavailable:{action}:hmr_token_rollback_unsupported"
+                    )
                 if not self.core_integrator._hmr_supports_action_rollback(
                     hmr_controller,
                     action,
                 ):
-                    return f"rollback_unavailable:{action}:hmr_action_rollback_unsupported"
+                    return (
+                        f"rollback_unavailable:{action}:hmr_action_rollback_unsupported"
+                    )
                 continue
 
         return None
@@ -5315,6 +5335,7 @@ class SelfIncorporationService:
         requester: str,
         approval_id: str | None,
     ):
+        # Aetherra imports
         from Aetherra.guardian import IntentDeclaration, evaluate_intent
 
         token_hash = self._guardian_hash_value(rollback_token)
@@ -5342,9 +5363,7 @@ class SelfIncorporationService:
             capability_checker=self._guardian_capability_checker,
         )
 
-    def _find_rollback_audit_records(
-        self, rollback_token: str
-    ) -> list[dict[str, Any]]:
+    def _find_rollback_audit_records(self, rollback_token: str) -> list[dict[str, Any]]:
         """Find audit records that reference a rollback token."""
 
         if not hasattr(self, "audit_ledger") or not self.audit_ledger:
@@ -5460,9 +5479,9 @@ class SelfIncorporationService:
             return {
                 "ok": bool(rollback_result.get("ok")),
                 "action": action,
-                "status": "rolled_back"
-                if rollback_result.get("ok")
-                else "rollback_failed",
+                "status": (
+                    "rolled_back" if rollback_result.get("ok") else "rollback_failed"
+                ),
                 "hmr": rollback_result,
                 **(
                     {}
@@ -5497,6 +5516,7 @@ class SelfIncorporationService:
             }
 
         try:
+            # Aetherra imports
             from Aetherra.guardian import GuardianStatus
 
             guardian_decision = self._guardian_preflight_rollback(
@@ -5735,6 +5755,7 @@ class SelfIncorporationService:
                 "duration": time.time() - start_time,
             }
 
+        # Aetherra imports
         from Aetherra.guardian import GuardianStatus
 
         guardian_decision = self._guardian_preflight_canary(
@@ -6301,10 +6322,24 @@ class SelfIncorporationService:
 
         return entrypoints[:20]  # Limit to prevent excessive data
 
-    async def get_audit_summary(self) -> dict[str, int]:
-        """Return a summary of audit records grouped by status."""
+    async def get_audit_summary(
+        self,
+        *,
+        action_filter: str | None = None,
+        status_filter: str | None = None,
+        limit: int | None = None,
+    ) -> dict[str, int]:
+        """Summarize matching audit records by status; no limit means all records."""
         try:
-            return self.audit_ledger.summary() if self.audit_ledger else {}
+            return (
+                self.audit_ledger.summary(
+                    action_filter=action_filter,
+                    status_filter=status_filter,
+                    limit=limit,
+                )
+                if self.audit_ledger
+                else {}
+            )
         except Exception as e:
             logger.debug(f"[SELFINC] Failed to get audit summary: {e}")
             return {}

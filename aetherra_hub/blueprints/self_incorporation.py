@@ -23,8 +23,8 @@ from flask.typing import ResponseReturnValue
 from ..services.control_auth import authorize_control_request
 from ..services.registry_client import get_service
 
-# Aetherra imports
 try:
+    # Aetherra imports
     from Aetherra.core import disclosure_policy  # type: ignore
 except Exception:  # pragma: no cover - defensive import fallback
     disclosure_policy = None  # type: ignore
@@ -79,6 +79,7 @@ def json_safe_repr(value: Any) -> str:
     """Build a deterministic compact representation for audit hashing."""
 
     try:
+        # Standard library imports
         import json
 
         return json.dumps(value, sort_keys=True, default=str, separators=(",", ":"))
@@ -87,7 +88,7 @@ def json_safe_repr(value: Any) -> str:
 
 
 def _safe_key_list(mapping: dict[str, Any], *, limit: int = 20) -> list[str]:
-    return sorted(str(key) for key in mapping.keys())[:limit]
+    return sorted(str(key) for key in mapping)[:limit]
 
 
 def _audit_target_summary(action: str, target: dict[str, Any]) -> dict[str, Any]:
@@ -296,7 +297,7 @@ def rollback() -> ResponseReturnValue:
 
 @bp.get("/audit")
 def get_audit() -> ResponseReturnValue:
-    """Get audit records with optional filtering."""
+    """Count statuses among the latest matching audit records (default: 50)."""
     auth_error = _authorize_control()
     if auth_error is not None:
         return auth_error
@@ -306,13 +307,20 @@ def get_audit() -> ResponseReturnValue:
             return jsonify({"error": "Self-incorporation service not available"}), 503
 
         # Get query parameters
-        limit = request.args.get("limit", 50, type=int)
+        try:
+            limit = int(request.args.get("limit", "50"))
+        except ValueError:
+            return jsonify({"error": "limit must be a positive integer"}), 400
+        if limit > 2**63 - 1:
+            return jsonify({"error": "limit exceeds the supported integer range"}), 400
+        if limit < 1:
+            return jsonify({"error": "limit must be a positive integer"}), 400
         action_filter = request.args.get("action")
         status_filter = request.args.get("status")
 
         summary = _run_async(
             selfinc_service.get_audit_summary(
-                action_filter=action_filter, status_filter=status_filter
+                action_filter=action_filter, status_filter=status_filter, limit=limit
             )
         )
 
@@ -480,6 +488,7 @@ def evaluate_ethics() -> ResponseReturnValue:
                 complexity_score = 0.0
             if complexity_score >= 0.6:
                 risk_level = "medium"
+        # Standard library imports
         import time as _time
 
         raw = f"{action}:{target.get('file_id')}:{ethics_score.overall_score}:{_time.time()}".encode()

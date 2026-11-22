@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+# Standard library imports
 from typing import Any
 
 
@@ -52,23 +53,43 @@ SUBSYSTEM_PROFILES: dict[str, dict[str, Any]] = {
         "primary_view": "enforcement",
         "panels": ["capabilities", "sandbox", "network_policy", "audit"],
         "related_endpoints": ["/api/security/status"],
-        "safety_rules": ["observe_only", "redact_sensitive_values", "no_policy_mutation"],
+        "safety_rules": [
+            "observe_only",
+            "redact_sensitive_values",
+            "no_policy_mutation",
+        ],
     },
     "guardian": {
         "title": "Guardian",
         "purpose": "Shows decision state for allow, deny, approval, containment, and preauthorization flows.",
         "authority_owner": "Guardian",
         "primary_view": "decision_flow",
-        "panels": ["mode", "approvals", "containment", "preauthorization", "audit_integrity"],
+        "panels": [
+            "mode",
+            "approvals",
+            "containment",
+            "preauthorization",
+            "audit_integrity",
+        ],
         "related_endpoints": ["/api/guardian/status", "/api/guardian/mode"],
-        "safety_rules": ["observe_only", "approval_changes_require_control_auth", "redact_audit_details"],
+        "safety_rules": [
+            "observe_only",
+            "approval_changes_require_control_auth",
+            "redact_audit_details",
+        ],
     },
     "homeostasis": {
         "title": "Homeostasis",
         "purpose": "Shows observation, pressure, diagnosis, recommendation, and verification state.",
         "authority_owner": "Homeostasis",
         "primary_view": "health_regulation",
-        "panels": ["health", "pressure", "diagnosis", "recommendations", "verification"],
+        "panels": [
+            "health",
+            "pressure",
+            "diagnosis",
+            "recommendations",
+            "verification",
+        ],
         "related_endpoints": ["/api/homeostasis/status", "/homeostasis"],
         "safety_rules": ["observe_verify_only", "actions_require_guardian_review"],
     },
@@ -86,7 +107,13 @@ SUBSYSTEM_PROFILES: dict[str, dict[str, Any]] = {
         "purpose": "Shows bounded perception, attention, appraisal, deliberation, action, and reflection state.",
         "authority_owner": "Consciousness",
         "primary_view": "cognitive_loop",
-        "panels": ["perception", "attention", "appraisal", "deliberation", "reflection"],
+        "panels": [
+            "perception",
+            "attention",
+            "appraisal",
+            "deliberation",
+            "reflection",
+        ],
         "related_endpoints": ["/api/consciousness/status"],
         "safety_rules": ["trace_summary_only", "no_reasoning_fabrication"],
     },
@@ -106,25 +133,52 @@ SUBSYSTEM_PROFILES: dict[str, dict[str, Any]] = {
         "primary_view": "proposal_stream",
         "panels": ["observations", "hypotheses", "simulations", "proposals", "risk"],
         "related_endpoints": ["/api/selfimprove/status"],
-        "safety_rules": ["propose_only", "no_direct_execution", "guardian_review_required"],
+        "safety_rules": [
+            "propose_only",
+            "no_direct_execution",
+            "guardian_review_required",
+        ],
     },
     "self_incorporation": {
         "title": "Self-Incorporation",
         "purpose": "Shows discovery, classification, dry-run plans, staged application, rollback, and verification.",
         "authority_owner": "Self-Incorporation",
         "primary_view": "incorporation_workshop",
-        "panels": ["discovery", "classification", "plans", "approval", "rollback", "verification"],
+        "panels": [
+            "discovery",
+            "classification",
+            "plans",
+            "approval",
+            "rollback",
+            "verification",
+        ],
         "related_endpoints": ["/api/selfinc/status"],
-        "safety_rules": ["approved_execution_only", "rollback_required", "homeostasis_verification_required"],
+        "safety_rules": [
+            "approved_execution_only",
+            "rollback_required",
+            "homeostasis_verification_required",
+        ],
     },
     "maintenance": {
         "title": "Maintenance",
         "purpose": "Shows the umbrella observe, diagnose, propose, review, apply, verify, and learn loop.",
         "authority_owner": "Maintenance",
         "primary_view": "maintenance_cycle",
-        "panels": ["observation", "diagnosis", "proposal", "governance", "execution", "verification", "learning"],
+        "panels": [
+            "observation",
+            "diagnosis",
+            "proposal",
+            "governance",
+            "execution",
+            "verification",
+            "learning",
+        ],
         "related_endpoints": ["/api/maintenance/status"],
-        "safety_rules": ["coordinate_only", "no_direct_bypass", "respect_system_authority_ownership"],
+        "safety_rules": [
+            "coordinate_only",
+            "no_direct_bypass",
+            "respect_system_authority_ownership",
+        ],
     },
     "aether_script": {
         "title": "Aether Script",
@@ -133,7 +187,11 @@ SUBSYSTEM_PROFILES: dict[str, dict[str, Any]] = {
         "primary_view": "script_runtime",
         "panels": ["validation", "signatures", "risk", "workflow", "execution_gate"],
         "related_endpoints": ["/api/run", "/api/scripts"],
-        "safety_rules": ["no_unsigned_execution", "guardian_preflight_required", "security_enforced"],
+        "safety_rules": [
+            "no_unsigned_execution",
+            "guardian_preflight_required",
+            "security_enforced",
+        ],
     },
     "kernel": {
         "title": "Kernel",
@@ -151,6 +209,22 @@ SUBSYSTEM_PROFILES: dict[str, dict[str, Any]] = {
         "primary_view": "readiness_matrix",
         "panels": ["coverage", "checks", "evidence", "gaps"],
         "related_endpoints": [],
-        "safety_rules": ["do_not_run_heavy_checks_per_request", "report_readiness_only"],
+        "safety_rules": [
+            "do_not_run_heavy_checks_per_request",
+            "report_readiness_only",
+        ],
+    },
+    "engine": {
+        "title": "Engine",
+        "purpose": "Shows live AI engine readiness and bounded component degradation evidence.",
+        "authority_owner": "Engine",
+        "primary_view": "readiness",
+        "panels": ["readiness", "components", "diagnostics"],
+        "related_endpoints": ["/api/ai/status"],
+        "safety_rules": [
+            "observe_only",
+            "no_provider_activation",
+            "redact_sensitive_values",
+        ],
     },
 }

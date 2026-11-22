@@ -7,6 +7,7 @@ system authority or bypassing Guardian/Security controls.
 
 from __future__ import annotations
 
+# Standard library imports
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from enum import StrEnum
@@ -125,7 +126,7 @@ def build_observatory_state(
 
     `system_status` accepts a shallow mapping keyed by subsystem name. Each
     subsystem value may provide `status`, `health`, `activity`, `summary`, and
-    `metrics`. Missing systems are represented as unknown/stable defaults so the
+    `metrics`. Missing systems are represented as unknown so the
     UI can render a consistent architecture map during early boot.
     """
 
@@ -208,7 +209,9 @@ def _build_event(raw_event: dict[str, Any]) -> ObservatoryEvent:
         summary=str(raw_event.get("summary") or ""),
         severity=severity,
         visual_channel=_event_visual_channel(event_type, severity),
-        action_required=_event_action_required(raw_event.get("action_required"), severity),
+        action_required=_event_action_required(
+            raw_event.get("action_required"), severity
+        ),
         occurred_at=str(
             raw_event.get("occurred_at")
             or datetime.now(UTC).isoformat().replace("+00:00", "Z")
@@ -276,11 +279,21 @@ def _event_visual_channel(event_type: str, severity: str) -> str:
     normalized_type = event_type.strip().lower()
     if severity in {"error", "critical"}:
         return "containment"
-    if normalized_type in {"approval", "decision", "guardian_decision"}:
+    if normalized_type in {
+        "approval",
+        "decision",
+        "guardian_decision",
+        "guardian_status_observed",
+    }:
         return "governance"
     if normalized_type in {"proposal", "hypothesis", "simulation"}:
         return "evolution"
-    if normalized_type in {"health", "diagnosis", "verification"}:
+    if normalized_type in {
+        "health",
+        "diagnosis",
+        "verification",
+        "homeostasis_status_observed",
+    }:
         return "regulation"
     return "system"
 
@@ -288,9 +301,7 @@ def _event_visual_channel(event_type: str, severity: str) -> str:
 def _event_action_required(value: Any, severity: str) -> bool:
     if isinstance(value, bool):
         return value
-    if severity in {"critical"}:
-        return True
-    return False
+    return severity in {"critical"}
 
 
 def _lyrixa_guidance(mode: ObservatoryMode) -> str:
@@ -313,6 +324,7 @@ _SUBSYSTEM_LABELS: tuple[tuple[str, str], ...] = (
     ("maintenance", "Maintenance"),
     ("aether_script", "Aether Script"),
     ("kernel", "Kernel"),
+    ("engine", "Engine"),
     ("integration_validation", "Integration Validation"),
 )
 
@@ -325,4 +337,5 @@ _CONNECTIONS: tuple[tuple[str, str, str], ...] = (
     ("memory", "consciousness", "continuity_context"),
     ("agents", "aether_script", "task_runtime"),
     ("kernel", "integration_validation", "runtime_readiness"),
+    ("kernel", "engine", "engine_readiness"),
 )

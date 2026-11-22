@@ -1,6 +1,14 @@
 # Alpha Readiness Checklist
 
-Updated: 2026-07-18
+Updated: 2026-11-22
+
+Candidate: working patch on `b1b7ae12ba4272cf630e989e3cf463a1b77b3624` (`v0.5.0-beta.2`).
+Decision: **No-go for broader internal alpha operation**. ALPHA-01 through
+ALPHA-06 are fixed locally. Full CLI restart and operator API checks pass;
+the preceding browser and safety evidence remains applicable. Reviewed-commit
+and current-CI acceptance remain open.
+See [ALPHA_READINESS_DECISION.md](ALPHA_READINESS_DECISION.md) for evidence,
+limitations, owners and retest conditions.
 
 This checklist defines what must be true before Aetherra should be called ready
 for an internal alpha. It is not a marketing launch checklist. It is a
@@ -21,7 +29,7 @@ Alpha readiness means:
 
 ## Gate 1: Identity And Scope
 
-Status: In progress
+Status: Reviewed for this candidate; docs consistency passes.
 
 Required before alpha:
 
@@ -42,7 +50,7 @@ python tools\verify_docs_consistency.py
 
 ## Gate 2: System Foundation Status
 
-Status: In progress
+Status: Documented foundations reviewed; not a claim of integrated alpha readiness.
 
 Required before alpha:
 
@@ -70,7 +78,15 @@ python tools\verify_docs_consistency.py
 
 ## Gate 3: Safety And Governance
 
-Status: In progress
+Status: Bounded observation-only retest passes; ALPHA-01 resolved locally.
+
+Guardian reports enabled/enforcing and audit integrity true. Strict capability
+denials, unauthorized chat rejection and disabled Kernel controls were observed.
+The registered Homeostasis instance stays in observe_only with zero actuator
+attempts/executions through startup, steady state and a new-process restart.
+No broad capabilities or signing exceptions were added. Self-Incorporation
+audit inspection now passes authentication, filtering and persisted-ledger
+regressions (ALPHA-05); live privileged mutation was not exercised.
 
 Required before alpha:
 
@@ -95,7 +111,12 @@ python -m pytest -q -o addopts= --basetemp .pytest_tmp_alpha_validation tests\un
 
 ## Gate 4: Runtime Boot Path
 
-Status: In progress
+Status: Full CLI boot and restart demonstrated, with documented degradation.
+
+Hub and Kernel reported ready in both new processes. Engine reported degraded
+without a configured provider. Both Ctrl+C shutdowns exited 0; a watchdog
+teardown error remains a documented limitation. Optional service denials and
+relative configuration defaults are not equivalent to all systems being ready.
 
 Required before alpha:
 
@@ -113,16 +134,23 @@ Initial validation target:
 python tools\alpha_boot_validation.py
 ```
 
-Optional live validation target:
+Verified full launch target (use the isolated configuration in the runbook):
 
 ```powershell
-python tools\os_smoke.py
-python tools\run_hub_ai_api.py --port 3001
+python aetherra_os_launcher.py --mode full --no-gui --config "$alphaProfile/launcher.json"
 ```
+
+The boot validator, `tools/os_smoke.py` and standalone Hub helper do not prove
+the full runtime boots. The manual check above uses the normal full launcher.
 
 ## Gate 5: Runtime UI Observatory
 
-Status: Pending
+Status: Connected, degraded, stopped and reconnected browser checks pass;
+ALPHA-02/03 resolved locally. Build, lint and all 17 GUI tests pass.
+
+Engine degradation matches readiness evidence; missing services and stopped
+runtime are unknown. Titles are visible and no application console errors were
+observed. THREE.Clock deprecation and bundle-size warnings remain documented.
 
 Required before alpha:
 
@@ -140,12 +168,17 @@ Validation:
 Push-Location Aetherra\lyrixa\gui
 npm.cmd run build
 Pop-Location
-python -m pytest -q -o addopts= --basetemp .pytest_tmp_runtime_ui tests\unit\test_runtime_ui_readiness.py
+$runtimeUiTests = @(Get-ChildItem tests/unit/test_runtime_ui_*.py | ForEach-Object { $_.FullName })
+python -m pytest -q -o addopts= --basetemp .pytest_tmp_runtime_ui @runtimeUiTests
 ```
 
 ## Gate 6: Integration Validation
 
-Status: In progress
+Status: Pass for bounded contracts: 5 runner checks plus focused regressions.
+
+The contracts cover allow/deny, approved-scope mismatch and truthful failure
+when rollback is unavailable. The separate real full-launcher retest supplies
+bounded Homeostasis observation-only evidence; see Gate 3.
 
 Required before alpha:
 
@@ -166,7 +199,11 @@ python -m pytest -q -o addopts= --basetemp .pytest_tmp_integration_validation te
 
 ## Gate 7: Repository Hygiene
 
-Status: In progress
+Status: Focused checks pass; isolated working patch used for verification.
+
+Website-artifact verification passes. Runtime profiles, logs, test outputs and
+GUI dependencies/build output stay ignored. This is not an exhaustive cleanup
+of all legacy repository artifacts. Unrelated user changes remain out of scope.
 
 Required before alpha:
 
@@ -189,7 +226,19 @@ git status --short
 
 ## Gate 8: CI And Security Checks
 
-Status: Pending
+Status: Local CI selection passes (1,916 passed/8 skipped); remote candidate CI open.
+
+All 31 reported checks on `2f4b3324` were successful when reviewed on
+2026-11-21, including signed CI and Release. `b1b7ae12` is the resulting release
+version commit, not a separately tested full CI run. None of these old remote
+checks verify the current working patch. Signing remains enforced; 13 local
+signing tests pass. Default collection now succeeds with 3,093 tests. Full
+execution reached its time bound with failures; see the decision for named
+findings and scoped reruns. The final local CI directory selection passes in a
+source-only snapshot; this is not remote workflow or coverage acceptance. The
+fixed style baseline remains unchanged.
+Legacy desktop dependency findings are deferred, and this check does not claim
+that all Advanced Security findings or installed packages are clean.
 
 Required before alpha:
 
@@ -214,7 +263,14 @@ GitHub Actions remain the source of truth for remote CI status.
 
 ## Gate 9: Operator Runbook
 
-Status: In progress
+Status: Verified bounded observation and repaired operator API procedures recorded.
+
+The runbook documents the full CLI, isolated synthetic storage, correct JSON
+routes, authenticated Guardian reads, GUI proxy, stop/restart and fallback
+interpretation. Hub Homeostasis status now uses the initialized launcher
+instance (ALPHA-04). Authenticated Self-Incorporation audit reads support
+validated filters and limits (ALPHA-05). Broader operational acceptance remains
+pending; stale registry evidence still displays unknown.
 
 Required before alpha:
 
@@ -231,7 +287,12 @@ Primary file:
 
 ## Gate 10: Alpha Decision
 
-Status: Pending
+Status: Recorded — No-go for broader internal alpha operation.
+
+All six recorded runtime blockers are fixed and retested locally, and the local
+CI test selection passes. Broader acceptance still requires a reproducible
+commit, current remote CI and disposition of the documented legacy limitations.
+No remaining risk has been silently accepted.
 
 Before calling alpha ready:
 
@@ -248,8 +309,10 @@ Decision record:
 
 ## Current Next Actions
 
-1. Continue repository hygiene on generated artifacts and stale root files.
-2. Run the full alpha readiness command set and record known limitations.
+1. Assess the documented legacy failures outside the passing CI selection.
+2. Review and commit the scoped fixes, then verify current CI and a clean
+   checkout before reconsidering Go.
+3. Preserve strict signing and unrelated workspace changes throughout acceptance.
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

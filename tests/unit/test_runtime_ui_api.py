@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+# Third party imports
 from flask import Flask
 
+# Aetherra imports
 from aetherra_hub.blueprints.openapi import bp as openapi_bp
 from aetherra_hub.blueprints.runtime_ui import bp
 
@@ -24,7 +26,9 @@ def test_runtime_ui_observatory_api_returns_read_only_snapshot():
     assert observatory["read_only"] is True
     assert observatory["mode"] == "overview"
 
-    subsystems = {subsystem["name"]: subsystem for subsystem in observatory["subsystems"]}
+    subsystems = {
+        subsystem["name"]: subsystem for subsystem in observatory["subsystems"]
+    }
     assert {"security", "guardian", "homeostasis", "aether_script"} <= set(subsystems)
     assert subsystems["security"]["metrics"]["authority"] == "enforce"
     assert observatory["events"][0]["details"]["authority"] == "observe_only"
@@ -45,7 +49,10 @@ def test_runtime_ui_manifest_api_describes_read_only_contract():
     assert manifest["legacy_ui_enabled"] is False
     assert manifest["authority"]["approve"] == "guardian"
     assert manifest["authority"]["enforce"] == "security"
-    assert "future_controls_require_guardian_security_and_control_auth" in manifest["safety_rules"]
+    assert (
+        "future_controls_require_guardian_security_and_control_auth"
+        in manifest["safety_rules"]
+    )
     assert manifest["endpoints"]["scene"] == "/api/runtime-ui/scene"
     assert manifest["endpoints"]["bootstrap"] == "/api/runtime-ui/bootstrap"
     assert manifest["endpoints"]["status"] == "/api/runtime-ui/status"
@@ -69,7 +76,9 @@ def test_runtime_ui_status_api_reports_healthy_foundation():
 
 
 def test_runtime_ui_bootstrap_api_returns_first_load_payload():
-    response = _client().get("/api/runtime-ui/bootstrap?mode=first_launch&user=Tim&limit=2")
+    response = _client().get(
+        "/api/runtime-ui/bootstrap?mode=first_launch&user=Tim&limit=2"
+    )
 
     assert response.status_code == 200
     assert response.headers["Cache-Control"] == "no-store"
@@ -95,7 +104,9 @@ def test_runtime_ui_bootstrap_api_rejects_invalid_mode_and_limit():
 
 
 def test_runtime_ui_contract_validate_api_reports_current_contract_ok():
-    response = _client().get("/api/runtime-ui/contract/validate?mode=first_launch&limit=2")
+    response = _client().get(
+        "/api/runtime-ui/contract/validate?mode=first_launch&limit=2"
+    )
 
     assert response.status_code == 200
     assert response.headers["Cache-Control"] == "no-store"
@@ -171,8 +182,7 @@ def test_runtime_ui_activity_api_filters_by_channel_and_source():
     channel_payload = channel_response.get_json()
     assert channel_payload["events"]
     assert all(
-        event["visual_channel"] == "governance"
-        for event in channel_payload["events"]
+        event["visual_channel"] == "governance" for event in channel_payload["events"]
     )
 
     assert source_response.status_code == 200
@@ -209,7 +219,11 @@ def test_runtime_ui_subsystem_api_returns_related_connections():
     assert response.status_code == 200
     payload = response.get_json()
     connection_labels = {connection["label"] for connection in payload["connections"]}
-    assert {"policy_enforcement", "proposal_review", "approved_execution"} <= connection_labels
+    assert {
+        "policy_enforcement",
+        "proposal_review",
+        "approved_execution",
+    } <= connection_labels
 
 
 def test_runtime_ui_subsystem_api_rejects_unknown_subsystem():
@@ -241,9 +255,43 @@ def test_runtime_ui_routes_are_documented_in_openapi():
 
 
 def test_runtime_ui_routes_are_registered_before_frontend_catch_all():
+    # Aetherra imports
     from aetherra_hub.app import create_app
 
     response = create_app().test_client().get("/api/runtime-ui/observatory")
 
     assert response.status_code == 200
     assert response.get_json()["ok"] is True
+
+
+def test_runtime_ui_api_does_not_boot_services_to_report_health(monkeypatch):
+    # Aetherra imports
+    import aetherra_service_registry as registry_module
+
+    monkeypatch.setattr(registry_module, "_service_registry", None)
+
+    payload = _client().get("/api/runtime-ui/bootstrap").get_json()
+
+    assert registry_module._service_registry is None
+    assert payload["ok"] is True
+    for subsystem in payload["observatory"]["subsystems"]:
+        assert subsystem["health"] is None
+        assert subsystem["metrics"]["activity_measured"] is False
+        if subsystem["name"] != "guardian":
+            assert subsystem["status"] == "unknown"
+    assert all(
+        event["details"]["observation_only"] for event in payload["activity"]["events"]
+    )
+
+
+def test_runtime_ui_engine_subsystem_exposes_readiness_profile():
+    response = _client().get("/api/runtime-ui/subsystems/engine")
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["subsystem"]["label"] == "Engine"
+    assert payload["profile"]["primary_view"] == "readiness"
+    assert "/api/ai/status" in payload["profile"]["related_endpoints"]
+    assert any(
+        connection["source"] == "kernel" for connection in payload["connections"]
+    )

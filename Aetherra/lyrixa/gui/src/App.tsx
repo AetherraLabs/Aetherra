@@ -39,11 +39,13 @@ interface ObservatoryConnection {
 }
 
 interface ObservatoryEvent {
-    id: string;
+    id?: string;
     source: string;
-    title: string;
+    title?: string;
+    event_type?: string;
+    occurred_at?: string;
     summary: string;
-    severity: NodeStatus;
+    severity: string;
     visual_channel: string;
 }
 
@@ -59,12 +61,14 @@ interface BootstrapPayload {
         core_label: string;
         mode: string;
         greeting: string | null;
+        generated_at?: string;
         read_only: boolean;
         subsystems: Array<{
             name: string;
             label: string;
             status: NodeStatus;
             activity: number;
+            summary?: string;
             metrics: Record<string, string | number | boolean | null>;
         }>;
         events: ObservatoryEvent[];
@@ -92,7 +96,7 @@ const NODE_COLORS: Record<NodeStatus, string> = {
 };
 
 const FALLBACK_BOOTSTRAP: BootstrapPayload = {
-    ok: true,
+    ok: false,
     read_only: true,
     manifest: {
         controls_enabled: false,
@@ -102,21 +106,22 @@ const FALLBACK_BOOTSTRAP: BootstrapPayload = {
     observatory: {
         core_label: "AETHERRA",
         mode: "first_launch",
-        greeting: "Good morning, Tim.",
+        greeting: "I can't see Aetherra's runtime right now.",
         read_only: true,
         subsystems: [
-            { name: "guardian", label: "Guardian", status: "active", activity: 0.88, metrics: { authority: "decide" } },
-            { name: "security", label: "Security", status: "active", activity: 0.82, metrics: { authority: "enforce" } },
-            { name: "homeostasis", label: "Homeostasis", status: "stable", activity: 0.64, metrics: { authority: "verify" } },
-            { name: "memory", label: "Memory", status: "stable", activity: 0.58, metrics: { authority: "remember" } },
-            { name: "consciousness", label: "Consciousness", status: "stable", activity: 0.52, metrics: { authority: "observe" } },
-            { name: "agents", label: "Agents", status: "stable", activity: 0.46, metrics: { authority: "coordinate" } },
-            { name: "self_improvement", label: "Self-Improvement", status: "stable", activity: 0.5, metrics: { authority: "propose" } },
-            { name: "self_incorporation", label: "Self-Incorporation", status: "stable", activity: 0.43, metrics: { authority: "execute_approved" } },
-            { name: "maintenance", label: "Maintenance", status: "stable", activity: 0.48, metrics: { authority: "coordinate" } },
-            { name: "aether_script", label: "Aether Script", status: "stable", activity: 0.42, metrics: { authority: "workflow" } },
-            { name: "kernel", label: "Kernel", status: "stable", activity: 0.6, metrics: { authority: "schedule" } },
-            { name: "integration_validation", label: "Integration Validation", status: "stable", activity: 0.36, metrics: { authority: "validate" } },
+            { name: "guardian", label: "Guardian", status: "unknown", activity: 0, metrics: { authority: "decide" } },
+            { name: "security", label: "Security", status: "unknown", activity: 0, metrics: { authority: "enforce" } },
+            { name: "homeostasis", label: "Homeostasis", status: "unknown", activity: 0, metrics: { authority: "verify" } },
+            { name: "engine", label: "Engine", status: "unknown", activity: 0, metrics: { authority: "reason" } },
+            { name: "memory", label: "Memory", status: "unknown", activity: 0, metrics: { authority: "remember" } },
+            { name: "consciousness", label: "Consciousness", status: "unknown", activity: 0, metrics: { authority: "observe" } },
+            { name: "agents", label: "Agents", status: "unknown", activity: 0, metrics: { authority: "coordinate" } },
+            { name: "self_improvement", label: "Self-Improvement", status: "unknown", activity: 0, metrics: { authority: "propose" } },
+            { name: "self_incorporation", label: "Self-Incorporation", status: "unknown", activity: 0, metrics: { authority: "execute_approved" } },
+            { name: "maintenance", label: "Maintenance", status: "unknown", activity: 0, metrics: { authority: "coordinate" } },
+            { name: "aether_script", label: "Aether Script", status: "unknown", activity: 0, metrics: { authority: "workflow" } },
+            { name: "kernel", label: "Kernel", status: "unknown", activity: 0, metrics: { authority: "schedule" } },
+            { name: "integration_validation", label: "Integration Validation", status: "unknown", activity: 0, metrics: { authority: "validate" } },
         ],
         events: [],
     },
@@ -127,25 +132,8 @@ const FALLBACK_BOOTSTRAP: BootstrapPayload = {
         connections: [],
     },
     activity: {
-        events: [
-            {
-                id: "fallback-guardian",
-                source: "guardian",
-                title: "Guardian active",
-                summary: "Governance layer is visible to the alpha shell.",
-                severity: "active",
-                visual_channel: "governance",
-            },
-            {
-                id: "fallback-security",
-                source: "security",
-                title: "Security active",
-                summary: "Capability and audit systems remain authoritative.",
-                severity: "active",
-                visual_channel: "governance",
-            },
-        ],
-        total: 2,
+        events: [],
+        total: 0,
         limit: 8,
     },
 };
@@ -154,11 +142,40 @@ async function loadBootstrap(): Promise<{ payload: BootstrapPayload; source: "ap
     try {
         const response = await fetch("/api/runtime-ui/bootstrap?mode=first_launch&user=Tim&limit=8", {
             headers: { Accept: "application/json" },
+            signal: AbortSignal.timeout(8000),
         });
         if (!response.ok) {
             throw new Error(`runtime-ui:${response.status}`);
         }
         const nextPayload = (await response.json()) as BootstrapPayload;
+        const validStatus = (status: NodeStatus) => ["active", "stable", "degraded", "contained", "offline", "unknown"].includes(status);
+        const validEvent = (event: ObservatoryEvent) => event && typeof event.source === "string" &&
+            typeof event.summary === "string" &&
+            (event.event_type === undefined || typeof event.event_type === "string") &&
+            (event.occurred_at === undefined || typeof event.occurred_at === "string");
+        const age = Date.now() - Date.parse(nextPayload.observatory?.generated_at ?? "");
+        if (nextPayload.ok !== true || nextPayload.read_only !== true ||
+            nextPayload.manifest?.controls_enabled !== false ||
+            typeof nextPayload.manifest.contract_version !== "string" ||
+            !Array.isArray(nextPayload.observatory?.subsystems) ||
+            !nextPayload.observatory.subsystems.every((node) => node &&
+                typeof node.name === "string" && typeof node.label === "string" &&
+                Number.isFinite(node.activity) &&
+                (node.summary === undefined || typeof node.summary === "string") &&
+                node.metrics && typeof node.metrics === "object" && !Array.isArray(node.metrics) &&
+                validStatus(node.status)) ||
+            !Array.isArray(nextPayload.scene?.nodes) || !Array.isArray(nextPayload.scene?.connections) ||
+            !nextPayload.scene.nodes.every((node) => node && typeof node.name === "string" &&
+                [node.x, node.y, node.z, node.radius, node.emphasis].every(Number.isFinite) &&
+                node.radius > 0 && validStatus(node.status)) ||
+            !nextPayload.scene.connections.every((connection) => connection &&
+                typeof connection.source === "string" && typeof connection.target === "string" &&
+                typeof connection.label === "string" && Number.isFinite(connection.pulse) && validStatus(connection.status)) ||
+            !Array.isArray(nextPayload.activity?.events) || !nextPayload.activity.events.every(validEvent) ||
+            !Array.isArray(nextPayload.observatory.events) || !nextPayload.observatory.events.every(validEvent) ||
+            !Number.isFinite(age) || age < -5000 || age > 60000) {
+            throw new Error("runtime-ui:invalid-or-stale");
+        }
         return { payload: normalizeBootstrap(nextPayload), source: "api" };
     } catch {
         return { payload: normalizeBootstrap(FALLBACK_BOOTSTRAP), source: "fallback" };
@@ -170,12 +187,18 @@ function App() {
     const [selectedNode, setSelectedNode] = useState("guardian");
     const [loading, setLoading] = useState(true);
     const [source, setSource] = useState<"api" | "fallback">("fallback");
+    const inFlight = useRef(false);
 
-    const refresh = () => loadBootstrap().then((next) => {
+    const refresh = async () => {
+        // One bounded request at a time: an older response cannot revive stale state.
+        if (inFlight.current) return;
+        inFlight.current = true;
+        const next = await loadBootstrap();
         setPayload(next.payload);
         setSource(next.source);
         setLoading(false);
-    });
+        inFlight.current = false;
+    };
 
     useEffect(() => {
         void refresh();
@@ -202,7 +225,7 @@ function App() {
 
             <section className="top-status" aria-label="Runtime status">
                 <div className="identity-lockup">
-                    <span className="presence-mark" />
+                    <span className="presence-mark" style={coreState === "System Online" ? undefined : { background: NODE_COLORS.unknown, boxShadow: "none" }} />
                     <div>
                         <h1>AETHERRA</h1>
                         <p>{coreState}</p>
@@ -217,8 +240,8 @@ function App() {
             </section>
 
             <section className="center-presence" aria-label="Core prompt">
-                <p className="greeting">{payload.observatory.greeting ?? "System Online"}</p>
-                <p className="prompt">What would you like to do today?</p>
+                <p className="greeting">{source === "api" ? "I'm here to help you observe Aetherra." : payload.observatory.greeting}</p>
+                <p className="prompt">{source === "api" ? "Select a system to inspect its evidence." : "Runtime status is unavailable. Check the connection and try again."}</p>
             </section>
 
             <aside className="system-dock" aria-label="Subsystems">
@@ -257,11 +280,12 @@ function App() {
                     <span className={`state-badge ${selected?.status ?? "unknown"}`}>{selected?.status ?? "unknown"}</span>
                 </div>
                 <div className="metric-grid">
-                    <Metric icon={Activity} label="Activity" value={`${Math.round((selected?.activity ?? 0) * 100)}%`} />
-                    <Metric icon={Network} label="Source" value={source === "api" ? "Runtime API" : "Fallback"} />
+                    <Metric icon={Activity} label="Activity" value={selected?.metrics?.activity_measured === true ? `${Math.round(selected.activity * 100)}%` : "Not measured"} />
+                    <Metric icon={Network} label="Source" value={source === "api" ? "Runtime API" : "Unavailable"} />
                     <Metric icon={CircleDot} label="Contract" value={payload.manifest.contract_version} />
                     <Metric icon={GitBranch} label="Controls" value={payload.manifest.controls_enabled ? "Enabled" : "Read only"} />
                 </div>
+                <p>{source === "api" ? selected?.summary : "No current evidence is available for this system."}</p>
                 <div className="authority-strip">
                     <Sparkles size={16} />
                     <span>{authorityLabel(selected?.metrics)}</span>
@@ -445,16 +469,24 @@ function Metric({ icon: Icon, label, value }: { icon: typeof Activity; label: st
 }
 
 function normalizeBootstrap(payload: BootstrapPayload): BootstrapPayload {
+    const normalizeEvents = (events: ObservatoryEvent[] = []) => events.map((event, index) => ({
+        ...event,
+        // The API's event_type/timestamp contract has no renderer id or title.
+        id: `${event.source}:${event.event_type ?? "status"}:${event.occurred_at ?? ""}:${index}`,
+        title: (event.event_type ?? "status").replace(/_/g, " "),
+        severity: ["error", "critical"].includes(event.severity) ? "contained" :
+            event.severity === "warning" ? "degraded" : "unknown",
+    }));
     return {
         ...payload,
         activity: {
             ...payload.activity,
-            events: payload.activity?.events ?? [],
+            events: normalizeEvents(payload.activity?.events),
         },
         observatory: {
             ...payload.observatory,
             subsystems: payload.observatory?.subsystems ?? [],
-            events: payload.observatory?.events ?? [],
+            events: normalizeEvents(payload.observatory?.events),
         },
         scene: {
             ...payload.scene,
@@ -465,6 +497,7 @@ function normalizeBootstrap(payload: BootstrapPayload): BootstrapPayload {
 }
 
 function summarizeCoreState(payload: BootstrapPayload): string {
+    if (!payload.ok) return "Runtime unavailable";
     const contained = payload.observatory.subsystems.filter((item) => item.status === "contained").length;
     const degraded = payload.observatory.subsystems.filter((item) => item.status === "degraded").length;
     if (contained > 0) {
@@ -472,6 +505,9 @@ function summarizeCoreState(payload: BootstrapPayload): string {
     }
     if (degraded > 0) {
         return "Degraded systems visible";
+    }
+    if (!payload.observatory.subsystems.length || payload.observatory.subsystems.some((item) => ["unknown", "offline"].includes(item.status))) {
+        return "Runtime status incomplete";
     }
     return "System Online";
 }
@@ -502,6 +538,7 @@ function fallbackSceneNodes(payload: BootstrapPayload): ObservatoryNode[] {
         [-0.34, -0.08, 0],
         [0.24, 0.66, 0],
         [0, 0.92, -0.02],
+        [-0.65, 0.68, -0.05],
     ];
     return payload.observatory.subsystems.map((node, index) => {
         const [x, y, z] = layout[index % layout.length];
@@ -526,8 +563,8 @@ function fallbackConnections(nodes: ObservatoryNode[]): ObservatoryConnection[] 
         source,
         target: important[index + 1],
         label: "runtime",
-        status: nodes.find((node) => node.name === source)?.status ?? "stable",
-        pulse: nodes.find((node) => node.name === source)?.emphasis ?? 0.4,
+        status: nodes.find((node) => node.name === source)?.status ?? "unknown",
+        pulse: nodes.find((node) => node.name === source)?.emphasis ?? 0,
         thickness: 0.4,
     }));
 }

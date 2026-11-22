@@ -12,17 +12,21 @@ All memory operations are delegated to the canonical engine.
 # Standard library imports
 import asyncio
 import hashlib
+import json
 import math
 import re
 import uuid
+from contextlib import suppress
+from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any, Callable, Optional
 
+# Aetherra imports
+from Aetherra.aetherra_core.kernel.narrator import MemoryNarrative, MemoryNarrator
 from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
 
 # Local imports
-from Aetherra.aetherra_core.kernel.narrator import MemoryNarrative, MemoryNarrator
 from .fractal_mesh import (
     ConceptClusterManager,
     CrossContextAnalogies,
@@ -56,14 +60,11 @@ class AetherraMemoryEngine:
         """
         normalized_entry = self._normalize_entry(memory_entry, metadata)
 
-        try:
+        with suppress(Exception):  # Ignore compatibility-cache errors.
             content = normalized_entry.get("content")
             if content is not None:
                 # Normalize shape to keep test contract
                 self._compat_mem.append(normalized_entry)
-        except Exception:
-            # Ignore compat layer errors
-            pass
 
         # Always forward to canonical engine as the source of truth
         try:
@@ -85,16 +86,16 @@ class AetherraMemoryEngine:
 
         # If nothing found, try underlying engine and adapt shape
         if not results:
-            try:
+            with suppress(Exception):
                 raw = self.engine.retrieve(query, context)
                 if isinstance(raw, dict) and "data" in raw:
                     data = raw["data"]
                     # Try to adapt to expected shape
-                    content = data.get("content") if isinstance(data, dict) else str(data)
+                    content = (
+                        data.get("content") if isinstance(data, dict) else str(data)
+                    )
                     if content:
                         results = [{"content": content}]
-            except Exception:
-                pass
 
         return results
 
@@ -157,7 +158,9 @@ class AetherraMemoryEngine:
             found_meta = dict(found_bucket.get("metadata", {}))
             cur_meta = dict(item.get("metadata", {}))
             found_meta.update(cur_meta)
-            found_meta["consolidated_count"] = int(found_meta.get("consolidated_count", 1)) + 1
+            found_meta["consolidated_count"] = (
+                int(found_meta.get("consolidated_count", 1)) + 1
+            )
             found_bucket["metadata"] = found_meta
             found_bucket["importance"] = max(
                 float(found_bucket.get("importance", 0.5)),
@@ -181,7 +184,7 @@ class AetherraMemoryEngine:
                 continue
             try:
                 created_at = datetime.fromisoformat(str(created_at_raw))
-            except Exception:
+            except Exception:  # noqa: S112 - Skip malformed legacy timestamps.
                 continue
 
             age_hours = max(0.0, (now - created_at).total_seconds() / 3600.0)
@@ -403,11 +406,28 @@ class AetherraMemoryEngineAdvanced:
                 metadata=derived_meta,
             )
 
-            # Apply guard; allow explicit PolicyViolation to bubble out
-            try:
-                self._apply_policy_guard(content, derived_meta)
-            except PolicyViolation:
-                raise
+            content, context_updates = self._apply_policy_guard(
+                content,
+                derived_meta,
+                category=category,
+                tags=tags or [],
+                narrative_role=narrative_role,
+            )
+            if self.config.redact_before_persist:
+                # A hook may add identity metadata; it cannot bypass Guardian.
+                self._evaluate_guardian_memory_write(
+                    tags=tags or [],
+                    category=category,
+                    narrative_role=narrative_role,
+                    metadata=derived_meta,
+                )
+            # Hooks can annotate context, but cannot override typed write arguments.
+            storage_context = {
+                key: value
+                for key, value in context_updates.items()
+                if key not in {"category", "tags", "narrative_role"}
+            }
+            storage_context.update(category=category, narrative_role=narrative_role)
 
             # Create unique fragment ID
             fragment_id = str(uuid.uuid4())
@@ -416,7 +436,7 @@ class AetherraMemoryEngineAdvanced:
             # Store in core memory system (vector embeddings)
             await self.core_memory.store_memory(
                 content={"text": str(content), "category": category},
-                context={"category": category, "narrative_role": narrative_role},
+                context=storage_context,
                 tags=tags or [],
                 importance=confidence * 0.8,  # Convert confidence to importance
                 memory_type=category,
@@ -452,7 +472,9 @@ class AetherraMemoryEngineAdvanced:
 
             # Update fragment with associative links from clustering
             if affected_clusters:
-                fragment.associative_links.extend(affected_clusters[:5])  # Limit associations
+                fragment.associative_links.extend(
+                    affected_clusters[:5]
+                )  # Limit associations
                 self.fractal_mesh.store_fragment(fragment)  # Update with associations
 
             self.operation_stats["successful_operations"] += 1
@@ -510,7 +532,9 @@ class AetherraMemoryEngineAdvanced:
         results: list[dict[str, Any]] = []
 
         if recall_strategy in ["vector", "hybrid"]:
-            vector_results = await self.core_memory.recall_memories(query_text=query, limit=limit)
+            vector_results = await self.core_memory.recall_memories(
+                query_text=query, limit=limit
+            )
             for i, memory in enumerate(vector_results):
                 results.append(
                     {
@@ -525,7 +549,9 @@ class AetherraMemoryEngineAdvanced:
 
         if recall_strategy in ["conceptual", "hybrid"] and concept_filter:
             for concept in concept_filter:
-                concept_fragments = self.fractal_mesh.retrieve_by_concept(concept, limit)
+                concept_fragments = self.fractal_mesh.retrieve_by_concept(
+                    concept, limit
+                )
                 for fragment in concept_fragments:
                     results.append(
                         {
@@ -577,9 +603,14 @@ class AetherraMemoryEngineAdvanced:
 
         Keeps recall() backward-compatible while exposing a unified contract.
         """
+        base_strategy = (
+            "hybrid"
+            if recall_strategy in {"base", "storm", "storm_hybrid"}
+            else recall_strategy
+        )
         base_items = await self.recall(
             query,
-            recall_strategy=recall_strategy,
+            recall_strategy=base_strategy,
             limit=limit,
             time_filter=time_filter,
             concept_filter=concept_filter,
@@ -590,12 +621,14 @@ class AetherraMemoryEngineAdvanced:
             scores=base_scores,
             metadata={"limit": limit, "strategy": recall_strategy},
         )
+        if recall_strategy == "base":
+            return base
 
         # STORM integration with shadow mode support (Phase 0)
         if self._storm_engine is not None:
             # Shadow mode: run STORM in parallel, emit metrics, return baseline
             if self._storm_engine.config.shadow_mode:
-                try:
+                with suppress(Exception):  # Shadow failures preserve baseline recall.
                     # Run shadow recall and compare
                     baseline_result, comparison = await shadow_recall(
                         storm_engine=self._storm_engine,
@@ -614,13 +647,14 @@ class AetherraMemoryEngineAdvanced:
                         )
                     # Always return baseline in shadow mode
                     return baseline_result
-                except Exception:
-                    # Shadow failures never affect production
-                    pass
                 return base
 
             # Production mode: return STORM result
-            return await self._storm_engine.recall(query, limit=limit, base_fallback=base)
+            return await self._storm_engine.recall(
+                query,
+                limit=limit,
+                base_fallback=None if recall_strategy == "storm" else base,
+            )
 
         return base
 
@@ -662,7 +696,9 @@ class AetherraMemoryEngineAdvanced:
             metadata={
                 "category": normalized_category,
                 "tag_count": len(normalized_tags),
-                "tag_hashes": tuple(self._hash_audit_value(tag) for tag in normalized_tags),
+                "tag_hashes": tuple(
+                    self._hash_audit_value(tag) for tag in normalized_tags
+                ),
                 "narrative_role": narrative_role,
                 "identity_memory": is_identity,
             },
@@ -708,32 +744,115 @@ class AetherraMemoryEngineAdvanced:
         digest = hashlib.sha256(str(value).encode("utf-8")).hexdigest()
         return digest[:16]
 
-    def _apply_policy_guard(self, content: Any, metadata: Optional[dict]) -> None:
+    def _apply_policy_guard(
+        self,
+        content: Any,
+        metadata: dict[str, Any],
+        *,
+        category: str,
+        tags: list[str],
+        narrative_role: str | None,
+    ) -> tuple[Any, dict[str, Any]]:
         """Apply minimal policy hooks; default config disables enforcement.
 
         If persist_sensitive_only_if_signed is True, block writes that appear to be
         plugin outputs (metadata.plugin_id present) unless metadata.signed/trusted.
         If redact_before_persist is provided, transform content/context before write.
         """
-        metadata = metadata or {}
+        if (
+            not self.config.persist_sensitive_only_if_signed
+            and not self.config.redact_before_persist
+        ):
+            return content, {}
+        # Combine original risk annotations with the fields actually stored.
+        plugin_origin = bool(
+            metadata.get("plugin_id")
+            or metadata.get("category") == "project"
+            or category == "project"
+        )
+        sensitive_input = bool(
+            metadata.get("sensitive")
+            or "sensitive" in (metadata.get("tags") or [])
+            or "sensitive" in tags
+        )
+        # A redactor must not authorize input that was already forbidden.
+        self._check_sensitive_write(
+            metadata, plugin_origin=plugin_origin, sensitive_input=sensitive_input
+        )
+        authority_fields = {
+            "requester",
+            "signed",
+            "trusted",
+            "plugin_id",
+            "reversible",
+            "rollback_plan",
+            "category",
+            "tags",
+            "narrative_role",
+        }
+        authority = deepcopy(
+            {key: metadata[key] for key in authority_fields if key in metadata}
+        )
+        authority.update(
+            category=category, tags=list(tags), narrative_role=narrative_role
+        )
+        metadata.update(deepcopy(authority))
+        context_updates: dict[str, Any] = {}
         if self.config.redact_before_persist:
             try:
-                new_content, new_context = self.config.redact_before_persist(content, metadata)
-                # best-effort replacement; callers may ignore
+                new_content, new_context = self.config.redact_before_persist(
+                    content, metadata
+                )
                 if new_content is not None:
                     content = new_content
                 if new_context is not None:
+                    if not isinstance(new_context, dict):
+                        raise TypeError("Redaction context must be a dictionary")
                     metadata.update(new_context)
+                    context_updates = {
+                        key: value
+                        for key, value in new_context.items()
+                        if key not in authority_fields
+                    }
+                # Restore provenance even if the hook mutated its input in place.
+                for key in authority_fields:
+                    metadata.pop(key, None)
+                metadata.update(deepcopy(authority))
+                context_updates.update(authority)
+                # Core context is JSON; reject invalid hook output before any write.
+                json.dumps(context_updates)
+            except PolicyViolation:
+                raise
             except Exception:
-                # redaction failures should not block unless policy demands
-                pass
+                raise PolicyViolation(
+                    "Memory redaction failed; refusing to persist content",
+                    code="REDACTION_FAILED",
+                ) from None
+            self._check_sensitive_write(
+                metadata, plugin_origin=plugin_origin, sensitive_input=sensitive_input
+            )
+        return content, context_updates
 
+    def _check_sensitive_write(
+        self,
+        metadata: dict[str, Any],
+        *,
+        plugin_origin: bool,
+        sensitive_input: bool,
+    ) -> None:
+        """Enforce the configured signature requirement before persistence."""
         if self.config.persist_sensitive_only_if_signed:
             # Heuristics: treat project-category writes as plugin-origin unless explicitly marked otherwise
-            is_plugin = bool(metadata.get("plugin_id") or (metadata.get("category") == "project"))
+            is_plugin = bool(
+                plugin_origin
+                or metadata.get("plugin_id")
+                or (metadata.get("category") == "project")
+            )
             is_signed = bool(metadata.get("signed") or metadata.get("trusted"))
             tags = metadata.get("tags") or []
-            is_sensitive = bool(metadata.get("sensitive") or ("sensitive" in tags))
+            is_sensitive = bool(
+                sensitive_input or metadata.get("sensitive") or ("sensitive" in tags)
+            )
             if is_plugin and is_sensitive and not is_signed:
                 raise PolicyViolation(
                     "Refusing to persist sensitive plugin output without signature",
@@ -759,7 +878,11 @@ class AetherraMemoryEngineAdvanced:
         else:
             # Default to last 24 hours
             cutoff = datetime.now() - timedelta(days=1)
-            fragments = [f for f in self.fractal_mesh.fragments.values() if f.created_at >= cutoff]
+            fragments = [
+                f
+                for f in self.fractal_mesh.fragments.values()
+                if f.created_at >= cutoff
+            ]
 
         # Generate narrative based on type
         if narrative_type == "daily":
@@ -790,7 +913,9 @@ class AetherraMemoryEngineAdvanced:
             insights = self.reflector.reflect_on_past_range(fragments, time_range)
 
         elif reflection_type == "contradictions":
-            insights = self.reflector.analyze_contradictions(fragments, concept_clusters)
+            insights = self.reflector.analyze_contradictions(
+                fragments, concept_clusters
+            )
 
         elif reflection_type == "concept_exploration" and target_concept:
             insights = self.reflector.explore_concept_connections(
@@ -836,7 +961,7 @@ class AetherraMemoryEngineAdvanced:
             health = self.pulse_monitor.run_pulse_check(fragments, concept_clusters)
 
             # Convert MemoryHealth to dictionary format
-            health_dict = {
+            return {
                 "coherence_score": health.coherence_score,
                 "total_fragments": health.total_fragments,
                 "active_concepts": health.active_concepts,
@@ -844,18 +969,20 @@ class AetherraMemoryEngineAdvanced:
                 "contradiction_count": health.contradiction_count,
                 "orphaned_fragments": health.orphaned_fragments,
                 "health_trend": health.health_trend,
-                "last_maintenance": health.last_maintenance.isoformat()
-                if health.last_maintenance
-                else None,
+                "last_maintenance": (
+                    health.last_maintenance.isoformat()
+                    if health.last_maintenance
+                    else None
+                ),
                 "memory_stats": {
                     "last_check": self.last_pulse_check.isoformat(),
-                    "system_uptime": (datetime.now() - self.last_pulse_check).total_seconds(),
+                    "system_uptime": (
+                        datetime.now() - self.last_pulse_check
+                    ).total_seconds(),
                 },
                 "performance_metrics": self.operation_stats,
                 "status": "healthy" if health.coherence_score > 0.7 else "degraded",
             }
-
-            return health_dict
 
         except Exception as e:
             return {
@@ -899,17 +1026,17 @@ class AetherraMemoryEngineAdvanced:
                 for alert in self.pulse_monitor.get_active_alerts()
             ]
 
-            pulse_data = {
+            return {
                 "pulse_status": "active",
                 "last_pulse_check": self.last_pulse_check.isoformat(),
                 "coherence_score": health.coherence_score,
                 "health_trend": health.health_trend,
                 "drift_alerts": drift_alerts,
                 "monitoring_active": self.config.auto_pulse_monitoring,
-                "next_scheduled_check": (self.last_pulse_check + timedelta(hours=2)).isoformat(),
+                "next_scheduled_check": (
+                    self.last_pulse_check + timedelta(hours=2)
+                ).isoformat(),
             }
-
-            return pulse_data
 
         except Exception as e:
             return {
@@ -978,11 +1105,15 @@ class AetherraMemoryEngineAdvanced:
         ]
 
         for alert in low_severity_alerts[:3]:  # Resolve up to 3 low-severity alerts
-            if self.pulse_monitor.resolve_alert(alert.alert_id, "Auto-resolved during maintenance"):
+            if self.pulse_monitor.resolve_alert(
+                alert.alert_id, "Auto-resolved during maintenance"
+            ):
                 maintenance_results["alerts_resolved"] += 1
 
         # Clean up very old low-confidence fragments
-        cutoff_date = datetime.now() - timedelta(days=self.config.fragment_retention_days)
+        cutoff_date = datetime.now() - timedelta(
+            days=self.config.fragment_retention_days
+        )
         old_fragments = [
             f
             for f in self.fractal_mesh.fragments.values()

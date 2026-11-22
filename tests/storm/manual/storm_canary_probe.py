@@ -4,23 +4,23 @@ Test STORM canary sampling to verify shadow recall divergence detection.
 Processes multiple messages with AETHERRA_STORM_CANARY_PCT=10 to trigger sampling.
 """
 
+# Standard library imports
 import asyncio
 import os
 import sys
 from pathlib import Path
 
-# Set canary percentage before imports
-os.environ["AETHERRA_STORM_CANARY_PCT"] = "10"
-
-# Add project to path
-ROOT_DIR = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT_DIR))
-
-from aetherra_hub.app import create_app
-
 
 async def test_storm_canary():
     """Test STORM canary with 10% sampling rate."""
+    # Configure the explicit manual run without affecting doctest collection.
+    os.environ["AETHERRA_STORM_CANARY_PCT"] = "10"
+    root_dir = Path(__file__).resolve().parents[3]
+    sys.path.insert(0, str(root_dir))
+
+    # Aetherra imports
+    from aetherra_hub.app import create_app
+
     print("Testing STORM canary sampling (10% rate)...")
     print(f"AETHERRA_STORM_CANARY_PCT={os.environ.get('AETHERRA_STORM_CANARY_PCT')}")
 

@@ -1,156 +1,376 @@
-"""Read-only Runtime UI snapshot collection."""
+"""Read-only Runtime UI observations from existing, fresh runtime evidence."""
 
 from __future__ import annotations
 
+# Standard library imports
+import asyncio
+import inspect
+from datetime import UTC, datetime
+from threading import BoundedSemaphore, Event, Thread
 from typing import Any
+
+# Only these known read-only status interfaces are queried. Registry evidence is
+# sufficient for presence, but must never be presented as measured readiness.
+_SERVICES = {
+    "security": ("security",),
+    "homeostasis": ("homeostasis_system", "aetherra_homeostasis"),
+    "memory": ("memory_system",),
+    "consciousness": ("consciousness_core",),
+    "agents": ("agent_fabric",),
+    "self_improvement": ("self_improvement_engine",),
+    "self_incorporation": ("self_incorporation",),
+    "maintenance": ("maintenance",),
+    "aether_script": ("aether_script_service",),
+    "kernel": ("kernel_loop",),
+    "engine": ("aetherra_engine",),
+    "integration_validation": ("integration_validation",),
+}
+_AUTHORITIES = {
+    "security": "enforce",
+    "homeostasis": "observe_verify",
+    "agents": "observe",
+    "self_improvement": "diagnose_propose",
+    "self_incorporation": "execute_after_approval",
+    "maintenance": "coordinate",
+    "kernel": "runtime_core",
+}
+_STATUS_METHODS = {
+    "kernel": "get_status",
+    "engine": "get_system_status",
+    "homeostasis": "get_orchestrator_status",
+}
+_STATUS_TIMEOUT_SECONDS = 0.5
+_STATUS_READ_SLOTS = BoundedSemaphore(3)
+
+
+def _observation(evidence: str, observed_at: str) -> dict[str, Any]:
+    return {
+        "status": "unknown",
+        "health": None,
+        # Neutral rendering value for the existing scene contract, not a sample.
+        "activity": 0.0,
+        "summary": "No fresh runtime evidence is available for this subsystem.",
+        "metrics": {
+            "available": False,
+            "evidence": evidence,
+            "observed_at": observed_at,
+            "freshness": "unknown",
+            "readiness_verified": False,
+            "activity_measured": False,
+        },
+    }
 
 
 def collect_runtime_ui_system_status() -> dict[str, dict[str, Any]]:
-    """Collect conservative subsystem status without activating systems."""
+    """Observe existing services; never start a registry, service, or fallback."""
+    now = datetime.now(UTC)
+    observed_at = now.isoformat().replace("+00:00", "Z")
+    registry = None
+    try:
+        # Aetherra imports
+        from aetherra_service_registry import get_existing_service_registry
 
-    status: dict[str, dict[str, Any]] = {
-        "security": {
-            "status": "active",
-            "health": 1.0,
-            "activity": 0.35,
-            "summary": "Security enforcement and audit foundations are available.",
-            "metrics": {"authority": "enforce"},
-        },
-        "homeostasis": {
-            "status": "stable",
-            "health": 0.9,
-            "activity": 0.2,
-            "summary": "Homeostasis observation, diagnosis, recommendation, and verification foundations are available.",
-            "metrics": {"authority": "observe_verify"},
-        },
-        "memory": {
-            "status": "stable",
-            "health": 0.85,
-            "activity": 0.15,
-            "summary": "Memory is exposed as safe summary metadata for the Observatory foundation.",
-            "metrics": {"view": "summary_only"},
-        },
-        "consciousness": {
-            "status": "stable",
-            "health": 0.8,
-            "activity": 0.2,
-            "summary": "Consciousness traces are represented as read-only runtime state.",
-            "metrics": {"view": "trace_summary"},
-        },
-        "agents": {
-            "status": "stable",
-            "health": 0.8,
-            "activity": 0.2,
-            "summary": "Agent activity is observable without direct UI execution authority.",
-            "metrics": {"authority": "observe"},
-        },
-        "self_improvement": {
-            "status": "stable",
-            "health": 0.85,
-            "activity": 0.18,
-            "summary": "Self-Improvement proposes only; it does not apply changes.",
-            "metrics": {"authority": "diagnose_propose"},
-        },
-        "self_incorporation": {
-            "status": "stable",
-            "health": 0.85,
-            "activity": 0.12,
-            "summary": "Self-Incorporation execution remains staged, governed, and rollback-aware.",
-            "metrics": {"authority": "execute_after_approval"},
-        },
-        "maintenance": {
-            "status": "stable",
-            "health": 0.85,
-            "activity": 0.22,
-            "summary": "Maintenance coordinates observe, propose, approve, apply, verify, and learn cycles.",
-            "metrics": {"authority": "coordinate"},
-        },
-        "aether_script": {
-            "status": "stable",
-            "health": 0.85,
-            "activity": 0.15,
-            "summary": "Aether Script state is presented as validation and execution-gate metadata.",
-            "metrics": {"view": "validation_summary"},
-        },
-        "kernel": {
-            "status": "stable",
-            "health": 0.85,
-            "activity": 0.2,
-            "summary": "Kernel readiness is observable through bounded runtime metadata.",
-            "metrics": {"authority": "runtime_core"},
-        },
-        "integration_validation": {
-            "status": "stable",
-            "health": 0.9,
-            "activity": 0.1,
-            "summary": "Integration Validation is available as a readiness signal; checks are not run per request.",
-            "metrics": {"view": "readiness_signal"},
-        },
-    }
-    status["guardian"] = _guardian_status()
+        registry = get_existing_service_registry()
+        if registry is not None and not registry.get_registry_status().get("running"):
+            registry = None
+    except Exception:
+        registry = None
+
+    status = {}
+    for name, service_names in _SERVICES.items():
+        observation = _observation("registry_unavailable", observed_at)
+        if name in _AUTHORITIES:
+            observation["metrics"]["authority"] = _AUTHORITIES[name]
+        if registry is not None:
+            try:
+                _observe_service(name, service_names, registry, observation, now)
+            except Exception:
+                observation["status"] = "unknown"
+                observation["summary"] = "Runtime evidence could not be collected."
+                observation["metrics"]["evidence"] = "service_status_unavailable"
+        status[name] = observation
+    status["guardian"] = _guardian_status(observed_at)
     return status
 
 
-def collect_runtime_ui_events() -> list[dict[str, Any]]:
-    """Return bounded synthetic activity events for the foundation snapshot."""
+def _observe_service(name, service_names, registry, observation, now) -> None:
+    metrics = observation["metrics"]
+    metrics["source"] = "in_process_registry"
+    info = next(
+        (
+            info
+            for service in service_names
+            if (info := registry.get_service_info(service)) is not None
+        ),
+        None,
+    )
+    if info is None:
+        metrics["evidence"] = "service_unregistered"
+        return
 
+    registry_status = str(getattr(info.status, "value", info.status))
+    metrics.update(
+        {
+            "service_name": info.name,
+            "registry_status": registry_status,
+            "self_heartbeat": bool(info.metadata.get("self_heartbeat")),
+        }
+    )
+    if info.metadata.get("stub") or info.metadata.get("type") == "mock":
+        metrics["evidence"] = "placeholder_service"
+        observation["summary"] = (
+            "Only a placeholder is registered; live service status is unknown."
+        )
+        return
+    heartbeat = info.last_heartbeat
+    if not isinstance(heartbeat, datetime):
+        metrics["evidence"] = "heartbeat_unavailable"
+        return
+    # Registry timestamps are local naive datetimes; astimezone also handles UTC.
+    heartbeat = heartbeat.astimezone(UTC)
+    age = (now - heartbeat).total_seconds()
+    stale_after = max(1, int(getattr(registry, "_stale_sec", 180)))
+    metrics.update(
+        {
+            "last_heartbeat": heartbeat.isoformat().replace("+00:00", "Z"),
+            "heartbeat_age_seconds": round(age, 3),
+            "stale_after_seconds": stale_after,
+        }
+    )
+    if age < 0 or age > stale_after:
+        metrics["freshness"] = "stale" if age > stale_after else "unknown"
+        metrics["evidence"] = (
+            "heartbeat_stale" if age > stale_after else "heartbeat_invalid"
+        )
+        observation["summary"] = (
+            "Registry heartbeat is stale or invalid; current status is unknown."
+        )
+        return
+    metrics.update(
+        {"available": True, "freshness": "fresh", "evidence": "registry_heartbeat"}
+    )
+    observation["status"] = {
+        "healthy": "active",
+        "degraded": "degraded",
+        "failed": "offline",
+        "stopping": "offline",
+    }.get(registry_status, "unknown")
+    observation["summary"] = (
+        f"Registry reports {registry_status}; subsystem readiness has not been verified."
+    )
+    if registry_status not in {"healthy", "degraded"}:
+        return
+    method = _STATUS_METHODS.get(name)
+    if method is None:
+        return
+    raw = _read_status(getattr(info.instance, method, None))
+    if not raw:
+        observation["status"] = "unknown"
+        observation["summary"] = (
+            "The registered service did not provide a bounded status observation."
+        )
+        metrics["evidence"] = "service_status_unavailable"
+        return
+
+    if name == "homeostasis":
+        running = raw.get("running")
+        observation["status"] = (
+            "offline"
+            if running is False
+            else (
+                "active"
+                if running is True and raw.get("initialized") is True
+                else "unknown"
+            )
+        )
+        if observation["status"] == "active" and registry_status == "degraded":
+            observation["status"] = "degraded"
+        metrics.update(
+            {
+                "evidence": "service_status",
+                **_homeostasis_metrics(raw),
+            }
+        )
+        observation["summary"] = (
+            f"Homeostasis reports {observation['status']}; this is a lifecycle observation, not a health score."
+        )
+        return
+
+    if name == "engine":
+        # Aetherra imports
+        from Aetherra.aetherra_core.engine.readiness import build_ai_readiness_payload
+
+        readiness = build_ai_readiness_payload(raw)["readiness"]
+    else:
+        # Aetherra imports
+        from Aetherra.aetherra_core.os_kernel.readiness import assess_kernel_readiness
+
+        readiness = assess_kernel_readiness(raw)
+    metrics.update(
+        {
+            "evidence": "service_readiness",
+            "readiness_verified": True,
+            "readiness": readiness["readiness"],
+            "readiness_reasons": ", ".join(readiness.get("reasons", [])),
+        }
+    )
+    safety_key = "safe_for_requests" if name == "engine" else "safe_to_schedule"
+    metrics[safety_key] = readiness[safety_key]
+    observation["status"] = {
+        "ready": "active",
+        "degraded": "degraded",
+        "blocked": "degraded",
+        "offline": "offline",
+    }.get(readiness["readiness"], "unknown")
+    if observation["status"] == "active" and registry_status == "degraded":
+        observation["status"] = "degraded"
+    reasons = ", ".join(readiness.get("reasons", []))
+    observation["summary"] = (
+        f"Service readiness: {readiness['readiness']} ({reasons}); registry: {registry_status}."
+    )
+
+
+def _homeostasis_metrics(raw: dict[str, Any]) -> dict[str, Any]:
+    """Whitelist lifecycle/mode counters; missing evidence is never a zero."""
+    result: dict[str, Any] = {
+        key: raw[key] if isinstance(raw.get(key), bool) else None
+        for key in ("running", "initialized", "observe_only_requested")
+    }
+    controller = raw.get("controller")
+    mode = controller.get("mode") if isinstance(controller, dict) else None
+    result["controller_mode"] = (
+        mode
+        if isinstance(mode, str)
+        and mode
+        in {
+            "observe_only",
+            "advisory",
+            "active_limited",
+            "active",
+            "emergency",
+            "disabled",
+        }
+        else None
+    )
+    actuators = raw.get("actuators")
+    actuators = actuators if isinstance(actuators, dict) else {}
+    counts = {
+        "restart_count": raw.get("restart_count"),
+        "error_recovery_count": raw.get("error_recovery_count"),
+        "actuator_actions_attempted": actuators.get("actions_attempted"),
+        "actuator_actions_executed": actuators.get("actions_executed"),
+        "actuator_actions_blocked": actuators.get("actions_blocked"),
+    }
+    for key, value in counts.items():
+        result[key] = (
+            value
+            if isinstance(value, int) and not isinstance(value, bool) and value >= 0
+            else None
+        )
+    return result
+
+
+def _read_status(method: Any) -> dict[str, Any] | None:
+    """Bound reads, including a blocked sync getter, without accumulating workers."""
+    if not callable(method) or not _STATUS_READ_SLOTS.acquire(blocking=False):
+        return None
+    done = Event()
+    result: list[dict[str, Any]] = []
+
+    async def resolve(awaitable):
+        return await asyncio.wait_for(awaitable, timeout=_STATUS_TIMEOUT_SECONDS)
+
+    def read() -> None:
+        try:
+            value = method()
+            if inspect.isawaitable(value):
+                value = asyncio.run(resolve(value))
+            if isinstance(value, dict):
+                result.append(value)
+        except Exception:
+            return  # Raw service exceptions can include secrets and paths.
+        finally:
+            _STATUS_READ_SLOTS.release()
+            done.set()
+
+    try:
+        Thread(target=read, name="runtime-ui-status", daemon=True).start()
+    except RuntimeError:
+        _STATUS_READ_SLOTS.release()
+        return None
+    if not done.wait(_STATUS_TIMEOUT_SECONDS):
+        return None
+    return result[0] if result else None
+
+
+def collect_runtime_ui_events() -> list[dict[str, Any]]:
+    """Return bounded snapshot observations, never invented lifecycle events."""
+    observed_at = datetime.now(UTC).isoformat().replace("+00:00", "Z")
     return [
         {
             "source": "runtime_ui",
             "event_type": "observatory_snapshot",
-            "summary": "Read-only Cognitive Observatory snapshot generated.",
+            "summary": "Read-only Observatory observation requested; unavailable evidence is marked unknown.",
             "severity": "info",
-            "details": {"authority": "observe_only"},
+            "occurred_at": observed_at,
+            "details": {"authority": "observe_only", "observation_only": True},
         },
         {
             "source": "guardian",
-            "event_type": "decision",
-            "summary": "Guardian status included in Observatory snapshot.",
+            "event_type": "guardian_status_observed",
+            "summary": "Guardian configuration observation requested; this is not an approval or decision event.",
             "severity": "notice",
-            "details": {"view": "summary_only"},
+            "occurred_at": observed_at,
+            "details": {"view": "summary_only", "observation_only": True},
         },
         {
             "source": "homeostasis",
-            "event_type": "health",
-            "summary": "Homeostasis health is available as read-only status metadata.",
+            "event_type": "homeostasis_status_observed",
+            "summary": "Homeostasis status observation requested; this is not a recovery or verification event.",
             "severity": "info",
-            "details": {"view": "health_summary"},
+            "occurred_at": observed_at,
+            "details": {"view": "health_summary", "observation_only": True},
         },
     ]
 
 
-def _guardian_status() -> dict[str, Any]:
-    try:
-        from Aetherra.guardian import (  # pylint: disable=import-outside-toplevel
+def _guardian_status(observed_at: str) -> dict[str, Any]:
+    observation = _observation("guardian_status_unavailable", observed_at)
+
+    def read_guardian() -> dict[str, Any]:
+        # Aetherra imports
+        from Aetherra.guardian import (
             guardian_audit_integrity_ok,
             guardian_enabled,
             guardian_mode,
             guardian_mode_status,
         )
 
-        enabled = guardian_enabled()
-        audit_ok = guardian_audit_integrity_ok()
-        mode = guardian_mode().value
-        mode_state = guardian_mode_status().get("state")
-    except Exception:
         return {
-            "status": "unknown",
-            "health": None,
-            "activity": 0.0,
-            "summary": "Guardian status could not be collected for this read-only snapshot.",
-            "metrics": {"available": False},
+            "enabled": guardian_enabled(),
+            "audit_integrity_ok": guardian_audit_integrity_ok(),
+            "mode": guardian_mode().value,
+            "mode_state": guardian_mode_status().get("state"),
         }
 
-    return {
-        "status": "active" if enabled else "offline",
-        "health": 1.0 if enabled and audit_ok else 0.55,
-        "activity": 0.4 if enabled else 0.0,
-        "summary": "Guardian is the decision layer above Security and governed execution.",
-        "metrics": {
+    raw = _read_status(read_guardian)
+    if not raw:
+        return observation
+
+    enabled = raw["enabled"]
+    audit_ok = raw["audit_integrity_ok"]
+    observation["status"] = (
+        "offline" if not enabled else "active" if audit_ok else "degraded"
+    )
+    observation["summary"] = (
+        "Guardian configuration and audit integrity observed; execution readiness is not measured."
+    )
+    observation["metrics"].update(
+        {
             "available": True,
-            "enabled": enabled,
-            "mode": mode,
-            "mode_state": mode_state,
-            "audit_integrity_ok": audit_ok,
-        },
-    }
+            "evidence": "guardian_configuration_and_audit",
+            "freshness": "fresh",
+            **raw,
+        }
+    )
+    return observation

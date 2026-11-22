@@ -43,6 +43,9 @@ import yaml
 # Aetherra imports
 from aetherra_service_registry import ServiceStatus, get_service_registry
 
+# Local imports
+from .operating_policy import observe_only_requested
+
 logger = logging.getLogger(__name__)
 
 
@@ -141,7 +144,9 @@ class SystemSupervisor:
                 with open(config_file, encoding="utf-8") as f:
                     return yaml.safe_load(f) or {}
             else:
-                logger.warning(f"Config file not found at {self.config_path}, using defaults")
+                logger.warning(
+                    f"Config file not found at {self.config_path}, using defaults"
+                )
                 return {}
         except Exception as e:
             logger.error(f"Failed to load config from {self.config_path}: {e}")
@@ -203,7 +208,9 @@ class SystemSupervisor:
         self.boot_start_time = time.time()
 
         # Transition to BOOTING state
-        await self._transition_runlevel(SystemRunlevel.BOOTING, "System supervisor started")
+        await self._transition_runlevel(
+            SystemRunlevel.BOOTING, "System supervisor started"
+        )
 
         logger.info("🚀 System supervisor started")
 
@@ -295,7 +302,10 @@ class SystemSupervisor:
                         # Reset error count on recovery
                         if health.status == ServiceStatus.HEALTHY:
                             health.error_count = 0
-                        elif health.status in [ServiceStatus.FAILED, ServiceStatus.DEGRADED]:
+                        elif health.status in [
+                            ServiceStatus.FAILED,
+                            ServiceStatus.DEGRADED,
+                        ]:
                             health.error_count += 1
 
                 else:
@@ -304,7 +314,9 @@ class SystemSupervisor:
                     # reached max restart attempts (indicates non-restartable service)
                     if health.restart_count < self.max_restart_attempts:
                         if health.status != ServiceStatus.FAILED:
-                            logger.warning(f"⚠️ Service {service_name} not found in registry")
+                            logger.warning(
+                                f"⚠️ Service {service_name} not found in registry"
+                            )
                             health.status = ServiceStatus.FAILED
                             health.error_count += 1
                     else:
@@ -318,7 +330,8 @@ class SystemSupervisor:
                     # Check for stale heartbeat only if service was previously healthy
                     if (
                         current_time - health.last_heartbeat > self.heartbeat_timeout
-                        and health.status not in [ServiceStatus.FAILED, ServiceStatus.DEGRADED]
+                        and health.status
+                        not in [ServiceStatus.FAILED, ServiceStatus.DEGRADED]
                     ):
                         logger.warning(f"💔 Service {service_name} heartbeat timeout")
                         health.status = ServiceStatus.FAILED
@@ -393,7 +406,9 @@ class SystemSupervisor:
 
         return health_summary
 
-    def _determine_target_runlevel(self, health_summary: Dict[str, Any]) -> SystemRunlevel:
+    def _determine_target_runlevel(
+        self, health_summary: Dict[str, Any]
+    ) -> SystemRunlevel:
         """Determine the appropriate runlevel based on system health."""
         critical_health = health_summary["critical_health_percentage"]
         overall_health = health_summary["health_percentage"]
@@ -414,14 +429,12 @@ class SystemSupervisor:
             # If we were starting up, might still be BOOTING
             if self.current_runlevel == SystemRunlevel.ONLINE:
                 return SystemRunlevel.DEGRADED
-            elif self.current_runlevel == SystemRunlevel.BOOTING:
+            if self.current_runlevel == SystemRunlevel.BOOTING:
                 # Continue booting if we're making progress
                 if critical_health > 50.0:
                     return SystemRunlevel.DEGRADED
-                else:
-                    return SystemRunlevel.BOOTING
-            else:
-                return SystemRunlevel.DEGRADED
+                return SystemRunlevel.BOOTING
+            return SystemRunlevel.DEGRADED
 
         # Check for online conditions - allow some degraded services
         if critical_health >= 80.0 and overall_health >= 60.0:
@@ -440,20 +453,20 @@ class SystemSupervisor:
         degraded_services = health_summary["degraded_services"]
 
         if new_runlevel == SystemRunlevel.ONLINE:
-            return f"All critical services healthy, overall health {overall_health:.1f}%"
-        elif new_runlevel == SystemRunlevel.DEGRADED:
+            return (
+                f"All critical services healthy, overall health {overall_health:.1f}%"
+            )
+        if new_runlevel == SystemRunlevel.DEGRADED:
             if degraded_services > 0 and failed_services == 0:
                 return f"Services degraded (likely heartbeat issues), critical health {critical_health:.1f}%"
-            else:
-                return (
-                    f"Critical health {critical_health:.1f}%, overall health {overall_health:.1f}%"
-                )
-        elif new_runlevel == SystemRunlevel.FAILED:
-            return f"Critical system failure, {failed_services} services actually failed"
-        elif new_runlevel == SystemRunlevel.OFFLINE:
+            return f"Critical health {critical_health:.1f}%, overall health {overall_health:.1f}%"
+        if new_runlevel == SystemRunlevel.FAILED:
+            return (
+                f"Critical system failure, {failed_services} services actually failed"
+            )
+        if new_runlevel == SystemRunlevel.OFFLINE:
             return f"System offline, critical health {critical_health:.1f}%"
-        else:
-            return f"System state change, health {overall_health:.1f}%"
+        return f"System state change, health {overall_health:.1f}%"
 
     async def _transition_runlevel(self, new_runlevel: SystemRunlevel, reason: str):
         """Transition to a new runlevel."""
@@ -472,19 +485,26 @@ class SystemSupervisor:
         self.current_runlevel = new_runlevel
 
         # Update timestamps
-        if new_runlevel == SystemRunlevel.ONLINE and old_runlevel != SystemRunlevel.ONLINE:
+        if (
+            new_runlevel == SystemRunlevel.ONLINE
+            and old_runlevel != SystemRunlevel.ONLINE
+        ):
             self.online_since = time.time()
         elif new_runlevel != SystemRunlevel.ONLINE:
             self.online_since = None
 
         # Log transition
-        logger.info(f"🎯 Runlevel transition: {old_runlevel.value} → {new_runlevel.value}")
+        logger.info(
+            f"🎯 Runlevel transition: {old_runlevel.value} → {new_runlevel.value}"
+        )
         logger.info(f"📝 Reason: {reason}")
 
         # Perform runlevel-specific actions
         await self._handle_runlevel_actions(old_runlevel, new_runlevel)
 
-    async def _handle_runlevel_actions(self, old_level: SystemRunlevel, new_level: SystemRunlevel):
+    async def _handle_runlevel_actions(
+        self, old_level: SystemRunlevel, new_level: SystemRunlevel
+    ):
         """Handle actions specific to runlevel transitions."""
         if new_level == SystemRunlevel.ONLINE and old_level != SystemRunlevel.ONLINE:
             logger.info("✅ System is now ONLINE - all critical services healthy")
@@ -535,14 +555,19 @@ class SystemSupervisor:
             if self._should_restart_service(health, current_time):
                 await self._restart_service(service_name, health)
 
-    def _should_restart_service(self, health: ServiceHealth, current_time: float) -> bool:
+    def _should_restart_service(
+        self, health: ServiceHealth, current_time: float
+    ) -> bool:
         """Determine if a service should be restarted."""
         # Don't restart if already at max attempts
         if health.restart_count >= self.max_restart_attempts:
             return False
 
         # Don't restart if in cooldown period
-        if health.last_restart and (current_time - health.last_restart) < self.restart_cooldown:
+        if (
+            health.last_restart
+            and (current_time - health.last_restart) < self.restart_cooldown
+        ):
             return False
 
         # Restart failed critical services immediately
@@ -560,6 +585,8 @@ class SystemSupervisor:
 
     async def _restart_service(self, service_name: str, health: ServiceHealth):
         """Attempt to restart a service."""
+        if observe_only_requested():
+            return
         try:
             logger.info(f"🔄 Attempting to restart service: {service_name}")
 
@@ -611,26 +638,36 @@ class SystemSupervisor:
         current_time = time.time()
 
         # Calculate uptime
-        boot_uptime = current_time - self.boot_start_time if self.boot_start_time else 0.0
+        boot_uptime = (
+            current_time - self.boot_start_time if self.boot_start_time else 0.0
+        )
         online_uptime = current_time - self.online_since if self.online_since else 0.0
 
         # Count service statistics
         service_stats = {
             "total": len(self.service_health),
             "healthy": sum(
-                1 for h in self.service_health.values() if h.status == ServiceStatus.HEALTHY
+                1
+                for h in self.service_health.values()
+                if h.status == ServiceStatus.HEALTHY
             ),
             "degraded": sum(
-                1 for h in self.service_health.values() if h.status == ServiceStatus.DEGRADED
+                1
+                for h in self.service_health.values()
+                if h.status == ServiceStatus.DEGRADED
             ),
             "failed": sum(
-                1 for h in self.service_health.values() if h.status == ServiceStatus.FAILED
+                1
+                for h in self.service_health.values()
+                if h.status == ServiceStatus.FAILED
             ),
         }
 
         # Calculate restart statistics
         restart_stats = {
-            "total_restarts": sum(h.restart_count for h in self.service_health.values()),
+            "total_restarts": sum(
+                h.restart_count for h in self.service_health.values()
+            ),
             "services_restarted": sum(
                 1 for h in self.service_health.values() if h.restart_count > 0
             ),
@@ -687,7 +724,9 @@ class SystemSupervisor:
                 check.get("status") == "healthy"
                 for check in verification_results["vital_checks"].values()
             )
-            critical_services_healthy = service_result.get("critical_services_healthy", 0)
+            critical_services_healthy = service_result.get(
+                "critical_services_healthy", 0
+            )
             total_critical = service_result.get("critical_services_total", 1)
 
             if all_vital_healthy and critical_services_healthy == total_critical:
@@ -710,7 +749,9 @@ class SystemSupervisor:
                     if check.get("status") in {"failed", "error"}
                 ]
                 if failed_checks:
-                    logger.warning(f"⚠️ Failed vital checks: {', '.join(failed_checks)}")
+                    logger.warning(
+                        "⚠️ Failed vital checks: %s", ", ".join(failed_checks)
+                    )
 
         except Exception as e:
             logger.error(f"❌ System verification failed: {e}")
@@ -739,7 +780,10 @@ class SystemSupervisor:
             if not memory_service:
                 logger.debug("[HEALTH] Memory coherence check: service not found")
                 if self._is_boot_grace_period():
-                    return {"status": "starting", "reason": "service_registration_pending"}
+                    return {
+                        "status": "starting",
+                        "reason": "service_registration_pending",
+                    }
                 return {"status": "failed", "reason": "service_not_found"}
 
             # Check basic memory service health
@@ -747,19 +791,26 @@ class SystemSupervisor:
                 logger.debug(
                     f"[HEALTH] Memory coherence check: service status={memory_service.status.value}"
                 )
-                return {"status": "degraded", "reason": f"status_{memory_service.status.value}"}
+                return {
+                    "status": "degraded",
+                    "reason": f"status_{memory_service.status.value}",
+                }
 
             # If the memory service has a coherence check method, use it
             if hasattr(memory_service.instance, "check_coherence"):
                 coherence_ok = await memory_service.instance.check_coherence()
                 if not coherence_ok:
-                    logger.debug("[HEALTH] Memory coherence check: coherence check failed")
+                    logger.debug(
+                        "[HEALTH] Memory coherence check: coherence check failed"
+                    )
                     return {"status": "degraded", "reason": "coherence_check_failed"}
 
             return {"status": "healthy", "uptime": getattr(memory_service, "uptime", 0)}
 
         except Exception as e:
-            logger.warning(f"[HEALTH] Memory coherence check exception: {e}", exc_info=True)
+            logger.warning(
+                f"[HEALTH] Memory coherence check exception: {e}", exc_info=True
+            )
             return {"status": "error", "reason": str(e)}
 
     async def _verify_plugin_queue_health(self) -> Dict[str, Any]:
@@ -774,7 +825,10 @@ class SystemSupervisor:
             if not plugin_service:
                 logger.debug("[HEALTH] Plugin queue check: service not found")
                 if self._is_boot_grace_period():
-                    return {"status": "starting", "reason": "service_registration_pending"}
+                    return {
+                        "status": "starting",
+                        "reason": "service_registration_pending",
+                    }
                 return {"status": "failed", "reason": "service_not_found"}
 
             # Check plugin manager health
@@ -782,13 +836,18 @@ class SystemSupervisor:
                 logger.debug(
                     f"[HEALTH] Plugin queue check: service status={plugin_service.status.value}"
                 )
-                return {"status": "degraded", "reason": f"status_{plugin_service.status.value}"}
+                return {
+                    "status": "degraded",
+                    "reason": f"status_{plugin_service.status.value}",
+                }
 
             # If plugin manager has queue health check, use it
             if hasattr(plugin_service.instance, "get_queue_health"):
                 queue_health = await plugin_service.instance.get_queue_health()
                 if queue_health.get("status") != "healthy":
-                    logger.debug(f"[HEALTH] Plugin queue check: queue unhealthy: {queue_health}")
+                    logger.debug(
+                        f"[HEALTH] Plugin queue check: queue unhealthy: {queue_health}"
+                    )
                     return {
                         "status": "degraded",
                         "reason": "queue_unhealthy",
@@ -811,12 +870,18 @@ class SystemSupervisor:
             lyrixa_service = registry.get_service_info("lyrixa_chat")
             if not lyrixa_service:
                 if self._is_boot_grace_period():
-                    return {"status": "starting", "reason": "service_registration_pending"}
+                    return {
+                        "status": "starting",
+                        "reason": "service_registration_pending",
+                    }
                 return {"status": "failed", "reason": "service_not_found"}
 
             # Check Lyrixa service health
             if lyrixa_service.status.value not in ["healthy", "starting"]:
-                return {"status": "degraded", "reason": f"status_{lyrixa_service.status.value}"}
+                return {
+                    "status": "degraded",
+                    "reason": f"status_{lyrixa_service.status.value}",
+                }
 
             # Check heartbeat timing
             current_time = time.time()
@@ -824,7 +889,11 @@ class SystemSupervisor:
             if service_health:
                 heartbeat_age = current_time - service_health.last_heartbeat
                 if heartbeat_age > self.heartbeat_timeout:
-                    return {"status": "degraded", "reason": "heartbeat_stale", "age": heartbeat_age}
+                    return {
+                        "status": "degraded",
+                        "reason": "heartbeat_stale",
+                        "age": heartbeat_age,
+                    }
 
             return {"status": "healthy", "service_status": lyrixa_service.status.value}
 
@@ -843,7 +912,10 @@ class SystemSupervisor:
             if not hub_service:
                 logger.debug("[HEALTH] Hub connectivity check: service not found")
                 if self._is_boot_grace_period():
-                    return {"status": "starting", "reason": "service_registration_pending"}
+                    return {
+                        "status": "starting",
+                        "reason": "service_registration_pending",
+                    }
                 return {"status": "failed", "reason": "service_not_found"}
 
             # Check Hub service health
@@ -851,7 +923,10 @@ class SystemSupervisor:
                 logger.debug(
                     f"[HEALTH] Hub connectivity check: service status={hub_service.status.value}"
                 )
-                return {"status": "degraded", "reason": f"status_{hub_service.status.value}"}
+                return {
+                    "status": "degraded",
+                    "reason": f"status_{hub_service.status.value}",
+                }
 
             # Additional connectivity check - try to ping hub if possible
             if hasattr(hub_service.instance, "ping"):
@@ -863,7 +938,9 @@ class SystemSupervisor:
             return {"status": "healthy", "service_status": hub_service.status.value}
 
         except Exception as e:
-            logger.warning(f"[HEALTH] Hub connectivity check exception: {e}", exc_info=True)
+            logger.warning(
+                f"[HEALTH] Hub connectivity check exception: {e}", exc_info=True
+            )
             return {"status": "error", "reason": str(e)}
 
     async def _verify_service_health(self) -> Dict[str, Any]:
@@ -918,7 +995,8 @@ class SystemSupervisor:
                                 "status": "registry_based",
                                 "timestamp": current_time,
                             }
-                            self.service_health[service_name].last_heartbeat = current_time
+                            health = self.service_health[service_name]
+                            health.last_heartbeat = current_time
 
                 except Exception as e:
                     logger.debug(f"Heartbeat failed for {service_name}: {e}")
@@ -928,7 +1006,9 @@ class SystemSupervisor:
                         "timestamp": current_time,
                     }
 
-            logger.debug(f"💓 Heartbeat complete: {len(heartbeat_results)} services pinged")
+            logger.debug(
+                f"💓 Heartbeat complete: {len(heartbeat_results)} services pinged"
+            )
 
         except Exception as e:
             logger.error(f"❌ Heartbeat operation failed: {e}")
@@ -936,7 +1016,10 @@ class SystemSupervisor:
     def _log_periodic_status(self):
         """Log periodic status information."""
         # Log detailed status every 5 minutes
-        if hasattr(self, "_last_detailed_log") and time.time() - self._last_detailed_log < 300.0:
+        if (
+            hasattr(self, "_last_detailed_log")
+            and time.time() - self._last_detailed_log < 300.0
+        ):
             return
 
         self._last_detailed_log = time.time()
@@ -994,7 +1077,16 @@ class SystemSupervisor:
             "health_summary": health_summary,
             "services": self._get_services_summary(),
             "stability_metrics": self.stability_metrics,
-            "recent_transitions": self.runlevel_history[-5:] if self.runlevel_history else [],
+            "recent_transitions": [
+                {
+                    "from_level": transition.from_level.value,
+                    "to_level": transition.to_level.value,
+                    "timestamp": transition.timestamp,
+                    "reason": transition.reason,
+                    "triggered_by": transition.triggered_by,
+                }
+                for transition in self.runlevel_history[-5:]
+            ],
         }
 
     def get_service_health(self, service_name: str) -> Optional[Dict[str, Any]]:
@@ -1019,7 +1111,9 @@ class SystemSupervisor:
     ):
         """Force a runlevel transition (use with caution)."""
         if target_level != self.current_runlevel:
-            logger.warning(f"🔧 Forcing runlevel transition to {target_level.value}: {reason}")
+            logger.warning(
+                f"🔧 Forcing runlevel transition to {target_level.value}: {reason}"
+            )
             self.target_runlevel = target_level
             # The next supervision cycle will handle the transition
 
@@ -1063,6 +1157,7 @@ def get_system_supervisor() -> SystemSupervisor:
 
 if __name__ == "__main__":
     # Test the system supervisor
+    # Standard library imports
     import asyncio
 
     async def test_supervisor():

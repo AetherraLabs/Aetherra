@@ -1,10 +1,28 @@
+# Standard library imports
 import asyncio
-import os
 
+# Third party imports
+import pytest
+
+# Aetherra imports
 from aetherra_self_incorporation import (
+    FileItem,
+    ItemType,
+    SafetyDecision,
     SelfIncorporationConfig,
     SelfIncorporationService,
+    TrustTier,
 )
+
+
+@pytest.fixture(autouse=True)
+def isolated_selfinc_environment(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))
+    monkeypatch.setenv("AETHERRA_STATE_DIR", str(tmp_path / "state"))
+    monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(tmp_path))
+    monkeypatch.setenv("AETHERRA_GUARDIAN_MODE", "enforcing")
 
 
 async def _start_selfinc():
@@ -12,6 +30,36 @@ async def _start_selfinc():
     svc = SelfIncorporationService(cfg)
     await svc.start()
     return svc
+
+
+def _workflow_action(svc, name, component):
+    svc.code_index.store_file(
+        FileItem(
+            id=name,
+            path=f"workflows/{name}.aether",
+            hash="test-workflow-hash",
+            size=10,
+            mtime=1.0,
+            type=ItemType.WORKFLOW,
+            language="aether",
+        )
+    )
+    # The integration fixture has already passed signature and capability checks.
+    svc.safety_index.store_decision(
+        SafetyDecision(
+            file_id=name,
+            verified=True,
+            signing={"ok": True},
+            capability_ok=True,
+            trust_tier=TrustTier.VERIFIED,
+        )
+    )
+    return {
+        "action": "register_workflow",
+        "component": component,
+        "target": {"file_id": name},
+        "deps": [],
+    }
 
 
 def test_guard_policies_integration_velocity_accept_then_reject(monkeypatch):
@@ -47,22 +95,29 @@ def test_guard_policies_actuator_frequency_rejects_second_action(monkeypatch):
     p1 = {
         "type": "optimize",
         "params": {
-            "integration_plan": {"actions": [{"component": "compA", "op": "tune"}]}
+            "integration_plan": {
+                "actions": [_workflow_action(svc, "first_workflow", "compA")]
+            }
         },
     }
     r1 = asyncio.run(svc.handle_message("selfimprovement.proposal", p1))
     assert r1.get("status") == "accepted"
+    assert r1["details"]["integration"]["applied"] == 1
+    assert "first_workflow" in svc._workflows
 
     # Second proposal on same component within the window should be rejected
     p2 = {
         "type": "optimize",
         "params": {
-            "integration_plan": {"actions": [{"component": "compA", "op": "tune"}]}
+            "integration_plan": {
+                "actions": [_workflow_action(svc, "second_workflow", "compA")]
+            }
         },
     }
     r2 = asyncio.run(svc.handle_message("selfimprovement.proposal", p2))
     assert r2.get("status") == "rejected"
     assert r2.get("reason", "").startswith("guard_violation:actuator_frequency:")
+    assert "second_workflow" not in svc._workflows
 
 
 def test_guard_policies_rollback_cascade_rejects_third(monkeypatch):
@@ -72,61 +127,31 @@ def test_guard_policies_rollback_cascade_rejects_third(monkeypatch):
 
     svc = asyncio.run(_start_selfinc())
 
-    # Create three fake rollback tokens with proper prefix
-    rb1, rb2, rb3 = "rb_1", "rb_2", "rb_3"
-
-    # Provide a stub HMR controller via service registry
-    class _StubInfo:
-        def __init__(self, instance):
-            self.instance = instance
-
-    class _StubRegistry:
-        def get_service_info(self, name: str):
-            if name == "hmr_controller":
-                return _StubInfo(object())
-            return None
-
-    svc.service_registry = _StubRegistry()
-
-    # Append audit entries to make tokens discoverable
-    svc.audit_ledger.append(
-        plan_id="p1",
-        action="proposal:optimize",
-        status="applied",
-        target={"a": 1},
-        result={"rollback_token": rb1},
-        trace_id="t1",
-        ethics_overall=None,
-        risk_level="low",
-    )
-    svc.audit_ledger.append(
-        plan_id="p2",
-        action="proposal:optimize",
-        status="applied",
-        target={"a": 2},
-        result={"rollback_token": rb2},
-        trace_id="t2",
-        ethics_overall=None,
-        risk_level="low",
-    )
-    svc.audit_ledger.append(
-        plan_id="p3",
-        action="proposal:optimize",
-        status="applied",
-        target={"a": 3},
-        result={"rollback_token": rb3},
-        trace_id="t3",
-        ethics_overall=None,
-        risk_level="low",
-    )
+    # Register real workflows to produce supported audit records and rollback tokens.
+    plan = {
+        "plan_id": "rollback-guard-plan",
+        "status": "ready",
+        "actions": [
+            _workflow_action(svc, "rollback_one", "compA"),
+            _workflow_action(svc, "rollback_two", "compB"),
+            _workflow_action(svc, "rollback_three", "compC"),
+        ],
+    }
+    applied = asyncio.run(svc.core_integrator.execute_plan(plan, dry_run=False))
+    assert applied["ok"] is True
+    assert applied["applied"] == 3
+    rb1, rb2, rb3 = [result["rollback_token"] for result in applied["results"]]
 
     # First two rollbacks allowed
     r1 = asyncio.run(svc.trigger_rollback(rb1))
     r2 = asyncio.run(svc.trigger_rollback(rb2))
     assert r1.get("ok") is True
     assert r2.get("ok") is True
+    assert "rollback_one" not in svc._workflows
+    assert "rollback_two" not in svc._workflows
 
     # Third rollback should be rejected by guard policy
     r3 = asyncio.run(svc.trigger_rollback(rb3))
     assert r3.get("ok") is False
     assert r3.get("error", "").startswith("guard_violation:rollback_cascade")
+    assert "rollback_three" in svc._workflows

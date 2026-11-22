@@ -3,7 +3,7 @@
 > Maintained and officially operated by **Aetherra Labs**.
 > **Powered by Aetherra Labs.**
 
-Updated: 2026-10-13
+Updated: 2026-11-22
 
 This guide covers testing practices, test suite structure, and how to write and run tests for Aetherra OS, Hub, and related components.
 
@@ -37,6 +37,21 @@ On 2026-10-13, the following prototype suites were retired:
   `tests/ai/test_intelligence_real_api.py` substituted local fake implementations
   when their nonexistent production imports failed. They were not evidence of
   the active Engine's behavior or live provider acceptance.
+
+On 2026-11-22, `tests/integration/test_phase2_bridge.py` was retired. It was an
+interactive Qt demo for the removed `lyrixa.gui.main_window` desktop surface,
+with synthetic telemetry and an unbounded application event loop, not an
+automated regression. The active Observatory is verified by the real Runtime UI
+API tests, the GUI's Node tests/build/lint, and the full-launcher browser smoke
+in [the alpha runbook](ALPHA_OPERATOR_RUNBOOK.md). No active Runtime UI test was
+excluded. The manual engine metrics probe now imports the supported
+`aetherra_hub.app` factory; successful collection alone is not a metrics pass.
+
+The manual STORM probes now defer setup and execution to their script entry
+points. Importing them for doctest collection must not set feature flags or
+create databases. Memory fragmentation measurement restores allocation tracing
+when it owns the session; it must preserve a caller's tracing session. These
+boundaries prevent one probe from changing later tests' behavior.
 
 The unreferenced `tools/maintenance/clean_hub_tmp.py` and
 `tools/maintenance/clean_hub_tmp_utf8.py` temporary Hub copies were also retired;
@@ -159,7 +174,7 @@ pytest -k homeostasis
 
 ### Directory Layout
 
-```
+```text
 tests/
 ├── unit/                       # Unit tests
 │   ├── test_memory_system.py
@@ -950,7 +965,7 @@ def test_learning_evaluation(golden_dataset):
 
 ### Test Fixtures Organization
 
-```
+```text
 tests/
 ├── data/
 │   ├── fixtures/
