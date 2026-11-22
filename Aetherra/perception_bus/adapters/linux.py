@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import contextlib
 import os
+import shutil
 import subprocess
 import threading
 import time
@@ -111,35 +112,85 @@ class LinuxJournalAdapter(AdapterBase):
 
     name = "linux.journal"
 
+    def __init__(self, bus):
+        super().__init__(bus)
+        self._lock = threading.Lock()
+        self._process = None
+        self._thread = None
+
     def start(self) -> None:
         """Start background journald monitoring."""
-        self.is_running = True
+        with self._lock:
+            if self._thread is not None and self._thread.is_alive():
+                return
+            self.is_running = True
+            self._thread = threading.Thread(
+                target=self._run, daemon=True, name=self.name
+            )
+            self._thread.start()
 
-        def run() -> None:
+    @staticmethod
+    def _reap(proc) -> None:
+        if proc.poll() is None:
+            with contextlib.suppress(ProcessLookupError):
+                proc.terminate()
+            try:
+                proc.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait(timeout=2)
+
+    def _run(self) -> None:
+        proc = None
+        try:
             self.emit_online()
-            # Follow syslog or journalctl
-            cmd = [
-                "bash",
-                "-lc",
-                "command -v journalctl >/dev/null 2>&1 && journalctl -f -n 0 || tail -f /var/log/syslog",
-            ]
-
-            with contextlib.suppress(Exception):
-                proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, text=True)
-                if proc.stdout:
-                    for line in proc.stdout:
-                        if not self.is_running:
-                            proc.kill()
-                            break
-                        self.bus.publish(
-                            Event(
-                                type=ERR_LOG,
-                                payload={"line": line.strip()[:200]},
-                                source=self.name,
-                            )
+            # Own the follower directly, without a shell that can leave it orphaned.
+            cmd = (
+                ["journalctl", "-f", "-n", "0"]
+                if shutil.which("journalctl")
+                else ["tail", "-f", "/var/log/syslog"]
+            )
+            with self._lock:
+                if not self.is_running:
+                    return
+                proc = subprocess.Popen(
+                    cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True
+                )
+                self._process = proc
+            if proc.stdout:
+                for line in proc.stdout:
+                    if not self.is_running:
+                        break
+                    self.bus.publish(
+                        Event(
+                            type=ERR_LOG,
+                            payload={"line": line.strip()[:200]},
+                            source=self.name,
                         )
+                    )
+        except OSError as exc:
+            self.emit_offline(str(exc))
+        finally:
+            if proc is not None:
+                self._reap(proc)
+                if proc.stdout:
+                    proc.stdout.close()
+            with self._lock:
+                self._process = None
+                self.is_running = False
 
-        threading.Thread(target=run, daemon=True, name=self.name).start()
+    def stop(self) -> None:
+        """Stop an idle follower, reap it, and join its blocked pipe reader."""
+        with self._lock:
+            self.is_running = False
+            proc = self._process
+            thread = self._thread
+        if proc is not None:
+            self._reap(proc)
+        if thread is not None and thread is not threading.current_thread():
+            thread.join(timeout=5)
+            if thread.is_alive():
+                raise RuntimeError("journal follower did not stop")
 
 
 class LinuxFSAdapter(AdapterBase):
