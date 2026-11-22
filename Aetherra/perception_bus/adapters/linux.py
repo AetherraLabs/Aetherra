@@ -11,14 +11,18 @@ No simulation—only actual system metrics.
 
 from __future__ import annotations
 
+# Standard library imports
 import contextlib
 import os
+import shutil
 import subprocess
 import threading
 import time
 
+# Aetherra imports
 from Aetherra.consciousness.core.types import Event
 
+# Local imports
 from ..event_types import (
     DISK_STATUS,
     ERR_LOG,
@@ -48,7 +52,7 @@ class LinuxProcAdapter(AdapterBase):
                     # Top CPU process
                     top = subprocess.run(
                         [
-                            "bash",
+                            shutil.which("bash") or "/bin/bash",
                             "-lc",
                             "ps -eo pid,pcpu,comm --sort=-pcpu | head -n 2 | tail -n 1",
                         ],
@@ -111,35 +115,93 @@ class LinuxJournalAdapter(AdapterBase):
 
     name = "linux.journal"
 
+    def __init__(self, bus):
+        super().__init__(bus)
+        self._lock = threading.Lock()
+        self._process = None
+        self._thread = None
+
     def start(self) -> None:
         """Start background journald monitoring."""
-        self.is_running = True
+        with self._lock:
+            if self._thread is not None and self._thread.is_alive():
+                return
+            self.is_running = True
+            self._thread = threading.Thread(
+                target=self._run, daemon=True, name=self.name
+            )
+            self._thread.start()
 
-        def run() -> None:
+    @staticmethod
+    def _reap(proc) -> None:
+        if proc.poll() is None:
+            with contextlib.suppress(ProcessLookupError):
+                proc.terminate()
+            try:
+                proc.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait(timeout=2)
+
+    def _run(self) -> None:
+        try:
             self.emit_online()
-            # Follow syslog or journalctl
-            cmd = [
-                "bash",
-                "-lc",
-                "command -v journalctl >/dev/null 2>&1 && journalctl -f -n 0 || tail -f /var/log/syslog",
-            ]
+            # Own followers directly; retain syslog fallback if journald fails.
+            commands = [["tail", "-f", "/var/log/syslog"]]
+            if shutil.which("journalctl"):
+                commands.insert(0, ["journalctl", "-f", "-n", "0"])
+            for cmd in commands:
+                if self._follow(cmd) == 0:
+                    break
+        finally:
+            with self._lock:
+                self.is_running = False
 
-            with contextlib.suppress(Exception):
-                proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, text=True)
-                if proc.stdout:
-                    for line in proc.stdout:
-                        if not self.is_running:
-                            proc.kill()
-                            break
-                        self.bus.publish(
-                            Event(
-                                type=ERR_LOG,
-                                payload={"line": line.strip()[:200]},
-                                source=self.name,
-                            )
+    def _follow(self, cmd) -> int:
+        proc = None
+        try:
+            with self._lock:
+                if not self.is_running:
+                    return 0
+                proc = subprocess.Popen(
+                    cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True
+                )
+                self._process = proc
+            if proc.stdout:
+                for line in proc.stdout:
+                    if not self.is_running:
+                        break
+                    self.bus.publish(
+                        Event(
+                            type=ERR_LOG,
+                            payload={"line": line.strip()[:200]},
+                            source=self.name,
                         )
+                    )
+            return proc.wait()
+        except OSError as exc:
+            self.emit_offline(str(exc))
+            return 1
+        finally:
+            if proc is not None:
+                self._reap(proc)
+                if proc.stdout:
+                    proc.stdout.close()
+            with self._lock:
+                self._process = None
 
-        threading.Thread(target=run, daemon=True, name=self.name).start()
+    def stop(self) -> None:
+        """Stop an idle follower, reap it, and join its blocked pipe reader."""
+        with self._lock:
+            self.is_running = False
+            proc = self._process
+            thread = self._thread
+        if proc is not None:
+            self._reap(proc)
+        if thread is not None and thread is not threading.current_thread():
+            thread.join(timeout=5)
+            if thread.is_alive():
+                raise RuntimeError("journal follower did not stop")
 
 
 class LinuxFSAdapter(AdapterBase):
@@ -215,7 +277,11 @@ class LinuxServiceAdapter(AdapterBase):
                 with contextlib.suppress(Exception):
                     for svc in self.watch_services:
                         result = subprocess.run(
-                            ["systemctl", "is-active", svc],
+                            [
+                                shutil.which("systemctl") or "/bin/systemctl",
+                                "is-active",
+                                svc,
+                            ],
                             capture_output=True,
                             text=True,
                             timeout=2,

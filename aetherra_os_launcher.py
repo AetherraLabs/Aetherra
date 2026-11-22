@@ -397,6 +397,8 @@ class AetherraOSLauncher:
         self._storm_enabled = False
         # Registry Daemon heartbeat tasks
         self._daemon_heartbeat_tasks: list[asyncio.Task] = []
+        self._perception_adapters = []
+        self._consciousness_task = None
 
     async def launch_full_os(self, config: dict[str, Any] | None = None):
         """[LAUNCH] Launch the complete Aetherra AI Operating System."""
@@ -529,6 +531,9 @@ class AetherraOSLauncher:
             traceback.print_exc()
             await self._emergency_shutdown()
             raise
+        finally:
+            # Startup can be cancelled before the operation loop is ever entered.
+            await self._graceful_shutdown()
 
     def _apply_logging_mode(self, config: dict[str, Any]):
         """Adjust logging levels based on config/env (quiet mode, log level)."""
@@ -1208,9 +1213,7 @@ class AetherraOSLauncher:
                             # Do not initialize controller in unsafe production posture
                             with contextlib.suppress(Exception):
                                 # Aetherra imports
-                                from aetherra_hub.services import (
-                                    metrics_accum,  # type: ignore
-                                )
+                                from aetherra_hub.services import metrics_accum
 
                                 metrics_accum.inc_hmr_denied("requirements_not_met")
                             raise RuntimeError("hmr_requirements_not_met")
@@ -2381,13 +2384,13 @@ class AetherraOSLauncher:
 
             # Aetherra imports
             from Aetherra.consciousness.core import ConsciousnessCore
-            from Aetherra.consciousness.core import config as consciousness_config
+            from Aetherra.consciousness.core.config import MAX_WORKING_MEMORY
             from Aetherra.perception_bus.bus import PerceptionBus
 
             logger.info("[CONSCIOUSNESS] Initializing Phase 1 ConsciousnessCore...")
 
             # Create perception bus for real-time OS events
-            bus = PerceptionBus(maxlen=consciousness_config.MAX_WORKING_MEMORY)
+            bus = PerceptionBus(maxlen=MAX_WORKING_MEMORY)
 
             # Start OS adapters based on platform
             if platform.system() == "Windows":
@@ -2402,11 +2405,13 @@ class AetherraOSLauncher:
                 )
 
                 # Start adapters in background
-                WindowsProcAdapter(bus).start()
-                WindowsDiskAdapter(bus).start()
-                WindowsEventLogAdapter(bus).start()
-                WindowsPerfAdapter(bus).start()
-                WindowsServiceAdapter(bus).start()
+                self._perception_adapters = [
+                    WindowsProcAdapter(bus),
+                    WindowsDiskAdapter(bus),
+                    WindowsEventLogAdapter(bus),
+                    WindowsPerfAdapter(bus),
+                    WindowsServiceAdapter(bus),
+                ]
 
             elif platform.system() == "Linux":
                 logger.info("[CONSCIOUSNESS] Starting Linux perception adapters...")
@@ -2419,15 +2424,20 @@ class AetherraOSLauncher:
                     LinuxServiceAdapter,
                 )
 
-                LinuxProcAdapter(bus).start()
-                LinuxDiskAdapter(bus).start()
-                LinuxJournalAdapter(bus).start()
-                LinuxFSAdapter(bus, watch_paths=["/etc", "/var/log"]).start()
-                LinuxServiceAdapter(bus).start()
+                self._perception_adapters = [
+                    LinuxProcAdapter(bus),
+                    LinuxDiskAdapter(bus),
+                    LinuxJournalAdapter(bus),
+                    LinuxFSAdapter(bus, watch_paths=["/etc", "/var/log"]),
+                    LinuxServiceAdapter(bus),
+                ]
             else:
                 logger.warning(
                     f"[CONSCIOUSNESS] No adapters for platform: {platform.system()}, running in limited mode"
                 )
+
+            for adapter in self._perception_adapters:
+                adapter.start()
 
             # Initialize ConsciousnessCore
             core = ConsciousnessCore(bus, safety_envelope=None, memory_engine=None)
@@ -2460,7 +2470,9 @@ class AetherraOSLauncher:
             )
 
             # Start consciousness tick loop in background
-            asyncio.create_task(self._consciousness_tick_loop(core))
+            self._consciousness_task = asyncio.create_task(
+                self._consciousness_tick_loop(core)
+            )
 
             logger.info("[OK] Phase 1 ConsciousnessCore online with ThinkStream")
 
@@ -3543,7 +3555,6 @@ class AetherraOSLauncher:
             logger.error(f"[ERROR] Main operation loop error: {e}")
         finally:
             await self._cleanup_os_status()
-            await self._graceful_shutdown()
 
     async def _write_os_status(self):
         """Write OS status to file for cross-process detection."""
@@ -3655,6 +3666,19 @@ class AetherraOSLauncher:
         logger.info("🛑 Initiating graceful shutdown...")
 
         self.running = False
+
+        if self._consciousness_task is not None:
+            self._consciousness_task.cancel()
+            await asyncio.gather(self._consciousness_task, return_exceptions=True)
+            self._consciousness_task = None
+        for adapter in self._perception_adapters:
+            try:
+                adapter.stop()
+            except Exception:
+                logger.exception(
+                    "[ERROR] Could not stop perception adapter %s", adapter.name
+                )
+        self._perception_adapters.clear()
 
         await self._stop_presence_resources()
 

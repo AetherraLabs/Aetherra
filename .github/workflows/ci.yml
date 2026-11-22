@@ -41,6 +41,7 @@ jobs:
         run: python tools/os_smoke.py
 
       - name: Capabilities tests
+        timeout-minutes: 5
         run: pytest -q -o addopts= tests/capabilities
 
       - name: SSE v2 tests
