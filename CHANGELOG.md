@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.3 (2026-11-22)
+
+### Bug Fixes
+
+- **alpha**: Enforce observation policy and repair runtime evidence
+  ([`ff2dbeb`](https://github.com/AetherraLabs/Aetherra/commit/ff2dbeb8c8555cc4b8a3a56330f70260ef8d53d8))
+
+
 ## v0.5.0-beta.2 (2026-11-20)
 
 ### Bug Fixes
