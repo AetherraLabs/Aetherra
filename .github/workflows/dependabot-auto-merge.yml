@@ -20,6 +20,15 @@ jobs:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
       - name: Enable auto-merge for Dependabot PRs
         run: |
+          allowed=$(gh api "repos/$GITHUB_REPOSITORY" --jq '.allow_auto_merge')
+          if [ "$allowed" = "false" ]; then
+            echo "Auto-merge is disabled for this repository; retain manual review."
+            exit 0
+          fi
+          if [ "$allowed" != "true" ]; then
+            echo "::error::Could not determine repository auto-merge policy."
+            exit 1
+          fi
           gh pr merge --auto --merge "$PR_URL"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 # Standard library imports
-import os
 import socket
 import sys
 import time
@@ -30,39 +29,34 @@ def hub_server():
     if not _port_free(HUB_PORT):
         pytest.skip(f"Port {HUB_PORT} busy; skipping hub integration test")
 
-    # Ensure API flags don't interfere (we only need /api/lyrixa/chat which does not require AI API flags)
-    env_backup = os.environ.copy()
-    os.environ["AETHERRA_HUB_SKIP_OPTIONALS"] = "1"
-    os.environ["AETHERRA_SIGNING_STRICT"] = "0"
-    os.environ["AETHERRA_HUB_STRICT"] = "0"
-    os.environ["AETHERRA_STRICT"] = "0"
-    os.environ["AETHERRA_ALLOW_UNSIGNED_DEV"] = "1"
+    # Patch only owned flags. Rewriting the entire environment loses unrelated
+    # empty native values on Windows, including inherited Git configuration.
+    with pytest.MonkeyPatch.context() as env:
+        env.setenv("AETHERRA_HUB_SKIP_OPTIONALS", "1")
+        env.setenv("AETHERRA_SIGNING_STRICT", "0")
+        env.setenv("AETHERRA_HUB_STRICT", "0")
+        env.setenv("AETHERRA_STRICT", "0")
+        env.setenv("AETHERRA_ALLOW_UNSIGNED_DEV", "1")
 
-    # Aetherra imports
-    from aetherra_hub.compat import AetherraHubServer
+        # Aetherra imports
+        from aetherra_hub.compat import AetherraHubServer
 
-    hub = AetherraHubServer(port=HUB_PORT)
-    # Start via compatibility layer API
-    if not hub.start_server():
-        pytest.skip("Hub server failed to start")
+        hub = AetherraHubServer(port=HUB_PORT)
+        try:
+            if not hub.start_server():
+                pytest.skip("Hub server failed to start")
 
-    # Wait for port
-    for _ in range(40):
-        if not _port_free(HUB_PORT):
-            break
-        time.sleep(0.1)
-    else:
-        pytest.skip("Hub server failed to start in time")
+            for _ in range(40):
+                if not _port_free(HUB_PORT):
+                    break
+                time.sleep(0.1)
+            else:
+                pytest.skip("Hub server failed to start in time")
 
-    yield hub
-
-    # Teardown best-effort
-    try:
-        with suppress(Exception):
-            hub.stop_server()
-    finally:
-        os.environ.clear()
-        os.environ.update(env_backup)
+            yield hub
+        finally:
+            with suppress(Exception):
+                hub.stop_server()
 
 
 @pytest.mark.asyncio
@@ -86,9 +80,8 @@ async def test_plugin_registration_and_listing(hub_server):
     r2 = requests.get(f"http://localhost:{HUB_PORT}/api/plugins", timeout=3)
     assert r2.status_code == 200, r2.text
     data = r2.json()
-    assert any(p.get("name") == "sample_plugin" for p in data.get("plugins", [])), (
-        "Registered plugin not in listing"
-    )
+    registered = any(p.get("name") == "sample_plugin" for p in data.get("plugins", []))
+    assert registered, "Registered plugin not in listing"
 
 
 def test_lyrixa_chat_bridge_fallback_or_forward(hub_server):

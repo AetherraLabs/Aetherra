@@ -257,6 +257,15 @@ GitHub Actions remain the source of truth for remote CI status.
 
 ## Gate 9: Operator Runbook
 
+The first supervised-use exercise on PR #328 main completed 600 + 300 seconds
+across restart: 32 samples, 12 JSON endpoints each, 16 gpt-4o turns without
+fallback, normal shutdown and browser reconnection. Initial disclosure wording
+failed despite successful persistence; the candidate prompt correction needs
+review/integration. Cold-start recall delayed health polling; the subsequent
+steady-state window does not establish uninterrupted responsiveness. See
+[the decision and limitations](ALPHA_READINESS_DECISION.md) and
+[exercise evidence](evidence/supervised_alpha_2026-11-22.json).
+
 Status: Exact fresh installation, full CLI, browser and real-model procedures
 are recorded. Three fresh-runtime processes, six live gpt-4o turns with no
 fallback and twelve rejected expired requests are verified. Earlier 35-turn varied
@@ -297,7 +306,7 @@ Decision record:
 
 ## Current Next Actions
 
-1. Use the verified source revision, fresh install procedure and synthetic profiles.
+1. Review/integrate the disclosure correction, then investigate cold-start responsiveness before repeating supervised use.
 2. Preserve strict signing, Guardian/Security enforcement and observation-only behavior.
 3. Verify optional features, other platforms and broader operating modes separately before extending the GO decision.
 
