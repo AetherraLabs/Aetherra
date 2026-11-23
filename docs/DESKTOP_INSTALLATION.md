@@ -9,14 +9,14 @@ for the accepted operating boundary and verification status.
 ## Fresh Installation
 
 Start in a new checkout. Keep existing profiles and environments separate.
-The current candidate is PR #327; until it merges, select its reviewed revision
-before installing. The command below reproduces the verified runtime source.
-For a later integrated release, use the revision recorded in the alpha decision.
+PR #327 is merged. The command below selects the verified `v0.5.0-beta.6`
+released-main revision. For a later release, use the revision and operating
+boundary recorded in the alpha decision.
 
 ```powershell
 git clone https://github.com/AetherraLabs/Aetherra.git Aetherra-alpha
 Set-Location Aetherra-alpha
-git checkout --detach 374a7213
+git checkout --detach f55d48a94559364d393fbf10a1e84e397a5109aa
 py -3.13 -m venv .venv
 $alphaPython = (Resolve-Path .venv/Scripts/python.exe).Path
 & $alphaPython -m pip install pip==26.3

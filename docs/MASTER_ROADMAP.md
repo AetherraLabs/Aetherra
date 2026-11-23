@@ -31,11 +31,9 @@ missing-fact/separate-profile checks.
 See `docs/PERSONAL_CONTINUITY.md` for exact commands, evidence and limitations.
 Account isolation and broader memory/runtime redesign remain outside this scope.
 
-Aetherra is in alpha foundation hardening.
-
-The current objective is not production autonomy. The current objective is to
-make the existing cognitive operating layer functional, bounded, observable,
-and safe enough for internal alpha testing.
+Aetherra is ready for supervised internal alpha on the verified Windows
+source-runtime profile. The current objective is bounded internal testing with
+the existing governance, observation and signing controls enforced.
 
 Authoritative identity and system references:
 
@@ -160,7 +158,8 @@ Results:
 
 ## Current Priority: Internal Alpha
 
-The next roadmap milestone is internal alpha readiness.
+The current roadmap milestone is supervised internal alpha on the verified
+Windows source-runtime profile.
 
 Primary gate:
 
@@ -168,32 +167,31 @@ Primary gate:
 
 Current alpha status (2026-11-22):
 
-- PR #326 merged as `382e77ac`; clean-main verification and production signing
-  passed. Signed `v0.5.0-beta.5` completed at main `b827ecce`.
-- PR #327 resolves desktop dependency blockers for Windows/Python 3.13 source
-  operation: fresh venv and model cache, exact lock, no broken dependencies,
-  zero findings/skips across all 168 installed distributions.
-- Fresh normal CLI stop/restart, eight expiry rejects, browser reconnection and
-  three gpt-4o turns without fallback pass. GUI: 18 tests plus build/lint/audit.
-- Metadata compatibility, project-relative dependency analysis and metrics
-  listener isolation have focused evidence. The default suite passes **3,136 passed / 40 skipped**,
-  exit 0. Reviewed runtime has 37 green checks; final documentation CI is in PR #327.
-- Guardian, observation-only boundaries, strict signing and the unchanged
-  quality baseline remain enforced. Optional feature graphs are not certified.
-- **Go for supervised synthetic verification; integrated internal alpha remains
-  no-go pending merge and clean-main acceptance.** Stage 21 remains
-  Active; no Beta Hardening acceptance is implied.
+- PR #327 merged as `a0e8857c`; clean released main is `f55d48a9`,
+  signed `v0.5.0-beta.6`. The approved-key signature and artifact hashes verify.
+- The Windows/Python 3.13 source-runtime profile installs in a fresh venv with
+  no inherited system packages. All 168 installed distributions audit with
+  zero findings/skips; dependency and exact-lock checks pass.
+- Default suite: **3,136 passed / 40 skipped**, plus five passing subtests, exit 0.
+  Clean main: 87 focused regressions, boot/integration/import/hygiene, three
+  gpt-4o turns without fallback, and clean shutdown pass. Browser source is
+  unchanged from the verified fresh-install stop/reconnect check.
+- All 12 main validation workflows and Release pass. Required production signing,
+  Guardian/Security enforcement and the fixed quality baseline remain intact.
+- **GO for supervised internal alpha on this documented profile.** Stage 21 stays
+  active for bounded operation. Unattended/production use and unverified graphs
+  remain NO-GO. Beta Hardening and Production Readiness remain Planned.
 
-Open alpha work:
+Current alpha boundaries:
 
-| Gate | Status | What Remains |
+| Gate | Status | Next expectation |
 | --- | --- | --- |
 | Identity and foundations | Preserved | Retain entity/persona and authority boundaries |
-| Desktop installation | Verified candidate profile | Keep optional/wheel/platform exclusions explicit |
-| Runtime, continuity and browser | Fresh checks pass | Retain strict observation and truthful readiness |
-| Candidate integration | PR #327 | Documentation-head CI, review/merge and clean-main smoke |
-| Signing | Enforced | Require post-merge production verification; no key changes |
-| Alpha decision | Integration gate pending | Follow ALPHA_READINESS_DECISION.md before acceptance |
+| Desktop installation | Verified | Keep optional/wheel/platform exclusions explicit |
+| Runtime, continuity and browser | Pass | Preserve strict observation and truthful readiness |
+| Integrated main | Accepted | Use the verified source revision and runbook |
+| Signing | Enforced and verified | Require the approved key and production policy on every release |
+| Broader modes | Unverified | Gather separate evidence before extending GO |
 
 ## Beta Hardening Roadmap
 

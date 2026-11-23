@@ -2,13 +2,13 @@
 
 Updated: 2026-11-22
 
-**Current decision: Go for supervised synthetic verification of the fresh Windows
-source-runtime profile; integrated internal-alpha release remains no-go pending
-merge and clean-main acceptance.** Candidate PR #327 is based on main
-`b827ecce` (`v0.5.0-beta.5`). PR #326's merge, clean-main verification and required
-production signing are complete. The desktop dependency blockers are repaired.
-See [the decision](ALPHA_READINESS_DECISION.md) and
-[fresh evidence](evidence/desktop_alpha_2026-11-22.json).
+**Current decision: GO for supervised internal alpha on the documented Windows
+source-runtime profile.** PR #327 is merged; clean main and the signed
+`v0.5.0-beta.6` release pass acceptance. Unattended/production operation and
+unverified installation graphs remain NO-GO. See
+[the decision](ALPHA_READINESS_DECISION.md),
+[fresh evidence](evidence/desktop_alpha_2026-11-22.json) and
+[clean-main evidence](evidence/desktop_alpha_main_2026-11-22.json).
 
 Fresh installation: 167 locked packages plus pip, no inherited system packages,
 zero broken requirements, exact lock sync, and zero findings/skips across all
@@ -512,10 +512,12 @@ Self-Incorporation must validate approved scope and have truthful rollback
 support or fail closed. The recorded integration/unit tests exercise these
 contracts. The smoke established bounded Homeostasis observation-only behavior;
 it did not authorize real mutation. The operator API findings are fixed in merged main.
-The chat/legacy repairs are merged via PR #326. Fresh-install dependency and
-environment-sensitive repairs are in PR #327; final merge and clean-main
-acceptance remain separate gates. Use its reviewed revision and recorded
-installation graph, not an older shared environment or an unverified plugin set.
+The chat/legacy repairs are merged via PR #326; desktop repairs and clean-main
+acceptance are complete via PR #327. Use the recorded source revision and locked
+installation graph. Main passed 87 focused regressions, three additional live
+gpt-4o turns, required production signing and published beta.6 signature/hash
+verification. Wait for launcher initialization before running readiness probes;
+HTTP availability can precede Homeostasis entering its running state.
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
