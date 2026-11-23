@@ -1,0 +1,343 @@
+{
+  "date": "2026-11-22",
+  "timezone": "America/Denver",
+  "pr": "https://github.com/AetherraLabs/Aetherra/pull/327",
+  "base_main": "b827eccea181f672347ecf277bae99a97521c459",
+  "runtime_commit": "374a7213f3e6eeb9a31959ab273708059fbf3492",
+  "profile": {
+    "os": "Windows x64",
+    "python": "3.13.7",
+    "node": "22.18.0",
+    "install": "source checkout, normal full launcher and React Runtime Observatory",
+    "system_site_packages": false,
+    "fresh_model_cache": true,
+    "model": "sentence-transformers/all-MiniLM-L6-v2",
+    "model_revision": "c9745ed1d9f207416be6d2e6f8de32d1f16199bf",
+    "remote_model_code": false
+  },
+  "baseline": {
+    "pins": 261,
+    "pip_resolution_exit": 1,
+    "first_failure": "virtualenv 20.31.2 requires filelock<4; legacy lock pins filelock 4.2.1",
+    "vulnerable_packages": 36,
+    "audit_sha256": "0785a0ab25d22a890de920bea6c71b57934d828ed6938f1e6562f4a6d875437c"
+  },
+  "installation": {
+    "pins": 167,
+    "installed_distributions_including_pip": 168,
+    "audit_findings": 0,
+    "audit_skips": 0,
+    "audit_sha256": "4c20eeceef0f56f57bd54585f96f38f41e64eb59d8f0e5cd4afbfa09979816bd",
+    "pip_install_report_sha256": "02c308a175d2afe57ffddf40410234570655eabcf877e8af2b58b269473436c0",
+    "lock_sha256": "30d1c22c4e1b93e3a2769b7d55124becbeef743ceb201837f3716bea10f67e92",
+    "inputs": {
+      "requirements.txt": "a061215d03811847d9421ddf3b92ca29e11fc107451402285cf15701cdbdb505",
+      "requirements/quality.txt": "528891ab43073a5ab4f3d65ce433c0fca56ee9d4d0900e36d193ddf936ed6276",
+      "requirements-ci.lock": "14851884c843c8230cbe7ca5db9096a5691217c69208970b07ed09ef40f96e8c"
+    },
+    "checks": [
+      {
+        "check": "fresh-install",
+        "exit_code": 0,
+        "seconds": 417.65
+      },
+      {
+        "check": "fresh-pip-check",
+        "exit_code": 0,
+        "seconds": 5.21
+      },
+      {
+        "check": "fresh-lock-sync",
+        "exit_code": 0,
+        "seconds": 1.2
+      },
+      {
+        "check": "fresh-environment-audit",
+        "exit_code": 0,
+        "seconds": 17.46
+      },
+      {
+        "check": "fresh-lock-audit",
+        "exit_code": 0,
+        "seconds": 3.63
+      },
+      {
+        "check": "fresh-model-provision",
+        "exit_code": 0,
+        "seconds": 36.5
+      }
+    ]
+  },
+  "diagnostic_disposition": [
+    {
+      "run": "fresh-full-suite",
+      "complete": false,
+      "collection_error": "removed pkg_resources import; fixed with importlib.metadata"
+    },
+    {
+      "run": "fresh-full-r2",
+      "complete": false,
+      "status": "superseded before final metadata review"
+    },
+    {
+      "run": "fresh-full-reviewed",
+      "complete": false,
+      "observed_failures": 5,
+      "status": "superseded after four ancestor-path failures and metrics listener leakage were fixed"
+    },
+    {
+      "run": "fresh-full-final",
+      "tests_started": false,
+      "status": "snapshot assertion rejected Git line-ending normalization; exact-byte overlay corrected in task harness"
+    }
+  ],
+  "default_suite": {
+    "status": "passed",
+    "command": "python -m pytest --junitxml <evidence>/fresh-full-accepted.xml",
+    "default_collection_addopts_coverage": true,
+    "source_commit": "374a7213f3e6eeb9a31959ab273708059fbf3492",
+    "frozen_source_snapshot_sha256": "81aab3c532a83f2a43ac9cacecc5c1917597cd49240437820a599f0b3a254097",
+    "runtime_and_test_files_match": 1395,
+    "check": "fresh-full-accepted",
+    "exit_code": 0,
+    "seconds": 1476.39,
+    "frozen_python_source_unchanged_after_tests": true,
+    "passed": 3136,
+    "skipped": 40,
+    "subtests_passed": 5,
+    "pytest_seconds": 1444.36,
+    "junit_reported_tests": 3181,
+    "failures": 0,
+    "errors": 0,
+    "log_sha256": "a77a3fa316eb9301f06751e661cbcdc97883a5072d51e237d6113171567ac316",
+    "junit_sha256": "b476d978cbdb616ef0e5fcab8bd103b9a7731ae29b53e8c0367c8fa18599f9c3",
+    "skip_reasons": {
+      "Skipped: Reflection system unavailable: No module named 'Aetherra.aetherra_core.system.emotion_detector'": 2,
+      "Skipped: could not import 'semantic_release': No module named 'semantic_release'": 2,
+      "GUI components not available": 26,
+      "Windows terminate does not deliver SIGTERM": 1,
+      "QFAC not available in this environment": 1,
+      "Self-maintenance services unavailable in this environment": 1,
+      "STORM not enabled": 2,
+      "Memory system not returning results - persistence issue": 1,
+      "Flask not available in test env": 2,
+      "Symlinks not supported on this system": 1,
+      "Flask dependency or environment heavy; placeholder smoke": 1
+    }
+  },
+  "focused_checks": [
+    {
+      "check": "lock-green",
+      "passed": 2,
+      "log_sha256": "775d2c8f91903cf39fc03d6029d7a9dce62542b87b43b7b4e9463b8dbc21b99d"
+    },
+    {
+      "check": "metadata-reviewed",
+      "passed": 9,
+      "log_sha256": "b930467f6f732e7b56be87663d39eeceb5cb5ff0eb37c2a878d568ac10c07224"
+    },
+    {
+      "check": "desktop-followup-regressions",
+      "passed": 16,
+      "log_sha256": "cd5c2c4c3d96076e2b8a04f24a073182fcd28a4053f3565a0dd838d05f0510d8"
+    },
+    {
+      "check": "metrics-isolation-reversed",
+      "passed": 2,
+      "log_sha256": "5ba7bd870147014507dc265aac69e39b1cd6cd7a291fc859e301799bf56e7311"
+    }
+  ],
+  "gui": {
+    "tests": 18,
+    "audit_findings": 0,
+    "checks": [
+      {
+        "check": "gui-install",
+        "exit_code": 0,
+        "seconds": 27.62
+      },
+      {
+        "check": "gui-audit",
+        "exit_code": 0,
+        "seconds": 2.72
+      },
+      {
+        "check": "gui-test",
+        "exit_code": 0,
+        "seconds": 13.22
+      },
+      {
+        "check": "gui-build",
+        "exit_code": 0,
+        "seconds": 4.39
+      },
+      {
+        "check": "gui-lint",
+        "exit_code": 0,
+        "seconds": 4.66
+      }
+    ]
+  },
+  "contracts": [
+    {
+      "check": "fresh-boot",
+      "exit_code": 0,
+      "seconds": 3.04
+    },
+    {
+      "check": "fresh-integration",
+      "exit_code": 0,
+      "seconds": 1.45
+    },
+    {
+      "check": "fresh-hygiene",
+      "exit_code": 0,
+      "seconds": 0.1
+    }
+  ],
+  "quality": {
+    "check": "fresh-python-quality",
+    "exit_code": 0,
+    "seconds": 118.2,
+    "new_violations": 0,
+    "unchanged_legacy_files": 978,
+    "resolved": 55,
+    "baseline_changed": false
+  },
+  "manual_runtime": {
+    "entry_point": "python aetherra_os_launcher.py --mode full --no-gui --config <profile>/launcher.json",
+    "profile": "new isolated local data directory; same directory after restart, empty chat history",
+    "processes": [
+      {
+        "pid": 35548,
+        "exit_code": 0,
+        "forced": false,
+        "expired_requests_rejected": 4,
+        "expiry_storage_unchanged": true,
+        "ordinary_log_conversation_matches": 0,
+        "runtime_log_sha256": "75f115469da217420f0213f6d4496a478ce48f319a83b625faa802d3f1a23f3d"
+      },
+      {
+        "pid": 15600,
+        "exit_code": 0,
+        "forced": false,
+        "expired_requests_rejected": 4,
+        "expiry_storage_unchanged": true,
+        "ordinary_log_conversation_matches": 0,
+        "runtime_log_sha256": "346d9baae4c11d9d6763abe8d50485f35a631f7764fd0373d3ae29857ba9e261"
+      }
+    ],
+    "samples": [
+      {
+        "sample": "fresh-offline-start",
+        "json_endpoints_200": 12,
+        "engine": "degraded",
+        "guardian": "enforcing",
+        "audit_integrity_ok": true,
+        "homeostasis": "observe_only",
+        "actuator_actions": 0
+      },
+      {
+        "sample": "fresh-offline-steady",
+        "json_endpoints_200": 12,
+        "engine": "degraded",
+        "guardian": "enforcing",
+        "audit_integrity_ok": true,
+        "homeostasis": "observe_only",
+        "actuator_actions": 0
+      },
+      {
+        "sample": "fresh-live-start",
+        "json_endpoints_200": 12,
+        "engine": "ready",
+        "guardian": "enforcing",
+        "audit_integrity_ok": true,
+        "homeostasis": "observe_only",
+        "actuator_actions": 0
+      },
+      {
+        "sample": "fresh-live-steady",
+        "json_endpoints_200": 12,
+        "engine": "ready",
+        "guardian": "enforcing",
+        "audit_integrity_ok": true,
+        "homeostasis": "observe_only",
+        "actuator_actions": 0
+      }
+    ],
+    "saved_record_id": "f8fa1f3588e240a2e1f57ab624c5f97a",
+    "newer_competing_record_ids": [
+      "96236baa4f03d36f1143f170a251b201",
+      "a778ba309f313ced47f70971b6393197",
+      "472358c39be65f54435ddf352aaf612a"
+    ],
+    "retrieved_record_ids": [
+      "f8fa1f3588e240a2e1f57ab624c5f97a"
+    ],
+    "generation_evidence_ids": [
+      "f8fa1f3588e240a2e1f57ab624c5f97a"
+    ],
+    "recall_answer": "You call the little observatory in your garden the Lantern Room. What would you like to try next?",
+    "unknown_attribute_answer": "I haven't been told what color you painted its door.",
+    "identity_preserved": true,
+    "provider": "openai",
+    "model": "gpt-4o",
+    "live_turns": 3,
+    "live_fallback_count": 0,
+    "initial_no_provider_fallback": true,
+    "browser": {
+      "states": [
+        "degraded without provider",
+        "unavailable after stop",
+        "automatically reconnected, Engine ready"
+      ],
+      "console_errors": 0,
+      "controls": "read only",
+      "unavailable_services_remain_unknown": true,
+      "screenshots_sha256": {
+        "browser-offline.jpg": "9a403f89db88ec4a09afff85d1661064acf793b4a9b2b1147dc85ffaa7c223c2",
+        "browser-stopped.jpg": "917c937e3a09c2db306c49b54ae9b7a0addb15d62015bf5574e5da12d91ec419",
+        "browser-reconnected.jpg": "922675c35102d6e2a162fbb516d3766811243333fa353df3750ad1761b6f0674"
+      }
+    }
+  },
+  "hosted_windows": {
+    "runtime_commit": "374a7213f3e6eeb9a31959ab273708059fbf3492",
+    "run": "https://github.com/AetherraLabs/Aetherra/actions/runs/45104695575",
+    "result": "success",
+    "offline_runtime_signing_regressions": 87,
+    "gui_tests": 18,
+    "log_sha256": "cff85b92395a0234090f6b64fbc9a8dcc26b009a86887b08d4e4c9497d3b1bb9"
+  },
+  "reviewed_code_ci": {
+    "commit": "374a7213f3e6eeb9a31959ab273708059fbf3492",
+    "checks": {
+      "SUCCESS": 37,
+      "SKIPPED": 1
+    },
+    "checks_sha256": "db31f93dbc087fcf8a447e88d0ff30f92e8e529c393126ac325b2521789cde04",
+    "release_bootstrap": "https://github.com/AetherraLabs/Aetherra/actions/runs/45104695558",
+    "release_bootstrap_tests_passed": 14,
+    "release_bootstrap_scope": "Separate release-tool environment; semantic_release is not part of the desktop runtime graph."
+  },
+  "signing": {
+    "enforced": true,
+    "production_workflows_changed": false,
+    "approved_key_changed": false,
+    "post_merge_candidate_signing": "pending integration",
+    "previous_main_production_verification": "https://github.com/AetherraLabs/Aetherra/actions/runs/45098523048",
+    "previous_published_release": "https://github.com/AetherraLabs/Aetherra/releases/tag/v0.5.0-beta.5",
+    "previous_release_signature_and_hashes_verified": true
+  },
+  "limits": [
+    "separate local storage directories, not account isolation",
+    "optional Qt/SDK/quantum/research/export/Lark features require separate installation checks",
+    "pip install . declares a different dependency graph",
+    "wheel-only, other platforms/Python versions, privileged live mutation, soak/load and unattended operation unverified"
+  ],
+  "decision": "Desktop blockers cleared for supervised synthetic verification of this profile; integrated alpha release awaits final checks, merge and clean-main acceptance.",
+  "unrelated_workspaces_preserved": {
+    "workspaces": 2,
+    "head_branch_index_status_and_all_source_bytes": true
+  }
+}
