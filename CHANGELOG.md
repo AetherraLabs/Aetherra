@@ -1,6 +1,157 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.7 (2026-11-23)
+
+### Bug Fixes
+
+- **chat**: Distinguish disclosures from personal recall
+  ([`59a6d5f`](https://github.com/AetherraLabs/Aetherra/commit/59a6d5f7d67cd4c09d5d6f1fd2c91ca4a96ed106))
+
+- **temporal**: Harden history and Memory checkpoints
+  ([`c2a6154`](https://github.com/AetherraLabs/Aetherra/commit/c2a615456b2842e3c08408e2d61834b476f39823))
+
+### Chores
+
+- **deps**: Bump the prod-deps group with 2 updates
+  ([`1b17192`](https://github.com/AetherraLabs/Aetherra/commit/1b17192e84d4fed0bf648bbdfa7f609108fb55f0))
+
+Updates the requirements on [openai](https://github.com/openai/openai-python) and
+  [anthropic](https://github.com/anthropics/anthropic-sdk-python) to permit the latest version.
+
+Updates `openai` to 3.57.0 - [Release notes](https://github.com/openai/openai-python/releases) -
+  [Changelog](https://github.com/openai/openai-python/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/openai/openai-python/compare/v1.0.0...v3.57.0)
+
+Updates `anthropic` to 2.11.0 - [Release
+  notes](https://github.com/anthropics/anthropic-sdk-python/releases) -
+  [Changelog](https://github.com/anthropics/anthropic-sdk-python/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/anthropics/anthropic-sdk-python/compare/v0.7.0...v2.11.0)
+
+--- updated-dependencies: - dependency-name: openai dependency-version: 3.57.0
+
+dependency-type: direct:production
+
+dependency-group: prod-deps
+
+- dependency-name: anthropic dependency-version: 2.11.0
+
+dependency-group: prod-deps ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump the tooling group with 3 updates
+  ([`558087c`](https://github.com/AetherraLabs/Aetherra/commit/558087ca24efc1cc8b34652f9369b8547a5c51f5))
+
+Updates the requirements on [pytest-mock](https://github.com/pytest-dev/pytest-mock),
+  [pytest-xdist](https://github.com/pytest-dev/pytest-xdist) and
+  [flake8](https://github.com/pycqa/flake8) to permit the latest version.
+
+Updates `pytest-mock` to 3.17.0 - [Release
+  notes](https://github.com/pytest-dev/pytest-mock/releases) -
+  [Changelog](https://github.com/pytest-dev/pytest-mock/blob/main/CHANGELOG.rst) -
+  [Commits](https://github.com/pytest-dev/pytest-mock/compare/v3.11.0...v3.17.0)
+
+Updates `pytest-xdist` to 3.8.0 - [Release
+  notes](https://github.com/pytest-dev/pytest-xdist/releases) -
+  [Changelog](https://github.com/pytest-dev/pytest-xdist/blob/master/CHANGELOG.rst) -
+  [Commits](https://github.com/pytest-dev/pytest-xdist/compare/v3.3.0...v3.8.0)
+
+Updates `flake8` to 7.5.0 - [Commits](https://github.com/pycqa/flake8/compare/6.0.0...7.5.0)
+
+--- updated-dependencies: - dependency-name: pytest-mock dependency-version: 3.17.0
+
+dependency-type: direct:development
+
+dependency-group: tooling
+
+- dependency-name: pytest-xdist dependency-version: 3.8.0
+
+- dependency-name: flake8 dependency-version: 7.5.0
+
+dependency-type: direct:production
+
+dependency-group: tooling ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Update aiofiles requirement from >=23.1.0 to >=25.1.0
+  ([`9a73324`](https://github.com/AetherraLabs/Aetherra/commit/9a73324807cbedf82c4c536be746f71bf6574182))
+
+Updates the requirements on [aiofiles](https://github.com/Tinche/aiofiles) to permit the latest
+  version. - [Release notes](https://github.com/Tinche/aiofiles/releases) -
+  [Changelog](https://github.com/Tinche/aiofiles/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/Tinche/aiofiles/compare/v23.1.0...v25.1.0)
+
+--- updated-dependencies: - dependency-name: aiofiles dependency-version: 25.1.0
+
+dependency-type: direct:production ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Update aiohttp requirement from >=3.14.4 to >=3.14.5
+  ([`70cb403`](https://github.com/AetherraLabs/Aetherra/commit/70cb40395cd49a53bb03a6c4f22eb740e4205659))
+
+Updates the requirements on [aiohttp](https://github.com/aio-libs/aiohttp) to permit the latest
+  version.
+
+--- updated-dependencies: - dependency-name: aiohttp dependency-version: 3.14.5
+
+dependency-type: direct:production ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Update pathlib2 requirement from >=2.3.0 to >=2.3.7.post1
+  ([`b81a331`](https://github.com/AetherraLabs/Aetherra/commit/b81a331e2d1f20ac6843c41b92532c77f663fd2a))
+
+Updates the requirements on [pathlib2](https://github.com/jazzband/pathlib2) to permit the latest
+  version. - [Changelog](https://github.com/jazzband/pathlib2/blob/develop/CHANGELOG.rst) -
+  [Commits](https://github.com/jazzband/pathlib2/compare/2.3.0...2.3.7-post1)
+
+--- updated-dependencies: - dependency-name: pathlib2 dependency-version: 2.3.7.post1
+
+dependency-type: direct:production ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Update qiskit-optimization requirement
+  ([`c1e7383`](https://github.com/AetherraLabs/Aetherra/commit/c1e7383a7c775a7659809065fabbd8522c890e88))
+
+Updates the requirements on
+  [qiskit-optimization](https://github.com/qiskit-community/qiskit-optimization) to permit the
+  latest version. - [Release
+  notes](https://github.com/qiskit-community/qiskit-optimization/releases) -
+  [Commits](https://github.com/qiskit-community/qiskit-optimization/compare/0.6.0...0.7.0)
+
+--- updated-dependencies: - dependency-name: qiskit-optimization dependency-version: 0.7.0
+
+dependency-type: direct:production ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps-dev**: Update sphinx requirement from >=7.1.0 to >=9.0.4
+  ([`cba8761`](https://github.com/AetherraLabs/Aetherra/commit/cba8761a765f06c0fe03c44218c08ddc0970d501))
+
+Updates the requirements on [sphinx](https://github.com/sphinx-doc/sphinx) to permit the latest
+  version. - [Release notes](https://github.com/sphinx-doc/sphinx/releases) -
+  [Changelog](https://github.com/sphinx-doc/sphinx/blob/v9.0.4/CHANGES.rst) -
+  [Commits](https://github.com/sphinx-doc/sphinx/compare/v7.1.0...v9.0.4)
+
+--- updated-dependencies: - dependency-name: sphinx dependency-version: 9.0.4
+
+dependency-type: direct:development ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+### Documentation
+
+- **alpha**: Clarify startup readiness evidence
+  ([`6b4ca79`](https://github.com/AetherraLabs/Aetherra/commit/6b4ca79e52b3880e2e4ef37d4a6b0c1b15570d85))
+
+- **alpha**: Record verified main acceptance
+  ([`84fb77b`](https://github.com/AetherraLabs/Aetherra/commit/84fb77befa432a2c479a3e44692d7ad8e92bc8f4))
+
+
 ## v0.5.0-beta.6 (2026-11-23)
 
 ### Bug Fixes
