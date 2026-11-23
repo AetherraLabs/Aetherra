@@ -30,6 +30,12 @@ Key properties:
 
 ## Core components
 
+The experimental Phase 7.3 `TemporalConsciousnessEngine` has a separate
+[bounded temporal-analysis contract](TEMPORAL_CONSCIOUSNESS_ENGINE.md), including
+explicit restart restoration through existing Memory. It is not directly
+initialized by the normal launcher; its heuristic forecast and correlation
+outputs do not establish causation or consciousness.
+
 ### 1) Consciousness Core
 
 File: `Aetherra/consciousness/core/consciousness_core.py`
