@@ -34,7 +34,7 @@ sentence-transformers>=2.2.0
 # ===== LOCAL AI SUPPORT =====
 requests>=2.31.0
 httpx>=0.25.0
-aiohttp>=3.14.4
+aiohttp>=3.14.5
 # websockets 16 rejects the current Flask-Sock/Werkzeug HTTP/1.0 handshake path.
 websockets>=11.0.0,<16.0.0
 
