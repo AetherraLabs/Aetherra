@@ -10,6 +10,10 @@ on:
       - 'tools/maintenance/verify_legal_compliance.py'
       - 'tests/tools/test_dependency_lock.py'
       - 'tests/tools/test_legal_compliance_metadata.py'
+      - 'aetherra_coding/analysis.py'
+      - 'tests/unit/test_dependency_graph_paths.py'
+      - 'tests/legacy/root_standalone/test_analysis_engine_standalone.py'
+      - 'tests/consciousness/**'
       - 'Aetherra/lyrixa/gui/package*.json'
       - '.github/workflows/desktop-install.yml'
   push:
@@ -22,6 +26,10 @@ on:
       - 'tools/maintenance/verify_legal_compliance.py'
       - 'tests/tools/test_dependency_lock.py'
       - 'tests/tools/test_legal_compliance_metadata.py'
+      - 'aetherra_coding/analysis.py'
+      - 'tests/unit/test_dependency_graph_paths.py'
+      - 'tests/legacy/root_standalone/test_analysis_engine_standalone.py'
+      - 'tests/consciousness/**'
       - 'Aetherra/lyrixa/gui/package*.json'
       - '.github/workflows/desktop-install.yml'
   workflow_dispatch:
@@ -78,6 +86,10 @@ jobs:
           tests/tools/test_dependency_lock.py
           tests/tools/test_legal_compliance_metadata.py
           tests/unit/test_verify_legal_compliance_guardian.py
+          tests/unit/test_dependency_graph_paths.py
+          tests/legacy/root_standalone/test_analysis_engine_standalone.py
+          tests/consciousness/test_metrics_exporter.py
+          tests/consciousness/test_metrics_scrape.py
           tests/unit/test_chat_request_contract.py
           tests/acceptance/test_personal_continuity.py
           tests/acceptance/test_maintenance_security.py
