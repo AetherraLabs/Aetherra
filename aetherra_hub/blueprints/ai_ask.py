@@ -82,7 +82,8 @@ def ai_ask_post():
     if not message:
         return jsonify({"error": "empty"}), 400
     trace_id = request_trace_id()
-    if is_expired(request_deadline(body)):
+    deadline_ts = request_deadline(body)
+    if is_expired(deadline_ts):
         return jsonify(expired_error("/api/ai/ask", trace_id)), 409
     sc = safety_precheck(message, trace_id, "/api/ai/ask")
     if not sc.get("allow", True):
@@ -111,23 +112,6 @@ def ai_ask_post():
         or "hub:chat"
     )
     client_message_id = str(body.get("client_message_id") or "").strip()
-    if client_message_id and idempotency_manager.check_and_mark(
-        str(principal),
-        client_message_id,
-    ):
-        return (
-            jsonify(
-                {
-                    "ok": False,
-                    "client_message_id": client_message_id,
-                    "error": {
-                        "code": "duplicate",
-                        "message": "Duplicate client_message_id",
-                    },
-                }
-            ),
-            409,
-        )
     guardian_decision = evaluate_chat_ingress(
         message=message,
         route="/api/ai/ask",
@@ -160,6 +144,10 @@ def ai_ask_post():
         if engine and hasattr(engine, "process_message"):
             break
         time.sleep(0.02)
+    # Admission can block on policy or registry readiness. Keep the original
+    # absolute deadline and reject before consuming an ID or dispatching work.
+    if is_expired(deadline_ts):
+        return jsonify(expired_error("/api/ai/ask", trace_id)), 409
     if not engine or not hasattr(engine, "process_message"):
         return (
             jsonify(
@@ -174,14 +162,31 @@ def ai_ask_post():
             ),
             503,
         )
+    if client_message_id and idempotency_manager.check_and_mark(
+        str(principal), client_message_id
+    ):
+        return (
+            jsonify(
+                {
+                    "ok": False,
+                    "client_message_id": client_message_id,
+                    "error": {
+                        "code": "duplicate",
+                        "message": "Duplicate client_message_id",
+                    },
+                }
+            ),
+            409,
+        )
     try:
         # Standard library imports
         import asyncio
 
         async def _run():
-            return await engine.process_message(
-                message, {"priority": body.get("priority")}
-            )
+            engine_context = {"priority": body.get("priority")}
+            if deadline_ts is not None:
+                engine_context["deadline_ts"] = deadline_ts
+            return await engine.process_message(message, engine_context)
 
         loop = asyncio.new_event_loop()
         try:

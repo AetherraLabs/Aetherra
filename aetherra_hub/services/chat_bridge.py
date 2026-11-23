@@ -36,6 +36,10 @@ from .tokenizer import count_tokens
 OFFLINE_TEXT = "Lyrixa chat service is not online right now. I can still answer identity and Aetherra questions."  # noqa: E501
 
 
+class _ChatRequestExpiredError(Exception):
+    """Registry admission elapsed; this must not become an offline answer."""
+
+
 def _registry_call(
     message: str,
     allow_edits: bool,
@@ -52,6 +56,8 @@ def _registry_call(
         async def _call():
             reg = await get_service_registry()
             svc = reg.get_service("lyrixa_chat")
+            if is_expired(deadline_ts):
+                raise _ChatRequestExpiredError
             if not svc:
                 return None
             payload2 = {
@@ -66,6 +72,8 @@ def _registry_call(
             return await svc.handle_message("lyrixa.chat", payload2)
 
         return run_coro_blocking(_call())
+    except _ChatRequestExpiredError:
+        raise
     except Exception:
         return None
 
@@ -208,12 +216,23 @@ def handle_chat(payload: dict[str, Any]) -> tuple[dict[str, Any], int, dict[str,
         headers = _std_headers(trace_id)
         return body, 403, headers
 
-    # Registry call
-    result = _registry_call(
-        message, allow_edits, edit_root, trace_id, prio, deadline_ts, ttl_sec
-    )
+    # Recheck after policy admission and again after the async registry wait.
+    try:
+        if is_expired(deadline_ts):
+            raise _ChatRequestExpiredError
+        result = _registry_call(
+            message, allow_edits, edit_root, trace_id, prio, deadline_ts, ttl_sec
+        )
+    except _ChatRequestExpiredError:
+        return expired_error("/api/lyrixa/chat", trace_id), 409, _std_headers(trace_id)
 
     if not result:
+        if is_expired(deadline_ts):
+            return (
+                expired_error("/api/lyrixa/chat", trace_id),
+                409,
+                _std_headers(trace_id),
+            )
         # Offline fallback instrumentation
         chat_metrics.record_mock_fallback()
         # Output stats minimal (no tokens counted for offline message to keep deterministic?)

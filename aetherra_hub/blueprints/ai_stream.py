@@ -171,13 +171,27 @@ def _principal_from_payload(body: dict, headers) -> str:
     )
 
 
-def _duplicate_response(body: dict, headers):
+def _reserve_message(body: dict, headers, reservation: dict) -> bool:
     client_message_id = str(body.get("client_message_id") or "").strip()
     if not client_message_id:
-        return None
+        return False
     principal = _principal_from_payload(body, headers)
-    if not idempotency_manager.check_and_mark(principal, client_message_id):
+    token = idempotency_manager.reserve(principal, client_message_id)
+    if token is None:
+        return True
+    reservation.update(principal=principal, client_id=client_message_id, token=token)
+    return False
+
+
+def _release_message(reservation: dict) -> None:
+    if reservation:
+        idempotency_manager.release(**reservation)
+
+
+def _duplicate_response(body: dict, headers, reservation: dict):
+    if not _reserve_message(body, headers, reservation):
         return None
+    client_message_id = str(body.get("client_message_id") or "").strip()
     return (
         jsonify(
             {
@@ -193,15 +207,18 @@ def _duplicate_response(body: dict, headers):
     )
 
 
-def _duplicate_ws_message(body: dict, headers: dict[str, str]) -> dict | None:
+def _duplicate_ws_message(
+    body: dict, headers: dict[str, str], reservation: dict | None = None
+) -> dict | None:
     body["deadline_ts"] = request_deadline(body)
     if is_expired(body["deadline_ts"]):
         return None
     client_message_id = str(body.get("client_message_id") or "").strip()
     if not client_message_id:
         return None
-    principal = _principal_from_payload(body, headers)
-    if not idempotency_manager.check_and_mark(principal, client_message_id):
+    if not _reserve_message(
+        body, headers, reservation if reservation is not None else {}
+    ):
         return None
     return {
         "ok": False,
@@ -247,7 +264,8 @@ def register_websocket_routes(app) -> bool:
 
         principal = _principal_from_payload(body, {})
         headers = {"trace_id": "", "X-Aetherra-Principal": principal}
-        duplicate = _duplicate_ws_message(body, headers)
+        reservation = {}
+        duplicate = _duplicate_ws_message(body, headers, reservation)
         if duplicate is not None:
             ws.send(json.dumps(duplicate))
             return
@@ -261,6 +279,7 @@ def register_websocket_routes(app) -> bool:
             headers,
             last_event_id=last_event_id,
             method="WS",
+            on_admission_expired=lambda: _release_message(reservation),
         ):
             ws.send(json.dumps(_sse_frame_to_json(frame)))
 
@@ -319,16 +338,22 @@ def ai_stream_post():
     if auth_error is not None:
         return auth_error
     body["deadline_ts"] = request_deadline(body)
+    reservation = {}
     duplicate_error = (
         None
         if is_expired(body["deadline_ts"])
-        else _duplicate_response(body, request.headers)
+        else _duplicate_response(body, request.headers, reservation)
     )
     if duplicate_error is not None:
         return duplicate_error
 
     def generate():
-        yield from stream_sse(body, hdrs, last_event_id=last_event_id)
+        yield from stream_sse(
+            body,
+            hdrs,
+            last_event_id=last_event_id,
+            on_admission_expired=lambda: _release_message(reservation),
+        )
 
     return _build_response(generate)
 
@@ -363,15 +388,22 @@ def ai_stream_get():
     if auth_error is not None:
         return auth_error
     args["deadline_ts"] = request_deadline(args)
+    reservation = {}
     duplicate_error = (
         None
         if is_expired(args["deadline_ts"])
-        else _duplicate_response(args, request.headers)
+        else _duplicate_response(args, request.headers, reservation)
     )
     if duplicate_error is not None:
         return duplicate_error
 
     def generate():
-        yield from stream_sse(args, hdrs, last_event_id=last_event_id, method="GET")
+        yield from stream_sse(
+            args,
+            hdrs,
+            last_event_id=last_event_id,
+            method="GET",
+            on_admission_expired=lambda: _release_message(reservation),
+        )
 
     return _build_response(generate)

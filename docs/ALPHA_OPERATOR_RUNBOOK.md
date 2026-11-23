@@ -424,6 +424,19 @@ The `hub_chat_dlq.jsonl` compatibility receipt contains only reason, type and
 endpoint; it does not contain the prompt or client identifiers. Malformed
 optional deadline values remain ignored; valid nonpositive TTLs expire at admission.
 
+Admission also rechecks the same absolute deadline after safety, Guardian and
+registry waits. An expired turn must not produce an offline-success answer or
+reach generation. POST/GET streams and WebSocket requests release only their
+own message-ID reservation when admission expires, so the same ID can be retried
+with a valid deadline. These are admission deadlines: they do not cancel or roll
+back generation that already started before expiry.
+
+Run the deterministic timing and retry regressions with:
+
+```powershell
+python -m pytest -q -o addopts= tests/unit/test_chat_request_contract.py
+```
+
 The broader default command remains a separate check: `python -m pytest`.
 Use the decision and evidence for its outcome; a focused pass does not imply
 that the default repository-wide run passed.

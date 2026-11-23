@@ -32,6 +32,16 @@ See [the checklist](ALPHA_READINESS_CHECKLIST.md),
 
 ## Repairs And Review
 
+Integration resumed in [PR #326](https://github.com/AetherraLabs/Aetherra/pull/326),
+including main's completed website migration. Review found a further admission
+race: a turn could expire during policy or registry waits and still dispatch or
+return a successful fallback. The follow-up preserves the resolved deadline,
+rejects before dispatch, releases only the expired stream's retry reservation,
+and balances active-stream counters. Its 41 deterministic request-contract tests
+pass, including reproductions that failed before correction. The full suite is
+being rerun for this follow-up; the 3,115-test result below remains evidence for
+the preceding saved candidate, not a claim about these additional edits.
+
 The preceding checkpoint repaired ALPHA-07, the original nine legacy cases and
 the capability test that replaced real packages in `sys.modules`. Those changes
 remain in this candidate: expired chat requests fail before storage/generation,
