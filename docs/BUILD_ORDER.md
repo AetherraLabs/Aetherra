@@ -61,7 +61,8 @@ focused validation appropriate to its authority.
 
 ## Active Focus
 
-The active build focus is internal alpha readiness.
+The active build focus is supervised internal alpha on the verified Windows
+source-runtime profile.
 
 Primary references:
 
@@ -88,26 +89,25 @@ Internal alpha requires:
 
 ## Current Next Work
 
-PR #326 is merged and clean-main verification/production signing passed; the
-automatic signed `v0.5.0-beta.5` release completed. PR #327 now resolves the
-desktop dependency blockers for the Windows/Python 3.13 source-runtime profile.
-Fresh Python/npm installation, all-installed-package audits, normal full CLI
-restart, browser reconnection and three gpt-4o turns without fallback pass.
-The final default suite passes: **3,136 passed / 40 skipped**, exit 0. See
-`docs/ALPHA_READINESS_DECISION.md` for the immutable source and skip accounting.
+PR #327 is merged and its desktop blockers are resolved for the documented
+Windows/Python 3.13 source-runtime profile. Fresh installation/audits, 3,136
+passing default-suite tests (40 skips, 5 passing subtests), 87 clean-main
+regressions, normal CLI/live-model checks and browser verification pass.
+All 12 main validation workflows pass. Signed `v0.5.0-beta.6` completed, with
+its approved-key signature and artifact hashes independently verified.
 
-**Go for supervised synthetic verification of this profile; integrated internal
-alpha remains no-go pending merge and clean-main acceptance.** Stage
-21 stays Active; stages 22 and 23 stay Planned. Optional plugin graphs and
-wheel-only/other-platform installs are outside the accepted verification scope.
-Personal continuity remains a completed bounded milestone.
+**GO for supervised internal alpha on this profile.** Stage 21 remains active
+for bounded internal-alpha operation; Beta Hardening and Production Readiness
+remain Planned. Optional graphs, other platforms, wheel-only installs and
+unattended/production use require separate evidence before extending the decision.
+See `docs/ALPHA_READINESS_DECISION.md` and the operator runbook.
 
 | Priority | Work | Required Outcome |
 | --- | --- | --- |
-| 1 | Candidate verification | Preserve the passing default suite; verify documentation-head checks in PR #327 |
-| 2 | Candidate integration | Review/merge and verify a clean main checkout |
-| 3 | Signing | Require production manifest signing and verification after merge |
-| 4 | Alpha acceptance | Accept only the documented installation and operating boundary |
+| 1 | Supervised internal alpha | Use the verified installation and synthetic local profiles |
+| 2 | Regression preservation | Retain the default suite, continuity, browser and truthful readiness checks |
+| 3 | Signing and governance | Keep approved-key signing, Guardian/Security and observation boundaries enforced |
+| 4 | Broader acceptance | Verify additional installation graphs and operating modes before extending GO |
 
 ## Change Rule
 

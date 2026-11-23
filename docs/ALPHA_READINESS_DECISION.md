@@ -2,15 +2,17 @@
 
 Date: 2026-11-22 (America/Denver)
 
-**Desktop installation blockers are resolved in the candidate. GO for supervised
-synthetic verification of this Windows source-runtime profile; NO-GO for an
-integrated internal-alpha release until merge and clean-main acceptance are
-complete.** No unattended operation or broader risk acceptance is inferred.
+**GO for supervised internal alpha on the documented Windows source-runtime
+profile.** Desktop blockers, clean-main acceptance and required production
+signing pass. **NO-GO for unattended or production operation and unverified
+installation graphs.** The operating boundary below remains in force.
 
 - Decision owner: Aetherra Labs.
-- Candidate: [PR #327](https://github.com/AetherraLabs/Aetherra/pull/327),
-  `codex/desktop-alpha-install`; reviewed runtime code `374a7213`.
-- Base: main `b827eccea181f672347ecf277bae99a97521c459`, `v0.5.0-beta.5`.
+- Integration: [PR #327](https://github.com/AetherraLabs/Aetherra/pull/327),
+  merged as `a0e8857c22092b0acf0e997f8b02cf5e04f23be1`.
+- Released main: `f55d48a94559364d393fbf10a1e84e397a5109aa`, `v0.5.0-beta.6`.
+- Full-suite runtime checkpoint: `374a7213`; its runtime source is unchanged
+  by the merge and version-only release commit.
 - Supported profile: Windows x64, Python 3.13.7 source checkout, Node 22.18.0,
   PowerShell 7.5+, the normal full launcher and React Runtime Observatory.
 - All conversations are synthetic. Separate local directories isolate storage;
@@ -20,7 +22,8 @@ complete.** No unattended operation or broader risk acceptance is inferred.
 See [the checklist](ALPHA_READINESS_CHECKLIST.md),
 [fresh installation commands](DESKTOP_INSTALLATION.md),
 [operator commands](ALPHA_OPERATOR_RUNBOOK.md) and
-[inspectable evidence](evidence/desktop_alpha_2026-11-22.json).
+[fresh-install evidence](evidence/desktop_alpha_2026-11-22.json) and
+[clean-main acceptance](evidence/desktop_alpha_main_2026-11-22.json).
 
 ## Previous Integration Is Complete
 
@@ -31,6 +34,28 @@ production signing passed. The automatic
 [v0.5.0-beta.5 release](https://github.com/AetherraLabs/Aetherra/releases/tag/v0.5.0-beta.5)
 completed; its manifest signature and wheel/source archive hashes were verified.
 That earlier provisioned environment did not establish a fresh desktop install.
+
+## Integrated Acceptance
+
+PR #327's final revision passed 36 checks; optional auto-merge was skipped.
+The clean merged-main tree exactly matches that reviewed revision. All 87
+focused installation, continuity and signing regressions pass, as do dependency
+consistency, exact lock sync, boot, integration, import and hygiene checks.
+The complete 3,136-test run covers the unchanged runtime source.
+
+Clean main's normal full launcher completed three more gpt-4o turns with no
+fallback, retrieved the original saved record, rejected four expired requests
+without storage changes, and exited zero without force. Its first probe arrived
+before Homeostasis initialization; the retained startup observation is separate
+from the passing startup/steady samples. Wait for launcher initialization before
+assessing steady readiness; an HTTP 200 alone does not establish readiness.
+
+All 12 main validation workflows and the automatic Release workflow passed.
+Production CI verified the required signature against the approved repository
+public key. Published `v0.5.0-beta.6` manifest signature and wheel/source archive
+hashes were independently verified. The release changes only CHANGELOG, README
+version text and the project version; the clean released-main badge check passes.
+No private key, secret or signing-control change was needed.
 
 ## Reproduced Blockers And Repairs
 
@@ -72,12 +97,12 @@ test skip or quality-baseline allowance was added to hide a failure.
 | Python quality | PASS | Zero new/edited violations; 978 unchanged legacy files, 55 resolved; baseline unchanged. |
 | Hosted Windows installation | PASS | Fresh install/audit; 87 runtime/signing regressions; boot/integration; GUI 18 tests/build/lint. Reviewed runtime has 37 green checks. |
 | Runtime Observatory | PASS | Fresh npm install, zero audit findings, 18 tests, build/lint; stop/reconnect verified with zero observed console errors. |
-| Normal full CLI | PASS | Two fresh-venv processes; 12 JSON endpoints in four samples; both Ctrl+C exits 0 without force. |
+| Normal full CLI | PASS | Two candidate processes plus one clean-main process; 12 JSON endpoints in six samples; every Ctrl+C exit 0 without force. |
 | Engine and governance | PASS for observation | No-provider degradation; gpt-4o ready; Guardian enforcing and audit intact; Homeostasis observe_only and zero actions. |
-| Live continuity | PASS | Three gpt-4o turns after restart: correct recall amid newer competitors, unknown door color, preserved identity; no fallback. |
-| Expiry and privacy | PASS | Eight expired requests across four routes leave stored IDs unchanged; prompts/replies absent from ordinary runtime logs. |
+| Live continuity | PASS | Three candidate and three clean-main gpt-4o turns: correct recall, unknown door color and preserved identity; no fallback. |
+| Expiry and privacy | PASS | Eight candidate and four clean-main expired requests leave storage unchanged; prompts/replies absent from ordinary runtime logs. |
 | Signing | ENFORCED | Existing production workflows, approved key and strict settings unchanged; signature/tampering regressions retained. |
-| Integration acceptance | PENDING | PR #327 must merge and pass clean-main verification before this is an integrated alpha release. |
+| Integration acceptance | PASS | PR #327 merged; clean-main checks, 12 main workflows, required production signature and published beta.6 signature/hashes pass. |
 
 The completed default run took 1476.39s and exited zero. All 1,395
 Python source/test files match before and after execution. Individual skip
@@ -126,8 +151,7 @@ Optional policy denials, relative configuration defaults, watchdog teardown
 logging, THREE.Clock deprecation and the GUI bundle warning remain visible.
 No all-services-ready or remote-assistance-execution claim is made.
 
-Stage 21 remains Active pending integration acceptance. Beta Hardening and
-Production Readiness remain Planned. The next gate is PR #327's final review,
-green checks, merge, clean-main smoke and required production signature
-verification. Candidate CI does not prove post-merge production signing.
-Unrelated staged/unstaged work remains outside this PR.
+Stage 21 remains the active phase for supervised internal-alpha operation on
+this verified profile. Beta Hardening and Production Readiness remain Planned.
+Broader profiles and operating authority require their own evidence and decision.
+Unrelated staged/unstaged work was preserved throughout installation and acceptance.

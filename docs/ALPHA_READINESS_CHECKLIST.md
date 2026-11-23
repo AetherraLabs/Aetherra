@@ -2,15 +2,16 @@
 
 Updated: 2026-11-22
 
-Candidate: `codex/desktop-alpha-install`, [PR #327](https://github.com/AetherraLabs/Aetherra/pull/327),
-based on main `b827ecce` (`v0.5.0-beta.5`). PR #326 is merged and its clean-main
-and production signing checks passed. Desktop dependency blockers are resolved
-for the fresh Windows/Python 3.13 source-runtime profile. **Go for supervised
-synthetic verification; integrated internal-alpha release remains no-go pending
-merge and clean-main acceptance.**
+**GO for supervised internal alpha on the documented Windows source-runtime
+profile.** PR #327 merged as `a0e8857c`; released main `f55d48a9`
+(`v0.5.0-beta.6`) is clean and verified. The full suite passes 3,136 tests
+(40 skips, 5 passing subtests); clean main adds 87 focused regressions and three
+gpt-4o turns without fallback. All 12 main validation workflows and Release pass;
+production and published-release signatures verify against the approved key.
 See [the decision](ALPHA_READINESS_DECISION.md),
-[installation procedure](DESKTOP_INSTALLATION.md) and
-[fresh evidence](evidence/desktop_alpha_2026-11-22.json).
+[installation procedure](DESKTOP_INSTALLATION.md),
+[fresh evidence](evidence/desktop_alpha_2026-11-22.json) and
+[main acceptance](evidence/desktop_alpha_main_2026-11-22.json).
 
 This checklist defines what must be true before Aetherra should be called ready
 for an internal alpha. It is not a marketing launch checklist. It is a
@@ -81,8 +82,8 @@ python tools\verify_docs_consistency.py
 ## Gate 3: Safety And Governance
 
 Status: Fresh observation-only retest passes. Guardian enforces with intact
-audit; four samples show zero actuator actions, recoveries and restarts. Eight
-expired requests across two processes leave stored IDs unchanged. Signing stays
+audit; six initialized samples show zero actuator actions, recoveries and restarts.
+Twelve expired requests across three processes leave stored IDs unchanged. Signing stays
 strict. Privileged live mutation remains outside the verified scope.
 
 Required before alpha:
@@ -108,10 +109,11 @@ python -m pytest -q -o addopts= --basetemp .pytest_tmp_alpha_validation tests\un
 
 ## Gate 4: Runtime Boot Path
 
-Status: Fresh-install full CLI boot and restart pass in the isolated candidate.
+Status: Fresh-install full CLI boot and restart pass in the isolated candidate,
+with an additional normal launch verified from clean main.
 
-All 12 JSON endpoints return 200 in four samples. Both Ctrl+C exits are zero
-without force. No-provider fallback reports degradation; three gpt-4o replies
+All 12 JSON endpoints return 200 in six initialized samples. All three Ctrl+C
+exits are zero without force. No-provider fallback reports degradation; six gpt-4o replies
 report Engine readiness and no fallback. This uses the new venv with system-site
 packages disabled and the newly downloaded pinned retrieval model.
 
@@ -194,10 +196,10 @@ python -m pytest -q -o addopts= --basetemp .pytest_tmp_integration_validation te
 
 ## Gate 7: Repository Hygiene
 
-Status: Focused changes are isolated in PR #327. Original workspaces, indexes,
+Status: Focused changes were merged through PR #327. Original workspaces, indexes,
 and unrelated changes are preserved. Profiles, caches, raw logs and screenshots
 remain outside committed source. Public evidence contains only synthetic data
-and summary hashes. Clean-main acceptance remains an integration gate.
+and summary hashes. Clean-main acceptance passes; see the integrated evidence.
 
 Required before alpha:
 
@@ -256,8 +258,8 @@ GitHub Actions remain the source of truth for remote CI status.
 ## Gate 9: Operator Runbook
 
 Status: Exact fresh installation, full CLI, browser and real-model procedures
-are recorded. Two fresh-runtime processes, three live gpt-4o turns with no
-fallback and eight rejected expired requests are verified. Earlier 35-turn varied
+are recorded. Three fresh-runtime processes, six live gpt-4o turns with no
+fallback and twelve rejected expired requests are verified. Earlier 35-turn varied
 live evidence remains historical. Local directories provide storage isolation.
 
 Required before alpha:
@@ -275,9 +277,10 @@ Primary file:
 
 ## Gate 10: Alpha Decision
 
-Status: Go for supervised synthetic verification of the documented profile;
-no-go for an integrated internal-alpha release while merge/clean-main acceptance remain pending. Desktop installation is no longer an open dependency
-blocker for this profile. No broader operating authority is inferred.
+Status: GO for supervised internal alpha on the verified Windows source-runtime
+profile. Merge, clean-main checks and required production/release signing are
+complete. Unattended/production operation and unverified installation graphs
+remain NO-GO; no broader authority is inferred.
 
 Before calling alpha ready:
 
@@ -294,9 +297,9 @@ Decision record:
 
 ## Current Next Actions
 
-1. Complete PR #327's final review and documentation-head hosted checks.
-2. Merge the reviewed candidate, verify a clean main checkout and required production signing.
-3. Preserve the verified installation scope, observation-only boundary and unknown service states.
+1. Use the verified source revision, fresh install procedure and synthetic profiles.
+2. Preserve strict signing, Guardian/Security enforcement and observation-only behavior.
+3. Verify optional features, other platforms and broader operating modes separately before extending the GO decision.
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

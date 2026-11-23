@@ -1,0 +1,178 @@
+{
+  "date": "2026-11-22",
+  "timezone": "America/Denver",
+  "pr": "https://github.com/AetherraLabs/Aetherra/pull/327",
+  "merged_main": "a0e8857c22092b0acf0e997f8b02cf5e04f23be1",
+  "released_main": "f55d48a94559364d393fbf10a1e84e397a5109aa",
+  "clean_checkout": true,
+  "merged_tree_matches_reviewed_pr": true,
+  "release_changes": [
+    "CHANGELOG.md",
+    "README.md",
+    "pyproject.toml"
+  ],
+  "runtime_source_unchanged_by_release": true,
+  "version_badge_check": "passed",
+  "default_suite": "3136 passed, 40 skipped, 5 subtests; immutable reviewed runtime; see desktop_alpha_2026-11-22.json",
+  "fresh_environment": "Same newly created Windows/Python 3.13.7 venv and pinned model cache; lock unchanged",
+  "checks": [
+    {
+      "check": "main-regressions",
+      "exit_code": 0,
+      "seconds": 318.03
+    },
+    {
+      "check": "main-pip-check",
+      "exit_code": 0,
+      "seconds": 1.74
+    },
+    {
+      "check": "main-lock-sync",
+      "exit_code": 0,
+      "seconds": 0.99
+    },
+    {
+      "check": "main-boot",
+      "exit_code": 0,
+      "seconds": 2.56
+    },
+    {
+      "check": "main-integration",
+      "exit_code": 0,
+      "seconds": 1.0
+    },
+    {
+      "check": "main-imports",
+      "exit_code": 0,
+      "seconds": 12.66
+    },
+    {
+      "check": "main-hygiene",
+      "exit_code": 0,
+      "seconds": 0.09
+    }
+  ],
+  "regressions": {
+    "passed": 87,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0,
+    "junit_sha256": "8c9ad2366470e0d01a83d7853df2184254eade46e98fb2a5faecd31f4c473fcb"
+  },
+  "runtime": {
+    "pid": 53376,
+    "samples": [
+      {
+        "sample": "main-start",
+        "json_endpoints_200": 12,
+        "engine": "ready",
+        "guardian": "enforcing",
+        "audit_intact": true,
+        "homeostasis": "observe_only",
+        "actuator_actions": 0
+      },
+      {
+        "sample": "main-steady",
+        "json_endpoints_200": 12,
+        "engine": "ready",
+        "guardian": "enforcing",
+        "audit_intact": true,
+        "homeostasis": "observe_only",
+        "actuator_actions": 0
+      }
+    ],
+    "live_turns": 3,
+    "provider": "openai",
+    "model": "gpt-4o",
+    "fallback_count": 0,
+    "saved_record_id": "f8fa1f3588e240a2e1f57ab624c5f97a",
+    "retrieved_record_ids": [
+      "f8fa1f3588e240a2e1f57ab624c5f97a"
+    ],
+    "generation_evidence_ids": [
+      "f8fa1f3588e240a2e1f57ab624c5f97a"
+    ],
+    "answer": "You call the little observatory in your garden the \"Lantern Room.\" What would you like to try next?",
+    "unknown_attribute_answer": "I haven't been told what color you painted the door.",
+    "identity_preserved": true,
+    "expired_requests": 4,
+    "expiry_storage_unchanged": true,
+    "exit_code": 0,
+    "forced_shutdown": false,
+    "ordinary_log_conversation_matches": 0,
+    "runtime_log_sha256": "62981e4b42d6cb55ed2e5d1216b511dce6067d73f48a5503725cd86287857c42",
+    "early_startup_probe": "The first probe arrived before Homeostasis initialized; retained separately. Startup and steady probes passed after launcher initialization."
+  },
+  "browser": "Previously verified UI/runtime source is identical at the merge; clean-main Runtime UI APIs retested. Browser screenshots remain in candidate evidence.",
+  "main_ci": {
+    "validation_workflows": 12,
+    "all_passed": true,
+    "runs": [
+      {
+        "name": "Docs",
+        "url": "https://github.com/AetherraLabs/Aetherra/actions/runs/45108884475"
+      },
+      {
+        "name": "Desktop Installation",
+        "url": "https://github.com/AetherraLabs/Aetherra/actions/runs/45108884578"
+      },
+      {
+        "name": "CI Quality Gates",
+        "url": "https://github.com/AetherraLabs/Aetherra/actions/runs/45108884558"
+      },
+      {
+        "name": "Markdown Lint",
+        "url": "https://github.com/AetherraLabs/Aetherra/actions/runs/45108884343"
+      },
+      {
+        "name": "Commit Message Lint",
+        "url": "https://github.com/AetherraLabs/Aetherra/actions/runs/45108884405"
+      },
+      {
+        "name": "Security Checks",
+        "url": "https://github.com/AetherraLabs/Aetherra/actions/runs/45108884563"
+      },
+      {
+        "name": "Fast Quality Gate",
+        "url": "https://github.com/AetherraLabs/Aetherra/actions/runs/45108884355"
+      },
+      {
+        "name": "Import Structure Validation",
+        "url": "https://github.com/AetherraLabs/Aetherra/actions/runs/45108884402"
+      },
+      {
+        "name": "CodeQL",
+        "url": "https://github.com/AetherraLabs/Aetherra/actions/runs/45108884346"
+      },
+      {
+        "name": "Security Sanity",
+        "url": "https://github.com/AetherraLabs/Aetherra/actions/runs/45108884350"
+      },
+      {
+        "name": "Aether Script Verification",
+        "url": "https://github.com/AetherraLabs/Aetherra/actions/runs/45108884332"
+      },
+      {
+        "name": "CI",
+        "url": "https://github.com/AetherraLabs/Aetherra/actions/runs/45108884331"
+      }
+    ]
+  },
+  "production_signing": {
+    "required": true,
+    "verified": true,
+    "run": "https://github.com/AetherraLabs/Aetherra/actions/runs/45108884558",
+    "log_sha256": "2f65bec0dddeb8c4a7474b38ffce2ea1dafced85c36b61ea50891e15718dadb4"
+  },
+  "release": {
+    "tag": "v0.5.0-beta.6",
+    "url": "https://github.com/AetherraLabs/Aetherra/releases/tag/v0.5.0-beta.6",
+    "workflow": "https://github.com/AetherraLabs/Aetherra/actions/runs/45109598913",
+    "signature_verified": true,
+    "trusted_public_key_sha256": "0eba4cc63f130a4c42d9d9f8161c41267da8120f10c389d719b6b8d08f81830f",
+    "artifact_hashes_verified": true,
+    "manifest_sha256": "39b76f520fbc28cdb70c32c2328b7d4cfad4351bd135451edb3832f9d619f9ba"
+  },
+  "decision": "GO for supervised internal alpha on the documented Windows source-runtime profile. NO-GO for unattended/production operation and unverified installation graphs.",
+  "unrelated_workspaces_preserved": true
+}
