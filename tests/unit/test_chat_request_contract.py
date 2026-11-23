@@ -253,6 +253,7 @@ def test_stream_rejects_expiry_before_worker_dispatch(client, monkeypatch, stage
 
 @pytest.mark.parametrize("available", [True, False, "error"])
 def test_lyrixa_rejects_expiry_during_registry_wait(client, monkeypatch, available):
+    # Aetherra imports
     import aetherra_service_registry
 
     clock = [100.0]
@@ -310,6 +311,7 @@ def test_expired_stream_id_can_retry_after_admission(client, monkeypatch, method
         lambda **kwargs: SimpleNamespace(allowed=True),
     )
     if method == "WS":
+        # Third party imports
         import flask_sock
 
         routes = {}
