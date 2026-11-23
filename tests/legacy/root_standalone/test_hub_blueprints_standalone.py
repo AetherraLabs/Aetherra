@@ -14,6 +14,9 @@ import sys
 import unittest
 from unittest.mock import MagicMock, patch
 
+# Third party imports
+import pytest
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # â”€â”€ Minimal Flask app factory â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -220,11 +223,10 @@ class TestAgentsBlueprint(unittest.TestCase):
 
 class TestInteractiveBlueprint(unittest.TestCase):
     def setUp(self):
-        env = patch.dict(
-            os.environ, {"AETHERRA_PROFILE": "test", "AETHERRA_HUB_CONTROL_TOKEN": ""}
-        )
-        env.start()
-        self.addCleanup(env.stop)
+        env = pytest.MonkeyPatch()
+        self.addCleanup(env.undo)
+        env.setenv("AETHERRA_PROFILE", "test")
+        env.setenv("AETHERRA_HUB_CONTROL_TOKEN", "")
         self.app = _make_app()
         self.client = self.app.test_client()
 

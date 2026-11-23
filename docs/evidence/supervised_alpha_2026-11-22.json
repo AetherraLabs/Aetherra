@@ -1,0 +1,672 @@
+{
+  "date": "2026-11-22",
+  "timezone": "America/Denver",
+  "stage": 21,
+  "baseline_commit": "ff359b02b8422ea3ef5132bbad3d241de64f0553",
+  "baseline_engine_sha256": "c329072324cd3c8c199d967b5a2b4d12e991ba003f9dc175841219179542673e",
+  "candidate_branch": "codex/supervised-alpha-session",
+  "candidate_integrated": false,
+  "candidate_engine_sha256": "c71c441dcf610e9126635b2b8b4d8e1826863764ad402522feb755b680561296",
+  "profile": "Existing verified Windows x64/Python 3.13.7 source-runtime environment; Node 22.18.0; fresh synthetic data directory",
+  "entry_point": "python -u aetherra_os_launcher.py --mode full --no-gui --config <profile>/launcher.json",
+  "chat_route": "POST /api/ai/ask; ephemeral scratchpad; no injected history",
+  "storage_isolation": "Distinct local data directories, not account/user isolation",
+  "runtime_and_model_doubles": false,
+  "retrieval": "Existing local pinned all-MiniLM-L6-v2, real SQLite; selected evidence only",
+  "windows": [
+    {
+      "label": "session-one",
+      "pid": 52828,
+      "observed_seconds": 600.0,
+      "sample_count": 21,
+      "json_endpoints_per_sample": 12,
+      "start_utc": "2026-11-23T05:05:50.164174+00:00",
+      "end_utc": "2026-11-23T05:15:50.245164+00:00",
+      "rss_mib_range": [
+        154.38,
+        596.54
+      ],
+      "max_probe_ms": 585.62,
+      "engine_hub_kernel_readiness": "ready",
+      "guardian": "enforcing",
+      "audit_intact": true,
+      "homeostasis": "observe_only",
+      "actuator_attempts_executions_blocks": 0,
+      "unexpected_restarts_recoveries": 0,
+      "shutdown": {
+        "exit_code": 0,
+        "forced": false
+      }
+    },
+    {
+      "label": "session-two",
+      "pid": 55764,
+      "observed_seconds": 300.0,
+      "sample_count": 11,
+      "json_endpoints_per_sample": 12,
+      "start_utc": "2026-11-23T05:22:02.290789+00:00",
+      "end_utc": "2026-11-23T05:27:02.194325+00:00",
+      "rss_mib_range": [
+        579.82,
+        829.21
+      ],
+      "max_probe_ms": 120.15,
+      "engine_hub_kernel_readiness": "ready",
+      "guardian": "enforcing",
+      "audit_intact": true,
+      "homeostasis": "observe_only",
+      "actuator_attempts_executions_blocks": 0,
+      "unexpected_restarts_recoveries": 0,
+      "shutdown": {
+        "exit_code": 0,
+        "forced": false
+      }
+    }
+  ],
+  "excluded_attempts": [
+    {
+      "label": "session-one-incomplete",
+      "outcome": "sampler error",
+      "reason": "psutil.NoSuchProcess while reading num_threads for transient child PID 52812",
+      "retained_samples": "session-one-observations-incomplete.json",
+      "resolution": "Task sampler catches disappearing descendants; disappearing launcher remains fatal. A full 600-second window was restarted."
+    },
+    {
+      "label": "session-two-cold-start",
+      "outcome": "observation timeout",
+      "reason": "First 10-second HTTP status probe timed out while the first recall was warming up after restart; no complete sample was written.",
+      "first_recall_seconds": 63.603,
+      "resolution": "Runtime recovered without restart or retrying the chat write. A full 300-second steady window began after the four restart turns completed.",
+      "boundary": "This run does not prove uninterrupted responsiveness during cold startup. No runtime fix was applied to this behavior."
+    }
+  ],
+  "resource_limit": "Aggregates include changing transient children. Shared-workstation observations do not prove absence of leaks or an SLA.",
+  "baseline_live_turns": {
+    "seed": [
+      {
+        "input": "My aunt Leona taught me to mend a flat bike tire.",
+        "reply": "I haven't been told anything about your aunt Leona teaching you to mend a flat bike tire. What would you like to try next?",
+        "seconds": 18.175,
+        "saved_record_id": "317b9b4ffc69b9a784fee68c0abdd151",
+        "retrieved_record_ids": [],
+        "generation_evidence_ids": [],
+        "provider": "openai",
+        "model": "gpt-4o",
+        "fallback": false
+      },
+      {
+        "input": "I unwind after work by playing Debussy's Clair de lune on the piano.",
+        "reply": "I haven't been told about how you unwind after work. If you'd like, I can remember this for future reference.",
+        "seconds": 1.602,
+        "saved_record_id": "e28a315e04171b976160a7e626718cfd",
+        "retrieved_record_ids": [],
+        "generation_evidence_ids": [],
+        "provider": "openai",
+        "model": "gpt-4o",
+        "fallback": false
+      },
+      {
+        "input": "My uncle Mateo taught me how to swim.",
+        "reply": "I haven't been told about your uncle Mateo teaching you how to swim. What would you like to try next?",
+        "seconds": 1.722,
+        "saved_record_id": "c5ab3d060f6015808552b94a4be80d93",
+        "retrieved_record_ids": [
+          "317b9b4ffc69b9a784fee68c0abdd151"
+        ],
+        "generation_evidence_ids": [
+          "317b9b4ffc69b9a784fee68c0abdd151"
+        ],
+        "provider": "openai",
+        "model": "gpt-4o",
+        "fallback": false
+      },
+      {
+        "input": "My friend Anika repairs cars for a living.",
+        "reply": "Thanks for sharing about your friend Anika! If there's anything else you'd like to tell me or ask, feel free.",
+        "seconds": 1.171,
+        "saved_record_id": "16eec08976f3fdf55590412bbf6d856c",
+        "retrieved_record_ids": [],
+        "generation_evidence_ids": [],
+        "provider": "openai",
+        "model": "gpt-4o",
+        "fallback": false
+      },
+      {
+        "input": "My bicycle has a silver bell.",
+        "reply": "Thanks for sharing! If you have any other details or questions, feel free to let me know.",
+        "seconds": 1.384,
+        "saved_record_id": "591de25ff55f4a73c9d8196bb47d7971",
+        "retrieved_record_ids": [],
+        "generation_evidence_ids": [],
+        "provider": "openai",
+        "model": "gpt-4o",
+        "fallback": false
+      },
+      {
+        "input": "On weekends I play Beethoven's Fur Elise on the violin.",
+        "reply": "I haven't been told about you playing Beethoven's \"Fur Elise\" on the violin.",
+        "seconds": 1.356,
+        "saved_record_id": "e938ac83fd668e4cac6de8e60ec8a704",
+        "retrieved_record_ids": [
+          "e28a315e04171b976160a7e626718cfd"
+        ],
+        "generation_evidence_ids": [
+          "e28a315e04171b976160a7e626718cfd"
+        ],
+        "provider": "openai",
+        "model": "gpt-4o",
+        "fallback": false
+      },
+      {
+        "input": "My brother plays jazz on his trumpet.",
+        "reply": "I haven't been told about your brother's trumpet playing.",
+        "seconds": 1.877,
+        "saved_record_id": "440d8b15adcec61f0d652ae58020949c",
+        "retrieved_record_ids": [
+          "e938ac83fd668e4cac6de8e60ec8a704"
+        ],
+        "generation_evidence_ids": [
+          "e938ac83fd668e4cac6de8e60ec8a704"
+        ],
+        "provider": "openai",
+        "model": "gpt-4o",
+        "fallback": false
+      },
+      {
+        "input": "I listen to podcasts during my commute.",
+        "reply": "I haven't been told which podcasts you listen to during your commute. If you'd like to share, I'd be happy to hear about them! What would you like to try next?",
+        "seconds": 1.303,
+        "saved_record_id": "e8945a014ebd5a5e47b8bae09bbfa508",
+        "retrieved_record_ids": [],
+        "generation_evidence_ids": [],
+        "provider": "openai",
+        "model": "gpt-4o",
+        "fallback": false
+      }
+    ],
+    "warm": [
+      {
+        "input": "Who showed me how to repair a puncture on my bicycle?",
+        "reply": "Your aunt Leona showed you how to repair a puncture on your bicycle.",
+        "seconds": 1.078,
+        "saved_record_id": "52da33368997484c76b92dee8b322b40",
+        "retrieved_record_ids": [
+          "317b9b4ffc69b9a784fee68c0abdd151"
+        ],
+        "generation_evidence_ids": [
+          "317b9b4ffc69b9a784fee68c0abdd151"
+        ],
+        "provider": "openai",
+        "model": "gpt-4o",
+        "fallback": false
+      },
+      {
+        "input": "Which composition do I play to relax at the end of a workday?",
+        "reply": "You play Debussy's \"Clair de lune\" on the piano to relax at the end of a workday. What would you like to try next?",
+        "seconds": 1.169,
+        "saved_record_id": "ab60bd472e023cba41e18465a3d2ecc3",
+        "retrieved_record_ids": [
+          "e28a315e04171b976160a7e626718cfd",
+          "e938ac83fd668e4cac6de8e60ec8a704"
+        ],
+        "generation_evidence_ids": [
+          "e28a315e04171b976160a7e626718cfd",
+          "e938ac83fd668e4cac6de8e60ec8a704"
+        ],
+        "provider": "openai",
+        "model": "gpt-4o",
+        "fallback": false
+      }
+    ],
+    "middle": [
+      {
+        "input": "What color did I paint my piano?",
+        "reply": "I haven't been told what color you painted your piano. What would you like to try next?",
+        "seconds": 3.301,
+        "saved_record_id": "924bf22962af6df2b056c357a33a55b6",
+        "retrieved_record_ids": [],
+        "generation_evidence_ids": [],
+        "provider": "openai",
+        "model": "gpt-4o",
+        "fallback": false
+      }
+    ],
+    "restart": [
+      {
+        "input": "Who showed me how to repair a puncture on my bicycle?",
+        "reply": "Your aunt Leona taught you how to repair a puncture on your bicycle. What would you like to try next?",
+        "seconds": 63.603,
+        "saved_record_id": "a4a0ce9af8fcdb811f7bb2df567dbc5c",
+        "retrieved_record_ids": [
+          "317b9b4ffc69b9a784fee68c0abdd151"
+        ],
+        "generation_evidence_ids": [
+          "317b9b4ffc69b9a784fee68c0abdd151"
+        ],
+        "provider": "openai",
+        "model": "gpt-4o",
+        "fallback": false
+      },
+      {
+        "input": "Which composition do I play to relax at the end of a workday?",
+        "reply": "You play Debussy's \"Clair de lune\" on the piano to relax at the end of a workday. What would you like to try next?",
+        "seconds": 2.952,
+        "saved_record_id": "a8321d0ccde4541e73ff608d7722ad45",
+        "retrieved_record_ids": [
+          "e28a315e04171b976160a7e626718cfd",
+          "e938ac83fd668e4cac6de8e60ec8a704"
+        ],
+        "generation_evidence_ids": [
+          "e28a315e04171b976160a7e626718cfd",
+          "e938ac83fd668e4cac6de8e60ec8a704"
+        ],
+        "provider": "openai",
+        "model": "gpt-4o",
+        "fallback": false
+      },
+      {
+        "input": "What color did I paint my piano?",
+        "reply": "I haven't been told what color you painted your piano.",
+        "seconds": 3.013,
+        "saved_record_id": "e3372fc695b827cfe51bf70831175a40",
+        "retrieved_record_ids": [],
+        "generation_evidence_ids": [],
+        "provider": "openai",
+        "model": "gpt-4o",
+        "fallback": false
+      },
+      {
+        "input": "Who are you, and how does Lyrixa relate to Aetherra?",
+        "reply": "I'm Lyrixa, the user-facing persona of Aetherra, the persistent cognitive system. My role is to communicate with you warmly, clearly, and honestly, providing information and assistance based on the data I have. Aetherra is the underlying system that powers my abilities, allowing me to interact with you and understand your needs.",
+        "seconds": 3.887,
+        "saved_record_id": "c988209c31297704a35a747e515b924b",
+        "retrieved_record_ids": [
+          "138485d6c5c3d8934cdcd8b537311920",
+          "e28318ad27eb33ca4f7b01dd8a00e9e0"
+        ],
+        "generation_evidence_ids": [
+          "138485d6c5c3d8934cdcd8b537311920",
+          "e28318ad27eb33ca4f7b01dd8a00e9e0"
+        ],
+        "provider": "openai",
+        "model": "gpt-4o",
+        "fallback": false
+      }
+    ],
+    "end": [
+      {
+        "input": "Who showed me how to repair a puncture on my bicycle?",
+        "reply": "Your aunt Leona showed you how to repair a puncture on your bicycle.",
+        "seconds": 1.977,
+        "saved_record_id": "53824ff1b2108f4336c27bea0e7a291d",
+        "retrieved_record_ids": [
+          "317b9b4ffc69b9a784fee68c0abdd151"
+        ],
+        "generation_evidence_ids": [
+          "317b9b4ffc69b9a784fee68c0abdd151"
+        ],
+        "provider": "openai",
+        "model": "gpt-4o",
+        "fallback": false
+      }
+    ]
+  },
+  "restart_evidence_content": [
+    {
+      "question": "Who showed me how to repair a puncture on my bicycle?",
+      "evidence": [
+        {
+          "id": "317b9b4ffc69b9a784fee68c0abdd151",
+          "content": "My aunt Leona taught me to mend a flat bike tire."
+        }
+      ]
+    },
+    {
+      "question": "Which composition do I play to relax at the end of a workday?",
+      "evidence": [
+        {
+          "id": "e28a315e04171b976160a7e626718cfd",
+          "content": "I unwind after work by playing Debussy's Clair de lune on the piano."
+        },
+        {
+          "id": "e938ac83fd668e4cac6de8e60ec8a704",
+          "content": "On weekends I play Beethoven's Fur Elise on the violin."
+        }
+      ]
+    }
+  ],
+  "baseline_disclosure_result": "FAIL: saved new facts, but several initial gpt-4o replies incorrectly denied being told them",
+  "baseline_reconstructed_prompt": "baseline-first-disclosure-prompt.txt was reconstructed from the shipped builder and receipt, not intercepted at the live provider",
+  "candidate_live_turns": [
+    {
+      "input": "My aunt Leona taught me to mend a flat bike tire.",
+      "reply": "It's wonderful that your aunt Leona taught you how to mend a flat bike tire. Having such practical skills can be incredibly useful. If you ever need a refresher or tips on bike maintenance, feel free to ask! What would you like to try next?",
+      "seconds": 28.254,
+      "saved_record_id": "787f8367ca3ec101946433b0a87a2579",
+      "retrieved_record_ids": [],
+      "generation_evidence_ids": [],
+      "provider": "openai",
+      "model": "gpt-4o",
+      "fallback": false
+    },
+    {
+      "input": "I unwind after work by playing Debussy's Clair de lune on the piano.",
+      "reply": "That sounds like a beautiful way to unwind after work. Debussy's \"Clair de lune\" is such a calming and expressive piece. If you ever want to share more about your musical experiences, feel free to let me know!",
+      "seconds": 2.487,
+      "saved_record_id": "85d9c35d138f9fdeb037a13451420044",
+      "retrieved_record_ids": [],
+      "generation_evidence_ids": [],
+      "provider": "openai",
+      "model": "gpt-4o",
+      "fallback": false
+    },
+    {
+      "input": "My uncle Mateo taught me how to swim.",
+      "reply": "It's great to hear that your uncle Mateo taught you how to swim! If there's anything else you'd like to share or discuss, feel free to let me know. What would you like to try next?",
+      "seconds": 1.8,
+      "saved_record_id": "d77c7867329eb9df179f3baa9070f2d4",
+      "retrieved_record_ids": [
+        "787f8367ca3ec101946433b0a87a2579"
+      ],
+      "generation_evidence_ids": [
+        "787f8367ca3ec101946433b0a87a2579"
+      ],
+      "provider": "openai",
+      "model": "gpt-4o",
+      "fallback": false
+    },
+    {
+      "input": "On weekends I play Beethoven's Fur Elise on the violin.",
+      "reply": "That sounds wonderful! Now I know you enjoy playing Beethoven's \"Fur Elise\" on the violin on weekends. Previously, you mentioned that you unwind after work by playing Debussy's \"Clair de lune\" on the piano. It seems music is a significant part of your life. If there's anything specific you'd like to share or discuss about your musical experiences, feel free to let me know!",
+      "seconds": 2.238,
+      "saved_record_id": "aea6c67fcf1f810032830510d5bcd6b4",
+      "retrieved_record_ids": [
+        "85d9c35d138f9fdeb037a13451420044"
+      ],
+      "generation_evidence_ids": [
+        "85d9c35d138f9fdeb037a13451420044"
+      ],
+      "provider": "openai",
+      "model": "gpt-4o",
+      "fallback": false
+    },
+    {
+      "input": "My dog's name is Luna. Can you remember that?",
+      "reply": "Thank you for sharing that your dog's name is Luna. I've saved this information for future reference.",
+      "seconds": 1.901,
+      "saved_record_id": "f859ae16cfec223c43eb8efc6298370b",
+      "retrieved_record_ids": [],
+      "generation_evidence_ids": [],
+      "provider": "openai",
+      "model": "gpt-4o",
+      "fallback": false
+    },
+    {
+      "input": "My bicycle has a silver bell. What color is its frame?",
+      "reply": "I haven't been told the color of your bicycle's frame. If you'd like to share that detail, I can remember it for next time.",
+      "seconds": 2.306,
+      "saved_record_id": "44d4ef354aae92e23969225e57c49f0c",
+      "retrieved_record_ids": [],
+      "generation_evidence_ids": [],
+      "provider": "openai",
+      "model": "gpt-4o",
+      "fallback": false
+    },
+    {
+      "input": "Is my favorite soup lentil?",
+      "reply": "I haven't been told what your favorite soup is, but if you just mentioned lentil, it could be a favorite of yours. If you'd like me to remember this detail for the future, please let me know!",
+      "seconds": 1.991,
+      "saved_record_id": "15bd441420a6d0cd2c1e54e73a452efa",
+      "retrieved_record_ids": [],
+      "generation_evidence_ids": [],
+      "provider": "openai",
+      "model": "gpt-4o",
+      "fallback": false
+    },
+    {
+      "input": "Who showed me how to repair a puncture on my bicycle?",
+      "reply": "Your aunt Leona taught you how to repair a puncture on your bicycle. What would you like to try next?",
+      "seconds": 1.897,
+      "saved_record_id": "ff390cf459f17e8f69cd9359affd0b9f",
+      "retrieved_record_ids": [
+        "787f8367ca3ec101946433b0a87a2579"
+      ],
+      "generation_evidence_ids": [
+        "787f8367ca3ec101946433b0a87a2579"
+      ],
+      "provider": "openai",
+      "model": "gpt-4o",
+      "fallback": false
+    },
+    {
+      "input": "Which composition do I play to relax at the end of a workday?",
+      "reply": "You play Debussy's \"Clair de lune\" on the piano to relax at the end of a workday.",
+      "seconds": 1.555,
+      "saved_record_id": "b55a33696fcc2b235ef0b2e34b990ed9",
+      "retrieved_record_ids": [
+        "85d9c35d138f9fdeb037a13451420044",
+        "aea6c67fcf1f810032830510d5bcd6b4"
+      ],
+      "generation_evidence_ids": [
+        "85d9c35d138f9fdeb037a13451420044",
+        "aea6c67fcf1f810032830510d5bcd6b4"
+      ],
+      "provider": "openai",
+      "model": "gpt-4o",
+      "fallback": false
+    },
+    {
+      "input": "What is my dog's name?",
+      "reply": "Your dog's name is Luna. What would you like to try next?",
+      "seconds": 1.975,
+      "saved_record_id": "8f474584826751c4b1c1bc34099f5b83",
+      "retrieved_record_ids": [
+        "f859ae16cfec223c43eb8efc6298370b"
+      ],
+      "generation_evidence_ids": [
+        "f859ae16cfec223c43eb8efc6298370b"
+      ],
+      "provider": "openai",
+      "model": "gpt-4o",
+      "fallback": false
+    },
+    {
+      "input": "What color did I paint my piano?",
+      "reply": "I haven't been told what color you painted your piano. If you'd like to share that information, I can remember it for future reference. What would you like to try next?",
+      "seconds": 1.775,
+      "saved_record_id": "9df489be0cd91eb7f267cf80434b1366",
+      "retrieved_record_ids": [],
+      "generation_evidence_ids": [],
+      "provider": "openai",
+      "model": "gpt-4o",
+      "fallback": false
+    },
+    {
+      "input": "What is my favorite soup?",
+      "reply": "I haven't been told what your favorite soup is. If you'd like to share it with me, I can remember it for you in the future.",
+      "seconds": 1.784,
+      "saved_record_id": "60b0909a45427dbcf0835909fabfebf4",
+      "retrieved_record_ids": [],
+      "generation_evidence_ids": [],
+      "provider": "openai",
+      "model": "gpt-4o",
+      "fallback": false
+    },
+    {
+      "input": "Who are you, and how does Lyrixa relate to Aetherra?",
+      "reply": "I'm Lyrixa, the user-facing persona of Aetherra, which is a persistent cognitive system. My role is to interact warmly and clearly with you, providing assistance and information. Aetherra operates in the background, managing and processing data, while I communicate with you directly. What would you like to try next?",
+      "seconds": 2.128,
+      "saved_record_id": "4c5834c3b515b09a58f085e3f9341f89",
+      "retrieved_record_ids": [
+        "3347e22813bc0186c743e0bd6bdfd16a"
+      ],
+      "generation_evidence_ids": [
+        "3347e22813bc0186c743e0bd6bdfd16a"
+      ],
+      "provider": "openai",
+      "model": "gpt-4o",
+      "fallback": false
+    }
+  ],
+  "candidate_live_result": "Manual review: disclosures acknowledged, competing facts distinguished, mixed statement/question handled, unknown color and soup not invented, identity retained; all 13 turns gpt-4o/no fallback",
+  "candidate_process": {
+    "pid": 53632,
+    "shutdown": {
+      "exit_code": 0,
+      "forced": false
+    },
+    "scope": "Separate fresh profile; prompt correction check, not a repeat of the 15-minute exercise"
+  },
+  "offline_tests": "Only text generation doubled; capture-only responder proves prompt policy and real persisted content, not model wording. Existing restart tests use real runtime/storage/retrieval.",
+  "checks": [
+    {
+      "check": "boot",
+      "exit_code": 0,
+      "seconds": 3.69
+    },
+    {
+      "check": "integration",
+      "exit_code": 0,
+      "seconds": 1.23
+    },
+    {
+      "check": "signing",
+      "exit_code": 0,
+      "seconds": 6.16
+    },
+    {
+      "check": "disclosure-regression",
+      "exit_code": 0,
+      "seconds": 440.8,
+      "pytest": {
+        "tests": "25",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0",
+        "time": "433.167"
+      }
+    },
+    {
+      "check": "engine-final",
+      "exit_code": 0,
+      "seconds": 64.93,
+      "pytest": {
+        "tests": "80",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0",
+        "time": "57.994"
+      }
+    },
+    {
+      "check": "python-quality",
+      "exit_code": 0,
+      "seconds": 276.47
+    },
+    {
+      "check": "docs-consistency",
+      "exit_code": 0,
+      "seconds": 6.16
+    },
+    {
+      "check": "docs-lint",
+      "exit_code": 0,
+      "seconds": 4.6
+    }
+  ],
+  "browser": {
+    "origin": "http://127.0.0.1:13300",
+    "hub_port": 13301,
+    "stopped": "Runtime unavailable",
+    "reconnected": "Runtime status incomplete; Engine active, service readiness ready / registry healthy",
+    "earlier": "Engine degraded, service readiness ready / registry degraded",
+    "unknown_optional": [
+      "Security",
+      "Maintenance",
+      "Integration Validation"
+    ],
+    "console_errors": [],
+    "ui_source_changed": false
+  },
+  "expiry": {
+    "passed": true,
+    "storage_unchanged": true,
+    "record_count": 36,
+    "receipt_contains_conversation": false,
+    "requests": [
+      {
+        "method": "POST",
+        "endpoint": "/api/ai/ask",
+        "status": 409
+      },
+      {
+        "method": "POST",
+        "endpoint": "/api/ai/stream",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "endpoint": "/api/ai/stream",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "endpoint": "/api/lyrixa/chat",
+        "status": 409
+      }
+    ]
+  },
+  "ordinary_log_privacy": "Synthetic fact markers absent from all three ordinary runtime logs; synthetic transcripts retained only in verification evidence",
+  "signing": {
+    "strict_runtime_flags": true,
+    "local_signing_tests_passed": 13,
+    "approved_key_and_workflows_unchanged": true,
+    "new_hosted_ci_run": false,
+    "prior_main_production_check": "https://github.com/AetherraLabs/Aetherra/actions/runs/45113230578"
+  },
+  "unrelated_workspaces": {
+    "count": 2,
+    "heads_branches_status_indexes_files_unchanged": true
+  },
+  "decision": "Retain bounded supervised GO; Stage 21 active, Stage 22/23 Planned. Review/integrate disclosure candidate, then investigate cold-start responsiveness before next exercise.",
+  "not_verified": [
+    "Uninterrupted cold-start responsiveness",
+    "Long-running soak/load",
+    "Candidate hosted CI or merge",
+    "Full default suite rerun for this prompt change",
+    "Unattended or production operation",
+    "Other installation graphs/platforms"
+  ],
+  "local_artifacts": {
+    "location": "Task-owned .pytest_tmp_supervised_alpha, outside tracked product files",
+    "sha256": {
+      "observation-failures.json": "2c4e9452b82c69644a63115adf15dcb8127f2669a2589146238b6f246f8982fb",
+      "session-one-observations.json": "ca7a8b3905c6c4be1438e06e7b8b21d61e3c770fdf9ef1c0ca72444a4b9cc3dd",
+      "session-two-observations.json": "deb0defb88f77209e71d0f20be5b356860ab1069d13e13f7abef8e57545d4a9a",
+      "session-one-observations-incomplete.json": "f6d795048e8f7439d1161f3afb7dddd8ab86d9df4c4d7f4231890bc1d5e20664",
+      "browser-live.jpg": "6259b83bbd110469cff1a47d88aceebf2b181fff78ad286e17e9b4ee9660bc61",
+      "browser-stopped.jpg": "462866f0f5c64cc7d1ba5fb5ae823bca94a6723a6d184ffcf7f84e3ef9355963",
+      "browser-reconnected.jpg": "c5d20ec4cb68db682622d2538205033d4dbe293684d17941f047642c44704fe9",
+      "browser-errors.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "seed-chat.json": "90f9b03dfb2712373d1d259825924020d65fe23c14a3c660c86d182631a4e932",
+      "warm-chat.json": "0899c4678c688751c58db2151c6ff522116d38b0f163e7bf167528ddf2118e1b",
+      "middle-chat.json": "ec62935d27c467903832ba8337198c2878a2c57fc975cb25c073ed03ae3dd9de",
+      "restart-chat.json": "6e62b84728e957a9e341c6814b62576ecff81b6f39a369bfb88d49552ef85df6",
+      "end-chat.json": "546ef4520bde56536206da0b9df732bc219c4dfd86fd13703b2e974f7e23da57",
+      "session-one-runtime.log": "0ad4a3b2125bf169108637aab886dcfd957376e90b2c78a534a6c290dbdf3483",
+      "session-two-runtime.log": "c2eec94c5cf95a886003933cdf502313ee10ead50b4f57d9d1afc6463fd6adab",
+      "fixed/chat.json": "a9369fc82c836fea494036b8d3611c86b1a9ff05506022bc42fffcd9b143fbe2",
+      "fixed/corrected-runtime.log": "3488b87e9a319a2264111677d4a9b301dd849f5b327478cdf63fc76bafa18dbd",
+      "fixed/corrected-exit.json": "26b401777abd251e6a18dbf8a4509ec0841dc1b62b84b6e1897137dee86c9cd4",
+      "disclosure-red.log": "b69bbad6f8eb10f93f74f5620ad00e825d1c8fc1e8b50ac0df389ea74499d2a0",
+      "disclosure-regression.log": "667fce804453effe9f650cda46abce37d3371260a39a2f944fbd0df320a90385",
+      "engine-final.log": "35ea9948162b8cf193b64e5e4d39f9f9f2d5e22a2154e1bc2ffbcf456975e61b",
+      "python-quality.log": "2bb78ac2392a06e09b57c49f52a045bf87ef223a3d8291d54dc77ad38cdd0ae2",
+      "docs-consistency.log": "9e468299a7b9ef94ce12438cff1122a818a2b5852032be0fc69dea00dfcc464f",
+      "docs-lint.log": "ab659c401d9474a7faf890b1f2bf221eb8a6d640168ba7f96a6f53cfa902e3b3",
+      "manual-expired-request.json": "5318d40e332706ef44edceb12684d749db43aeaaf4d49031d0b61ef7ef7c3292",
+      "preservation.json": "83a6b66e851435912e6aaa5d2c8f443c678ee07c32de3c80ffb0efd0b87f8d6d",
+      "baseline-first-disclosure-prompt.txt": "1bfd4dc8f78f4145d603abccfd374c32172efd8ca3fafefa65f7e518fd12016b"
+    }
+  }
+}

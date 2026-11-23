@@ -104,10 +104,20 @@ See `docs/ALPHA_READINESS_DECISION.md` and the operator runbook.
 
 | Priority | Work | Required Outcome |
 | --- | --- | --- |
-| 1 | Supervised internal alpha | Use the verified installation and synthetic local profiles |
+| 1 | Supervised internal alpha | Review/integrate the disclosure correction; investigate cold-start responsiveness before the next exercise |
 | 2 | Regression preservation | Retain the default suite, continuity, browser and truthful readiness checks |
 | 3 | Signing and governance | Keep approved-key signing, Guardian/Security and observation boundaries enforced |
 | 4 | Broader acceptance | Verify additional installation graphs and operating modes before extending GO |
+
+The first exercise on merged PR #328 (`ff359b02`) completed ten minutes plus
+five minutes after restart, with 16 gpt-4o turns and no fallback. Correct recall,
+truthful unknown detail, browser stop/reconnect and governance observations pass.
+Initial disclosure acknowledgments exposed a prompt defect; its focused repair
+is a candidate pending review/integration. A 63.603-second cold recall interrupted
+status polling before the second steady window. Retain that limitation and the
+failed observations; this is not a continuous-responsiveness or soak-test pass.
+See [the decision](ALPHA_READINESS_DECISION.md) and
+[exercise evidence](evidence/supervised_alpha_2026-11-22.json).
 
 ## Change Rule
 
