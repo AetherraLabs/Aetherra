@@ -1,6 +1,65 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.5 (2026-11-23)
+
+### Bug Fixes
+
+- **alpha**: Enforce expiry throughout chat admission
+  ([`7e5c520`](https://github.com/AetherraLabs/Aetherra/commit/7e5c5204f8973eafdb60c2c0513de6be97b6fc4f))
+
+- **alpha**: Harden runtime contracts and restore suite verification
+  ([`198cbbc`](https://github.com/AetherraLabs/Aetherra/commit/198cbbca48c362a9511bfde4d382a7417490d2ec))
+
+Reject expired chat requests before persistence and retain response metadata. Repair readiness,
+  connection ownership, coordination and test isolation. Record full-launch, browser, live-model and
+  frozen-source verification.
+
+Validation: 3,115 passed, 40 skipped; pytest process exit 0. Quality, docs, GUI and published
+  release-signature checks pass. Signing enforcement and the fixed legacy style baseline remain
+  unchanged.
+
+- **alpha**: Integrate verified runtime contracts
+  ([#326](https://github.com/AetherraLabs/Aetherra/pull/326),
+  [`382e77a`](https://github.com/AetherraLabs/Aetherra/commit/382e77ac1f492d6624dc0c1e48a746b3f58cd604))
+
+Integrate the reviewed alpha fixes, regression tests, and readiness evidence. Preserve required
+  release signing and the completed website migration.
+
+### Chores
+
+- **alpha**: Integrate current main after website migration
+  ([`91bf768`](https://github.com/AetherraLabs/Aetherra/commit/91bf768f63ccd661f370bfca8030d211c362da6d))
+
+- **docs**: Retire company website artifacts and preserve technical documentation
+  ([`0eb0713`](https://github.com/AetherraLabs/Aetherra/commit/0eb0713e04d290b10a6e5654bbea4e32c675a620))
+
+- **docs**: Retire company website publisher after verified cutover
+  ([`86982cc`](https://github.com/AetherraLabs/Aetherra/commit/86982cc5494938c8c92b748f78f12fb8a06c5e17))
+
+chore(docs): retire company website publisher and preserve technical docs
+
+### Code Style
+
+- **alpha**: Label local test imports for pinned isort
+  ([`ef064b7`](https://github.com/AetherraLabs/Aetherra/commit/ef064b7638bf0ad33825573e3340538239cce30c))
+
+### Documentation
+
+- Publish the approved Aetherra Labs company homepage
+  ([`645ab2e`](https://github.com/AetherraLabs/Aetherra/commit/645ab2ed5cccb3c1d26fb4eac414ac7640d6dd96))
+
+Built from AetherraLabs/Aetherra-Website@a56f4880e4169e5094c77ab675d0b7569871b4dd. Keep the existing
+  Pages domain, documentation, legacy routes and assets. The prior index is available at
+  d00120e8d8fb5f14f5b1f5fa1bd295ceb9c25930.
+
+- Record verified company publisher cutover
+  ([`1e9bffb`](https://github.com/AetherraLabs/Aetherra/commit/1e9bffb78ee5bf45506b3498c0909887d496c42e))
+
+- **alpha**: Record reviewed integration verification
+  ([`278bf6e`](https://github.com/AetherraLabs/Aetherra/commit/278bf6e0ce9c71c3981e81ac519029a9a81f5d1b))
+
+
 ## v0.5.0-beta.4 (2026-11-22)
 
 ### Bug Fixes
