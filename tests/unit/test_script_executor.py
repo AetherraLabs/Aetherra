@@ -647,13 +647,9 @@ class TestScriptExecutorIntegration(unittest.TestCase):
         )
 
         workspace = Path(self.tempdir.name)
-        with patch.dict(
-            os.environ,
-            {
-                "AETHERRA_WORKSPACE_ROOT": str(workspace),
-                "AETHERRA_GUARDIAN_MODE": "enforcing",
-            },
-        ):
+        with pytest.MonkeyPatch.context() as env:
+            env.setenv("AETHERRA_WORKSPACE_ROOT", str(workspace))
+            env.setenv("AETHERRA_GUARDIAN_MODE", "enforcing")
             executor = ScriptExecutor(self.script_path)
             result = executor.execute()
             audit_path = workspace / ".aetherra" / "security" / "audit.jsonl"
@@ -675,15 +671,11 @@ class TestScriptExecutorIntegration(unittest.TestCase):
             ScriptExecutor,
         )
 
-        with patch.dict(
-            os.environ,
-            {
-                "AETHERRA_WORKSPACE_ROOT": self.tempdir.name,
-                "AETHERRA_POLICY_HOME": str(Path(self.tempdir.name) / "policy"),
-                "AETHERRA_REQUIRE_CAPABILITIES": "1",
-                "AETHERRA_GUARDIAN_MODE": "enforcing",
-            },
-        ):
+        with pytest.MonkeyPatch.context() as env:
+            env.setenv("AETHERRA_WORKSPACE_ROOT", self.tempdir.name)
+            env.setenv("AETHERRA_POLICY_HOME", str(Path(self.tempdir.name) / "policy"))
+            env.setenv("AETHERRA_REQUIRE_CAPABILITIES", "1")
+            env.setenv("AETHERRA_GUARDIAN_MODE", "enforcing")
             executor = ScriptExecutor(self.script_path)
             with patch.object(executor, "_parse_script") as parse_script:
                 result = executor.execute()
