@@ -2,12 +2,15 @@
 
 Updated: 2026-11-22
 
-Candidate: `codex/alpha-chat-contracts`, based on main `d00120e8`
-(`v0.5.0-beta.4`), with focused fixes verified before publication. **Go for supervised synthetic
+Candidate: `codex/alpha-chat-contracts`, integrates main `86982cc5`
+(`v0.5.0-beta.4`), with reviewed admission and runtime fixes. **Go for supervised synthetic
 verification; no-go for broader internal alpha.** ALPHA-07 and the original nine
-legacy failures are repaired. The final default suite finished with 3,115 passed / 40 skipped and process exit 0.
-Candidate integration/CI and desktop dependency disposition remain open. See [the decision](ALPHA_READINESS_DECISION.md)
-and [inspectable evidence](evidence/internal_alpha_suite_2026-11-22.json).
+legacy failures are repaired. The final default suite finished with 3,135 passed / 40 skipped and process exit 0.
+Reviewed-code CI passes; final merge and clean-main acceptance are pending at
+this evidence checkpoint. Their results will be recorded in PR #326.
+Candidate checks alone are not a clean-main pass. Desktop dependency disposition
+remains open. See [the decision](ALPHA_READINESS_DECISION.md)
+and [inspectable evidence](evidence/internal_alpha_integration_2026-11-22.json).
 
 This checklist defines what must be true before Aetherra should be called ready
 for an internal alpha. It is not a marketing launch checklist. It is a
@@ -219,15 +222,15 @@ git status --short
 
 ## Gate 8: CI And Security Checks
 
-Status: Default repository suite and local quality checks pass; candidate remote CI remains open.
+Status: Default repository suite and local quality checks pass; reviewed-code remote CI passes in PR #326.
 
-Final frozen-source suite: **3,115 passed / 40 skipped**, process exit 0, with default
+Final frozen-source suite: **3,135 passed / 40 skipped**, process exit 0, with default
 collection/addopts/coverage. The diagnostic rerun exposed SQLite lifetime,
 coordination, event-loop/import and streaming-isolation defects; all are fixed
 with focused red/green regressions. Exact tool pins resolve the provisioned Ruff
 binary mismatch. Fixed-baseline quality: zero new violations, 980 unchanged
 legacy files, 53 resolved. No new skips or baseline entries were added.
-Published beta.4 signing verifies; prior main CI does not cover this patch.
+Signing stays enforced; check PR #326 for post-merge production signature verification.
 Desktop dependency security debt and the provisioned pyxnat/pathlib metadata
 conflict remain explicit; the suite is not a fresh-install clearance.
 
@@ -279,8 +282,8 @@ Primary file:
 
 Status: Go for supervised synthetic verification; no-go for broader internal alpha.
 
-The requested repairs pass locally. Candidate CI/merge and clean-main
-verification remain, along with desktop dependency disposition. The final
+The requested repairs and reviewed-code CI pass. Merge and clean-main acceptance
+are pending at this checkpoint; results will be recorded in PR #326. Desktop dependency disposition remains open. The final
 default repository suite passes; it is no longer an open test blocker. No broader operating authority or risk acceptance is inferred.
 
 Before calling alpha ready:
@@ -298,7 +301,7 @@ Decision record:
 
 ## Current Next Actions
 
-1. When work resumes, run candidate CI and verify clean main after an approved merge.
+1. Check PR #326's final merge and clean-main evidence before deploying the candidate.
 2. Resolve or explicitly disposition desktop dependency debt and fresh-install limits.
 3. Preserve strict signing, observation-only behavior and the fresh live/browser evidence.
 

@@ -3,14 +3,15 @@
 Updated: 2026-11-22
 
 **Current decision: Go for supervised synthetic verification; no-go for broader
-internal alpha.** Candidate `codex/alpha-chat-contracts` is based on main
-`d00120e8` (`v0.5.0-beta.4`). ALPHA-07 and the original nine legacy failures are
+internal alpha.** Candidate `codex/alpha-chat-contracts` integrates main
+`86982cc5` (`v0.5.0-beta.4`). ALPHA-07 and the original nine legacy failures are
 fixed, along with the remaining reproduced suite/readiness defects. Candidate
-integration/CI and desktop dependency disposition remain.
+CI passes; merge/clean-main acceptance is pending at this evidence checkpoint,
+with results to be recorded in PR #326. Desktop dependency disposition remains.
 See [the decision](ALPHA_READINESS_DECISION.md) and
-[fresh evidence](evidence/internal_alpha_suite_2026-11-22.json).
+[fresh evidence](evidence/internal_alpha_integration_2026-11-22.json).
 
-Latest default suite: **3,115 passed / 40 skipped**, process exit 0 from a frozen source
+Latest default suite: **3,135 passed / 40 skipped**, process exit 0 from a frozen source
 copy with default collection/addopts/coverage. GUI: 18 tests plus build/lint;
 Python quality: zero new violations against the unchanged baseline. Fresh
 normal-launcher verification: three gpt-4o turns after restart with no fallback.
@@ -89,7 +90,7 @@ python tools/python_quality.py
 
 Signing selection: 13 tests. The fixed style baseline must remain unchanged.
 Default collection no longer stops on legacy imports. The final broad default
-run finished with 3,115 passed / 40 skipped and process exit 0; the following full-suite
+run finished with 3,135 passed / 40 skipped and process exit 0; the following full-suite
 command is separate from the scoped selections.
 
 The combined API, policy, routing, tracing, maintenance and continuity follow-up
@@ -141,8 +142,9 @@ python -m pytest --junitxml .pytest_tmp_alpha_full.xml
 ```
 
 The recorded final run used a frozen copy and verified pytest's `rootdir`
-against it. Changed Python file hashes match the editable candidate; exact
-counts, exit code, log digest and individual skip reasons are in the evidence.
+against it. Runtime source matches the reviewed candidate; the test differs only by two
+import-section comments, with identical parsed Python structure. Counts, exit
+code, log digest and individual skip reasons are in the integration evidence.
 The earlier diagnostic full run was from an editable checkout while repairs
 were developed, so it is not an immutable baseline. A wrapper cwd mistake in
 an initial final attempt was detected, stopped and corrected before this pass.
@@ -507,10 +509,10 @@ support or fail closed. The recorded integration/unit tests exercise these
 contracts. The smoke established bounded Homeostasis observation-only behavior;
 it did not authorize real mutation. The operator API findings are fixed in merged main.
 The requested chat/legacy repairs pass in the isolated candidate. Evidence
-records the checkpoint before publication. Candidate CI/merge and clean-main
-verification still remain. Resolve or explicitly disposition
-desktop dependency limits before wider alpha operation. The full-suite blocker
-is resolved in this candidate; remote CI and clean-main acceptance are still open.
+records the reviewed checkpoint and fresh restart checks. Candidate CI passes;
+Merge and clean-main acceptance are pending at this checkpoint; their results
+will be recorded in PR #326. Resolve or explicitly
+disposition desktop dependency limits before wider alpha operation.
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

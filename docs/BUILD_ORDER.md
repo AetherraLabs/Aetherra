@@ -88,22 +88,23 @@ Internal alpha requires:
 
 ## Current Next Work
 
-Candidate `codex/alpha-chat-contracts` is based on main `d00120e8`
+Candidate `codex/alpha-chat-contracts` integrates main `86982cc5`
 (`v0.5.0-beta.4`). ALPHA-07, the original nine legacy cases and the remaining
 reproduced full-suite/readiness defects are repaired. The final frozen-source
-default suite finished with **3,115 passed / 40 skipped**, process exit 0. Fresh CLI restart,
+default suite finished with **3,135 passed / 40 skipped**, process exit 0. Fresh CLI restart,
 browser reconnect, three gpt-4o turns without fallback and strict signing pass.
 The previous 35-turn continuity matrix remains historical evidence.
 
 **Go for supervised synthetic verification; no-go for broader internal alpha.**
-Evidence records verification before publication; required CI, merge, clean-main
-verification and desktop dependency disposition remain. See
+Evidence records the reviewed integration candidate and green CI. Merge and
+clean-main acceptance are pending at this checkpoint; their results will be
+recorded in PR #326. Desktop dependency disposition remains. See
 `docs/ALPHA_READINESS_DECISION.md`. Stage 21 stays Active; stages 22 and 23 stay
 Planned. Personal continuity remains a completed bounded milestone.
 
 | Priority | Work | Required Outcome |
 | --- | --- | --- |
-| 1 | Candidate integration | When work resumes: required CI, approved merge, then clean-main verification |
+| 1 | Candidate integration | Reviewed code and CI pass; use PR #326 for merge and clean-main evidence |
 | 2 | Desktop dependencies | Resolve or explicitly disposition security debt and fresh-install limits |
 | 3 | Regression preservation | Retain green default suite, observation-only, live-model and browser evidence |
 | 4 | Signing | Preserve enforced signatures; do not treat prior main CI as candidate CI |
