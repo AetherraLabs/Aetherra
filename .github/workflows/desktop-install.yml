@@ -37,7 +37,6 @@ jobs:
       PYTHONUTF8: '1'
       PYTHONIOENCODING: utf-8
       AETHERRA_SKIP_DOTENV: '1'
-      HF_HOME: ${{ runner.temp }}/aetherra-desktop-hf
     defaults:
       run:
         shell: pwsh
@@ -48,6 +47,7 @@ jobs:
           python-version: '3.13'
       - name: Create fresh desktop environment
         run: |
+          "HF_HOME=$env:RUNNER_TEMP/aetherra-desktop-hf" >> $env:GITHUB_ENV
           python -m venv .venv
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           .venv/Scripts/python -m pip install pip==26.3
