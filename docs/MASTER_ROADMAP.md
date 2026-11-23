@@ -184,6 +184,15 @@ Current alpha status (2026-11-22):
 
 Current alpha boundaries:
 
+The first Stage 21 supervised exercise on PR #328 main (`ff359b02`) completed
+600 + 300 steady-state seconds across restart. Sixteen gpt-4o turns had no
+fallback; varied recall, unknown detail, identity and browser reconnection pass.
+It exposed incorrect acknowledgments of newly supplied facts; the prompt repair
+requires review/integration. Cold retrieval took 63.603 seconds and interrupted
+status polling before the second window. Preserve that limitation and investigate
+cold-start responsiveness before the next exercise. This does not advance Beta.
+See [the exercise evidence](evidence/supervised_alpha_2026-11-22.json).
+
 | Gate | Status | Next expectation |
 | --- | --- | --- |
 | Identity and foundations | Preserved | Retain entity/persona and authority boundaries |
