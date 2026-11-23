@@ -1,6 +1,25 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.6 (2026-11-23)
+
+### Bug Fixes
+
+- **alpha**: Handle isolated checkout paths and metrics tests
+  ([`374a721`](https://github.com/AetherraLabs/Aetherra/commit/374a7213f3e6eeb9a31959ab273708059fbf3492))
+
+- **ci**: Initialize desktop cache on the runner
+  ([`3b13886`](https://github.com/AetherraLabs/Aetherra/commit/3b13886a5cfb11e9d102e531026087d6a3be700e))
+
+- **desktop**: Resolve isolated alpha installation dependencies
+  ([`20a07b2`](https://github.com/AetherraLabs/Aetherra/commit/20a07b2b6bfb78d8973573f90b8f1d62aaca69c0))
+
+### Documentation
+
+- **alpha**: Record fresh desktop installation verification
+  ([`cf7ccb3`](https://github.com/AetherraLabs/Aetherra/commit/cf7ccb3d9620c37b2505b3b398e19e0472dc31ee))
+
+
 ## v0.5.0-beta.5 (2026-11-23)
 
 ### Bug Fixes
