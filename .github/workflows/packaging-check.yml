@@ -28,3 +28,29 @@ jobs:
       - name: License consistency (warn-only)
         run: |
           python tools/check_license_consistency.py --warn || true
+
+  release-environment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Install the production release toolchain
+        run: |
+          python -m pip install --upgrade pip
+          pip install . -r requirements/release.txt
+          python -m pip check
+      - name: Audit installed release dependencies
+        run: |
+          python -m pip freeze --all --exclude aetherra > release-environment.lock
+          python tools/vuln_scan.py --lock release-environment.lock --exact-pins --fail-level low
+      - name: Exercise release and dependency regressions
+        run: >-
+          python -m pytest -q -o addopts=
+          tests/tools/test_release_signing.py
+          tests/tools/test_release_ci.py
+          tests/tools/test_release_bootstrap.py
+          tests/tools/test_release_version.py
+          tests/tools/test_dependency_inputs.py
+          tests/tools/test_vuln_scan.py

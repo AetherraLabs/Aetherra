@@ -40,6 +40,21 @@ pushes its new commit/tag. Missing or incorrect keys fail publication. The secre
 is scoped to the release step and never supplied as a command-line argument.
 The GitHub release includes the distributions, manifest and detached signature.
 
+## Release dependencies
+
+Install the package with `requirements/release.txt`, not the general `dev`
+extra. Safety 3.8.1 requires `filelock<4`, which forced Release onto vulnerable
+3.32.7 despite the runtime locks using patched 4.2.1. Release does not invoke
+Safety. The dedicated input retains the formatter baseline, test tools, pinned
+semantic-release CLI, build/signing tools and pip-audit, with filelock 4.2.1.
+
+Both Release and the PR Packaging Check install this input, run `pip check`,
+and audit an exact inventory of every installed third-party distribution.
+Only Aetherra itself, the source being built rather than a published PyPI
+dependency, is excluded. Findings, skipped dependencies and scanner failures
+block the audit; no advisory suppression is used. PR checks exercise release
+regressions with synthetic signing keys and never receive the production key.
+
 ## Operator commands
 
 Use a disposable standalone clone, with full history and branch `main`, for a
@@ -48,7 +63,10 @@ local plan. A linked worktree cannot safely bootstrap shared tag refs.
 ```powershell
 git clone https://github.com/AetherraLabs/Aetherra.git aetherra-release-check
 cd aetherra-release-check
-python -m pip install '.[dev]' python-semantic-release==9.21.1 build pynacl
+python -m pip install . -r requirements/release.txt
+python -m pip check
+python -m pip freeze --all --exclude aetherra | Set-Content -Encoding ascii release-environment.lock
+python tools/vuln_scan.py --lock release-environment.lock --exact-pins --fail-level low
 python tools/run_release.py --plan
 python -m pytest tests/tools/test_release_bootstrap.py tests/tools/test_release_ci.py tests/tools/test_release_version.py -q -o addopts=
 ```

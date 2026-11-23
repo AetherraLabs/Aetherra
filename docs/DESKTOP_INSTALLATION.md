@@ -76,6 +76,15 @@ graph. Its inputs are `requirements.txt` and `requirements/quality.txt`, with
 compatible versions constrained by the separately maintained CI lock.
 `requirements-ci.lock` continues to describe Ubuntu/Python 3.11 CI.
 
+The provider declarations use the tested HTTPX-compatible lines:
+`openai>=2.43.0,<3` and `anthropic>=0.109.2,<1`. Both locks retain OpenAI
+2.43.0 and Anthropic 0.109.2. The previously declared OpenAI 3.57.0 and
+Anthropic 2.11.0 require HTTPX2; OpenAI's default client fails against the
+current guarded HTTPX response streams. A major SDK migration must verify
+the security transport, retries, cancellation and cleanup before raising
+these bounds. The lock/declaration regressions catch incompatible inputs.
+Both locks use aiohttp 3.14.5, matching all declared installer minimums.
+
 The old desktop freeze included 261 packages and could not resolve:
 `virtualenv==20.31.2` required `filelock<4`, while the lock required
 `filelock==4.2.1`. Its audit reported findings in 36 packages. Pyxnat also
