@@ -168,35 +168,32 @@ Primary gate:
 
 Current alpha status (2026-11-22):
 
-- Main `d00120e8` contains ALPHA-01 through ALPHA-06 and the process-shutdown repair.
-- Candidate `codex/alpha-chat-contracts` fixes ALPHA-07, the nine legacy cases and
-  the remaining reproduced suite/readiness defects. Evidence records verification
-  at the reviewed code checkpoint; CI passes. Pending merge/clean-main results
-  will be recorded in PR #326.
-- Final default repository suite: **3,135 passed / 40 skipped**, process exit 0, from a
-  frozen copy matching runtime code and the tests' parsed Python structure. Fixed-baseline quality passes.
-- Fresh full CLI stop/restart, expiry and browser reconnect pass. Engine reports
-  no-provider degradation and configured-model readiness accurately. Guardian and
-  observation-only boundaries remain enforced.
-- Three fresh gpt-4o turns after restart pass without fallback. The previous
-  35-turn/nine-process varied continuity matrix remains historical evidence.
-- GUI: 18 tests, build/lint. Strict signing and the fixed style baseline remain intact.
-- **Go for supervised synthetic verification; no-go for broader internal alpha.**
-  Merge/clean-main acceptance is pending at this checkpoint, with results to be
-  recorded in PR #326. Desktop dependency disposition remains open. No Beta
-  Hardening acceptance is implied.
+- PR #326 merged as `382e77ac`; clean-main verification and production signing
+  passed. Signed `v0.5.0-beta.5` completed at main `b827ecce`.
+- PR #327 resolves desktop dependency blockers for Windows/Python 3.13 source
+  operation: fresh venv and model cache, exact lock, no broken dependencies,
+  zero findings/skips across all 168 installed distributions.
+- Fresh normal CLI stop/restart, eight expiry rejects, browser reconnection and
+  three gpt-4o turns without fallback pass. GUI: 18 tests plus build/lint/audit.
+- Metadata compatibility, project-relative dependency analysis and metrics
+  listener isolation have focused evidence. The default suite passes **3,136 passed / 40 skipped**,
+  exit 0. Reviewed runtime has 37 green checks; final documentation CI is in PR #327.
+- Guardian, observation-only boundaries, strict signing and the unchanged
+  quality baseline remain enforced. Optional feature graphs are not certified.
+- **Go for supervised synthetic verification; integrated internal alpha remains
+  no-go pending merge and clean-main acceptance.** Stage 21 remains
+  Active; no Beta Hardening acceptance is implied.
 
 Open alpha work:
 
 | Gate | Status | What Remains |
 | --- | --- | --- |
-| Identity and foundations | Reviewed | Preserve entity/persona and authority boundaries |
-| Safety, runtime and browser | Bounded checks pass | Keep strict observation and truthful readiness |
-| Chat contract and full suite | Pass in candidate | Preserve expiry, isolation and persistence regressions |
-| Candidate integration | Reviewed code and CI pass | Reviewed code and CI pass; use PR #326 for merge and clean-main evidence |
-| Desktop dependencies | Open | Resolve or explicitly disposition security and installation limits |
-| Signing | Enforced | Preserve verification and approved key; no secret action needed |
-| Alpha decision | Broader no-go retained | Use current ALPHA_READINESS_DECISION.md before acceptance |
+| Identity and foundations | Preserved | Retain entity/persona and authority boundaries |
+| Desktop installation | Verified candidate profile | Keep optional/wheel/platform exclusions explicit |
+| Runtime, continuity and browser | Fresh checks pass | Retain strict observation and truthful readiness |
+| Candidate integration | PR #327 | Documentation-head CI, review/merge and clean-main smoke |
+| Signing | Enforced | Require post-merge production verification; no key changes |
+| Alpha decision | Integration gate pending | Follow ALPHA_READINESS_DECISION.md before acceptance |
 
 ## Beta Hardening Roadmap
 

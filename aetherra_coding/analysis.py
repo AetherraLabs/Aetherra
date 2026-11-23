@@ -49,14 +49,14 @@ class DependencyGraphBuilder:
         self.graph.clear()
         self.reverse_graph.clear()
 
-        py_files = [
-            p
-            for p in root.rglob("*.py")
-            if not any(part.startswith(".") for part in p.parts)
-            and "__pycache__" not in p.parts
-            and ".venv" not in p.parts
-            and "dist-packages" not in p.parts
-        ]
+        py_files = []
+        for path in root.rglob("*.py"):
+            parts = path.relative_to(root).parts
+            if any(part.startswith(".") for part in parts):
+                continue
+            if "__pycache__" in parts or "dist-packages" in parts:
+                continue
+            py_files.append(path)
 
         module_map = self._module_map(py_files, root)
 

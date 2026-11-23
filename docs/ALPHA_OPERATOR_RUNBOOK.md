@@ -2,20 +2,19 @@
 
 Updated: 2026-11-22
 
-**Current decision: Go for supervised synthetic verification; no-go for broader
-internal alpha.** Candidate `codex/alpha-chat-contracts` integrates main
-`86982cc5` (`v0.5.0-beta.4`). ALPHA-07 and the original nine legacy failures are
-fixed, along with the remaining reproduced suite/readiness defects. Candidate
-CI passes; merge/clean-main acceptance is pending at this evidence checkpoint,
-with results to be recorded in PR #326. Desktop dependency disposition remains.
+**Current decision: Go for supervised synthetic verification of the fresh Windows
+source-runtime profile; integrated internal-alpha release remains no-go pending
+merge and clean-main acceptance.** Candidate PR #327 is based on main
+`b827ecce` (`v0.5.0-beta.5`). PR #326's merge, clean-main verification and required
+production signing are complete. The desktop dependency blockers are repaired.
 See [the decision](ALPHA_READINESS_DECISION.md) and
-[fresh evidence](evidence/internal_alpha_integration_2026-11-22.json).
+[fresh evidence](evidence/desktop_alpha_2026-11-22.json).
 
-Latest default suite: **3,135 passed / 40 skipped**, process exit 0 from a frozen source
-copy with default collection/addopts/coverage. GUI: 18 tests plus build/lint;
-Python quality: zero new violations against the unchanged baseline. Fresh
-normal-launcher verification: three gpt-4o turns after restart with no fallback.
-The earlier 35-turn/nine-process matrix remains historical evidence.
+Fresh installation: 167 locked packages plus pip, no inherited system packages,
+zero broken requirements, exact lock sync, and zero findings/skips across all
+168 audited distributions. Fresh GUI: 18 tests, build/lint and zero audit findings.
+Normal-launcher stop/restart, three gpt-4o turns without fallback, and browser
+reconnection pass. The final default suite passes: **3,136 passed / 40 skipped**, exit 0.
 
 ## Operating Boundary
 
@@ -30,16 +29,21 @@ directories separate storage; they do not implement user/account authentication.
 
 ## Prerequisites And Preflight
 
-Use a clean isolated checkout and a provisioned Python environment. The recorded
-Windows run used Python 3.13.7, existing runtime dependencies and the cached,
-pinned MiniLM model described in [PERSONAL_CONTINUITY.md](PERSONAL_CONTINUITY.md).
-It did not prove a fresh dependency install. The legacy desktop dependency
-findings in [BUILD_REPRODUCIBILITY.md](BUILD_REPRODUCIBILITY.md) remain open.
-The provisioned environment also reports a missing `pathlib` distribution required
-by legacy `pyxnat 1.6.3`; a green suite does not resolve dependency metadata or
-security debt. Use Ruff 0.17.6, Black 26.10.1 and isort 9.0.2 as pinned in CI;
-check the actual CLI versions as well as installed metadata. The verification
-used a task-local tool environment and did not modify shared environments.
+Follow [DESKTOP_INSTALLATION.md](DESKTOP_INSTALLATION.md) in a new checkout and
+virtual environment. Activate that venv in every command shell below:
+
+```powershell
+. .venv/Scripts/Activate.ps1
+$env:HF_HOME = Join-Path (Get-Location) '.aetherra/model-cache'
+python -m pip check
+python tools/enforce_lock_sync.py --lock requirements.lock
+```
+
+Retain the same pinned-model cache path used during provisioning. The recorded
+Windows run uses Python 3.13.7, Node 22.18.0 and a new model download. It does not
+inherit shared packages. Other platforms, wheel-only installs and optional
+plugin graphs require separate verification. Use the exact quality-tool versions
+in the lock; keep the fixed baseline unchanged.
 
 From the repository root:
 
@@ -89,9 +93,8 @@ python tools/python_quality.py
 ```
 
 Signing selection: 13 tests. The fixed style baseline must remain unchanged.
-Default collection no longer stops on legacy imports. The final broad default
-run finished with 3,135 passed / 40 skipped and process exit 0; the following full-suite
-command is separate from the scoped selections.
+Default collection no longer stops on legacy imports. The current full default-suite result is recorded in the decision/evidence;
+the following full-suite command is separate from the scoped selections.
 
 The combined API, policy, routing, tracing, maintenance and continuity follow-up
 command (see the decision for the latest recorded result):
@@ -141,13 +144,14 @@ python -m isort --version-number
 python -m pytest --junitxml .pytest_tmp_alpha_full.xml
 ```
 
-The recorded final run used a frozen copy and verified pytest's `rootdir`
-against it. Runtime source matches the reviewed candidate; the test differs only by two
-import-section comments, with identical parsed Python structure. Counts, exit
-code, log digest and individual skip reasons are in the integration evidence.
-The earlier diagnostic full run was from an editable checkout while repairs
-were developed, so it is not an immutable baseline. A wrapper cwd mistake in
-an initial final attempt was detected, stopped and corrected before this pass.
+The fresh-install suite uses an immutable source copy and verifies pytest's
+`rootdir` against it. All 1,395 Python source/test files match the reviewed
+candidate byte-for-byte. The current result, log digest and skip reasons belong
+in the desktop evidence. Diagnostic attempts exposed metadata compatibility,
+ancestor-path filtering and metrics listener isolation defects. A snapshot
+assertion also caught Git's line-ending normalization before tests started;
+the task harness now overlays exact source bytes. Superseded attempts do not
+count as completed suite passes.
 
 Configured advanced-memory redactors are tested at the existing persistence
 boundary. Their output is checked against the original caller's authority;
@@ -491,8 +495,8 @@ has an eight-second deadline and the polling interval is fifteen seconds.
 
 Repeat only the launch command block with the same `$alphaProfile`. Confirm a
 new process, fresh Kernel cycle count and readiness responses. Stop it with
-Ctrl+C and stop the GUI dev server separately. The two recorded runtime
-processes exited 0, with a watchdog teardown error logged before completion.
+Ctrl+C and stop the GUI dev server separately. The two fresh-install runtime processes exited 0 without force. Any teardown
+warnings must be distinguished from the actual child process exit receipt.
 If a process remains, inspect its PID/parent relationship before intervening;
 never kill unrelated Python/Node processes.
 
@@ -508,11 +512,10 @@ Self-Incorporation must validate approved scope and have truthful rollback
 support or fail closed. The recorded integration/unit tests exercise these
 contracts. The smoke established bounded Homeostasis observation-only behavior;
 it did not authorize real mutation. The operator API findings are fixed in merged main.
-The requested chat/legacy repairs pass in the isolated candidate. Evidence
-records the reviewed checkpoint and fresh restart checks. Candidate CI passes;
-Merge and clean-main acceptance are pending at this checkpoint; their results
-will be recorded in PR #326. Resolve or explicitly
-disposition desktop dependency limits before wider alpha operation.
+The chat/legacy repairs are merged via PR #326. Fresh-install dependency and
+environment-sensitive repairs are in PR #327; final merge and clean-main
+acceptance remain separate gates. Use its reviewed revision and recorded
+installation graph, not an older shared environment or an unverified plugin set.
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
