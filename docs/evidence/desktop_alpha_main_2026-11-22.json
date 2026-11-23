@@ -101,7 +101,7 @@
     "forced_shutdown": false,
     "ordinary_log_conversation_matches": 0,
     "runtime_log_sha256": "62981e4b42d6cb55ed2e5d1216b511dce6067d73f48a5503725cd86287857c42",
-    "early_startup_probe": "The first probe arrived before Homeostasis initialized; retained separately. Startup and steady probes passed after launcher initialization."
+    "early_startup_probe": "The first probe saw Homeostasis initialized but not yet running; retained separately. Startup and steady probes passed after launcher initialization."
   },
   "browser": "Previously verified UI/runtime source is identical at the merge; clean-main Runtime UI APIs retested. Browser screenshots remain in candidate evidence.",
   "main_ci": {

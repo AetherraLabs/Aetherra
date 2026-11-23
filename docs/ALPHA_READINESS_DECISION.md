@@ -46,7 +46,7 @@ The complete 3,136-test run covers the unchanged runtime source.
 Clean main's normal full launcher completed three more gpt-4o turns with no
 fallback, retrieved the original saved record, rejected four expired requests
 without storage changes, and exited zero without force. Its first probe arrived
-before Homeostasis initialization; the retained startup observation is separate
+while Homeostasis was initialized but not yet running; the retained observation is separate
 from the passing startup/steady samples. Wait for launcher initialization before
 assessing steady readiness; an HTTP 200 alone does not establish readiness.
 

@@ -517,7 +517,7 @@ acceptance are complete via PR #327. Use the recorded source revision and locked
 installation graph. Main passed 87 focused regressions, three additional live
 gpt-4o turns, required production signing and published beta.6 signature/hash
 verification. Wait for launcher initialization before running readiness probes;
-HTTP availability can precede Homeostasis initialization.
+HTTP availability can precede Homeostasis entering its running state.
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
