@@ -1,10 +1,12 @@
 """Exercise the workflow's policy decision without contacting GitHub."""
 
+# Standard library imports
 import os
 import shutil
 import subprocess
 from pathlib import Path
 
+# Third party imports
 import pytest
 import yaml
 

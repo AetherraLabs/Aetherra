@@ -1,14 +1,17 @@
 """Production SDK egress enforcement with disposable policy and no network."""
 
+# Standard library imports
 import importlib
 import json
 from pathlib import Path
 from unittest.mock import Mock
 from uuid import UUID
 
+# Third party imports
 import httpx
 import pytest
 
+# Aetherra imports
 from tests.unit.test_openai_request_lifecycle import configure_sdk_policies
 from tests.unit.test_openai_request_lifecycle import offline as offline
 
@@ -38,6 +41,7 @@ def test_permit_is_signed_bound_and_private(policies, tmp_path):
     assert result.timeout_sec == 1
     assert result.max_concurrency == 2
     path = tmp_path / ".aetherra/security/audit.jsonl"
+    # Aetherra imports
     from Aetherra.security.audit_ledger import SecurityAuditLedger
 
     assert SecurityAuditLedger(path).verify_integrity(require_signed_records=True)
@@ -52,6 +56,7 @@ def test_permit_is_signed_bound_and_private(policies, tmp_path):
 
 
 def test_authorization_cost_sample(policies):
+    # Standard library imports
     import statistics
     import time
 
@@ -149,6 +154,7 @@ def test_preflight_failures_deny(policies, monkeypatch, failure):
 
 
 def test_forged_receipt_is_not_permission(policies, monkeypatch):
+    # Aetherra imports
     from Aetherra.guardian.models import GuardianDecision, GuardianStatus, RiskLevel
 
     monkeypatch.setattr(
@@ -168,6 +174,7 @@ def test_forged_receipt_is_not_permission(policies, monkeypatch):
 
 
 def test_stale_receipt_is_not_permission(policies, monkeypatch):
+    # Aetherra imports
     from Aetherra.guardian.models import GuardianDecision, GuardianStatus, RiskLevel
 
     previous = permit()
@@ -188,8 +195,10 @@ def test_stale_receipt_is_not_permission(policies, monkeypatch):
 
 
 def test_signed_denial_cannot_be_returned_as_allow(policies, monkeypatch):
+    # Standard library imports
     from dataclasses import replace
 
+    # Aetherra imports
     from Aetherra.guardian.models import GuardianStatus
 
     module = sdk()
@@ -208,6 +217,7 @@ def test_signed_denial_cannot_be_returned_as_allow(policies, monkeypatch):
 
 @pytest.mark.parametrize("field", ["requester", "target", "attempt", "constraints"])
 def test_receipt_cannot_certify_different_authority(policies, monkeypatch, field):
+    # Standard library imports
     from dataclasses import replace
 
     module = sdk()
@@ -239,6 +249,7 @@ def test_receipt_cannot_certify_different_authority(policies, monkeypatch, field
 async def test_each_guardian_rejection_has_zero_delegates(
     policies, monkeypatch, status
 ):
+    # Aetherra imports
     from Aetherra.guardian.models import GuardianDecision, GuardianStatus, RiskLevel
 
     module = sdk()
@@ -280,6 +291,7 @@ def test_structured_endpoint_normalization(base, url):
 
 
 def test_stream_close_failure_retains_lease_and_safe_status(policies):
+    # Standard library imports
     import os
     import subprocess
     import sys
@@ -350,8 +362,10 @@ async def _assert_stream_close_failure():
     ],
 )
 async def test_each_preflight_denial_has_zero_delegates(policies, monkeypatch, failure):
+    # Third party imports
     import openai
 
+    # Aetherra imports
     from Aetherra.guardian.models import GuardianDecision, GuardianStatus, RiskLevel
 
     module = sdk()
@@ -432,10 +446,13 @@ async def test_each_preflight_denial_has_zero_delegates(policies, monkeypatch, f
 async def test_audit_receipt_is_current_signed_and_bound(
     policies, monkeypatch, failure
 ):
+    # Standard library imports
     from dataclasses import replace
 
+    # Third party imports
     import openai
 
+    # Aetherra imports
     from Aetherra.guardian.models import GuardianStatus
 
     module = sdk()
@@ -532,6 +549,7 @@ async def test_strict_guardian_policy_cannot_fall_back(policies, monkeypatch, po
 
 @pytest.mark.parametrize("policy", [{}, {"allow_domains": []}])
 def test_strict_domains_do_not_inherit_production_grants(policies, monkeypatch, policy):
+    # Aetherra imports
     from Aetherra.security.net_policy import is_domain_allowed
 
     monkeypatch.setenv("AETHERRA_PROFILE", "production")
@@ -544,6 +562,7 @@ def test_strict_domains_do_not_inherit_production_grants(policies, monkeypatch, 
 
 
 def test_synchronous_concurrent_close_releases_once(policies):
+    # Standard library imports
     import threading
     import time
 
@@ -589,6 +608,7 @@ def test_synchronous_concurrent_close_releases_once(policies):
 
 @pytest.mark.asyncio
 async def test_shutdown_during_authorization_prevents_send(policies, monkeypatch):
+    # Standard library imports
     import asyncio
     import threading
 
@@ -713,8 +733,10 @@ def test_sync_transport_permits_and_closes(policies):
 async def test_redirect_cannot_create_second_send(policies):
     calls = []
     inner = httpx.MockTransport(
-        lambda request: calls.append(request)
-        or httpx.Response(302, headers={"Location": "https://other.invalid/stolen"})
+        lambda request: (
+            calls.append(request)
+            or httpx.Response(302, headers={"Location": "https://other.invalid/stolen"})
+        )
     )
     transport = sdk().GuardedAsyncTransport(
         sdk().SdkOwner.CORE_LLM,
@@ -766,6 +788,7 @@ async def test_concurrency_lease_lives_until_stream_close(policies):
 
 @pytest.mark.asyncio
 async def test_slow_authorization_cancel_does_not_send(policies, monkeypatch):
+    # Standard library imports
     import asyncio
     import threading
 
@@ -839,6 +862,7 @@ def completion():
 
 @pytest.mark.asyncio
 async def test_concurrent_stream_close_releases_once(policies):
+    # Standard library imports
     import asyncio
 
     entered = asyncio.Event()
@@ -906,6 +930,7 @@ async def test_invalid_request_timeout_cannot_leak_lease(policies, timeout):
 
 @pytest.mark.asyncio
 async def test_outcome_audit_does_not_block_event_loop(policies, monkeypatch):
+    # Standard library imports
     import asyncio
     import threading
 
@@ -960,6 +985,7 @@ async def test_denied_capability_has_signed_safe_record(policies):
         ).status_code == 403
     path = policies.parent / ".aetherra/security/audit.jsonl"
     assert path.exists()
+    # Aetherra imports
     from Aetherra.security.audit_ledger import SecurityAuditLedger
 
     assert SecurityAuditLedger(path).verify_integrity(require_signed_records=True)
@@ -972,6 +998,7 @@ async def test_denied_capability_has_signed_safe_record(policies):
 
 @pytest.mark.asyncio
 async def test_wrapper_constructor_failure_closes_inner(policies, monkeypatch):
+    # Third party imports
     import openai
 
     class Inner(httpx.AsyncBaseTransport):
@@ -1002,6 +1029,7 @@ async def test_wrapper_constructor_failure_closes_inner(policies, monkeypatch):
 async def test_audit_failure_degrades_provider_and_cleanup_receipt(
     policies, monkeypatch
 ):
+    # Aetherra imports
     from Aetherra.core import multi_llm_manager
 
     module = sdk()
@@ -1041,6 +1069,7 @@ async def test_closed_transport_cannot_send(policies):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("close_delay", [0, 0.05])
 async def test_bounded_close_retains_pending_stream(policies, monkeypatch, close_delay):
+    # Standard library imports
     import asyncio
 
     module = sdk()
@@ -1084,6 +1113,7 @@ async def test_bounded_close_retains_pending_stream(policies, monkeypatch, close
 
 @pytest.mark.asyncio
 async def test_environment_proxies_cannot_replace_guard(policies, monkeypatch):
+    # Third party imports
     import openai
 
     module = sdk()
@@ -1104,6 +1134,7 @@ async def test_environment_proxies_cannot_replace_guard(policies, monkeypatch):
 
 @pytest.mark.asyncio
 async def test_active_authorization_is_not_unresolved_ownership(policies, monkeypatch):
+    # Standard library imports
     import asyncio
     import threading
 
@@ -1210,6 +1241,7 @@ async def test_native_retry_revocation_never_delegates_twice(policies, monkeypat
         api_key="synthetic-key",
         base_url="https://synthetic.invalid/v1",
     )
+    # Third party imports
     import openai
 
     try:
