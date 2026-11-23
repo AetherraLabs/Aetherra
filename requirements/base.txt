@@ -30,7 +30,7 @@ alembic>=1.8.0
 
 # System Utilities
 psutil>=5.9.0
-pathlib2>=2.3.0
+pathlib2>=2.3.7.post1
 
 # Configuration
 python-dotenv>=1.0.0
@@ -38,7 +38,7 @@ pyyaml>=6.0
 
 # Async Support
 # asyncio  # Built into Python, no need to install separately
-aiohttp>=3.14.4
+aiohttp>=3.14.5
 
 # Date/Time Utilities
 python-dateutil>=2.8.0
