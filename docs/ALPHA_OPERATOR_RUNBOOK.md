@@ -447,6 +447,129 @@ The broader default command remains a separate check: `python -m pytest`.
 Use the decision and evidence for its outcome; a focused pass does not imply
 that the default repository-wide run passed.
 
+## Supervised Use Exercise
+
+Stage 21's next step after installation/launch acceptance is a repeatable period
+of supervised use. Start with **15 observed minutes**: ten minutes in the first
+process, a controlled stop/restart, then five minutes in the second process.
+Startup, shutdown and failed observation attempts do not count toward that total.
+This is a bounded exercise, not a load test or proof of long-running stability.
+
+Use the verified installation and normal full-launch procedure above, a fresh
+synthetic profile, and the scoped live-model policy. Record the source revision,
+provider/model, process IDs and observation times. Stay present throughout; stop
+on a safety-boundary failure, unexpected restart, failed core readiness, or a
+configured-model fallback. Keep unavailable/degraded optional evidence visible.
+
+1. Save the bicycle and music facts and their competitors from
+   `tests/acceptance/test_personal_continuity.py` through `/api/ai/ask`.
+   Inspect the initial acknowledgments as well as the storage receipts.
+2. Verify both paraphrases and their retrieved/generation evidence IDs. Do not
+   supply the store or prior conversation as additional prompt history.
+3. Observe ten minutes. Ask an unsupplied-attribute question around the midpoint;
+   a storage receipt for a question does not establish the detail it asks about.
+4. Stop normally and verify exit zero and port closure. In the browser, verify
+   unavailable state replaces the previous live state.
+5. Start a new process with the same data directory and empty chat history. Ask
+   both paraphrases, the unknown attribute and the Aetherra/Lyrixa identity question.
+6. Observe five more minutes, repeat a recall near the end, then stop normally.
+   Verify browser reconnection, ordinary-log privacy and unchanged source files.
+
+In the observing PowerShell terminal, set the profile path to the disposable
+directory created above. The default origin is port 3001; use 13301 for the
+recorded alternate-port setup. This sampler writes only status, not dialogue:
+
+```powershell
+$alphaOrigin = 'http://127.0.0.1:3001'
+$alphaHeaders = @{ 'X-Aetherra-Token' = 'synthetic-alpha-control' }
+function Watch-AlphaWindow([int]$Seconds, [string]$Label) {
+  $timer = [Diagnostics.Stopwatch]::StartNew()
+  $paths = @('/health', '/api/hub/readiness', '/api/kernel/readiness',
+    '/api/runtime-ui/status', '/api/homeostasis/status', '/api/guardian/status',
+    '/api/ai/status')
+  do {
+    $data = @{}
+    foreach ($path in $paths) {
+      $data[$path] = Invoke-RestMethod ($alphaOrigin + $path) `
+        -Headers $alphaHeaders -TimeoutSec 10
+    }
+    $h = $data['/api/homeostasis/status']
+    $g = $data['/api/guardian/status'].guardian
+    if (-not $h.orchestrator.initialized -or -not $h.orchestrator.running -or
+        $h.controller.mode -ne 'observe_only' -or
+        $h.actuators.actions_attempted -ne 0 -or
+        $h.actuators.actions_executed -ne 0 -or
+        $h.actuators.actions_blocked -ne 0 -or
+        $h.orchestrator.restart_count -ne 0 -or
+        $h.orchestrator.error_recovery_count -ne 0 -or
+        -not $g.enabled -or $g.mode -ne 'enforcing' -or
+        -not $g.audit.integrity_ok) { throw 'Stop: governance/lifecycle changed' }
+    foreach ($path in @('/api/hub/readiness', '/api/kernel/readiness', '/api/ai/status')) {
+      if ($data[$path].readiness.readiness -ne 'ready') {
+        throw ('Stop: core readiness changed at ' + $path)
+      }
+    }
+    $sample = [ordered]@{ label=$Label; elapsed_s=$timer.Elapsed.TotalSeconds;
+      utc=[DateTimeOffset]::UtcNow.ToString('o'); guardian='enforcing';
+      audit_intact=$true; homeostasis='observe_only'; actuator_actions=0 }
+    $sample | ConvertTo-Json -Compress | Add-Content `
+      (Join-Path $alphaProfile 'supervised-status.jsonl') -Encoding utf8
+    if ($timer.Elapsed.TotalSeconds -ge $Seconds) { break }
+    Start-Sleep -Milliseconds ([int][Math]::Min(30000,
+      [Math]::Max(1, $Seconds * 1000 - $timer.Elapsed.TotalMilliseconds)))
+  } while ($true)
+}
+Watch-AlphaWindow 600 'before-restart'
+```
+
+Complete the controlled stop, verify exit zero and port closure, then start a
+new process with the same profile. Finish the restart conversation checks and
+wait for initialized, running Homeostasis before executing the second window:
+
+```powershell
+Watch-AlphaWindow 300 'after-restart'
+```
+
+Resource observations are descriptive: record which process IDs were sampled,
+RSS, threads and handles, and explicitly note short-lived children that exit
+during sampling. A changing child-process set can change aggregate resource
+totals. A short interval on a shared workstation cannot establish a leak-free
+runtime or a performance SLA. Preserve incomplete/failed observations separately;
+do not count them as completed windows.
+
+The first recorded exercise completed 600 + 300 steady-state seconds with 12
+JSON endpoints per sample (the seven above plus bootstrap, Maintenance,
+Self-Incorporation status/audit and Security policy). A first cold recall after
+restart took 63.603 seconds and interrupted status polling. Preserve such an
+attempt separately, investigate before resuming, and never retry a timed-out
+chat write automatically. Successful later samples do not erase that interruption.
+Initial saved-fact acknowledgments also failed; check those replies in addition
+to later recall. See [the decision](ALPHA_READINESS_DECISION.md) and
+[recorded evidence](evidence/supervised_alpha_2026-11-22.json).
+
+For the disclosure correction, run these focused offline checks using the
+credential-free environment above and the provisioned local retrieval model:
+
+```powershell
+python -m pytest -q -o addopts= tests/unit/test_chat_disclosure_prompt.py tests/unit/test_chat_memory_retrieval.py tests/acceptance/test_personal_continuity.py
+```
+
+The new test captures actual generator input but returns a neutral sentinel;
+it cannot establish natural-language behavior. For the separate live recheck,
+post the exercise's disclosures through the same full-launch `/api/ai/ask` route
+with gpt-4o configured. Also post `My dog's name is Luna. Can you remember that?`,
+`My bicycle has a silver bell. What color is its frame?`, and
+`Is my favorite soup lentil?`, then ask the dog's name and favorite soup.
+Require a real acknowledgment, an unknown frame color, Luna recall, and no
+promotion of the soup guess to a fact. Verify IDs, `llm.used=true` and
+`llm.fallback=false`; manually inspect the wording. The recorded candidate
+check used a separate fresh profile and 13 turns, not another 15-minute window.
+
+Record findings and evidence in the existing readiness decision/checklist and
+build dashboard. Keep Stage 21 active until its bounded use work is accepted;
+do not advance Beta Hardening or extend authority merely because this exercise
+passes.
+
 ## Browser Observation And Stop/Restart
 
 With the full launcher still running, from the repository's GUI directory:
