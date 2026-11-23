@@ -1039,11 +1039,11 @@ async def test_closed_transport_cannot_send(policies):
 
 
 @pytest.mark.asyncio
-async def test_bounded_close_retains_pending_stream(policies, monkeypatch):
+@pytest.mark.parametrize("close_delay", [0, 0.05])
+async def test_bounded_close_retains_pending_stream(policies, monkeypatch, close_delay):
     import asyncio
 
     module = sdk()
-    monkeypatch.setattr(module, "_CLEANUP_SECONDS", 0.02)
     gate = asyncio.Event()
 
     class Content(httpx.AsyncByteStream):
@@ -1052,6 +1052,7 @@ async def test_bounded_close_retains_pending_stream(policies, monkeypatch):
 
         async def aclose(self):
             await gate.wait()
+            await asyncio.sleep(close_delay)
 
     transport = module.GuardedAsyncTransport(
         module.SdkOwner.CORE_LLM,
@@ -1062,8 +1063,13 @@ async def test_bounded_close_retains_pending_stream(policies, monkeypatch):
         httpx.Request("POST", "https://synthetic.invalid/v1/chat/completions")
     )
     try:
-        with pytest.raises(module.SdkEgressError, match="^sdk_cleanup_unconfirmed$"):
-            await asyncio.wait_for(transport.aclose(), 0.2)
+        # The short deadline tests a blocked stream, not normal teardown work.
+        with monkeypatch.context() as deadline:
+            deadline.setattr(module, "_CLEANUP_SECONDS", 0.02)
+            with pytest.raises(
+                module.SdkEgressError, match="^sdk_cleanup_unconfirmed$"
+            ):
+                await asyncio.wait_for(transport.aclose(), 0.2)
         status = module.get_sdk_egress_status(module.SdkOwner.CORE_LLM)
         assert status["status"] == "degraded"
         assert status["active_lease_count"] == 1
