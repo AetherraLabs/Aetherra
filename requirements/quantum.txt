@@ -19,7 +19,7 @@ pennylane-qiskit>=0.32.0
 
 # Quantum Algorithms
 qiskit-algorithms>=0.2.0
-qiskit-optimization>=0.6.0
+qiskit-optimization>=0.7.0
 
 # Noise Simulation
 qiskit-nature>=0.7.0
