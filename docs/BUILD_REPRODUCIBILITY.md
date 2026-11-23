@@ -11,7 +11,7 @@
 
 | Input                       | Purpose                                     |
 | --------------------------- | ------------------------------------------- |
-| `requirements.lock`         | Frozen dependency graph (resolved versions) |
+| `requirements.lock`         | Windows/Python 3.13 source-runtime and quality-tool graph |
 | `requirements-ci.lock`      | Ubuntu/Python 3.11 CI quality-gate lock     |
 | `licenses_report.json`      | License inventory (post-override)           |
 | `sbom.json`                 | Dependency + license snapshot               |
@@ -27,15 +27,24 @@ severity fail the gate. The 182-pin CI lock had no reported vulnerabilities in
 the November 19, 2026 audit after targeted dependency updates. This is a dated
 advisory result, not a guarantee about future findings.
 
-The separate legacy desktop `requirements.lock` is **not a clean security
-baseline**: the same audit still reported findings in 36 packages. Compatible
-aiohttp, certifi, filelock, pyasn1, and yarl pins were updated. Pillow remains at
-11.2.1 because the locked Streamlit 1.46.1 requires Pillow below 12; resolving
-that conflict requires a separate desktop dependency migration. Diskcache 5.6.3
-also has reported findings without a published fixed version in the scanner
-response. Other residual findings include the older Torch, Transformers,
-Sentence Transformers, HTTP, web-framework, and developer-tool dependencies.
-The CI audit result must not be presented as clearance of this desktop graph.
+The November 22 desktop baseline reproduced findings in 36 of its 261 packages.
+It also failed fresh resolution: virtualenv 20.31.2 required filelock below 4,
+conflicting with the repaired filelock 4.2.1 pin. The previous shared environment
+was not evidence that this lock could install.
+
+The desktop migration resolves `requirements.txt` and `requirements/quality.txt`
+on Windows/Python 3.13, constraining shared versions with the unchanged CI lock.
+The resulting 167-package graph has a separate dated advisory scan with no
+reported findings. It uses Pillow 13.0.0 and the same supported retrieval stack
+as CI. Unrelated Pyxnat/Nipype, Streamlit and Diskcache entries from the old
+freeze are excluded. Optional Qt, quantum, SDK and plugin dependencies remain
+separate from this profile; their source is preserved.
+
+See [desktop installation](DESKTOP_INSTALLATION.md) for exact fresh-environment,
+lock regeneration and installed-distribution audit commands, and
+[the alpha decision](ALPHA_READINESS_DECISION.md) for current verification.
+The CI graph, desktop graph and optional package extras have distinct scopes.
+A source-checkout installation does not establish a wheel-only installation.
 
 ## Hash Manifest Generation
 

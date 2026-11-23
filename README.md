@@ -116,7 +116,22 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-Install dependencies:
+For the Windows/Python 3.13 internal-alpha profile, install the resolved desktop
+lock in that new environment:
+
+```powershell
+python -m pip install pip==26.3
+python -m pip install -r requirements.lock
+python -m pip check
+python tools/enforce_lock_sync.py --lock requirements.lock
+```
+
+Follow [Windows installation](docs/DESKTOP_INSTALLATION.md) for the pinned memory
+model, Observatory build, audit and supported feature scope. The normal full
+launcher and enforcing policies are in [the alpha runbook](docs/ALPHA_OPERATOR_RUNBOOK.md).
+
+Other development environments use the dependency inputs; their installation
+is separate from the verified Windows lock:
 
 ```bash
 python -m pip install --upgrade pip

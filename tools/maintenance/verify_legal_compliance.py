@@ -17,13 +17,10 @@ from __future__ import annotations
 # Standard library imports
 import hashlib
 import os
-import re
 import sys
 from dataclasses import dataclass
+from importlib.metadata import distributions
 from pathlib import Path
-
-# Third party imports
-import pkg_resources
 
 PROJECT_ROOT = Path(__file__).parent
 
@@ -52,6 +49,7 @@ def _guardian_capability_checker(requester: str, capability: str) -> bool:
     }:
         return True
 
+    # Aetherra imports
     from Aetherra.security.capabilities import has_capability
 
     return has_capability(requester, capability)
@@ -69,6 +67,7 @@ def _guardian_preflight_legal_compliance_report(
     project_root: Path,
     plan: LegalComplianceReportPlan,
 ):
+    # Aetherra imports
     from Aetherra.guardian import IntentDeclaration, evaluate_intent
 
     requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
@@ -155,32 +154,40 @@ def check_license_compatibility():
     incompatible_count = 0
     unknown_count = 0
 
-    installed_packages = list(pkg_resources.working_set)
+    installed_packages = list(distributions())
 
     print(f"📦 Found {len(installed_packages)} installed packages")
     print()
 
-    for package in sorted(installed_packages, key=lambda x: x.project_name):
-        name = package.project_name
+    for package in sorted(installed_packages, key=lambda x: x.metadata.get("Name", "")):
+        name = package.metadata.get("Name", "unknown")
         version = package.version
 
         # Get license info
         try:
-            metadata = package.get_metadata("METADATA")
-            license_match = re.search(r"License: (.+)", metadata)
-            classifier_licenses = re.findall(r"Classifier: License :: (.+)", metadata)
-
-            license_info = None
-            if license_match:
-                license_info = license_match.group(1).strip()
+            metadata = package.metadata
+            classifier_licenses = [
+                value.removeprefix("License :: ")
+                for value in metadata.get_all("Classifier", [])
+                if value.startswith("License :: ")
+            ]
+            license_expression = metadata.get("License-Expression")
+            license_info = license_expression or metadata.get("License")
+            if license_info:
+                license_info = license_info.strip()
             elif classifier_licenses:
                 license_info = classifier_licenses[0]
 
             if license_info:
                 license_lower = license_info.lower()
-                is_compatible = any(
-                    compat in license_lower for compat in COMPATIBLE_LICENSES
-                )
+                if license_expression:
+                    # Compound/custom SPDX expressions need explicit review;
+                    # a permitted substring cannot establish compatibility.
+                    is_compatible = license_lower in COMPATIBLE_LICENSES
+                else:
+                    is_compatible = any(
+                        compat in license_lower for compat in COMPATIBLE_LICENSES
+                    )
 
                 if is_compatible:
                     status = "✅ COMPATIBLE"
@@ -296,7 +303,6 @@ Generated: {Path(__file__).name}
         files_ok=files_ok,
     )
     return write_legal_compliance_report(project_root=PROJECT_ROOT, plan=plan)
-
 
 
 if __name__ == "__main__":

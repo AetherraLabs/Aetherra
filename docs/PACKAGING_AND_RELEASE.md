@@ -8,7 +8,12 @@ Alpha packaging provides reproducible artifacts + integrity metadata:
 
 - Source distribution (sdist) and wheel
 - CycloneDX SBOM snapshot of the environment
-- Release manifest (artifact hashes) optionally signed (ed25519)
+- Release manifest (artifact hashes), with required Ed25519 signing for production
+
+Production publication requires the approved `AETHERRA_RELEASE_PRIVKEY` seed,
+verified signed CI and a valid release-manifest signature. The production
+workflows fail if signing is unavailable. Optional unsigned artifacts from
+individual development helpers do not satisfy the release gate.
 
 ## Build Steps
 
@@ -20,7 +25,8 @@ python -c "import shutil, pathlib; d=pathlib.Path('dist'); shutil.rmtree(d, igno
 python -m build  # or: python -m pip install build ; python -m build
 
 # 3. Generate SBOM
-python tools/generate_sbom.py --output dist/aetherra-sbom.json --version $(python -c "import importlib.metadata as im;print(im.version('aetherra'))" 2>nul || echo 0.0.0)
+python tools/generate_sbom.py --output dist/aetherra-sbom.json \
+  --version $(python -c "import importlib.metadata as im;print(im.version('aetherra'))" 2>nul || echo 0.0.0)
 
 # 4. Release manifest (+ optional signing)
 # Set AETHERRA_RELEASE_PRIVKEY to 64 hex chars (ed25519 private key) to sign
@@ -54,7 +60,8 @@ chmod +x scripts/bootstrap.sh
 
 ## Signing
 
-Environment variable: `AETHERRA_RELEASE_PRIVKEY` (hex Ed25519 private key). If provided, `release-manifest.json` obtains a `signing` section and a detached `.sig` file.
+Environment variable: `AETHERRA_RELEASE_PRIVKEY` (hex Ed25519 private key).
+If provided, `release-manifest.json` obtains a `signing` section and a detached `.sig` file.
 
 Verification (conceptual):
 
@@ -125,7 +132,7 @@ Deterministic, secure builds rely on four supporting scripts (all in `tools/`):
 
 | Script                 | Purpose                                                                                                   |
 | ---------------------- | --------------------------------------------------------------------------------------------------------- |
-| `dependency_lock.py`   | Generate a sorted `requirements.lock` from current environment (pin transitive versions).                 |
+| `dependency_lock.py`   | Resolve explicit requirement inputs without ambient packages; retain legacy environment-freeze mode. |
 | `enforce_lock_sync.py` | Fail if active env drifts from the configured lock file (add to CI before tests).                         |
 | `vuln_scan.py`         | Aggregate vulnerability scan via `pip-audit` / `osv-scanner` if installed; fails on High+ (configurable). |
 | `license_report.py`    | Emit `licenses_report.json` + CSV-style stdout for license inventory (non-enforcing baseline).            |
@@ -138,25 +145,26 @@ python tools/vuln_scan.py --lock requirements-ci.lock
 python tools/license_report.py --lock requirements-ci.lock
 ```
 
-Regenerating the lock (after intentional dependency changes):
+Regenerating the desktop lock on Windows x64/Python 3.13 after intentional dependency changes:
 
 ```bash
-python tools/dependency_lock.py
+python tools/dependency_lock.py -r requirements.txt -r requirements/quality.txt -c requirements-ci.lock
 git add requirements.lock
 ```
 
 For the GitHub Actions quality-gates runner, regenerate `requirements-ci.lock`
 from a clean Ubuntu Python 3.11 environment after installing `requirements.txt`.
-Keep `requirements.lock` for full runtime or release environments that include
-desktop/platform-specific packages.
+`requirements.lock` describes the Windows source-runtime and quality-tool
+profile in [DESKTOP_INSTALLATION.md](DESKTOP_INSTALLATION.md). It does not
+describe every optional plugin or the package extras graph. Install regenerated
+locks into a fresh environment, require `pip check` and lock synchronization,
+and audit all installed distributions before accepting the change.
 
 Future Enhancements (planned):
 
 - Policy gate to deny disallowed licenses.
 - Vulnerability waiver file with auto-expiry.
 - Richer SBOM license field population (CycloneDX library adoption).
-
-
 Refer also to `LICENSE_POLICY.md` for evolving license stance (currently inventory + warnings; enforcement deferred to Beta).
 
 ## Operational Checklist (Alpha Release)
@@ -178,7 +186,8 @@ Release process controlled by Aetherra Labs (see OWNERSHIP.md). External contrib
 
 Purpose: Provide an auditable, immutable reference tying git history to shipped artifacts & dependency state.
 
-Scripts: `tools/create_provenance_tag.py`, `tools/create_annotated_tag.py` (the latter can synthesize a minimal manifest if one is missing for experimentation workflows).
+Scripts: `tools/create_provenance_tag.py`, `tools/create_annotated_tag.py`
+(the latter can synthesize a minimal manifest if one is missing for experimentation workflows).
 
 Generates an annotated tag message including:
 
@@ -199,6 +208,7 @@ python tools/create_provenance_tag.py --version 0.1.0-alpha.1 `
 
 If `--apply` is omitted the body is printed (copy/paste into a manual `git tag -a`).
 
-Resulting annotated tag body makes later verification trivial: clone repo @ tag → recompute artifact hashes → compare to manifest hash recorded in tag.
+Resulting annotated tag body makes later verification trivial: clone repo @ tag →
+recompute artifact hashes → compare to manifest hash recorded in tag.
 
 Future (Beta+): Add builder identity, reproducible build hash, SLSA attestation link.

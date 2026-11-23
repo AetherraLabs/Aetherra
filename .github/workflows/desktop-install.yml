@@ -1,0 +1,114 @@
+name: Desktop Installation
+
+on:
+  pull_request:
+    paths:
+      - 'requirements*'
+      - 'requirements/**'
+      - 'tools/dependency_lock.py'
+      - 'tools/enforce_lock_sync.py'
+      - 'tools/maintenance/verify_legal_compliance.py'
+      - 'tests/tools/test_dependency_lock.py'
+      - 'tests/tools/test_legal_compliance_metadata.py'
+      - 'Aetherra/lyrixa/gui/package*.json'
+      - '.github/workflows/desktop-install.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'requirements*'
+      - 'requirements/**'
+      - 'tools/dependency_lock.py'
+      - 'tools/enforce_lock_sync.py'
+      - 'tools/maintenance/verify_legal_compliance.py'
+      - 'tests/tools/test_dependency_lock.py'
+      - 'tests/tools/test_legal_compliance_metadata.py'
+      - 'Aetherra/lyrixa/gui/package*.json'
+      - '.github/workflows/desktop-install.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-install:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    env:
+      PYTHONUTF8: '1'
+      PYTHONIOENCODING: utf-8
+      AETHERRA_SKIP_DOTENV: '1'
+      HF_HOME: ${{ runner.temp }}/aetherra-desktop-hf
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Create fresh desktop environment
+        run: |
+          python -m venv .venv
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          .venv/Scripts/python -m pip install pip==26.3
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          .venv/Scripts/python -m pip install -r requirements.lock --report desktop-install.json
+      - name: Require consistent locked dependencies
+        run: |
+          .venv/Scripts/python -m pip check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          .venv/Scripts/python tools/enforce_lock_sync.py --lock requirements.lock
+      - name: Audit every installed distribution
+        run: |
+          python -m venv .audit-env
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          .audit-env/Scripts/python -m pip install pip-audit==2.10.1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          .audit-env/Scripts/python -m pip_audit --path .venv/Lib/site-packages --strict --format json --output desktop-audit.json --progress-spinner off
+      - name: Provision pinned continuity model
+        run: |
+          .venv/Scripts/python -c "from sentence_transformers import SentenceTransformer; from Aetherra.aetherra_core.memory.chat_retrieval import MODEL, REVISION; SentenceTransformer(MODEL, revision=REVISION, device='cpu', trust_remote_code=False)"
+      - name: Offline runtime and signing regressions
+        env:
+          HF_HUB_OFFLINE: '1'
+          TRANSFORMERS_OFFLINE: '1'
+        run: >-
+          .venv/Scripts/python -m pytest -q -o addopts=
+          --junitxml desktop-tests.xml
+          tests/tools/test_dependency_lock.py
+          tests/tools/test_legal_compliance_metadata.py
+          tests/unit/test_verify_legal_compliance_guardian.py
+          tests/unit/test_chat_request_contract.py
+          tests/acceptance/test_personal_continuity.py
+          tests/acceptance/test_maintenance_security.py
+          tests/tools/test_release_signing.py
+          tests/test_hub_signing.py tests/test_discovery_signing.py
+      - name: Boot and integration contracts
+        run: |
+          .venv/Scripts/python tools/alpha_boot_validation.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          .venv/Scripts/python -m Aetherra.integration_validation
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22.18.0'
+      - name: Fresh Runtime Observatory build
+        working-directory: Aetherra/lyrixa/gui
+        run: |
+          npm ci --ignore-scripts --no-audit
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm audit --audit-level=low
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm test
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run build
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run lint
+      - name: Retain installation evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: desktop-installation-evidence
+          path: |
+            desktop-install.json
+            desktop-audit.json
+            desktop-tests.xml
