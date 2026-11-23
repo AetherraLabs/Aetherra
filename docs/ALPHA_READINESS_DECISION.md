@@ -25,6 +25,74 @@ See [the checklist](ALPHA_READINESS_CHECKLIST.md),
 [fresh-install evidence](evidence/desktop_alpha_2026-11-22.json) and
 [clean-main acceptance](evidence/desktop_alpha_main_2026-11-22.json).
 
+## First Supervised Use Exercise
+
+The next Stage 21 step was a bounded **15-minute steady-state exercise** on
+`ff359b02b8422ea3ef5132bbad3d241de64f0553` (merged PR #328), using the existing
+verified Windows installation, normal full CLI, gpt-4o and a new synthetic local
+profile. Ten minutes in PID 52828 and five minutes in PID 55764 completed across
+a normal restart. All 32 samples checked 12 JSON endpoints; Hub, Kernel and
+Engine readiness stayed ready, Guardian enforced with intact audit, and
+Homeostasis stayed `observe_only` with zero actuator attempts/executions/blocks,
+unexpected restarts or recoveries. Both processes exited zero without force.
+
+All 16 baseline turns used gpt-4o without fallback. Bicycle and music paraphrases
+retrieved the original records after restart with empty chat history; the unknown
+piano color was acknowledged and Aetherra/Lyrixa identity remained intact.
+The browser showed unavailable after stop and reconnected automatically. Engine
+registry degradation and unknown optional services remained visible; these are
+distinct from core readiness. No browser console errors were observed.
+
+This exercise also found a real reply defect: new personal statements were saved,
+but several initial replies incorrectly said Lyrixa had not been told them.
+The current record is deliberately excluded from historical recall; the prompt
+applied its missing-evidence rule to both disclosures and recall questions.
+The candidate repair distinguishes current disclosures from recall, retains
+receipt-only save claims, and does not treat questions/guesses as facts.
+Storage, ranking and provider selection are unchanged. Its offline tests capture
+actual provider input with a neutral generation double; live wording requires a
+separate real-model check.
+
+That separate check passed **13 gpt-4o turns without fallback** in a new profile:
+plain disclosures, competing relatives/music, a mixed dog-name statement and
+question, unknown bicycle-frame/piano colors, an unconfirmed soup guess and later
+unknown-soup recall, and identity. All three positive recalls supplied the saved
+record IDs to generation. The soup-guess reply included tentative wording but
+did not confirm it; later recall correctly remained unknown with empty evidence.
+The candidate process exited zero without force. The 25 focused offline tests
+and 80 final Engine/disclosure tests pass (overlapping selections); 13 signing
+tests pass. The fixed legacy baseline requires style cleanup of the edited Engine
+file; normalized syntax-tree review found only the intended prompt change after
+accounting for equivalent best-effort exception/control-flow formatting.
+
+```text
+PID 52828 saves 317b9b4ffc69b9a784fee68c0abdd151: Leona taught bicycle repair
+  normal stop -> exit 0
+PID 55764, same data, empty history: "Who showed me how to repair a puncture...?"
+  retrieved ID -> generation evidence ID: 317b9b4ffc69b9a784fee68c0abdd151
+  openai/gpt-4o -> "Your aunt Leona..."; fallback=false
+```
+
+The 15-minute observations describe unchanged main, not the candidate prompt.
+The candidate has focused offline and live checks; its full default suite,
+hosted CI and integration have not run. The earlier 3,136-test result below is
+historical coverage of the prior runtime, not a new candidate-suite pass.
+
+The first post-restart recall took **63.603 seconds** while warming retrieval,
+and a concurrent 10-second status probe timed out. It recovered without a runtime
+restart or retrying the chat write. The five-minute window began afterward.
+A separate earlier sampler attempt failed on a disappearing child process;
+its partial samples were retained and the full ten-minute window restarted.
+Neither failed attempt counts toward the 15 minutes. This is **not** evidence of
+uninterrupted cold-start responsiveness, leak-free operation or soak/load capacity.
+
+**Decision: retain the bounded supervised GO; do not advance Stage 22.** The
+disclosure correction needs review/integration before it becomes the supported
+revision. Cold-start responsiveness remains a follow-up within Stage 21.
+Required signing and the approved key remain unchanged. Detailed outcomes and
+artifact digests belong in
+[the supervised-use evidence](evidence/supervised_alpha_2026-11-22.json).
+
 ## Previous Integration Is Complete
 
 [PR #326](https://github.com/AetherraLabs/Aetherra/pull/326) merged as `382e77ac`.

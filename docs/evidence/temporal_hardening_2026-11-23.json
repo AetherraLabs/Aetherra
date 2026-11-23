@@ -1,0 +1,139 @@
+{
+  "date": "2026-11-23",
+  "base_commit": "ff359b02b8422ea3ef5132bbad3d241de64f0553",
+  "scope": "TemporalConsciousnessEngine bounded analysis and explicit existing-Memory checkpoints",
+  "baseline": {
+    "existing_tests_passed": 16,
+    "new_behavioral_cases_failed_before_fix": 30
+  },
+  "review_regressions": {
+    "equal_time_ordering_failed_before_fix": 1,
+    "checkpoint_invariants_failed_before_fix": 4,
+    "cycle_suffix_failed_before_fix": 1,
+    "final_review": "No remaining implementation blocker; documentation corrections applied"
+  },
+  "final_regression": {
+    "passed": 149,
+    "failed": 0,
+    "skipped": [
+      {
+        "test": "tests.unit.test_signature_verifier.TestSignatureVerifierEdgeCases.test_symlink_handling",
+        "reason": "Symlinks not supported on this system"
+      }
+    ],
+    "new_temporal_cases": 59,
+    "test_files": [
+      "tests/integration/test_temporal_memory_restart.py",
+      "tests/security/test_plugin_signing_fallback.py",
+      "tests/tools/test_release_signing.py",
+      "tests/unit/test_aether_script_signing.py",
+      "tests/unit/test_memory_core_guardian.py",
+      "tests/unit/test_memory_temporal_integration_guardian.py",
+      "tests/unit/test_multidimensional_state_guardian.py",
+      "tests/unit/test_phase74_integration_guardian.py",
+      "tests/unit/test_quantum_consciousness_engine_guardian.py",
+      "tests/unit/test_quantum_consciousness_integration_guardian.py",
+      "tests/unit/test_quantum_consciousness_tunneling_guardian.py",
+      "tests/unit/test_quantum_decision_engine_guardian.py",
+      "tests/unit/test_quantum_interference_guardian.py",
+      "tests/unit/test_quantum_memory_hardening.py",
+      "tests/unit/test_quantum_memory_system_guardian.py",
+      "tests/unit/test_quantum_meta_learning_guardian.py",
+      "tests/unit/test_quantum_tunneling_logic_guardian.py",
+      "tests/unit/test_signature_verifier.py",
+      "tests/unit/test_temporal_consciousness_functional.py",
+      "tests/unit/test_temporal_consciousness_guardian.py"
+    ],
+    "command": "python -m pytest -q -o addopts= tests/integration/test_temporal_memory_restart.py tests/security/test_plugin_signing_fallback.py tests/tools/test_release_signing.py tests/unit/test_aether_script_signing.py tests/unit/test_memory_core_guardian.py tests/unit/test_memory_temporal_integration_guardian.py tests/unit/test_multidimensional_state_guardian.py tests/unit/test_phase74_integration_guardian.py tests/unit/test_quantum_consciousness_engine_guardian.py tests/unit/test_quantum_consciousness_integration_guardian.py tests/unit/test_quantum_consciousness_tunneling_guardian.py tests/unit/test_quantum_decision_engine_guardian.py tests/unit/test_quantum_interference_guardian.py tests/unit/test_quantum_memory_hardening.py tests/unit/test_quantum_memory_system_guardian.py tests/unit/test_quantum_meta_learning_guardian.py tests/unit/test_quantum_tunneling_logic_guardian.py tests/unit/test_signature_verifier.py tests/unit/test_temporal_consciousness_functional.py tests/unit/test_temporal_consciousness_guardian.py",
+    "offline": true,
+    "guardian_mode": "enforcing in temporal tests",
+    "signing_enforcement": "unchanged; strict release/script/plugin tests included",
+    "storage": "real LyrixaMemorySystem SQLite in separate interpreter processes"
+  },
+  "synthetic_restart_trace": {
+    "saved": {
+      "pid": 17560,
+      "checkpoint_id": "ae35043f250542e9a418dedabab91392",
+      "memory_id": "0036340f74fdf8d59258398ee06aefe6",
+      "moment_ids": [
+        "moment_2698c2777e294d7db69e22d6eaf3f35f",
+        "moment_7f362828a7b34dd483f55366fef45e90",
+        "moment_9bf2f0c8034b467e9fe61601008875e2"
+      ],
+      "prediction_ids": [
+        "pred_ef67c28c4b054123be6585e57ecde429"
+      ],
+      "chain_ids": [
+        "chain_moment_2698c2777e294d7db69e22d6eaf3f35f_moment_7f362828a7b34dd483f55366fef45e90",
+        "chain_moment_2698c2777e294d7db69e22d6eaf3f35f_moment_9bf2f0c8034b467e9fe61601008875e2",
+        "chain_moment_7f362828a7b34dd483f55366fef45e90_moment_9bf2f0c8034b467e9fe61601008875e2"
+      ],
+      "state_digest": "7f483f1b188d09d5eba813db40a09b0519c9e3208bdd635168c26ef9882ef35b",
+      "moments_processed": 3
+    },
+    "restored": {
+      "pid": 48732,
+      "checkpoint_id": "ae35043f250542e9a418dedabab91392",
+      "memory_id": "0036340f74fdf8d59258398ee06aefe6",
+      "moment_ids": [
+        "moment_2698c2777e294d7db69e22d6eaf3f35f",
+        "moment_7f362828a7b34dd483f55366fef45e90",
+        "moment_9bf2f0c8034b467e9fe61601008875e2"
+      ],
+      "prediction_ids": [
+        "pred_ef67c28c4b054123be6585e57ecde429"
+      ],
+      "chain_ids": [
+        "chain_moment_2698c2777e294d7db69e22d6eaf3f35f_moment_7f362828a7b34dd483f55366fef45e90",
+        "chain_moment_2698c2777e294d7db69e22d6eaf3f35f_moment_9bf2f0c8034b467e9fe61601008875e2",
+        "chain_moment_7f362828a7b34dd483f55366fef45e90_moment_9bf2f0c8034b467e9fe61601008875e2"
+      ],
+      "state_digest": "7f483f1b188d09d5eba813db40a09b0519c9e3208bdd635168c26ef9882ef35b",
+      "integrated_ids": [
+        "moment_9bf2f0c8034b467e9fe61601008875e2",
+        "moment_7f362828a7b34dd483f55366fef45e90",
+        "moment_2698c2777e294d7db69e22d6eaf3f35f"
+      ],
+      "new_moment_id": "moment_470d7f4670774bfea9e28d68597e3b58",
+      "moments_processed": 4
+    },
+    "separate": {
+      "error": "temporal_checkpoint_missing_unreadable_or_ambiguous",
+      "moments": 0
+    }
+  },
+  "quality": {
+    "command": "python tools/python_quality.py",
+    "exit_code": 0,
+    "legacy_baseline_unchanged": true,
+    "note": "Preserved host Git inventory/exclusion configuration; Black cache and temp redirected to writable task directory."
+  },
+  "docs": {
+    "consistency": {
+      "exit_code": 0,
+      "source_files": 1401
+    },
+    "consistency_note": "Source-only snapshot of current Git inventory: direct worktree inspection was blocked by unreadable existing .pytest_cache; no checker or cache permissions changed.",
+    "markdown": {
+      "guide_findings": 0,
+      "existing_overview_findings": 43,
+      "existing_findings_unchanged": true
+    }
+  },
+  "preservation": {
+    "passed": true,
+    "protected_files": 58
+  },
+  "sha256": {
+    "Aetherra/consciousness/quantum/temporal_consciousness_system.py": "8f1eefd0dd4ee1e42f18be4387254df47b6992bc9712f5541ca4c03c7549fb19",
+    "tests/unit/test_temporal_consciousness_functional.py": "9b032831bc5566d9de8a7b39888c805832f6a5da772549dddf805e5f1248e896",
+    "tests/integration/test_temporal_memory_restart.py": "375cfad6206b66bbd889ff014b8327770a8fa3094aaedb869a2d2d2deb297e8c"
+  },
+  "not_verified": [
+    "full repository pytest suite",
+    "remote CI",
+    "normal-launch temporal activation",
+    "live-model/browser alpha readiness"
+  ],
+  "delivery": "local, uncommitted implementation; pending alpha work preserved"
+}
