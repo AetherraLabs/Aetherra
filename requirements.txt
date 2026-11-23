@@ -56,7 +56,7 @@ pymongo>=4.18.3
 
 # ===== ASYNC & CONCURRENCY =====
 # asyncio is built into Python, no need to install
-aiofiles>=23.1.0
+aiofiles>=25.1.0
 uvloop>=0.17.0; sys_platform != "win32"
 
 # ===== SYSTEM UTILITIES =====
