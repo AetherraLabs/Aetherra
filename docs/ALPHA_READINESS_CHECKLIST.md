@@ -2,13 +2,15 @@
 
 Updated: 2026-11-22
 
-Candidate: working patch on `b1b7ae12ba4272cf630e989e3cf463a1b77b3624` (`v0.5.0-beta.2`).
-Decision: **No-go for broader internal alpha operation**. ALPHA-01 through
-ALPHA-06 are fixed locally. Full CLI restart and operator API checks pass;
-the preceding browser and safety evidence remains applicable. Reviewed-commit
-and current-CI acceptance remain open.
-See [ALPHA_READINESS_DECISION.md](ALPHA_READINESS_DECISION.md) for evidence,
-limitations, owners and retest conditions.
+Candidate: `codex/alpha-chat-contracts`, integrates main `86982cc5`
+(`v0.5.0-beta.4`), with reviewed admission and runtime fixes. **Go for supervised synthetic
+verification; no-go for broader internal alpha.** ALPHA-07 and the original nine
+legacy failures are repaired. The final default suite finished with 3,135 passed / 40 skipped and process exit 0.
+Reviewed-code CI passes; final merge and clean-main acceptance are pending at
+this evidence checkpoint. Their results will be recorded in PR #326.
+Candidate checks alone are not a clean-main pass. Desktop dependency disposition
+remains open. See [the decision](ALPHA_READINESS_DECISION.md)
+and [inspectable evidence](evidence/internal_alpha_integration_2026-11-22.json).
 
 This checklist defines what must be true before Aetherra should be called ready
 for an internal alpha. It is not a marketing launch checklist. It is a
@@ -29,7 +31,7 @@ Alpha readiness means:
 
 ## Gate 1: Identity And Scope
 
-Status: Reviewed for this candidate; docs consistency passes.
+Status: Shipped identity configuration and live Aetherra/Lyrixa relationship pass; explicit paths remain supported.
 
 Required before alpha:
 
@@ -50,7 +52,7 @@ python tools\verify_docs_consistency.py
 
 ## Gate 2: System Foundation Status
 
-Status: Documented foundations reviewed; not a claim of integrated alpha readiness.
+Status: Foundations reviewed; completion labels do not imply all runtime services are ready.
 
 Required before alpha:
 
@@ -78,15 +80,10 @@ python tools\verify_docs_consistency.py
 
 ## Gate 3: Safety And Governance
 
-Status: Bounded observation-only retest passes; ALPHA-01 resolved locally.
-
-Guardian reports enabled/enforcing and audit integrity true. Strict capability
-denials, unauthorized chat rejection and disabled Kernel controls were observed.
-The registered Homeostasis instance stays in observe_only with zero actuator
-attempts/executions through startup, steady state and a new-process restart.
-No broad capabilities or signing exceptions were added. Self-Incorporation
-audit inspection now passes authentication, filtering and persisted-ledger
-regressions (ALPHA-05); live privileged mutation was not exercised.
+Status: Bounded observation-only retest passes. Guardian is enforcing with intact
+audit; four runtime samples show zero actuator attempts/executions/blocks and
+zero recoveries/restarts. ALPHA-07 expiry rejects before storage/generation.
+Signing remains strict. Privileged live mutation was not exercised.
 
 Required before alpha:
 
@@ -111,12 +108,14 @@ python -m pytest -q -o addopts= --basetemp .pytest_tmp_alpha_validation tests\un
 
 ## Gate 4: Runtime Boot Path
 
-Status: Full CLI boot and restart demonstrated, with documented degradation.
+Status: Full CLI fresh-profile boot and restart pass on the isolated candidate.
 
-Hub and Kernel reported ready in both new processes. Engine reported degraded
-without a configured provider. Both Ctrl+C shutdowns exited 0; a watchdog
-teardown error remains a documented limitation. Optional service denials and
-relative configuration defaults are not equivalent to all systems being ready.
+All 12 inspected JSON endpoints return 200 at startup and steady state in both
+processes; both Ctrl+C shutdowns exit 0. No-provider failure remains degraded;
+configured gpt-4o reports Engine ready with three successful lifecycle receipts
+and zero problems. Unknown/malformed receipts still fail readiness. Optional policy
+denials, relative configuration defaults and watchdog teardown logging remain
+documented limitations.
 
 Required before alpha:
 
@@ -145,12 +144,12 @@ the full runtime boots. The manual check above uses the normal full launcher.
 
 ## Gate 5: Runtime UI Observatory
 
-Status: Connected, degraded, stopped and reconnected browser checks pass;
-ALPHA-02/03 resolved locally. Build, lint and all 17 GUI tests pass.
+Status: Fresh connected, stopped and reconnected browser verification passes.
 
-Engine degradation matches readiness evidence; missing services and stopped
-runtime are unknown. Titles are visible and no application console errors were
-observed. THREE.Clock deprecation and bundle-size warnings remain documented.
+Engine changes from no-provider degradation to configured-model readiness;
+absent/stale evidence remains unknown. Read-only controls and three observation titles render without observed
+application console errors. All 18 GUI tests, build and lint pass using the previously installed
+locked GUI dependencies. THREE.Clock and bundle-size warnings remain documented.
 
 Required before alpha:
 
@@ -174,11 +173,9 @@ python -m pytest -q -o addopts= --basetemp .pytest_tmp_runtime_ui @runtimeUiTest
 
 ## Gate 6: Integration Validation
 
-Status: Pass for bounded contracts: 5 runner checks plus focused regressions.
-
-The contracts cover allow/deny, approved-scope mismatch and truthful failure
-when rollback is unavailable. The separate real full-launcher retest supplies
-bounded Homeostasis observation-only evidence; see Gate 3.
+Status: Pass for bounded contracts: five integration runner checks and the current
+unit/integration regression selection. Runtime samples separately confirm
+observation-only operation; this does not authorize privileged mutation.
 
 Required before alpha:
 
@@ -199,11 +196,10 @@ python -m pytest -q -o addopts= --basetemp .pytest_tmp_integration_validation te
 
 ## Gate 7: Repository Hygiene
 
-Status: Focused checks pass; isolated working patch used for verification.
-
-Website-artifact verification passes. Runtime profiles, logs, test outputs and
-GUI dependencies/build output stay ignored. This is not an exhaustive cleanup
-of all legacy repository artifacts. Unrelated user changes remain out of scope.
+Status: Focused hygiene checks pass in the isolated candidate. The source clone
+began at main; only scoped fixes/tests/docs are edited. Raw logs, profiles,
+dependencies and screenshots remain ignored. Original workspaces and indexes
+are preserved. Evidence records the source checkpoint before publication.
 
 Required before alpha:
 
@@ -226,19 +222,17 @@ git status --short
 
 ## Gate 8: CI And Security Checks
 
-Status: Local CI selection passes (1,916 passed/8 skipped); remote candidate CI open.
+Status: Default repository suite and local quality checks pass; reviewed-code remote CI passes in PR #326.
 
-All 31 reported checks on `2f4b3324` were successful when reviewed on
-2026-11-21, including signed CI and Release. `b1b7ae12` is the resulting release
-version commit, not a separately tested full CI run. None of these old remote
-checks verify the current working patch. Signing remains enforced; 13 local
-signing tests pass. Default collection now succeeds with 3,093 tests. Full
-execution reached its time bound with failures; see the decision for named
-findings and scoped reruns. The final local CI directory selection passes in a
-source-only snapshot; this is not remote workflow or coverage acceptance. The
-fixed style baseline remains unchanged.
-Legacy desktop dependency findings are deferred, and this check does not claim
-that all Advanced Security findings or installed packages are clean.
+Final frozen-source suite: **3,135 passed / 40 skipped**, process exit 0, with default
+collection/addopts/coverage. The diagnostic rerun exposed SQLite lifetime,
+coordination, event-loop/import and streaming-isolation defects; all are fixed
+with focused red/green regressions. Exact tool pins resolve the provisioned Ruff
+binary mismatch. Fixed-baseline quality: zero new violations, 980 unchanged
+legacy files, 53 resolved. No new skips or baseline entries were added.
+Signing stays enforced; check PR #326 for post-merge production signature verification.
+Desktop dependency security debt and the provisioned pyxnat/pathlib metadata
+conflict remain explicit; the suite is not a fresh-install clearance.
 
 Required before alpha:
 
@@ -263,14 +257,13 @@ GitHub Actions remain the source of truth for remote CI status.
 
 ## Gate 9: Operator Runbook
 
-Status: Verified bounded observation and repaired operator API procedures recorded.
+Status: Exact CLI, browser, expiry, no-provider and real-model procedures recorded.
 
-The runbook documents the full CLI, isolated synthetic storage, correct JSON
-routes, authenticated Guardian reads, GUI proxy, stop/restart and fallback
-interpretation. Hub Homeostasis status now uses the initialized launcher
-instance (ALPHA-04). Authenticated Self-Incorporation audit reads support
-validated filters and limits (ALPHA-05). Broader operational acceptance remains
-pending; stale registry evidence still displays unknown.
+Fresh verification records two normal-launcher processes, three live gpt-4o
+turns with no fallback and eight expired requests with unchanged stored IDs.
+The previous 35-turn varied-paraphrase/missing-fact/separate-profile matrix is
+retained as historical evidence, not claimed as rerun. Local directories provide
+storage isolation; readiness, shutdown and dependency limits remain explicit.
 
 Required before alpha:
 
@@ -287,12 +280,11 @@ Primary file:
 
 ## Gate 10: Alpha Decision
 
-Status: Recorded — No-go for broader internal alpha operation.
+Status: Go for supervised synthetic verification; no-go for broader internal alpha.
 
-All six recorded runtime blockers are fixed and retested locally, and the local
-CI test selection passes. Broader acceptance still requires a reproducible
-commit, current remote CI and disposition of the documented legacy limitations.
-No remaining risk has been silently accepted.
+The requested repairs and reviewed-code CI pass. Merge and clean-main acceptance
+are pending at this checkpoint; results will be recorded in PR #326. Desktop dependency disposition remains open. The final
+default repository suite passes; it is no longer an open test blocker. No broader operating authority or risk acceptance is inferred.
 
 Before calling alpha ready:
 
@@ -309,10 +301,9 @@ Decision record:
 
 ## Current Next Actions
 
-1. Assess the documented legacy failures outside the passing CI selection.
-2. Review and commit the scoped fixes, then verify current CI and a clean
-   checkout before reconsidering Go.
-3. Preserve strict signing and unrelated workspace changes throughout acceptance.
+1. Check PR #326's final merge and clean-main evidence before deploying the candidate.
+2. Resolve or explicitly disposition desktop dependency debt and fresh-install limits.
+3. Preserve strict signing, observation-only behavior and the fresh live/browser evidence.
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

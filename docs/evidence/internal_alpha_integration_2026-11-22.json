@@ -1,0 +1,749 @@
+{
+  "date": "2026-11-22",
+  "timezone": "America/Denver",
+  "pull_request": "https://github.com/AetherraLabs/Aetherra/pull/326",
+  "saved_candidate": "198cbbca48c362a9511bfde4d382a7417490d2ec",
+  "integrated_main": "86982cc5494938c8c92b748f78f12fb8a06c5e17",
+  "runtime_checked_commit": "7e5c5204f8973eafdb60c2c0513de6be97b6fc4f",
+  "scope": "Supervised synthetic internal-alpha integration; broader alpha remains no-go.",
+  "source_provenance": [
+    {
+      "path": "aetherra_hub/blueprints/ai_ask.py",
+      "candidate_sha256": "80d576aee352dc882a84abf1c03f426dee19e82b6d2222f68178834e6d9a05a1",
+      "frozen_sha256": "80d576aee352dc882a84abf1c03f426dee19e82b6d2222f68178834e6d9a05a1",
+      "same_text_after_newline_normalization": true,
+      "same_python_ast": true
+    },
+    {
+      "path": "aetherra_hub/blueprints/ai_stream.py",
+      "candidate_sha256": "79b776e4f9b8a722d53e2ecfa4bc4314d85c8155d3a0a3db8c8d23042f04f5f4",
+      "frozen_sha256": "79b776e4f9b8a722d53e2ecfa4bc4314d85c8155d3a0a3db8c8d23042f04f5f4",
+      "same_text_after_newline_normalization": true,
+      "same_python_ast": true
+    },
+    {
+      "path": "aetherra_hub/services/ai_stream.py",
+      "candidate_sha256": "7d99e287f7a8057ddc1f9d99f85385f5af22d25790c57a8f15445cdb89e27590",
+      "frozen_sha256": "7d99e287f7a8057ddc1f9d99f85385f5af22d25790c57a8f15445cdb89e27590",
+      "same_text_after_newline_normalization": true,
+      "same_python_ast": true
+    },
+    {
+      "path": "aetherra_hub/services/chat_bridge.py",
+      "candidate_sha256": "acc77fe18d9b732638ffc7e11337b61edc73a2a937ed19672c0bbee9098f7d86",
+      "frozen_sha256": "acc77fe18d9b732638ffc7e11337b61edc73a2a937ed19672c0bbee9098f7d86",
+      "same_text_after_newline_normalization": true,
+      "same_python_ast": true
+    },
+    {
+      "path": "aetherra_hub/services/idempotency.py",
+      "candidate_sha256": "72a8ad0e49831338f490a54cae17fdf36c3871cbe7eaa1e19b3a7a93598a6a54",
+      "frozen_sha256": "72a8ad0e49831338f490a54cae17fdf36c3871cbe7eaa1e19b3a7a93598a6a54",
+      "same_text_after_newline_normalization": true,
+      "same_python_ast": true
+    },
+    {
+      "path": "tests/unit/test_chat_request_contract.py",
+      "candidate_sha256": "f35dfeda2a7bbd431bcd9d2d28438b2328a1afd149515abcd65cecd8bfe9c002",
+      "frozen_sha256": "f1bac34affd099f6f11a71014776471fb3d98ffb76149cdc16606ba3b8aae291",
+      "same_text_after_newline_normalization": false,
+      "same_python_ast": true
+    }
+  ],
+  "full_suite": {
+    "check": "resumed_verified-full",
+    "exit_code": 0,
+    "seconds": 1864.98,
+    "summary": "3135 passed, 40 skipped in 1835.17s (0:30:35)",
+    "log_sha256": "b2a3fba6fb817c3b98e4f08e3a5c461a86f94f3cdee1d91e0957e0d5e0a5569a",
+    "skips": [
+      {
+        "test": "::tests.capabilities.test_reflection_memory_stability",
+        "reason": "collection skipped"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestNeuralInterfaceCore::test_main_interface_initialization",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestNeuralInterfaceCore::test_tab_creation",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestChatInterface::test_chat_interface_initialization",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestChatInterface::test_message_sending",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestMemoryGraphVisualization::test_memory_graph_controls",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestMemoryGraphVisualization::test_memory_graph_initialization",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestMemoryGraphVisualization::test_memory_node_creation",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestPluginManagement::test_dependency_tree_display",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestPluginManagement::test_plugin_inspector_initialization",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestPluginManagement::test_plugin_status_display",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestAuraEffects::test_aura_animation_timer",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestAuraEffects::test_aura_state_updates",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestAuraEffects::test_aura_widget_initialization",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestLyrixaCore::test_cognitive_metrics_display",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestLyrixaCore::test_goals_list_display",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestLyrixaCore::test_lyrixa_core_initialization",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestCommandPalette::test_command_filtering",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestCommandPalette::test_command_palette_initialization",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestCommandPalette::test_command_population",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestAnalyticsDashboard::test_analytics_panel_initialization",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestAnalyticsDashboard::test_metrics_display",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestIntegrationFlow::test_live_updates",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestIntegrationFlow::test_status_bar_updates",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestIntegrationFlow::test_tab_switching",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestPerformanceMetrics::test_interface_load_time",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.ai.test_neural_interface.TestPerformanceMetrics::test_memory_usage",
+        "reason": "GUI components not available"
+      },
+      {
+        "test": "tests.capabilities.test_perception_shutdown::test_journal_stop_reaps_idle_follower[ignores-terminate]",
+        "reason": "Windows terminate does not deliver SIGTERM"
+      },
+      {
+        "test": "tests.capabilities.test_qfac_in_os::test_qfac_optional_service_registration",
+        "reason": "QFAC not available in this environment"
+      },
+      {
+        "test": "tests.capabilities.test_self_maintenance_services::test_self_maintenance_services_registration_and_basic_ops",
+        "reason": "Self-maintenance services unavailable in this environment"
+      },
+      {
+        "test": "tests.capabilities.test_storm_acceptance.TestSTORMAcceptanceCriteria::test_storm_sheaf_consistency_stable",
+        "reason": "STORM not enabled"
+      },
+      {
+        "test": "tests.capabilities.test_storm_acceptance.TestSTORMAcceptanceCriteria::test_storm_evidence_tags_present",
+        "reason": "STORM not enabled"
+      },
+      {
+        "test": "tests.capabilities.test_storm_acceptance.TestSTORMProductionReadiness::test_storm_full_lifecycle",
+        "reason": "Memory system not returning results - persistence issue"
+      },
+      {
+        "test": "tests.consciousness.test_metrics_exporter::test_metrics_exporter_basic",
+        "reason": "Prometheus client not available or exporter inactive"
+      },
+      {
+        "test": "tests.consciousness.test_metrics_scrape::test_metrics_scrape_endpoint",
+        "reason": "Exporter inactive (missing prometheus_client)"
+      },
+      {
+        "test": "tests.unit.test_hub_quantum_and_chat_metrics::test_memory_status_endpoint_shape",
+        "reason": "Flask not available in test env"
+      },
+      {
+        "test": "tests.unit.test_hub_quantum_and_chat_metrics::test_prometheus_metrics_includes_memory_and_chat",
+        "reason": "Flask not available in test env"
+      },
+      {
+        "test": "tests.unit.test_signature_verifier.TestSignatureVerifierEdgeCases::test_symlink_handling",
+        "reason": "Symlinks not supported on this system"
+      },
+      {
+        "test": "tests.unit.test_sse_replay_gap_metric::test_replay_gap_metric_increments",
+        "reason": "Flask dependency or environment heavy; placeholder smoke"
+      }
+    ]
+  },
+  "prior_integration_regression": {
+    "check": "resume-alpha-regressions",
+    "exit_code": 0,
+    "seconds": 372.59,
+    "summary": "133 passed in 369.36s (0:06:09)",
+    "log_sha256": "7948f7bd44ed35530631e4e49de0dd71b24fe71e1d07562e8c772658af9cac28"
+  },
+  "deadline_red": {
+    "check": "deadline-red-complete",
+    "exit_code": 1,
+    "seconds": 6.06,
+    "summary": "14 failed, 21 deselected in 4.27s",
+    "log_sha256": "54494d0d2d637d453113cdbd5b3bebbb51ceced8f1c255d97de83318243ab38c"
+  },
+  "admission_red": {
+    "check": "resume-admission-red",
+    "exit_code": 1,
+    "seconds": 8.08,
+    "summary": "9 failed, 32 passed in 6.27s",
+    "log_sha256": "b55eec97ccd85e1ab7012f3a344a985e2e03abb387f98f6ccb0b812adfc29c70"
+  },
+  "admission_green": {
+    "check": "resume-admission-green",
+    "exit_code": 0,
+    "seconds": 4.72,
+    "summary": "41 passed in 3.10s",
+    "log_sha256": "5a499e1d67d2bf4ca8b17ae6ea1282d7a29318870d95e1ca82f8b4fddea7b2bd"
+  },
+  "runtime": [
+    {
+      "sample": "candidate-offline",
+      "http_statuses": {
+        "/health": 200,
+        "/api/hub/readiness": 200,
+        "/api/kernel/readiness": 200,
+        "/api/runtime-ui/status": 200,
+        "/api/runtime-ui/bootstrap?mode=first_launch&user=Alpha&limit=8": 200,
+        "/api/homeostasis/status": 200,
+        "/api/maintenance/status": 200,
+        "/api/selfinc/status": 200,
+        "/api/guardian/status": 200,
+        "/api/security/policy": 200,
+        "/api/selfinc/audit": 200,
+        "/api/ai/status": 200
+      },
+      "engine_readiness": "degraded",
+      "safe_for_requests": false,
+      "lifecycle_events": 4,
+      "lifecycle_problems": 1,
+      "guardian_enforcing": true,
+      "audit_integrity_ok": true,
+      "homeostasis_mode": "observe_only",
+      "actuators": {
+        "actions_attempted": 0,
+        "actions_blocked": 0,
+        "actions_executed": 0,
+        "last_action_time": null,
+        "policy_loaded": false,
+        "registry_cache_valid": false,
+        "rollback_actions_available": 0
+      }
+    },
+    {
+      "sample": "candidate-offline-steady",
+      "http_statuses": {
+        "/health": 200,
+        "/api/hub/readiness": 200,
+        "/api/kernel/readiness": 200,
+        "/api/runtime-ui/status": 200,
+        "/api/runtime-ui/bootstrap?mode=first_launch&user=Alpha&limit=8": 200,
+        "/api/homeostasis/status": 200,
+        "/api/maintenance/status": 200,
+        "/api/selfinc/status": 200,
+        "/api/guardian/status": 200,
+        "/api/security/policy": 200,
+        "/api/selfinc/audit": 200,
+        "/api/ai/status": 200
+      },
+      "engine_readiness": "degraded",
+      "safe_for_requests": false,
+      "lifecycle_events": 4,
+      "lifecycle_problems": 1,
+      "guardian_enforcing": true,
+      "audit_integrity_ok": true,
+      "homeostasis_mode": "observe_only",
+      "actuators": {
+        "actions_attempted": 0,
+        "actions_blocked": 0,
+        "actions_executed": 0,
+        "last_action_time": null,
+        "policy_loaded": false,
+        "registry_cache_valid": false,
+        "rollback_actions_available": 0
+      }
+    },
+    {
+      "sample": "candidate-live",
+      "http_statuses": {
+        "/health": 200,
+        "/api/hub/readiness": 200,
+        "/api/kernel/readiness": 200,
+        "/api/runtime-ui/status": 200,
+        "/api/runtime-ui/bootstrap?mode=first_launch&user=Alpha&limit=8": 200,
+        "/api/homeostasis/status": 200,
+        "/api/maintenance/status": 200,
+        "/api/selfinc/status": 200,
+        "/api/guardian/status": 200,
+        "/api/security/policy": 200,
+        "/api/selfinc/audit": 200,
+        "/api/ai/status": 200
+      },
+      "engine_readiness": "ready",
+      "safe_for_requests": true,
+      "lifecycle_events": 3,
+      "lifecycle_problems": 0,
+      "guardian_enforcing": true,
+      "audit_integrity_ok": true,
+      "homeostasis_mode": "observe_only",
+      "actuators": {
+        "actions_attempted": 0,
+        "actions_blocked": 0,
+        "actions_executed": 0,
+        "last_action_time": null,
+        "policy_loaded": false,
+        "registry_cache_valid": false,
+        "rollback_actions_available": 0
+      }
+    },
+    {
+      "sample": "candidate-live-steady",
+      "http_statuses": {
+        "/health": 200,
+        "/api/hub/readiness": 200,
+        "/api/kernel/readiness": 200,
+        "/api/runtime-ui/status": 200,
+        "/api/runtime-ui/bootstrap?mode=first_launch&user=Alpha&limit=8": 200,
+        "/api/homeostasis/status": 200,
+        "/api/maintenance/status": 200,
+        "/api/selfinc/status": 200,
+        "/api/guardian/status": 200,
+        "/api/security/policy": 200,
+        "/api/selfinc/audit": 200,
+        "/api/ai/status": 200
+      },
+      "engine_readiness": "ready",
+      "safe_for_requests": true,
+      "lifecycle_events": 3,
+      "lifecycle_problems": 0,
+      "guardian_enforcing": true,
+      "audit_integrity_ok": true,
+      "homeostasis_mode": "observe_only",
+      "actuators": {
+        "actions_attempted": 0,
+        "actions_blocked": 0,
+        "actions_executed": 0,
+        "last_action_time": null,
+        "policy_loaded": false,
+        "registry_cache_valid": false,
+        "rollback_actions_available": 0
+      }
+    }
+  ],
+  "continuity_trace": {
+    "entry_point": "python aetherra_os_launcher.py --mode full --no-gui --config <isolated-profile>/launcher.json",
+    "profile": "isolated local data directory; no account isolation claim",
+    "initial_pid": 53372,
+    "saved_record_id": "7e3e0eeaf811434ff9d5f332dc1fc78f",
+    "newer_competing_record_ids": [
+      "e9f56b8ee73fd6639fcce59a4ecbc17c",
+      "c871e578b549bbeadcf3c83bf0a3dc65",
+      "fd22b8786f2fd10822bb9e01f1369fa3"
+    ],
+    "restarted_pid": 48712,
+    "retrieved_record_ids": [
+      "7e3e0eeaf811434ff9d5f332dc1fc78f"
+    ],
+    "generation_evidence_ids": [
+      "7e3e0eeaf811434ff9d5f332dc1fc78f"
+    ],
+    "answer": "You've mentioned that you call the little observatory in your garden the \"Lantern Room.\" What would you like to try next?",
+    "provider": "openai",
+    "model": "gpt-4o",
+    "live_turns": 3,
+    "fallback_count": 0,
+    "unknown_attribute_acknowledged": "I haven't been told what color you painted the door.",
+    "identity_preserved": true,
+    "stored_content": {
+      "role": "user",
+      "content": "Remember that I call the little observatory in my garden the Lantern Room."
+    }
+  },
+  "expiry": [
+    {
+      "passed": true,
+      "stored_ids_before": [
+        "1450b6d1bfe51ac161f2683809e5ad53",
+        "518e888dd5cee9163f60ee04e422dcad",
+        "71a35e1f54e10a4dde045b02a170066f",
+        "7e3e0eeaf811434ff9d5f332dc1fc78f",
+        "a72199eba146e8381909a78f4c162a8a"
+      ],
+      "stored_ids_after": [
+        "1450b6d1bfe51ac161f2683809e5ad53",
+        "518e888dd5cee9163f60ee04e422dcad",
+        "71a35e1f54e10a4dde045b02a170066f",
+        "7e3e0eeaf811434ff9d5f332dc1fc78f",
+        "a72199eba146e8381909a78f4c162a8a"
+      ],
+      "storage_unchanged": true,
+      "receipt_contains_conversation": false
+    },
+    {
+      "passed": true,
+      "stored_ids_before": [
+        "096fd2ab5b1338e0db7a1e3b2d7a4609",
+        "12317b719782510514649ba1e8b52fbd",
+        "1450b6d1bfe51ac161f2683809e5ad53",
+        "202b278af4be34f414ca12c2047a1a1b",
+        "28dd3d906842256d6e75189cbb346519",
+        "39679dfe8ff7f37fdbf3f0fc40b16c71",
+        "4e26c8a4c8859e8e6080d2ece38dc0f4",
+        "518e888dd5cee9163f60ee04e422dcad",
+        "63e3a1aadcf19dd177b62b1f4f859529",
+        "71a35e1f54e10a4dde045b02a170066f",
+        "71c9e49f43322a33871383011e93e13b",
+        "7e3e0eeaf811434ff9d5f332dc1fc78f",
+        "9bbd009dfd694e80867f8b1b09b7f7b3",
+        "a72199eba146e8381909a78f4c162a8a",
+        "b3d9f55d8ba498b3b234f6568fa70ad7",
+        "b6cd080c687c3dd4f295af28fa6f1db0",
+        "c871e578b549bbeadcf3c83bf0a3dc65",
+        "e9f56b8ee73fd6639fcce59a4ecbc17c",
+        "fd22b8786f2fd10822bb9e01f1369fa3",
+        "fdd1b2f8e89141214e032141426cdbe3"
+      ],
+      "stored_ids_after": [
+        "096fd2ab5b1338e0db7a1e3b2d7a4609",
+        "12317b719782510514649ba1e8b52fbd",
+        "1450b6d1bfe51ac161f2683809e5ad53",
+        "202b278af4be34f414ca12c2047a1a1b",
+        "28dd3d906842256d6e75189cbb346519",
+        "39679dfe8ff7f37fdbf3f0fc40b16c71",
+        "4e26c8a4c8859e8e6080d2ece38dc0f4",
+        "518e888dd5cee9163f60ee04e422dcad",
+        "63e3a1aadcf19dd177b62b1f4f859529",
+        "71a35e1f54e10a4dde045b02a170066f",
+        "71c9e49f43322a33871383011e93e13b",
+        "7e3e0eeaf811434ff9d5f332dc1fc78f",
+        "9bbd009dfd694e80867f8b1b09b7f7b3",
+        "a72199eba146e8381909a78f4c162a8a",
+        "b3d9f55d8ba498b3b234f6568fa70ad7",
+        "b6cd080c687c3dd4f295af28fa6f1db0",
+        "c871e578b549bbeadcf3c83bf0a3dc65",
+        "e9f56b8ee73fd6639fcce59a4ecbc17c",
+        "fd22b8786f2fd10822bb9e01f1369fa3",
+        "fdd1b2f8e89141214e032141426cdbe3"
+      ],
+      "storage_unchanged": true,
+      "receipt_contains_conversation": false
+    }
+  ],
+  "browser": [
+    {
+      "state": "offline",
+      "screenshot_sha256": "6167c211ccfba67843042a90eb16ab27b744b1e287b919ae9f0e48fa02bbb5a8"
+    },
+    {
+      "state": "stopped",
+      "screenshot_sha256": "af73574c531200a49827b1e6215c54a91a87ed04032be3656a213ecab1ca0a43"
+    },
+    {
+      "state": "reconnected",
+      "screenshot_sha256": "4e740483a8754de08e6be864a49f2352ccb23ada503f4eeef4e921ccf7308aac"
+    }
+  ],
+  "browser_console": [
+    {
+      "level": "warn",
+      "message": "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+      "timestamp": "2026-11-23T01:27:55.430Z",
+      "url": "http://127.0.0.1:13300/@vite/client"
+    }
+  ],
+  "process_exits": {
+    "candidate-offline": {
+      "exit_code": 0,
+      "forced": false
+    },
+    "candidate-live": {
+      "exit_code": 0,
+      "forced": false
+    }
+  },
+  "limits": [
+    "Desktop dependency disposition and fresh desktop installation remain open.",
+    "Generation already admitted before a deadline is not cancelled or rolled back.",
+    "Historical 35-turn varied live matrix was not rerun; fresh live verification is three turns.",
+    "Full-suite source differs from final formatted test only by two import-section comments; AST identity is checked.",
+    "GUI uses a fresh locked npm install; Python reuses the pinned provisioned environment."
+  ],
+  "reviewed_code_commit": "ef064b7638bf0ad33825573e3340538239cce30c",
+  "candidate_ci": {
+    "head_sha": "ef064b7638bf0ad33825573e3340538239cce30c",
+    "checks": [
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903877/job/137433144288",
+        "name": "System Readiness Validation",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/runs/137432899373",
+        "name": "CodeQL",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903930/job/137432552184",
+        "name": "\u2705 Quality Gates (strict + arch verifier)",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903930/job/137432551973",
+        "name": "\ud83c\udf10 WS transport tests",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903930/job/137432552111",
+        "name": "\ud83e\udded Import Discipline Gate",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903930/job/137432552035",
+        "name": "\ud83d\udd10 Signing & Discovery tests",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903930/job/137432551926",
+        "name": "\ud83d\udcca Metrics reference sync",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903930/job/137432551898",
+        "name": "build-test",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/runs/137432734991",
+        "name": "pip-audit",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903930/job/137432551918",
+        "name": "\ud83d\udd0d Code Quality Analysis",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/runs/137432698089",
+        "name": "Bandit",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903930/job/137432551823",
+        "name": "\ud83d\udd0d Syntax Validation",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903930/job/137432551512",
+        "name": "Runtime UI smoke",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903930/job/137432551869",
+        "name": "\ud83e\uddea Aether script basic tests",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903930/job/137432551715",
+        "name": "\ud83d\udd01 Lyrixa tasks present",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903930/job/137432551785",
+        "name": "\ud83d\udcda Docs consistency",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094904105/job/137432468994",
+        "name": "build-docs",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094904168/job/137432468981",
+        "name": "Bandit + pip-audit",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094904058/job/137432468794",
+        "name": "commit-lint",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903911/job/137432468681",
+        "name": "security (ubuntu-latest, 3.11)",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094904063/job/137432468813",
+        "name": "quality-gates",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094904067/job/137432468529",
+        "name": "verify-imports",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903917/job/137432468388",
+        "name": "build-and-verify",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903911/job/137432468421",
+        "name": "security (windows-latest, 3.11)",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094904060/job/137432468788",
+        "name": "lockfile-guard",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094904064/job/137432468647",
+        "name": "\ud83d\udd0d Contributor Environment Check",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903914/job/137432468233",
+        "name": "dry-run",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094904060/job/137432468720",
+        "name": "large-file-guard",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094904060/job/137432468527",
+        "name": "vendor-guard",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903883/job/137432468037",
+        "name": "size",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903908/job/137432468118",
+        "name": "size-gate",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903948/job/137432468361",
+        "name": "mdlint",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903877/job/137432468370",
+        "name": "Verify .aether Script Signatures",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094904045/job/137432468488",
+        "name": "Analyze",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903916/job/137432468256",
+        "name": "fast-quality",
+        "state": "SUCCESS"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094903868/job/137432469601",
+        "name": "auto-merge",
+        "state": "SKIPPED"
+      },
+      {
+        "link": "https://github.com/AetherraLabs/Aetherra/actions/runs/45094898305/job/137432452385",
+        "name": "fast-quality",
+        "state": "SUCCESS"
+      }
+    ],
+    "note": "At this reviewed-code checkpoint, final documentation-only descendant CI and post-merge verification are pending; completed results will be recorded in PR #326."
+  },
+  "independent_review": {
+    "verdict": "No remaining scoped findings; merge subject to CI.",
+    "focused_tests_passed": 64
+  },
+  "quality": {
+    "check": "quality-final",
+    "exit_code": 0,
+    "seconds": 166.23
+  },
+  "docs": {
+    "check": "docs-evidence",
+    "exit_code": 0,
+    "seconds": 4.21
+  },
+  "gui": {
+    "source_commit": "7e5c5204f8973eafdb60c2c0513de6be97b6fc4f",
+    "node": "22.18.0",
+    "fresh_locked_install": true,
+    "commands": [
+      "npm ci --ignore-scripts --no-audit",
+      "npm test",
+      "npm run build",
+      "npm run lint"
+    ],
+    "tests_passed": 18,
+    "exit_code": 0,
+    "warning": "Bundle exceeds 500 kB; no application console errors observed."
+  },
+  "log_privacy": {
+    "candidate-offline-runtime.log": {
+      "exact_conversation_matches": 0,
+      "snippets_checked": 11
+    },
+    "candidate-live-runtime.log": {
+      "exact_conversation_matches": 0,
+      "snippets_checked": 11
+    }
+  },
+  "main_acceptance_reference": "https://github.com/AetherraLabs/Aetherra/pull/326"
+}

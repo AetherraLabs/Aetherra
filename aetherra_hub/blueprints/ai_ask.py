@@ -8,11 +8,19 @@ import time
 # Third party imports
 from flask import Blueprint, jsonify, request
 
+# Aetherra imports
 from Aetherra.aetherra_core.engine import build_ai_readiness_payload
 
 # Local imports
 from ..services import registry_client
 from ..services.ai_stream import _get_engine  # reuse engine fetch
+from ..services.chat_contract import (
+    add_response_headers,
+    expired_error,
+    is_expired,
+    request_deadline,
+    request_trace_id,
+)
 from ..services.control_auth import authorize_token_request
 from ..services.guardian_chat import evaluate_chat_ingress
 from ..services.idempotency import manager as idempotency_manager
@@ -20,6 +28,7 @@ from ..services.metrics_accum import inc_chat_rate_limited
 from ..services.security import safety_precheck
 
 bp = Blueprint("ai_ask", __name__)
+bp.after_request(add_response_headers)
 logger = logging.getLogger(__name__)
 
 
@@ -31,7 +40,9 @@ def _json_no_store(payload):
 
 @bp.get("/api/ai/status")
 def ai_status_get():
-    return _json_no_store(build_ai_readiness_payload(registry_client.get_engine_status()))
+    return _json_no_store(
+        build_ai_readiness_payload(registry_client.get_engine_status())
+    )
 
 
 @bp.post("/api/ai/ask")
@@ -52,6 +63,7 @@ def ai_ask_post():
         )
         if not decision.allowed:
             try:
+                # Local imports
                 from ..services import metrics_accum
 
                 if decision.status_code == 503:
@@ -69,7 +81,10 @@ def ai_ask_post():
     message = str(body.get("message") or body.get("text") or "").strip()
     if not message:
         return jsonify({"error": "empty"}), 400
-    trace_id = str(body.get("trace_id") or request.headers.get("X-Aetherra-Trace") or "")
+    trace_id = request_trace_id()
+    deadline_ts = request_deadline(body)
+    if is_expired(deadline_ts):
+        return jsonify(expired_error("/api/ai/ask", trace_id)), 409
     sc = safety_precheck(message, trace_id, "/api/ai/ask")
     if not sc.get("allow", True):
         return (
@@ -97,23 +112,6 @@ def ai_ask_post():
         or "hub:chat"
     )
     client_message_id = str(body.get("client_message_id") or "").strip()
-    if client_message_id and idempotency_manager.check_and_mark(
-        str(principal),
-        client_message_id,
-    ):
-        return (
-            jsonify(
-                {
-                    "ok": False,
-                    "client_message_id": client_message_id,
-                    "error": {
-                        "code": "duplicate",
-                        "message": "Duplicate client_message_id",
-                    },
-                }
-            ),
-            409,
-        )
     guardian_decision = evaluate_chat_ingress(
         message=message,
         route="/api/ai/ask",
@@ -146,6 +144,10 @@ def ai_ask_post():
         if engine and hasattr(engine, "process_message"):
             break
         time.sleep(0.02)
+    # Admission can block on policy or registry readiness. Keep the original
+    # absolute deadline and reject before consuming an ID or dispatching work.
+    if is_expired(deadline_ts):
+        return jsonify(expired_error("/api/ai/ask", trace_id)), 409
     if not engine or not hasattr(engine, "process_message"):
         return (
             jsonify(
@@ -160,14 +162,31 @@ def ai_ask_post():
             ),
             503,
         )
+    if client_message_id and idempotency_manager.check_and_mark(
+        str(principal), client_message_id
+    ):
+        return (
+            jsonify(
+                {
+                    "ok": False,
+                    "client_message_id": client_message_id,
+                    "error": {
+                        "code": "duplicate",
+                        "message": "Duplicate client_message_id",
+                    },
+                }
+            ),
+            409,
+        )
     try:
         # Standard library imports
         import asyncio
 
         async def _run():
-            return await engine.process_message(
-                message, {"priority": body.get("priority")}
-            )
+            engine_context = {"priority": body.get("priority")}
+            if deadline_ts is not None:
+                engine_context["deadline_ts"] = deadline_ts
+            return await engine.process_message(message, engine_context)
 
         loop = asyncio.new_event_loop()
         try:

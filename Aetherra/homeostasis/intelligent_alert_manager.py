@@ -19,13 +19,16 @@ This module:
 Author: Aetherra Labs
 """
 
+# Standard library imports
 import asyncio
+import contextlib
 import logging
 import sqlite3
 import threading
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set
 
+# Local imports
 from .alert_intelligence import (
     AlertSeverity,
     AlertStatus,
@@ -125,6 +128,7 @@ class IntelligentAlertManager:
             "homeostasis:notify",
         }:
             return True
+        # Aetherra imports
         from Aetherra.security.capabilities import has_capability
 
         return has_capability(requester, capability)
@@ -134,6 +138,7 @@ class IntelligentAlertManager:
         alert: IntelligentAlert,
         rule: AlertEscalationRule,
     ) -> bool:
+        # Aetherra imports
         from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
 
         next_level = int(alert.escalation_level) + 1
@@ -182,6 +187,7 @@ class IntelligentAlertManager:
         channel: AlertNotificationChannel,
         alert: IntelligentAlert,
     ) -> bool:
+        # Aetherra imports
         from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
 
         decision = evaluate_intent(
@@ -216,7 +222,7 @@ class IntelligentAlertManager:
     def _init_database(self):
         """Initialize the alert management database."""
         try:
-            with sqlite3.connect(self.db_path) as conn:
+            with contextlib.closing(sqlite3.connect(self.db_path)) as conn, conn:
                 conn.execute("PRAGMA journal_mode=WAL")
 
                 # Intelligent alerts table
@@ -278,16 +284,28 @@ class IntelligentAlertManager:
         # Default escalation rules
         self.escalation_rules = [
             AlertEscalationRule(
-                "critical_immediate", "severity == 'critical'", AlertSeverity.CRITICAL, 0.0
+                "critical_immediate",
+                "severity == 'critical'",
+                AlertSeverity.CRITICAL,
+                0.0,
             ),
             AlertEscalationRule(
-                "high_5min", "severity == 'high' and age > 300", AlertSeverity.CRITICAL, 300.0
+                "high_5min",
+                "severity == 'high' and age > 300",
+                AlertSeverity.CRITICAL,
+                300.0,
             ),
             AlertEscalationRule(
-                "medium_15min", "severity == 'medium' and age > 900", AlertSeverity.HIGH, 900.0
+                "medium_15min",
+                "severity == 'medium' and age > 900",
+                AlertSeverity.HIGH,
+                900.0,
             ),
             AlertEscalationRule(
-                "low_1hour", "severity == 'low' and age > 3600", AlertSeverity.MEDIUM, 3600.0
+                "low_1hour",
+                "severity == 'low' and age > 3600",
+                AlertSeverity.MEDIUM,
+                3600.0,
             ),
         ]
 
@@ -369,13 +387,17 @@ class IntelligentAlertManager:
         """
         try:
             # Check for anomaly using adaptive thresholds
-            detection = await self.threshold_engine.add_metric_sample(metric_name, value, context)
+            detection = await self.threshold_engine.add_metric_sample(
+                metric_name, value, context
+            )
 
             if not detection:
                 return None
 
             # Create intelligent alert with AI analysis
-            alert = await self.lyrixa_integration.create_intelligent_alert(detection, context)
+            alert = await self.lyrixa_integration.create_intelligent_alert(
+                detection, context
+            )
 
             # Register the alert
             await self._register_alert(alert)
@@ -388,7 +410,9 @@ class IntelligentAlertManager:
 
             self.alerts_created += 1
 
-            logger.info(f"🚨 Intelligent alert created: {alert.title} (ID: {alert.alert_id})")
+            logger.info(
+                f"🚨 Intelligent alert created: {alert.title} (ID: {alert.alert_id})"
+            )
 
             return alert
 
@@ -396,7 +420,9 @@ class IntelligentAlertManager:
             logger.error(f"❌ Error processing metric sample {metric_name}: {e}")
             return None
 
-    async def acknowledge_alert(self, alert_id: str, acknowledger: str, notes: str = "") -> bool:
+    async def acknowledge_alert(
+        self, alert_id: str, acknowledger: str, notes: str = ""
+    ) -> bool:
         """Acknowledge an alert."""
         try:
             alert = self.active_alerts.get(alert_id)
@@ -405,7 +431,9 @@ class IntelligentAlertManager:
                 return False
 
             if alert.status != AlertStatus.ACTIVE:
-                logger.warning(f"Alert {alert_id} is not active (status: {alert.status.value})")
+                logger.warning(
+                    f"Alert {alert_id} is not active (status: {alert.status.value})"
+                )
                 return False
 
             # Update alert
@@ -433,7 +461,9 @@ class IntelligentAlertManager:
             logger.error(f"❌ Error acknowledging alert {alert_id}: {e}")
             return False
 
-    async def resolve_alert(self, alert_id: str, resolver: str, notes: str = "") -> bool:
+    async def resolve_alert(
+        self, alert_id: str, resolver: str, notes: str = ""
+    ) -> bool:
         """Resolve an alert."""
         try:
             alert = self.active_alerts.get(alert_id)
@@ -449,7 +479,11 @@ class IntelligentAlertManager:
             await self._record_alert_event(
                 alert_id,
                 "resolved",
-                {"resolver": resolver, "notes": notes, "timestamp": datetime.now().isoformat()},
+                {
+                    "resolver": resolver,
+                    "notes": notes,
+                    "timestamp": datetime.now().isoformat(),
+                },
             )
 
             # Update database
@@ -492,7 +526,9 @@ class IntelligentAlertManager:
         """Get alert management statistics."""
         active_by_severity = {}
         for severity in AlertSeverity:
-            count = len([a for a in self.active_alerts.values() if a.severity == severity])
+            count = len(
+                [a for a in self.active_alerts.values() if a.severity == severity]
+            )
             active_by_severity[severity.value] = count
 
         return {
@@ -543,7 +579,7 @@ class IntelligentAlertManager:
             self.active_alerts[alert.alert_id] = alert
 
             # Store in database
-            with sqlite3.connect(self.db_path) as conn:
+            with contextlib.closing(sqlite3.connect(self.db_path)) as conn, conn:
                 conn.execute(
                     """
                     INSERT INTO intelligent_alerts (
@@ -615,9 +651,13 @@ class IntelligentAlertManager:
                 self.notifications_sent += 1
 
         except Exception as e:
-            logger.error(f"❌ Error sending notifications for alert {alert.alert_id}: {e}")
+            logger.error(
+                f"❌ Error sending notifications for alert {alert.alert_id}: {e}"
+            )
 
-    async def _send_notification(self, channel: AlertNotificationChannel, alert: IntelligentAlert):
+    async def _send_notification(
+        self, channel: AlertNotificationChannel, alert: IntelligentAlert
+    ):
         """Send notification through a specific channel."""
         try:
             if channel.channel_type == "console":
@@ -642,7 +682,9 @@ class IntelligentAlertManager:
             elif channel.channel_type == "homeostasis":
                 # In a real implementation, this would feedback to homeostasis
                 # for closed-loop optimization
-                logger.info(f"🔄 Homeostasis feedback: {alert.alert_id} - {alert.severity.value}")
+                logger.info(
+                    f"🔄 Homeostasis feedback: {alert.alert_id} - {alert.severity.value}"
+                )
 
             # Add other notification types as needed
 
@@ -688,13 +730,13 @@ class IntelligentAlertManager:
                 and alert.severity != AlertSeverity.CRITICAL
             ):
                 return False
-            elif rule.condition.startswith("severity == 'high' and age >"):
+            if rule.condition.startswith("severity == 'high' and age >"):
                 delay = float(rule.condition.split(">")[1].strip())
                 return alert.severity == AlertSeverity.HIGH and age_seconds > delay
-            elif rule.condition.startswith("severity == 'medium' and age >"):
+            if rule.condition.startswith("severity == 'medium' and age >"):
                 delay = float(rule.condition.split(">")[1].strip())
                 return alert.severity == AlertSeverity.MEDIUM and age_seconds > delay
-            elif rule.condition.startswith("severity == 'low' and age >"):
+            if rule.condition.startswith("severity == 'low' and age >"):
                 delay = float(rule.condition.split(">")[1].strip())
                 return alert.severity == AlertSeverity.LOW and age_seconds > delay
 
@@ -760,8 +802,13 @@ class IntelligentAlertManager:
                 age_seconds = (current_time - triggered_time).total_seconds()
 
                 # Auto-resolve old low-severity alerts
-                if alert.severity == AlertSeverity.LOW and age_seconds > self.auto_resolve_timeout:
-                    await self.resolve_alert(alert_id, "system", "Auto-resolved due to timeout")
+                if (
+                    alert.severity == AlertSeverity.LOW
+                    and age_seconds > self.auto_resolve_timeout
+                ):
+                    await self.resolve_alert(
+                        alert_id, "system", "Auto-resolved due to timeout"
+                    )
 
         except Exception as e:
             logger.error(f"❌ Error checking auto-resolution: {e}")
@@ -806,7 +853,7 @@ class IntelligentAlertManager:
                 ("notifications_sent_total", self.notifications_sent),
             ]
 
-            with sqlite3.connect(self.db_path) as conn:
+            with contextlib.closing(sqlite3.connect(self.db_path)) as conn, conn:
                 for metric_name, value in metrics:
                     conn.execute(
                         """
@@ -821,10 +868,12 @@ class IntelligentAlertManager:
         except Exception as e:
             logger.error(f"❌ Error updating alert metrics: {e}")
 
-    async def _record_alert_event(self, alert_id: str, event_type: str, event_data: Dict[str, Any]):
+    async def _record_alert_event(
+        self, alert_id: str, event_type: str, event_data: Dict[str, Any]
+    ):
         """Record an alert event for audit trail."""
         try:
-            with sqlite3.connect(self.db_path) as conn:
+            with contextlib.closing(sqlite3.connect(self.db_path)) as conn, conn:
                 conn.execute(
                     """
                     INSERT INTO alert_events (alert_id, event_type, event_data, timestamp)
@@ -847,7 +896,7 @@ class IntelligentAlertManager:
                 ("alert_confidence", alert.explanation_confidence),
             ]
 
-            with sqlite3.connect(self.db_path) as conn:
+            with contextlib.closing(sqlite3.connect(self.db_path)) as conn, conn:
                 for metric_name, value in metrics:
                     conn.execute(
                         """
@@ -865,10 +914,10 @@ class IntelligentAlertManager:
     async def _update_alert_in_db(self, alert: IntelligentAlert):
         """Update an alert in the database."""
         try:
-            with sqlite3.connect(self.db_path) as conn:
+            with contextlib.closing(sqlite3.connect(self.db_path)) as conn, conn:
                 conn.execute(
                     """
-                    UPDATE intelligent_alerts 
+                    UPDATE intelligent_alerts
                     SET status = ?, assignee = ?, escalation_level = ?,
                         resolved_at = ?
                     WHERE alert_id = ?
@@ -877,9 +926,11 @@ class IntelligentAlertManager:
                         alert.status.value,
                         alert.assignee,
                         alert.escalation_level,
-                        datetime.now().isoformat()
-                        if alert.status == AlertStatus.RESOLVED
-                        else None,
+                        (
+                            datetime.now().isoformat()
+                            if alert.status == AlertStatus.RESOLVED
+                            else None
+                        ),
                         alert.alert_id,
                     ),
                 )

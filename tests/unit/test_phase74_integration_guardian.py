@@ -1,9 +1,12 @@
+# Standard library imports
 import asyncio
 import copy
 import json
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.consciousness.quantum.test_phase_7_4_integration import (
     Phase74IntegratedSystem,
     SystemIntegrationState,
@@ -26,17 +29,11 @@ def _guardian_env(monkeypatch, tmp_path, *, requester=None, strict=False):
 
 
 def _audit_text(root):
-    return (root / ".aetherra" / "security" / "audit.jsonl").read_text(
-        encoding="utf-8"
-    )
+    return (root / ".aetherra" / "security" / "audit.jsonl").read_text(encoding="utf-8")
 
 
 def _audit_entries(root):
-    return [
-        json.loads(line)
-        for line in _audit_text(root).splitlines()
-        if line.strip()
-    ]
+    return [json.loads(line) for line in _audit_text(root).splitlines() if line.strip()]
 
 
 def _snapshot(system):
@@ -72,6 +69,23 @@ def test_phase74_initialization_is_guardian_audited(monkeypatch, tmp_path):
     metadata = entry["details"]["intent"]["metadata"]
     assert metadata["operation"] == "initialize_all_systems"
     assert metadata["active_component_count"] == 0
+
+
+def test_phase74_initialized_temporal_engine_processes_state(monkeypatch, tmp_path):
+    _guardian_env(monkeypatch, tmp_path)
+    system = Phase74IntegratedSystem()
+    state = {"focus": "phase74-integration", "arousal": 0.5}
+
+    async def initialize_and_process():
+        assert await system.initialize_all_systems() is True
+        return await system.temporal_engine.process_temporal_moment(state)
+
+    moment_id = asyncio.run(initialize_and_process())
+
+    assert (
+        system.temporal_engine.temporal_moments[moment_id].consciousness_state == state
+    )
+    assert system.temporal_engine.moments_processed == 1
 
 
 def test_phase74_integration_denial_preserves_state(monkeypatch, tmp_path):

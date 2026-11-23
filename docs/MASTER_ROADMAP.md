@@ -166,42 +166,37 @@ Primary gate:
 
 - `docs/ALPHA_READINESS_CHECKLIST.md`
 
-Current alpha status:
+Current alpha status (2026-11-22):
 
-- Core system foundations are documented as complete or foundation complete.
-- Boot and Integration Validation contracts pass (4 and 5 checks).
-- Full CLI boot, Hub/Kernel readiness and process restart were demonstrated on
-  `b1b7ae12` with an isolated synthetic profile; Engine degrades without a model.
-- The working patch closes ALPHA-01/02/03: Homeostasis remains observation-only
-  with zero actuator attempts; browser connected/degraded/stopped/restart checks pass.
-- The operator API follow-up closes ALPHA-04/05: Hub sees the running Homeostasis
-  instance and authenticated audit reads honor filters and limits after restart.
-- The configured-memory policy follow-up closes ALPHA-06: redacted output
-  reaches both stores, hook failures deny persistence and authority is preserved.
-- 194 focused alpha regressions, 112 final Homeostasis/UI regressions (overlap),
-  3 continuity acceptance tests, 13 signing tests and 17 GUI tests pass.
-- Old CI/signed release checks predate this patch; current remote CI is pending.
-- The final local CI test selection passes: 1,916 passed, 8 skipped. All 81
-  combined follow-up regressions and 13 final signing tests pass.
-- The current decision remains **No-go for broader internal alpha operation**
-  pending disposition of legacy limitations and reviewed-commit/current-remote-CI acceptance.
-  Collection now succeeds with 3,093 tests; full execution is not a pass.
-  See `docs/ALPHA_READINESS_DECISION.md` for evidence and limits.
+- Main `d00120e8` contains ALPHA-01 through ALPHA-06 and the process-shutdown repair.
+- Candidate `codex/alpha-chat-contracts` fixes ALPHA-07, the nine legacy cases and
+  the remaining reproduced suite/readiness defects. Evidence records verification
+  at the reviewed code checkpoint; CI passes. Pending merge/clean-main results
+  will be recorded in PR #326.
+- Final default repository suite: **3,135 passed / 40 skipped**, process exit 0, from a
+  frozen copy matching runtime code and the tests' parsed Python structure. Fixed-baseline quality passes.
+- Fresh full CLI stop/restart, expiry and browser reconnect pass. Engine reports
+  no-provider degradation and configured-model readiness accurately. Guardian and
+  observation-only boundaries remain enforced.
+- Three fresh gpt-4o turns after restart pass without fallback. The previous
+  35-turn/nine-process varied continuity matrix remains historical evidence.
+- GUI: 18 tests, build/lint. Strict signing and the fixed style baseline remain intact.
+- **Go for supervised synthetic verification; no-go for broader internal alpha.**
+  Merge/clean-main acceptance is pending at this checkpoint, with results to be
+  recorded in PR #326. Desktop dependency disposition remains open. No Beta
+  Hardening acceptance is implied.
 
 Open alpha work:
 
 | Gate | Status | What Remains |
 | --- | --- | --- |
-| Identity and scope | Reviewed | Maintain entity/persona and authority boundaries |
-| System foundation status | Reviewed | Foundation completion is not integrated readiness |
-| Safety and governance | Bounded retest passes | Preserve observation-only, Guardian/Security, authenticated audit and signing |
-| Runtime boot path | Fresh/restart retest passes | Provider and registry heartbeat coverage limits remain |
-| Runtime UI Observatory | Browser retest passes | ALPHA-02/03 resolved; preserve truthful evidence and read-only controls |
-| Integration Validation | Contracts pass | Add runtime coverage for observed integration gaps |
-| Repository hygiene | Focused checks pass | Continue scoped hygiene without disturbing user changes |
-| CI and security checks | Local selection passes | Verify current remote CI on the reviewed commit; desktop dependency debt remains |
-| Operator runbook | Bounded procedure verified | Preserve repaired operator API evidence and documented limitations |
-| Alpha decision | No-go retained | Verify regression acceptance, reviewed commit and current CI before acceptance |
+| Identity and foundations | Reviewed | Preserve entity/persona and authority boundaries |
+| Safety, runtime and browser | Bounded checks pass | Keep strict observation and truthful readiness |
+| Chat contract and full suite | Pass in candidate | Preserve expiry, isolation and persistence regressions |
+| Candidate integration | Reviewed code and CI pass | Reviewed code and CI pass; use PR #326 for merge and clean-main evidence |
+| Desktop dependencies | Open | Resolve or explicitly disposition security and installation limits |
+| Signing | Enforced | Preserve verification and approved key; no secret action needed |
+| Alpha decision | Broader no-go retained | Use current ALPHA_READINESS_DECISION.md before acceptance |
 
 ## Beta Hardening Roadmap
 

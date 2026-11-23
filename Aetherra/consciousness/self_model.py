@@ -6,12 +6,13 @@ functions for introspection and explanation.
 
 Env:
 - AETHERRA_SELF_MODEL_PATH: override path to self_model.json
-Default path: ./self_model.json (repo root)
+Default path: config/self_model.json in the source checkout (independent of cwd)
 """
 
 from __future__ import annotations
 
 # Standard library imports
+import contextlib
 import json
 import os
 from dataclasses import dataclass
@@ -21,7 +22,10 @@ from typing import Any, Dict, Optional
 # Local imports
 from .episodic_store import get_episodic_store
 
-DEFAULT_SELF_MODEL_PATH = Path(os.getenv("AETHERRA_SELF_MODEL_PATH", "self_model.json"))
+DEFAULT_SELF_MODEL_PATH = Path(
+    os.getenv("AETHERRA_SELF_MODEL_PATH")
+    or Path(__file__).resolve().parents[2] / "config" / "self_model.json"
+)
 
 
 @dataclass
@@ -66,10 +70,9 @@ def who_am_i(path: Path = DEFAULT_SELF_MODEL_PATH) -> str:
     sm = SelfModel.load(path)
     role = sm.identity.get("role") or sm.identity.get("purpose") or "AI collaborator"
     focus = sm.identity.get("focus") or sm.identity.get("domains") or []
+    focus_str = str(focus)
     if isinstance(focus, list):
-        focus_str = ", ".join([str(f) for f in focus[:4]])
-    else:
-        focus_str = str(focus)
+        focus_str = ", ".join(map(str, focus[:4]))
     unified = sm.unified_identity or sm.identity.get("unified_identity")
     prefix = f"{sm.name} v{sm.version}"
     if unified:
@@ -90,13 +93,12 @@ def embodiment_statement(path: Path = DEFAULT_SELF_MODEL_PATH) -> Optional[str]:
 def why_now(path: Path = DEFAULT_SELF_MODEL_PATH) -> str:
     """Explain current context using the most recent episodic event and self model purpose."""
     sm = SelfModel.load(path)
-    purpose = sm.identity.get("purpose") or sm.identity.get("mission") or "assist and improve"
-    try:
+    purpose = sm.identity.get("purpose") or sm.identity.get("mission")
+    purpose = purpose or "assist and improve"
+    with contextlib.suppress(Exception):
         store = get_episodic_store()
         recent = store.list_recent(1)
         if recent:
             e = recent[-1]
             return f"Acting now to {purpose}; latest event: [{e.type}] {e.sub_type or ''} {e.content[:80].strip()}"
-    except Exception:
-        pass
     return f"Acting now to {purpose}."

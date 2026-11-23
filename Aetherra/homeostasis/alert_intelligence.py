@@ -19,6 +19,7 @@ This module:
 Author: Aetherra Labs
 """
 
+# Standard library imports
 import asyncio
 import contextlib
 import json
@@ -32,6 +33,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+# Third party imports
 import numpy as np
 from sklearn.ensemble import IsolationForest  # type: ignore
 from sklearn.preprocessing import StandardScaler  # type: ignore
@@ -187,7 +189,7 @@ class AdaptiveThresholdEngine:
     def _init_database(self):
         """Initialize the intelligence database."""
         try:
-            with sqlite3.connect(self.db_path) as conn:
+            with contextlib.closing(sqlite3.connect(self.db_path)) as conn, conn:
                 conn.execute("PRAGMA journal_mode=WAL")
 
                 # Metric patterns table
@@ -385,7 +387,7 @@ class AdaptiveThresholdEngine:
         try:
             context_json = json.dumps(context) if context else None
 
-            with sqlite3.connect(self.db_path) as conn:
+            with contextlib.closing(sqlite3.connect(self.db_path)) as conn, conn:
                 conn.execute(
                     """
                     INSERT INTO metric_history (metric_name, value, timestamp, context)
@@ -450,12 +452,16 @@ class AdaptiveThresholdEngine:
             thresholds = await self.get_adaptive_thresholds(metric_name)
 
             # Perform analysis
-            root_cause = await self._analyze_root_cause(metric_name, value, pattern, context)
+            root_cause = await self._analyze_root_cause(
+                metric_name, value, pattern, context
+            )
             correlation = await self._analyze_correlations(metric_name, value, context)
-            prediction = await self._analyze_prediction_context(metric_name, value, pattern)
+            prediction = await self._analyze_prediction_context(
+                metric_name, value, pattern
+            )
 
             # Create detection
-            detection = AnomalyDetection(
+            return AnomalyDetection(
                 detection_id=f"det_{int(time.time() * 1000)}_{metric_name}",
                 metric_name=metric_name,
                 value=value,
@@ -480,8 +486,6 @@ class AdaptiveThresholdEngine:
                 resolved_at=None,
                 explanation=None,
             )
-
-            return detection
 
         except Exception as e:
             logger.error(f"❌ Error detecting anomaly for {metric_name}: {e}")
@@ -533,12 +537,14 @@ class AdaptiveThresholdEngine:
 
         if deviation >= 3.0:
             return AnomalyType.OUTLIER_DETECTION
-        elif abs(pattern.trend_slope) > 0.1:
+        if abs(pattern.trend_slope) > 0.1:
             return AnomalyType.TREND_ANOMALY
-        elif value > pattern.confidence_interval[1] or value < pattern.confidence_interval[0]:
+        if (
+            value > pattern.confidence_interval[1]
+            or value < pattern.confidence_interval[0]
+        ):
             return AnomalyType.THRESHOLD_BREACH
-        else:
-            return AnomalyType.PATTERN_DEVIATION
+        return AnomalyType.PATTERN_DEVIATION
 
     async def _analyze_root_cause(
         self,
@@ -578,7 +584,9 @@ class AdaptiveThresholdEngine:
 
             # Trend analysis
             if abs(pattern.trend_slope) > 0.05:
-                trend_direction = "increasing" if pattern.trend_slope > 0 else "decreasing"
+                trend_direction = (
+                    "increasing" if pattern.trend_slope > 0 else "decreasing"
+                )
                 analysis["contributing_factors"].append(
                     {
                         "factor": "trend_continuation",
@@ -624,9 +632,11 @@ class AdaptiveThresholdEngine:
             "prediction_confidence": 0.8,
             "forecast_horizon": "1_hour",
             "trend_prediction": {
-                "direction": "stable"
-                if abs(pattern.trend_slope) < 0.01
-                else ("increasing" if pattern.trend_slope > 0 else "decreasing"),
+                "direction": (
+                    "stable"
+                    if abs(pattern.trend_slope) < 0.01
+                    else ("increasing" if pattern.trend_slope > 0 else "decreasing")
+                ),
                 "slope": pattern.trend_slope,
             },
         }
@@ -634,7 +644,7 @@ class AdaptiveThresholdEngine:
     async def _load_patterns(self):
         """Load existing patterns from database."""
         try:
-            with sqlite3.connect(self.db_path) as conn:
+            with contextlib.closing(sqlite3.connect(self.db_path)) as conn, conn:
                 cursor = conn.execute("SELECT * FROM metric_patterns")
                 rows = cursor.fetchall()
 
@@ -668,7 +678,7 @@ class AdaptiveThresholdEngine:
             # Get metrics that need pattern updates
             metrics_to_update = []
 
-            with sqlite3.connect(self.db_path) as conn:
+            with contextlib.closing(sqlite3.connect(self.db_path)) as conn, conn:
                 cursor = conn.execute(
                     """
                     SELECT metric_name, COUNT(*) as sample_count
@@ -690,7 +700,9 @@ class AdaptiveThresholdEngine:
             self.models_updated += len(metrics_to_update)
 
             if metrics_to_update:
-                logger.info(f"🧠 Updated patterns and models for {len(metrics_to_update)} metrics")
+                logger.info(
+                    f"🧠 Updated patterns and models for {len(metrics_to_update)} metrics"
+                )
 
         except Exception as e:
             logger.error(f"❌ Error updating patterns and models: {e}")
@@ -699,7 +711,7 @@ class AdaptiveThresholdEngine:
         """Update pattern for a specific metric."""
         try:
             # Get recent samples for this metric
-            with sqlite3.connect(self.db_path) as conn:
+            with contextlib.closing(sqlite3.connect(self.db_path)) as conn, conn:
                 cursor = conn.execute(
                     """
                     SELECT value, timestamp FROM metric_history
@@ -723,10 +735,15 @@ class AdaptiveThresholdEngine:
 
                 # Simple trend analysis
                 x = np.arange(len(values))
-                trend_slope = float(np.polyfit(x, values, 1)[0]) if len(values) > 1 else 0.0
+                trend_slope = (
+                    float(np.polyfit(x, values, 1)[0]) if len(values) > 1 else 0.0
+                )
 
                 # Confidence interval (95%)
-                confidence_interval = (float(mean - 1.96 * std), float(mean + 1.96 * std))
+                confidence_interval = (
+                    float(mean - 1.96 * std),
+                    float(mean + 1.96 * std),
+                )
 
                 # Create or update pattern
                 pattern = MetricPattern(
@@ -744,7 +761,7 @@ class AdaptiveThresholdEngine:
                 self.metric_patterns[metric_name] = pattern
 
                 # Save to database
-                with sqlite3.connect(self.db_path) as conn:
+                with contextlib.closing(sqlite3.connect(self.db_path)) as conn, conn:
                     conn.execute(
                         """
                         INSERT OR REPLACE INTO metric_patterns
@@ -778,7 +795,7 @@ class AdaptiveThresholdEngine:
             # Get training data
             training_features = []
 
-            with sqlite3.connect(self.db_path) as conn:
+            with contextlib.closing(sqlite3.connect(self.db_path)) as conn, conn:
                 cursor = conn.execute(
                     """
                     SELECT value, timestamp, context FROM metric_history
@@ -804,7 +821,9 @@ class AdaptiveThresholdEngine:
 
                 # Train Isolation Forest model
                 model = IsolationForest(
-                    contamination=self.anomaly_threshold, random_state=42, n_estimators=100
+                    contamination=self.anomaly_threshold,
+                    random_state=42,
+                    n_estimators=100,
                 )
 
                 # Scale features
@@ -824,7 +843,7 @@ class AdaptiveThresholdEngine:
     async def _store_detection(self, detection: AnomalyDetection):
         """Store anomaly detection in database."""
         try:
-            with sqlite3.connect(self.db_path) as conn:
+            with contextlib.closing(sqlite3.connect(self.db_path)) as conn, conn:
                 conn.execute(
                     """
                     INSERT INTO anomaly_detections (

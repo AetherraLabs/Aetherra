@@ -23,13 +23,19 @@ import os
 import queue
 import threading
 import time
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from datetime import datetime
 from typing import Any
 
 # Local imports
 from ..utils.http import run_coro_blocking
 from . import metrics_accum
+from .chat_contract import (
+    expired_error,
+    is_expired,
+    normalize_trace_id,
+    request_deadline,
+)
 
 # Import chat_metrics at module scope for type checkers (was imported lazily earlier)
 from .guardian_chat import evaluate_chat_ingress
@@ -192,6 +198,7 @@ def stream_sse(
     *,
     last_event_id: str | None = None,
     method: str = "POST",
+    on_admission_expired: Callable[[], None] | None = None,
 ) -> Iterable[str]:
     # Gate flags (simplified): require env enabled + stream
     if os.environ.get("AETHERRA_AI_API_ENABLED", "0") != "1":
@@ -204,7 +211,7 @@ def stream_sse(
         return
 
     # Trace / event id baseline
-    trace_id = headers.get("trace_id") or _gen_trace_id()
+    trace_id = normalize_trace_id(headers.get("trace_id") or body.get("trace_id"))
     start_event_id = 1
     if last_event_id:
         try:
@@ -229,13 +236,7 @@ def stream_sse(
         ttl_sec = int(ttl_sec) if ttl_sec is not None else None
     except Exception:
         ttl_sec = None
-    deadline_ts = body.get("deadline_ts")
-    try:
-        deadline_ts = float(deadline_ts) if deadline_ts is not None else None
-    except Exception:
-        deadline_ts = None
-    if deadline_ts is None and ttl_sec:
-        deadline_ts = time.time() + float(ttl_sec)
+    deadline_ts = request_deadline(body)
 
     ctx = StreamContext(trace_id, start_event_id)
     ctx.principal = principal
@@ -244,6 +245,17 @@ def stream_sse(
     ctx.deadline_ts = deadline_ts
     ctx.ttl_sec = ttl_sec
     ctx.prompt = prompt
+
+    def _expiry_error():
+        if on_admission_expired is not None:
+            on_admission_expired()
+        return expired_error("/api/ai/stream", trace_id)
+
+    if is_expired(deadline_ts):
+        error = _expiry_error()
+        yield ctx.envelope("error", {"error": error["error"]})
+        yield ctx.envelope("final", error)
+        return
 
     # Prelude events
     yield ctx.envelope("status", {"phase": "start"})
@@ -294,12 +306,6 @@ def stream_sse(
         }
         yield ctx.envelope("debug", dbg)
 
-    # Metrics: streams + request + sizes
-    with contextlib.suppress(Exception):
-        CHAT_METRICS.start_stream(principal)
-        CHAT_METRICS.inc_request()
-        CHAT_METRICS.add_input_stats(red_prompt, count_tokens(red_prompt))
-
     # Scratchpad policy handling (P1 #11): default to 'redacted' unless explicitly provided and allowed.
     supplied_sp = str(body.get("scratchpad_policy") or "").strip().lower()
     # Accept only known values
@@ -310,9 +316,7 @@ def stream_sse(
     principal_cap = principal
     try:  # local import to avoid global dependency
         # Aetherra imports
-        from Aetherra.security.capabilities import (
-            has_capability as _has_cap,  # type: ignore
-        )
+        from Aetherra.security.capabilities import has_capability as _has_cap  # type: ignore
 
         if principal_cap:
             allow_unmask = bool(_has_cap(principal_cap, "evidence.view"))
@@ -352,8 +356,37 @@ def stream_sse(
         with contextlib.suppress(Exception):
             q.put((evt, data))
 
+    admission_lock = threading.RLock()
+    dispatch_started = False
+    admission_expired = False
+
+    def _reject_expired() -> bool:
+        nonlocal admission_expired
+        with admission_lock:
+            if dispatch_started:
+                return False
+            if admission_expired:
+                return True
+            if not is_expired(deadline_ts):
+                return False
+            admission_expired = True
+            error = _expiry_error()
+            _emit("error", {"error": error["error"]})
+            _emit("final", error)
+            return True
+
+    def _admit_dispatch() -> bool:
+        nonlocal dispatch_started
+        with admission_lock:
+            if _reject_expired():
+                return False
+            dispatch_started = True
+            return True
+
     async def _run_engine():
         engine = _get_engine()
+        if _reject_expired():
+            return
         if not engine or not hasattr(engine, "process_message"):
             # Option B behavior: if artificial engine wait exceeds soft timeout window,
             # suppress offline fallback so main loop emits soft_timeout deterministically.
@@ -362,6 +395,8 @@ def stream_sse(
             # Otherwise optionally sleep for engine_wait_ms_cfg before emitting fallback
             if engine_wait_ms_cfg > 0:
                 time.sleep(min(5, engine_wait_ms_cfg / 1000.0))
+            if not _admit_dispatch():
+                return
             # Offline fallback; emulate final usage with mock path
             # Record mock fallback path (correct metrics handle)
             with contextlib.suppress(Exception):
@@ -382,14 +417,17 @@ def stream_sse(
             # Optional artificial wait (engine_wait_ms) for test pacing / profiling
             if engine_wait_ms_cfg > 0:
                 time.sleep(min(5, engine_wait_ms_cfg / 1000.0))
+            if not _admit_dispatch():
+                return
             ic = {
                 "trace_id": trace_id,
                 "priority": ctx.prio,
                 "deadline_ts": deadline_ts,
                 "ttl_sec": ttl_sec,
                 "_callbacks": {
-                    "on_chunk": lambda text=None, **kw: (
-                        _emit("chunk", {"text": text or "", **kw})
+                    "on_chunk": lambda text=None, **kw: _emit(
+                        "chunk",
+                        {"text": text or "", **kw},
                     ),
                     "on_thought": lambda text=None, **kw: _emit(
                         "thought", {"text": text or "", **kw}
@@ -497,6 +535,16 @@ def stream_sse(
             preflight_engine = _get_engine()
             if preflight_engine and hasattr(preflight_engine, "process_message"):
                 break
+    if is_expired(deadline_ts):
+        error = _expiry_error()
+        yield ctx.envelope("error", {"error": error["error"]})
+        yield ctx.envelope("final", error)
+        return
+    # Count only admitted streams; early expiry must not leak active counters.
+    with contextlib.suppress(Exception):
+        CHAT_METRICS.start_stream(principal)
+        CHAT_METRICS.inc_request()
+        CHAT_METRICS.add_input_stats(red_prompt, count_tokens(red_prompt))
     t = threading.Thread(target=_thread_runner, daemon=True)
     t.start()
 
@@ -545,6 +593,7 @@ def stream_sse(
         False  # Becomes True once a final frame is yielded (natural or synthetic)
     )
     while True:
+        _reject_expired()
         try:
             # Use shorter poll interval to avoid client-side read timeouts when engine is slow.
             timeout_left = 0.5
@@ -569,6 +618,8 @@ def stream_sse(
                 timeout_left = min(timeout_left, max(0.1, soft_timeout_s - elapsed))
             evt, data = q.get(timeout=timeout_left)
         except Exception:
+            if _reject_expired():
+                continue
             now = time.time()
             elapsed_global = now - start_loop_ts
             # Watchdog tier 1: no any payload after 2s -> inject offline chunk + final

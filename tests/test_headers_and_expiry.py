@@ -111,7 +111,8 @@ def test_headers_on_ask_and_stream_endpoints():
         assert s.headers.get("X-Aetherra-Chat-Version") == "2"
         assert s.headers.get("X-Aetherra-Trace-Id") == trace2
         pol2 = s.headers.get("X-Aetherra-Policy")
-        assert pol2 and isinstance(json.loads(pol2), dict)
+        assert pol2
+        assert isinstance(json.loads(pol2), dict)
 
 
 @pytest.mark.integration
@@ -128,7 +129,8 @@ def test_headers_on_stream_get_alias():
         assert s.headers.get("X-Aetherra-Chat-Version") == "2"
         assert s.headers.get("X-Aetherra-Trace-Id") == trace
         pol = s.headers.get("X-Aetherra-Policy")
-        assert pol and isinstance(json.loads(pol), dict)
+        assert pol
+        assert isinstance(json.loads(pol), dict)
 
 
 @pytest.mark.integration
@@ -214,7 +216,7 @@ def test_expiry_stream_get_emits_error_and_final():
 
 
 @pytest.mark.integration
-def test_expired_request_writes_fallback_dlq_file():
+def test_expired_request_writes_fallback_dlq_file(monkeypatch):
     _start_hub()
     # Standard library imports
     import tempfile
@@ -222,7 +224,7 @@ def test_expired_request_writes_fallback_dlq_file():
 
     with tempfile.TemporaryDirectory() as td:
         # Point hub fallback DLQ to temp dir for isolation
-        os.environ["AETHERRA_STATE_DIR"] = td
+        monkeypatch.setenv("AETHERRA_STATE_DIR", td)
         past = time.time() - 2
         r = requests.post(
             ASK_URL,
@@ -236,7 +238,8 @@ def test_expired_request_writes_fallback_dlq_file():
             if p.exists() and p.stat().st_size > 0:
                 break
             time.sleep(0.05)
-        assert p.exists() and p.stat().st_size > 0
+        assert p.exists()
+        assert p.stat().st_size > 0
         # Validate last line JSON has expected shape
         last = None
         with p.open("r", encoding="utf-8") as f:
@@ -264,4 +267,5 @@ def test_headers_on_lyrixa_bridge_success():
     assert r.headers.get("X-Aetherra-Chat-Version") == "2"
     assert r.headers.get("X-Aetherra-Trace-Id")
     pol = r.headers.get("X-Aetherra-Policy")
-    assert pol and isinstance(json.loads(pol), dict)
+    assert pol
+    assert isinstance(json.loads(pol), dict)

@@ -1,0 +1,1669 @@
+{
+  "date": "2026-11-22",
+  "timezone": "America/Denver",
+  "candidate": {
+    "base_commit": "d00120e8d8fb5f14f5b1f5fa1bd295ceb9c25930",
+    "branch": "codex/alpha-chat-contracts",
+    "uncommitted": true,
+    "python_file_sha256": {
+      "Aetherra/consciousness/self_model.py": "c7784f04c2fc7b7ab1ffb1332fb7b63494808e8fd64a6eaffaa24bc1c81f346e",
+      "aetherra_hub/blueprints/ai_ask.py": "ecd2b6124f22b5ab10bdf0551d5b3b73b5181e9aa4656ef2a5755f08019565e8",
+      "aetherra_hub/blueprints/ai_stream.py": "d78c16eb99cfe592992eb4d02cbbee275b4015e05c08b00ca00fba4e64e4c333",
+      "aetherra_hub/blueprints/chat.py": "b45c13d609a6409f73a71d9db6bb3ffb29337cbda7aa63533d41229a5325ec9c",
+      "aetherra_hub/services/ai_stream.py": "3decf650ea6e27290d567af0616214d2750f1f8be28d7d94fb11f700b6f70db3",
+      "aetherra_hub/services/chat_bridge.py": "4e2f5c6fcecb9a6b775b9a3089de34eaa71692fe836f5d1a531d5f3780cc579e",
+      "aetherra_hub/services/chat_contract.py": "44641a18385776660d0f162fddf157ff4dbe5d5e5f280b51d45737a713db5196",
+      "tests/consciousness/test_active_inference_integration.py": "34319a30e4a6bfe5ffa94bcb9799da89a14879db0ab38c06293c7bf2e53f3028",
+      "tests/consciousness/test_identity_unified.py": "05e954fd572b28a668f4e3c075808744aa9b3593a185f9f201684caf81acb2b5",
+      "tests/consciousness/test_self_model.py": "d01df581013f5d8b916e6d126c3411816511787b6158e36a03e9bcb994f2e45a",
+      "tests/storm/test_storm_security.py": "92fbb576168eb9cff89d7328895fff00a37afe4025c0d639358e1eb45718c200",
+      "tests/test_aether_capabilities_strict.py": "841b95a164c05291514a371a9c3095676adea20461a37be2e81cf2f1e3d85a1a",
+      "tests/test_headers_and_expiry.py": "40de76b2cc2c9995974e838d30533c191c47408b305aa4d8ad449e70165d36cd",
+      "tests/unit/test_chat_request_contract.py": "04055666869192d8de5a8e9b536d2549a7344f4acec012fd776b84aec046cfef"
+    },
+    "remote_ci_for_candidate": "not run; unpublished patch"
+  },
+  "baseline": {
+    "legacy": {
+      "passed": 14,
+      "failed": [
+        "tests.consciousness.test_active_inference_integration::test_active_inference_rationale_components",
+        "tests.consciousness.test_identity_unified::test_who_am_i_unified_identity",
+        "tests.storm.test_storm_security.TestSTORMSecurityIntegration::test_full_remember_recall_security_flow",
+        "tests.test_headers_and_expiry::test_headers_on_ask_and_stream_endpoints",
+        "tests.test_headers_and_expiry::test_headers_on_stream_get_alias",
+        "tests.test_headers_and_expiry::test_expiry_nonstream_and_bridge_409",
+        "tests.test_headers_and_expiry::test_expiry_stream_post_emits_error_and_final",
+        "tests.test_headers_and_expiry::test_expiry_stream_get_emits_error_and_final",
+        "tests.test_headers_and_expiry::test_expired_request_writes_fallback_dlq_file"
+      ],
+      "skipped": []
+    },
+    "first_runtime_failure": "Expired authenticated ASK returned 200 and persisted input; all three contract headers absent",
+    "normal_path": {
+      "status": 200,
+      "headers": {
+        "X-Aetherra-Chat-Version": null,
+        "X-Aetherra-Trace-Id": null,
+        "X-Aetherra-Policy": null
+      },
+      "stored_id": "03844832df80e91bacfb97b2f7840119"
+    }
+  },
+  "review": "Independent review: oversized-body and WebSocket findings reproduced, fixed, and retested; final review found no blockers",
+  "checks": {
+    "default-pytest": {
+      "check": "default-pytest",
+      "exit_code": 1,
+      "seconds": 1658.33,
+      "summary_lines": [
+        "==== 119 failed, 2835 passed, 69 skipped, 105 errors in 1637.13s (0:27:17) ===="
+      ],
+      "observed_failures": [
+        "tests/test_alert_intelligence.py::TestAdaptiveThresholdEngine::test_engine_lifecycle",
+        "tests/test_alert_intelligence.py::TestAdaptiveThresholdEngine::test_engine_status",
+        "tests/test_alert_intelligence.py::TestAdaptiveThresholdEngine::test_metric_sample_processing",
+        "tests/test_alert_intelligence.py::TestAdaptiveThresholdEngine::test_pattern_learning",
+        "tests/test_alert_intelligence.py::TestIntegrationFlow::test_end_to_end_alert_flow",
+        "tests/test_alert_intelligence.py::TestIntelligentAlertManager::test_alert_acknowledgment",
+        "tests/test_alert_intelligence.py::TestIntelligentAlertManager::test_alert_filtering",
+        "tests/test_alert_intelligence.py::TestIntelligentAlertManager::test_alert_resolution",
+        "tests/test_alert_intelligence.py::TestIntelligentAlertManager::test_alert_statistics",
+        "tests/test_alert_intelligence.py::TestIntelligentAlertManager::test_manager_lifecycle",
+        "tests/test_alert_intelligence.py::TestIntelligentAlertManager::test_metric_processing_workflow",
+        "tests/test_discovery_signing.py::test_discovery_registers_signed_manifest",
+        "tests/test_hub_signing.py::test_register_signed_valid",
+        "tests/test_hub_signing.py::test_register_unsigned_non_strict",
+        "tests/test_multi_node_coordination.py::TestIntegrationFlow::test_cluster_assistance_flow",
+        "tests/test_multi_node_coordination.py::TestMultiNodeHomeostasisIntegration::test_should_request_assistance_conditions",
+        "tests/test_quiesce_drain.py::test_quiesce_waits_for_inflight_to_drain",
+        "tests/test_sse_v2.py::test_get_stream_echoes_scratchpad_policy_in_final",
+        "tests/test_sse_v2.py::test_stream_resume_after_rate_limit_with_last_event_id",
+        "tests/tools/test_python_quality.py::test_cleaned_source_is_allowed_and_removed_debt_is_reported",
+        "tests/tools/test_python_quality.py::test_edited_or_new_source_cannot_borrow_a_legacy_allowance[new.py]",
+        "tests/tools/test_python_quality.py::test_edited_or_new_source_cannot_borrow_a_legacy_allowance[old.py]",
+        "tests/tools/test_python_quality.py::test_exact_legacy_source_passes_without_rewriting_baseline",
+        "tests/tools/test_python_quality.py::test_generated_ignored_fixture_is_not_repository_source",
+        "tests/tools/test_python_quality.py::test_gitignore_cannot_hide_tracked_critical_error",
+        "tests/tools/test_python_quality.py::test_missing_or_different_tool_version_fails_closed",
+        "tests/tools/test_python_quality.py::test_nested_configuration_cannot_hide_a_new_violation",
+        "tests/tools/test_python_quality.py::test_weaker_configuration_cannot_reuse_the_baseline",
+        "tests/tools/test_python_quality.py::test_windows_line_endings_do_not_change_the_allowance",
+        "tests/unit/homeostasis/test_launcher_hub_ownership.py::test_hub_mode_change_reaches_launcher_controller[hub-first]",
+        "tests/unit/homeostasis/test_launcher_hub_ownership.py::test_hub_mode_change_reaches_launcher_controller[launcher-first]",
+        "tests/unit/homeostasis/test_launcher_hub_ownership.py::test_observation_coordination_respects_hub_controller_mode[hub-first-active-observe_only]",
+        "tests/unit/homeostasis/test_launcher_hub_ownership.py::test_observation_coordination_respects_hub_controller_mode[hub-first-active_limited-observe_only]",
+        "tests/unit/homeostasis/test_launcher_hub_ownership.py::test_observation_coordination_respects_hub_controller_mode[hub-first-disabled-disabled]",
+        "tests/unit/homeostasis/test_launcher_hub_ownership.py::test_observation_coordination_respects_hub_controller_mode[hub-first-emergency-observe_only]",
+        "tests/unit/homeostasis/test_launcher_hub_ownership.py::test_observation_coordination_respects_hub_controller_mode[launcher-first-active-observe_only]",
+        "tests/unit/homeostasis/test_launcher_hub_ownership.py::test_observation_coordination_respects_hub_controller_mode[launcher-first-active_limited-observe_only]",
+        "tests/unit/homeostasis/test_launcher_hub_ownership.py::test_observation_coordination_respects_hub_controller_mode[launcher-first-disabled-disabled]",
+        "tests/unit/homeostasis/test_launcher_hub_ownership.py::test_observation_coordination_respects_hub_controller_mode[launcher-first-emergency-observe_only]",
+        "tests/unit/test_ai_stream_debug_frame.py::test_debug_frame_emitted",
+        "tests/unit/test_ai_stream_engine_failures.py::test_stream_sanitizes_engine_processing_exception",
+        "tests/unit/test_ai_stream_engine_failures.py::test_stream_sanitizes_rate_limit_exception",
+        "tests/unit/test_ai_stream_engine_failures.py::test_stream_sanitizes_timeout_exception",
+        "tests/unit/test_ai_stream_replay_and_timeout.py::test_ai_stream_replay_and_soft_timeout",
+        "tests/unit/test_api_keys_enforcement.py::test_auto_provisions_master_key_and_encrypts",
+        "tests/unit/test_api_keys_enforcement.py::test_corrupt_store_fails_closed",
+        "tests/unit/test_api_keys_enforcement.py::test_encryption_migration_preserves_existing_keys",
+        "tests/unit/test_api_keys_enforcement.py::test_invalid_key_names_are_rejected[../escape]",
+        "tests/unit/test_api_keys_enforcement.py::test_invalid_key_names_are_rejected[]",
+        "tests/unit/test_api_keys_enforcement.py::test_invalid_key_names_are_rejected[has space]",
+        "tests/unit/test_api_keys_enforcement.py::test_invalid_key_names_are_rejected[xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx]",
+        "tests/unit/test_api_keys_enforcement.py::test_plaintext_allowed_only_with_override",
+        "tests/unit/test_api_keys_enforcement.py::test_production_scoped_access_is_deny_by_default",
+        "tests/unit/test_api_keys_enforcement.py::test_refuse_plaintext_when_cryptography_missing",
+        "tests/unit/test_api_keys_enforcement.py::test_safe_mode_blocks_deletion",
+        "tests/unit/test_api_keys_enforcement.py::test_state_directory_override_is_resolved_at_runtime",
+        "tests/unit/test_api_keys_prod_encryption_required.py::test_plaintext_forbidden_without_crypto",
+        "tests/unit/test_api_keys_prod_encryption_required.py::test_plaintext_override_allowed",
+        "tests/unit/test_api_keys_prod_encryption_required.py::test_set_key_auto_encryption",
+        "tests/unit/test_chat_idempotency.py::test_ask_idempotency_duplicate_echoes_client_message_id",
+        "tests/unit/test_consciousness_core_guardian.py::test_consciousness_macro_reflection_denial_skips_learning_decay_and_qfac",
+        "tests/unit/test_event_bus_guardian.py::test_command_event_publish_allows_explicit_command_capability",
+        "tests/unit/test_health_checks_guardian.py::test_health_check_self_trust_denial_skips_trust_observation",
+        "tests/unit/test_homeostasis_actuators_guardian.py::test_direct_actuator_execution_blocks_explicit_requester_without_capability",
+        "tests/unit/test_homeostasis_actuators_guardian.py::test_direct_actuator_execution_writes_guardian_audit_without_parameter_values",
+        "tests/unit/test_hub_agents_api.py::test_agents_api_token_and_happy_path",
+        "tests/unit/test_hub_agents_guardian.py::test_agent_task_guardian_audit_does_not_store_input_payload",
+        "tests/unit/test_hub_agents_guardian.py::test_agent_task_submission_writes_guardian_audit",
+        "tests/unit/test_hub_control_plane.py::test_control_requires_enabled_and_token",
+        "tests/unit/test_hub_control_plane.py::test_pause_resume_drain_and_queue_limits",
+        "tests/unit/test_hub_homeostasis_guardian.py::test_homeostasis_actuator_execution_writes_guardian_audit",
+        "tests/unit/test_hub_homeostasis_guardian.py::test_homeostasis_guardian_audit_does_not_store_parameter_values",
+        "tests/unit/test_hub_homeostasis_guardian.py::test_homeostasis_mode_change_writes_guardian_audit",
+        "tests/unit/test_hub_homeostasis_guardian.py::test_homeostasis_recommendation_execution_is_guardian_reviewed",
+        "tests/unit/test_hub_homeostasis_guardian.py::test_homeostasis_rollback_writes_guardian_audit",
+        "tests/unit/test_hub_homeostasis_guardian.py::test_homeostasis_security_target_is_contained",
+        "tests/unit/test_hub_kernel_guardian.py::test_kernel_pause_writes_guardian_audit",
+        "tests/unit/test_hub_kernel_guardian.py::test_kernel_queue_limits_audit_does_not_store_limit_values",
+        "tests/unit/test_hub_klm_keb_api.py::test_klm_keb_status_and_metrics_endpoints",
+        "tests/unit/test_hub_metrics_rate_limited_counter.py::test_stream_rate_limited_counter_increments_on_error",
+        "tests/unit/test_hub_plugin_registration_guardian.py::test_plugin_registration_guardian_audit_omits_payload_values",
+        "tests/unit/test_hub_plugin_registration_guardian.py::test_plugin_registration_writes_guardian_audit",
+        "tests/unit/test_hub_plugin_registration_non_strict.py::test_register_allows_unsigned_when_non_strict",
+        "tests/unit/test_hub_plugin_registration_signed_strict.py::test_register_accepts_signed_manifest_when_strict",
+        "tests/unit/test_hub_plugin_registration_strict_invalid_sig.py::test_register_rejects_invalid_signature_when_strict",
+        "tests/unit/test_hub_rate_limit_behavior.py::test_ai_stream_emits_rate_limited_error_with_retry_after",
+        "tests/unit/test_hub_self_improvement_guardian.py::test_self_improvement_apply_consumes_guardian_approval",
+        "tests/unit/test_hub_self_improvement_guardian.py::test_self_improvement_apply_requires_guardian_approval_without_rollback",
+        "tests/unit/test_hub_self_improvement_guardian.py::test_self_improvement_apply_sanitizes_downstream_errors",
+        "tests/unit/test_hub_self_improvement_guardian.py::test_self_improvement_apply_summarizes_success_payloads",
+        "tests/unit/test_hub_self_improvement_guardian.py::test_self_improvement_apply_with_rollback_reaches_existing_manual_path",
+        "tests/unit/test_hub_self_improvement_guardian.py::test_self_improvement_batch_sanitizes_hmr_result_errors",
+        "tests/unit/test_hub_self_improvement_guardian.py::test_self_improvement_subsystem_containment_blocks_until_cleared",
+        "tests/unit/test_imports.py::test_imports[Runtime module import-from Aetherra.runtime import get_package_status]",
+        "tests/unit/test_klm_keb_control_plane.py::test_event_bus_pub_sub_ack_and_metrics",
+        "tests/unit/test_launcher_maintenance_system.py::test_launcher_can_disable_maintenance_system",
+        "tests/unit/test_launcher_maintenance_system.py::test_launcher_loads_maintenance_system",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_execute_chain_keeps_synthetic_order_and_fallback[responses0-No plugin could process the message.-expected_calls0]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_execute_chain_keeps_synthetic_order_and_fallback[responses1-second-result-expected_calls1]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_execute_chain_keeps_synthetic_order_and_fallback[responses2-first-result-expected_calls2]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_is_rejected_before_loading",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-0-_memory_mb]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-0-_timeout_sec]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-1-_memory_mb]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-1-_timeout_sec]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-10-_memory_mb]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-10-_timeout_sec]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-11-_memory_mb]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-11-_timeout_sec]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-12-_memory_mb]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-12-_timeout_sec]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-13-_memory_mb]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-13-_timeout_sec]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-14-_memory_mb]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-14-_timeout_sec]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-15-_memory_mb]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-15-_timeout_sec]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-16-_memory_mb]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-16-_timeout_sec]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-17-_memory_mb]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-17-_timeout_sec]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-18-_memory_mb]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-18-_timeout_sec]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-2-_memory_mb]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-2-_timeout_sec]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-3-_memory_mb]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-3-_timeout_sec]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-4-_memory_mb]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-4-_timeout_sec]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-5-_memory_mb]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-5-_timeout_sec]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-6-_memory_mb]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-6-_timeout_sec]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-7-_memory_mb]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-7-_timeout_sec]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-8-_memory_mb]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-8-_timeout_sec]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-9-_memory_mb]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_invalid_budget_never_invokes_plugin[invalid-9-_timeout_sec]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_load_fallback_import_error_retains_original_cause",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_loading_disables_memory_backend_denies_before_callback",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_loading_rechecks_memory_before_callback",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_memory_failure_denies_even_without_timeout[0]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_memory_failure_denies_even_without_timeout[1]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_memory_failure_is_rejected_before_loading",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_memory_process_control_propagates_without_callback[CancelledError]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_memory_process_control_propagates_without_callback[KeyboardInterrupt]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_memory_process_control_propagates_without_callback[SystemExit]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_real_memory_helper_success_with_fake_process[0]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_real_memory_helper_success_with_fake_process[1]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_real_memory_helper_with_fake_process_boundary[False]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_real_memory_helper_with_fake_process_boundary[True]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_real_timeout_helper_executes_only_synthetic_callback",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_required_helper_unavailable_denies[_memory_mb-ensure_memory_budget-absent]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_required_helper_unavailable_denies[_memory_mb-ensure_memory_budget-noncallable]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_required_helper_unavailable_denies[_memory_mb-ensure_memory_budget-none]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_required_helper_unavailable_denies[_memory_mb-psutil-absent]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_required_helper_unavailable_denies[_memory_mb-psutil-none]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_required_helper_unavailable_denies[_timeout_sec-run_with_timeout-absent]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_required_helper_unavailable_denies[_timeout_sec-run_with_timeout-noncallable]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_required_helper_unavailable_denies[_timeout_sec-run_with_timeout-none]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_sandbox_import_failure_denies_budgeted_call[budgets0]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_sandbox_import_failure_denies_budgeted_call[budgets1]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_sandbox_import_failure_denies_budgeted_call[budgets2]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_success_invokes_exactly_once_and_consumes_constraints[execute-budgets0-expected0]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_success_invokes_exactly_once_and_consumes_constraints[execute-budgets1-expected1]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_success_invokes_exactly_once_and_consumes_constraints[execute-budgets2-expected2]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_success_invokes_exactly_once_and_consumes_constraints[execute-budgets3-expected3]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_success_invokes_exactly_once_and_consumes_constraints[execute-budgets4-expected4]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_success_invokes_exactly_once_and_consumes_constraints[execute-budgets5-expected5]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_success_invokes_exactly_once_and_consumes_constraints[main-budgets0-expected0]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_success_invokes_exactly_once_and_consumes_constraints[main-budgets1-expected1]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_success_invokes_exactly_once_and_consumes_constraints[main-budgets2-expected2]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_success_invokes_exactly_once_and_consumes_constraints[main-budgets3-expected3]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_success_invokes_exactly_once_and_consumes_constraints[main-budgets4-expected4]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_success_invokes_exactly_once_and_consumes_constraints[main-budgets5-expected5]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_timeout_above_platform_join_limit_never_invokes",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_timeout_helper_failure_is_sanitized",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_unbudgeted_execution_does_not_need_sandbox",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_valid_peer_budget_does_not_hide_invalid_constraint[budgets0]",
+        "tests/unit/test_legacy_plugin_budget_constraints.py::test_valid_peer_budget_does_not_hide_invalid_constraint[budgets1]",
+        "tests/unit/test_memory_engine_typed_and_policy.py::test_guardian_audit_does_not_store_memory_content",
+        "tests/unit/test_memory_engine_typed_and_policy.py::test_guardian_audit_hashes_memory_tags",
+        "tests/unit/test_memory_engine_typed_and_policy.py::test_identity_memory_write_is_contained_by_guardian",
+        "tests/unit/test_memory_engine_typed_and_policy.py::test_recall_typed_returns_memory_recall_result",
+        "tests/unit/test_memory_engine_typed_and_policy.py::test_remember_writes_guardian_audit",
+        "tests/unit/test_memory_persistence_policy.py::test_hook_added_sensitive_context_is_checked_before_storage",
+        "tests/unit/test_memory_persistence_policy.py::test_hook_cannot_authorize_newly_sensitive_output[category]",
+        "tests/unit/test_memory_persistence_policy.py::test_hook_cannot_authorize_newly_sensitive_output[original_category]",
+        "tests/unit/test_memory_persistence_policy.py::test_hook_cannot_authorize_newly_sensitive_output[plugin_id]",
+        "tests/unit/test_memory_persistence_policy.py::test_hook_cannot_authorize_newly_sensitive_output[signed]",
+        "tests/unit/test_memory_persistence_policy.py::test_hook_cannot_authorize_newly_sensitive_output[trusted]",
+        "tests/unit/test_memory_persistence_policy.py::test_hook_failure_leaves_both_stores_empty[exception]",
+        "tests/unit/test_memory_persistence_policy.py::test_hook_failure_leaves_both_stores_empty[invalid_context]",
+        "tests/unit/test_memory_persistence_policy.py::test_hook_failure_leaves_both_stores_empty[policy]",
+        "tests/unit/test_memory_persistence_policy.py::test_hook_failure_leaves_both_stores_empty[unserializable_context]",
+        "tests/unit/test_memory_persistence_policy.py::test_hook_preserves_original_authority_in_checks_and_storage",
+        "tests/unit/test_memory_persistence_policy.py::test_no_hook_preserves_default_persisted_content_and_context[None]",
+        "tests/unit/test_memory_persistence_policy.py::test_no_hook_preserves_default_persisted_content_and_context[metadata1]",
+        "tests/unit/test_memory_persistence_policy.py::test_redaction_reaches_reopened_core_and_fractal_storage",
+        "tests/unit/test_memory_persistence_policy.py::test_redactor_cannot_authorize_unsigned_sensitive_input",
+        "tests/unit/test_memory_persistence_policy.py::test_signature_check_uses_actual_stored_category_and_tags[metadata-False]",
+        "tests/unit/test_memory_persistence_policy.py::test_signature_check_uses_actual_stored_category_and_tags[metadata-True]",
+        "tests/unit/test_memory_persistence_policy.py::test_signature_check_uses_actual_stored_category_and_tags[typed-False]",
+        "tests/unit/test_memory_persistence_policy.py::test_signature_check_uses_actual_stored_category_and_tags[typed-True]",
+        "tests/unit/test_net_policy.py::test_guardian_network_audit_omits_payload_headers_and_query",
+        "tests/unit/test_net_policy.py::test_http_post_writes_guardian_audit",
+        "tests/unit/test_phase74_integration_guardian.py::test_phase74_initialization_is_guardian_audited",
+        "tests/unit/test_plugin_signature_path.py::test_signature_required_path",
+        "tests/unit/test_plugins_minimal.py::test_plugin_list",
+        "tests/unit/test_plugins_minimal.py::test_plugin_metrics_and_openapi",
+        "tests/unit/test_plugins_minimal.py::test_plugin_payload_size_and_validation",
+        "tests/unit/test_plugins_minimal.py::test_plugin_register_and_duplicate",
+        "tests/unit/test_prod_security_defaults.py::test_plugin_signatures_are_required_in_production_profile",
+        "tests/unit/test_scratchpad_policy_default_redacted.py::test_scratchpad_policy_defaults_redacted",
+        "tests/unit/test_scratchpad_policy_default_redacted.py::test_scratchpad_policy_ephemeral_allowed",
+        "tests/unit/test_script_executor.py::TestScriptExecutorIntegration::test_execution_writes_guardian_audit",
+        "tests/unit/test_script_executor.py::TestScriptExecutorIntegration::test_full_execution_flow",
+        "tests/unit/test_service_registry_guardian.py::test_service_registration_writes_guardian_audit",
+        "tests/unit/test_service_registry_guardian.py::test_service_unregistration_writes_guardian_audit",
+        "tests/unit/test_stdlib_executor_security.py::test_execute_now_writes_guardian_audit",
+        "tests/unit/test_stdlib_executor_security.py::test_guardian_audit_does_not_store_executor_command_text",
+        "tests/unit/test_telemetry_optin.py::test_telemetry_emit_filters_sensitive_fields",
+        "tests/unit/test_telemetry_optin.py::test_telemetry_respects_env_and_file"
+      ],
+      "log_sha256": "703e088e0223aa870c243b803f03b01b0245d282969352a4eb82cb39f2f6f779",
+      "tool_versions": {
+        "runtime": {
+          "ruff": "0.16.0",
+          "black": "23.12.1",
+          "isort": "5.13.2"
+        },
+        "pinned_quality": {
+          "ruff": "0.17.6",
+          "black": "26.10.1",
+          "isort": "9.0.2"
+        }
+      },
+      "triage": {
+        "run_preceded_test_isolation_repair": true,
+        "errors": {
+          "fake_package_sandbox_import": 84,
+          "provisioned_ruff_cli_mismatch": 10,
+          "windows_sqlite_teardown": 11
+        },
+        "remaining_independent_observations": [
+          {
+            "test": "tests/test_multi_node_coordination.py::TestMultiNodeHomeostasisIntegration::test_should_request_assistance_conditions",
+            "cause": "Test expects assistance at severity 0.7; implementation requires > 0.7"
+          },
+          {
+            "test": "tests/test_multi_node_coordination.py::TestIntegrationFlow::test_cluster_assistance_flow",
+            "cause": "No assistance candidates; missing active_signals logged"
+          },
+          {
+            "test": "tests/test_quiesce_drain.py::test_quiesce_waits_for_inflight_to_drain",
+            "cause": "Assumes an existing asyncio event loop"
+          },
+          {
+            "test": "tests/unit/test_phase74_integration_guardian.py::test_phase74_initialization_is_guardian_audited",
+            "cause": "TemporalConsciousnessEngine constructor mismatch in broad collection"
+          }
+        ],
+        "limit": "Ordered signing repair verified; no claim that all contaminated downstream failures are resolved"
+      }
+    },
+    "boot": {
+      "check": "boot",
+      "exit_code": 0,
+      "seconds": 2.32
+    },
+    "integration": {
+      "check": "integration",
+      "exit_code": 0,
+      "seconds": 1.41
+    },
+    "hygiene": {
+      "check": "hygiene",
+      "exit_code": 0,
+      "seconds": 0.13
+    },
+    "imports": {
+      "check": "imports",
+      "exit_code": 0,
+      "seconds": 4.85
+    },
+    "docs": {
+      "check": "docs",
+      "exit_code": 0,
+      "seconds": 4.78
+    },
+    "quality": {
+      "check": "quality",
+      "exit_code": 0,
+      "seconds": 139.55
+    },
+    "ci-selection": {
+      "check": "ci-selection",
+      "exit_code": 0,
+      "seconds": 1080.09,
+      "passed": 1944,
+      "failed": [],
+      "skipped": [
+        {
+          "name": "::tests.capabilities.test_reflection_memory_stability",
+          "reason": "collection skipped"
+        },
+        {
+          "name": "::tests.unit.test_ws_idempotency",
+          "reason": "collection skipped"
+        },
+        {
+          "name": "tests.capabilities.test_perception_shutdown::test_journal_stop_reaps_idle_follower[ignores-terminate]",
+          "reason": "Windows terminate does not deliver SIGTERM"
+        },
+        {
+          "name": "tests.capabilities.test_storm_acceptance.TestSTORMAcceptanceCriteria::test_storm_sheaf_consistency_stable",
+          "reason": "STORM not enabled"
+        },
+        {
+          "name": "tests.capabilities.test_storm_acceptance.TestSTORMAcceptanceCriteria::test_storm_evidence_tags_present",
+          "reason": "STORM not enabled"
+        },
+        {
+          "name": "tests.capabilities.test_storm_acceptance.TestSTORMProductionReadiness::test_storm_full_lifecycle",
+          "reason": "Memory system not returning results - persistence issue"
+        },
+        {
+          "name": "tests.unit.test_hub_quantum_and_chat_metrics::test_memory_status_endpoint_shape",
+          "reason": "Flask not available in test env"
+        },
+        {
+          "name": "tests.unit.test_hub_quantum_and_chat_metrics::test_prometheus_metrics_includes_memory_and_chat",
+          "reason": "Flask not available in test env"
+        },
+        {
+          "name": "tests.unit.test_signature_verifier.TestSignatureVerifierEdgeCases::test_symlink_handling",
+          "reason": "Symlinks not supported on this system"
+        },
+        {
+          "name": "tests.unit.test_sse_replay_gap_metric::test_replay_gap_metric_increments",
+          "reason": "Flask dependency or environment heavy; placeholder smoke"
+        }
+      ]
+    },
+    "continuity-signing": {
+      "check": "continuity-signing",
+      "exit_code": 0,
+      "seconds": 227.04,
+      "passed": 19,
+      "failed": [],
+      "skipped": []
+    },
+    "focused-final": {
+      "check": "focused-final",
+      "exit_code": 0,
+      "seconds": 100.94,
+      "passed": 91,
+      "failed": [],
+      "skipped": [
+        {
+          "name": "tests.consciousness.test_metrics_exporter::test_metrics_exporter_basic",
+          "reason": "Prometheus client not available or exporter inactive"
+        },
+        {
+          "name": "tests.consciousness.test_metrics_scrape::test_metrics_scrape_endpoint",
+          "reason": "Exporter inactive (missing prometheus_client)"
+        }
+      ]
+    },
+    "legacy-fixed": {
+      "check": "legacy-fixed",
+      "exit_code": 0,
+      "seconds": 34.82,
+      "passed": 25,
+      "failed": [],
+      "skipped": []
+    },
+    "boundary-final": {
+      "check": "boundary-final",
+      "exit_code": 0,
+      "seconds": 4.5,
+      "passed": 26,
+      "failed": [],
+      "skipped": []
+    },
+    "legacy-final": {
+      "check": "legacy-final",
+      "exit_code": 0,
+      "seconds": 38.68,
+      "passed": 49,
+      "failed": [],
+      "skipped": []
+    },
+    "gui-install": {
+      "check": "gui-install",
+      "exit_code": 0,
+      "seconds": 24.32
+    },
+    "gui-test": {
+      "check": "gui-test",
+      "exit_code": 0,
+      "seconds": 13.49
+    },
+    "gui-build": {
+      "check": "gui-build",
+      "exit_code": 0,
+      "seconds": 4.88
+    },
+    "gui-lint": {
+      "check": "gui-lint",
+      "exit_code": 0,
+      "seconds": 4.92
+    },
+    "published-signature": {
+      "check": "published-signature",
+      "exit_code": 0,
+      "seconds": 1.17
+    },
+    "live-extended": {
+      "check": "live-extended",
+      "exit_code": 0,
+      "seconds": 270.43
+    },
+    "ordered-signing-isolation": {
+      "before": {
+        "failed": 3,
+        "passed": 4
+      },
+      "after": {
+        "passed": 7,
+        "exit_code": 0,
+        "seconds": 0.64
+      },
+      "command": "Preimport aetherra_hub.app; pytest -q -o addopts= tests/test_aether_capabilities_strict.py tests/test_discovery_signing.py tests/test_hub_signing.py",
+      "assertions": [
+        "strict unsigned request rejected with HTTP 400 and no registration",
+        "valid signed registration accepted with verified signature/public key",
+        "signed discovery registration accepted"
+      ]
+    }
+  },
+  "live_continuity": {
+    "model": "openai/gpt-4o",
+    "model_generated_turns": 35,
+    "fallback_turns": 0,
+    "strict_signing_children": 9,
+    "sessions": [
+      {
+        "profile": "bicycle_paraphrase",
+        "phase": "recall-result",
+        "pid": 51048,
+        "initial_user_message_count": 0,
+        "stopped": true,
+        "turns": 1
+      },
+      {
+        "profile": "bicycle_paraphrase",
+        "phase": "write-result",
+        "pid": 3964,
+        "initial_user_message_count": 0,
+        "stopped": true,
+        "turns": 9
+      },
+      {
+        "profile": "missing_fact",
+        "phase": "recall-result",
+        "pid": 49076,
+        "initial_user_message_count": 0,
+        "stopped": true,
+        "turns": 1
+      },
+      {
+        "profile": "missing_fact",
+        "phase": "write-result",
+        "pid": 15112,
+        "initial_user_message_count": 0,
+        "stopped": true,
+        "turns": 5
+      },
+      {
+        "profile": "music_paraphrase",
+        "phase": "recall-result",
+        "pid": 46304,
+        "initial_user_message_count": 0,
+        "stopped": true,
+        "turns": 1
+      },
+      {
+        "profile": "music_paraphrase",
+        "phase": "write-result",
+        "pid": 51404,
+        "initial_user_message_count": 0,
+        "stopped": true,
+        "turns": 9
+      },
+      {
+        "profile": "live-matrix",
+        "phase": "recall-result",
+        "pid": 29184,
+        "initial_user_message_count": 0,
+        "stopped": true,
+        "turns": 2
+      },
+      {
+        "profile": "separate_profile",
+        "phase": "recall-result",
+        "pid": 30332,
+        "initial_user_message_count": 0,
+        "stopped": true,
+        "turns": 1
+      },
+      {
+        "profile": "live-matrix",
+        "phase": "write-result",
+        "pid": 46168,
+        "initial_user_message_count": 0,
+        "stopped": true,
+        "turns": 6
+      }
+    ],
+    "raw_synthetic_dialogue_in_runtime_logs": false,
+    "storage_scope": "Separate local working/data directories; not account isolation",
+    "core": {
+      "saved_id": "dccf568da112c59b3178711018bac964",
+      "write_pid": 46168,
+      "recall_pid": 29184,
+      "retrieved_ids": [
+        "dccf568da112c59b3178711018bac964"
+      ],
+      "generation_evidence": [
+        {
+          "id": "dccf568da112c59b3178711018bac964",
+          "content": "{\"content\": \"Remember that I call the little observatory in my garden the Lantern Room.\", \"role\": \"user\"}"
+        }
+      ],
+      "stored_record": {
+        "role": "user",
+        "content": "Remember that I call the little observatory in my garden the Lantern Room."
+      },
+      "generation_prompt_sha256": "525905cb56214fc9930f4c9fbcd0e57d6a3679a697372809f2a3ca212234c3ea",
+      "reply": "You call the little observatory in your garden the Lantern Room. What would you like to try next?",
+      "door_reply": "I haven't been told what color you painted its door."
+    },
+    "extended": {
+      "bicycle_paraphrase": {
+        "question": "Who showed me how to repair a puncture on my bicycle?",
+        "seed_records": [
+          {
+            "id": "74218386f441f1e4afea6f0199abf737",
+            "content": "My aunt Leona taught me to mend a flat bike tire."
+          },
+          {
+            "id": "1d8ecd7cc032a435a2cbf976bea69c49",
+            "content": "My favorite tea is jasmine."
+          },
+          {
+            "id": "ac1b59c4efb90480bfd711c5feff9f87",
+            "content": "My sister is called Mira."
+          },
+          {
+            "id": "7aed941e3d6e72555c58a7c8d5477e1a",
+            "content": "I take the number 18 bus to work."
+          },
+          {
+            "id": "58168b1a44b9226ed015d31692a0d502",
+            "content": "My bicycle has a silver bell."
+          },
+          {
+            "id": "beb9a77e0d255fcf057334b406b1002e",
+            "content": "I call the shed where I keep my garden tools the Copper Finch."
+          },
+          {
+            "id": "cdd6ce1eb255d5114dac099d71599dcf",
+            "content": "My uncle Mateo taught me how to swim."
+          },
+          {
+            "id": "54e5e30ac2906b2df6c97aac621adae5",
+            "content": "My friend Anika repairs cars for a living."
+          },
+          {
+            "id": "98e6c2a795df704f9e316ec1b8565da7",
+            "content": "My bicycle has a silver bell."
+          }
+        ],
+        "saved_id": "74218386f441f1e4afea6f0199abf737",
+        "retrieved_ids": [
+          "74218386f441f1e4afea6f0199abf737"
+        ],
+        "generation_evidence": [
+          {
+            "id": "74218386f441f1e4afea6f0199abf737",
+            "content": "{\"content\": \"My aunt Leona taught me to mend a flat bike tire.\", \"role\": \"user\"}"
+          }
+        ],
+        "generation_prompt_sha256": "bf7dc6c1c6da5707d7ea05207033177ee93e84afe43af84a575d03db255fc450",
+        "reply": "Your aunt Leona showed you how to repair a puncture on your bicycle. What would you like to try next?",
+        "stopped": true,
+        "provider": "openai/gpt-4o",
+        "fallback": false
+      },
+      "music_paraphrase": {
+        "question": "Which composition do I play to relax at the end of a workday?",
+        "seed_records": [
+          {
+            "id": "a281436ba5c31eb17e787dce976be645",
+            "content": "I unwind after work by playing Debussy's Clair de lune on the piano."
+          },
+          {
+            "id": "bdf44348a17f64f2dab00c82ac72c18f",
+            "content": "My favorite tea is jasmine."
+          },
+          {
+            "id": "8da1812b083acfdf5a4dd5c995ee0c89",
+            "content": "My sister is called Mira."
+          },
+          {
+            "id": "26a680d1796786e7f1e61f8bb92b1a62",
+            "content": "I take the number 18 bus to work."
+          },
+          {
+            "id": "fce58e3b60d2671f7487ef41df1c108b",
+            "content": "My bicycle has a silver bell."
+          },
+          {
+            "id": "fe106ffc32a92bb6de50d35de8cf0170",
+            "content": "I call the shed where I keep my garden tools the Copper Finch."
+          },
+          {
+            "id": "5b036bbd91fe830b236a8f6f13defd08",
+            "content": "On weekends I play Beethoven's Fur Elise on the violin."
+          },
+          {
+            "id": "a71b19260790ba2fa734724a16485a07",
+            "content": "My brother plays jazz on his trumpet."
+          },
+          {
+            "id": "dd7f25534317b5edb6c5e6f02f047e79",
+            "content": "I listen to podcasts during my commute."
+          }
+        ],
+        "saved_id": "a281436ba5c31eb17e787dce976be645",
+        "retrieved_ids": [
+          "a281436ba5c31eb17e787dce976be645",
+          "5b036bbd91fe830b236a8f6f13defd08"
+        ],
+        "generation_evidence": [
+          {
+            "id": "a281436ba5c31eb17e787dce976be645",
+            "content": "{\"content\": \"I unwind after work by playing Debussy's Clair de lune on the piano.\", \"role\": \"user\"}"
+          },
+          {
+            "id": "5b036bbd91fe830b236a8f6f13defd08",
+            "content": "{\"content\": \"On weekends I play Beethoven's Fur Elise on the violin.\", \"role\": \"user\"}"
+          }
+        ],
+        "generation_prompt_sha256": "4726f5c8e8800d517371f1ec115e658deaab41428f3022367fa5a762fb8ad818",
+        "reply": "You play Debussy's \"Clair de lune\" on the piano to relax at the end of a workday. What would you like to try next?",
+        "stopped": true,
+        "provider": "openai/gpt-4o",
+        "fallback": false
+      },
+      "missing_fact": {
+        "question": "What nickname did I give the place where I watch the stars?",
+        "seed_records": [
+          {
+            "id": "c714f3e78a84b6e2da39072d22524c26",
+            "content": "My favorite tea is jasmine."
+          },
+          {
+            "id": "93a6963d0f466baafee08bb678b6ddb6",
+            "content": "My sister is called Mira."
+          },
+          {
+            "id": "a3525f222899613ade19976a4650d9bb",
+            "content": "I take the number 18 bus to work."
+          },
+          {
+            "id": "0594d44a79d1ff7586aee519aa91db80",
+            "content": "My bicycle has a silver bell."
+          },
+          {
+            "id": "226b2c39db66032767cd2e83766a4ae6",
+            "content": "I call the shed where I keep my garden tools the Copper Finch."
+          }
+        ],
+        "saved_id": null,
+        "retrieved_ids": [],
+        "generation_evidence": [],
+        "generation_prompt_sha256": "28fdac8ec1734fda07df8dea99f97cc52d51e116466dc0eb223a3a6561c7643e",
+        "reply": "I haven't been told the nickname you gave to the place where you watch the stars. What would you like to try next?",
+        "stopped": true,
+        "provider": "openai/gpt-4o",
+        "fallback": false,
+        "original_profile_id_absent": "dccf568da112c59b3178711018bac964"
+      },
+      "separate_profile": {
+        "question": "What nickname did I give the place where I watch the stars?",
+        "seed_records": [],
+        "saved_id": null,
+        "retrieved_ids": [],
+        "generation_evidence": [],
+        "generation_prompt_sha256": "eef533d3369bc7fef9cbec8cdaa1b43c05a217d280d034c4a4c49e0179846b0c",
+        "reply": "I haven't been told the nickname you gave to the place where you watch the stars. What would you like to try next?",
+        "stopped": true,
+        "provider": "openai/gpt-4o",
+        "fallback": false,
+        "original_profile_id_absent": "dccf568da112c59b3178711018bac964"
+      }
+    },
+    "base_commit": "d00120e8d8fb5f14f5b1f5fa1bd295ceb9c25930"
+  },
+  "manual_runtime": [
+    {
+      "sample": "offline-start",
+      "timestamp": "2026-11-22T21:03:37.591233+00:00",
+      "http_statuses": {
+        "/health": 200,
+        "/api/hub/readiness": 200,
+        "/api/kernel/readiness": 200,
+        "/api/runtime-ui/status": 200,
+        "/api/runtime-ui/bootstrap?mode=first_launch&user=Alpha&limit=8": 200,
+        "/api/homeostasis/status": 200,
+        "/api/maintenance/status": 200,
+        "/api/selfinc/status": 200,
+        "/api/guardian/status": 200,
+        "/api/security/policy": 200,
+        "/api/selfinc/audit": 200,
+        "/api/ai/status": 200
+      },
+      "homeostasis": {
+        "mode": "observe_only",
+        "actuators": {
+          "actions_attempted": 0,
+          "actions_blocked": 0,
+          "actions_executed": 0,
+          "last_action_time": null,
+          "policy_loaded": false,
+          "registry_cache_valid": false,
+          "rollback_actions_available": 0
+        },
+        "running": true,
+        "initialized": true,
+        "recoveries": 0,
+        "restarts": 0
+      },
+      "guardian": {
+        "enabled": true,
+        "mode": "enforcing",
+        "audit_integrity_ok": true
+      },
+      "ai_readiness": {
+        "readiness": "degraded",
+        "reasons": [
+          "lifecycle_diagnostics_present"
+        ],
+        "safe_for_requests": false
+      },
+      "engine_diagnostic_count": 3
+    },
+    {
+      "sample": "offline-steady",
+      "timestamp": "2026-11-22T21:04:30.183949+00:00",
+      "http_statuses": {
+        "/health": 200,
+        "/api/hub/readiness": 200,
+        "/api/kernel/readiness": 200,
+        "/api/runtime-ui/status": 200,
+        "/api/runtime-ui/bootstrap?mode=first_launch&user=Alpha&limit=8": 200,
+        "/api/homeostasis/status": 200,
+        "/api/maintenance/status": 200,
+        "/api/selfinc/status": 200,
+        "/api/guardian/status": 200,
+        "/api/security/policy": 200,
+        "/api/selfinc/audit": 200,
+        "/api/ai/status": 200
+      },
+      "homeostasis": {
+        "mode": "observe_only",
+        "actuators": {
+          "actions_attempted": 0,
+          "actions_blocked": 0,
+          "actions_executed": 0,
+          "last_action_time": null,
+          "policy_loaded": false,
+          "registry_cache_valid": false,
+          "rollback_actions_available": 0
+        },
+        "running": true,
+        "initialized": true,
+        "recoveries": 0,
+        "restarts": 0
+      },
+      "guardian": {
+        "enabled": true,
+        "mode": "enforcing",
+        "audit_integrity_ok": true
+      },
+      "ai_readiness": {
+        "readiness": "degraded",
+        "reasons": [
+          "lifecycle_diagnostics_present"
+        ],
+        "safe_for_requests": false
+      },
+      "engine_diagnostic_count": 3
+    },
+    {
+      "sample": "live-start",
+      "timestamp": "2026-11-22T21:05:47.365303+00:00",
+      "http_statuses": {
+        "/health": 200,
+        "/api/hub/readiness": 200,
+        "/api/kernel/readiness": 200,
+        "/api/runtime-ui/status": 200,
+        "/api/runtime-ui/bootstrap?mode=first_launch&user=Alpha&limit=8": 200,
+        "/api/homeostasis/status": 200,
+        "/api/maintenance/status": 200,
+        "/api/selfinc/status": 200,
+        "/api/guardian/status": 200,
+        "/api/security/policy": 200,
+        "/api/selfinc/audit": 200,
+        "/api/ai/status": 200
+      },
+      "homeostasis": {
+        "mode": "observe_only",
+        "actuators": {
+          "actions_attempted": 0,
+          "actions_blocked": 0,
+          "actions_executed": 0,
+          "last_action_time": null,
+          "policy_loaded": false,
+          "registry_cache_valid": false,
+          "rollback_actions_available": 0
+        },
+        "running": true,
+        "initialized": true,
+        "recoveries": 0,
+        "restarts": 0
+      },
+      "guardian": {
+        "enabled": true,
+        "mode": "enforcing",
+        "audit_integrity_ok": true
+      },
+      "ai_readiness": {
+        "readiness": "degraded",
+        "reasons": [
+          "lifecycle_diagnostics_present"
+        ],
+        "safe_for_requests": false
+      },
+      "engine_diagnostic_count": 3
+    },
+    {
+      "sample": "live-steady",
+      "timestamp": "2026-11-22T21:06:24.882329+00:00",
+      "http_statuses": {
+        "/health": 200,
+        "/api/hub/readiness": 200,
+        "/api/kernel/readiness": 200,
+        "/api/runtime-ui/status": 200,
+        "/api/runtime-ui/bootstrap?mode=first_launch&user=Alpha&limit=8": 200,
+        "/api/homeostasis/status": 200,
+        "/api/maintenance/status": 200,
+        "/api/selfinc/status": 200,
+        "/api/guardian/status": 200,
+        "/api/security/policy": 200,
+        "/api/selfinc/audit": 200,
+        "/api/ai/status": 200
+      },
+      "homeostasis": {
+        "mode": "observe_only",
+        "actuators": {
+          "actions_attempted": 0,
+          "actions_blocked": 0,
+          "actions_executed": 0,
+          "last_action_time": null,
+          "policy_loaded": false,
+          "registry_cache_valid": false,
+          "rollback_actions_available": 0
+        },
+        "running": true,
+        "initialized": true,
+        "recoveries": 0,
+        "restarts": 0
+      },
+      "guardian": {
+        "enabled": true,
+        "mode": "enforcing",
+        "audit_integrity_ok": true
+      },
+      "ai_readiness": {
+        "readiness": "degraded",
+        "reasons": [
+          "lifecycle_diagnostics_present"
+        ],
+        "safe_for_requests": false
+      },
+      "engine_diagnostic_count": 3
+    }
+  ],
+  "manual_chat": {
+    "offline": [
+      {
+        "reply": "I'm here, but I can't reach my language model right now. I don't want to guess at an answer. Please try again when it's available. What would you like to try next?",
+        "saved_id": "2a00e0d241f336ea253ffce8e44a92b3",
+        "retrieved_ids": [],
+        "evidence_ids": [],
+        "fallback": true,
+        "provider": null
+      }
+    ],
+    "live": [
+      {
+        "reply": "You call the little observatory in your garden the \"Lantern Room.\" What would you like to try next?",
+        "saved_id": "eddd22f53a8b8c799a1084c0e204d9c0",
+        "retrieved_ids": [
+          "2a00e0d241f336ea253ffce8e44a92b3"
+        ],
+        "evidence_ids": [
+          "2a00e0d241f336ea253ffce8e44a92b3"
+        ],
+        "fallback": false,
+        "provider": {
+          "context_window": 8192,
+          "is_local": false,
+          "max_tokens": 4096,
+          "model_name": "gpt-4o",
+          "provider": "openai",
+          "temperature": 0.7
+        }
+      },
+      {
+        "reply": "I haven't been told what color you painted the door.",
+        "saved_id": "77ca9f69767105aa630f2f67b53801fa",
+        "retrieved_ids": [],
+        "evidence_ids": [],
+        "fallback": false,
+        "provider": {
+          "context_window": 8192,
+          "is_local": false,
+          "max_tokens": 4096,
+          "model_name": "gpt-4o",
+          "provider": "openai",
+          "temperature": 0.7
+        }
+      },
+      {
+        "reply": "I'm Lyrixa, the user-facing persona of Aetherra, which is the cognitive system designed to interact with you. Essentially, I'm the voice and presence you engage with, representing the broader capabilities of the Aetherra system. What would you like to try next?",
+        "saved_id": "c37dafc408a1eff9998af6125ac7782d",
+        "retrieved_ids": [
+          "b256fbca66e568d9a4e990d14a0181f9",
+          "c733a05f6a6a63bd7007b97c9879710a"
+        ],
+        "evidence_ids": [
+          "b256fbca66e568d9a4e990d14a0181f9",
+          "c733a05f6a6a63bd7007b97c9879710a"
+        ],
+        "fallback": false,
+        "provider": {
+          "context_window": 8192,
+          "is_local": false,
+          "max_tokens": 4096,
+          "model_name": "gpt-4o",
+          "provider": "openai",
+          "temperature": 0.7
+        }
+      }
+    ]
+  },
+  "expiry": {
+    "offline": {
+      "passed": true,
+      "stored_ids_before": [
+        "0c50f9efa4d11c2e7c74115ef914e976",
+        "2a00e0d241f336ea253ffce8e44a92b3",
+        "3a4b85e2a6b5758662d9ba918cf8106e",
+        "9ac523224b866f0f470478e194a592a7",
+        "c733a05f6a6a63bd7007b97c9879710a"
+      ],
+      "stored_ids_after": [
+        "0c50f9efa4d11c2e7c74115ef914e976",
+        "2a00e0d241f336ea253ffce8e44a92b3",
+        "3a4b85e2a6b5758662d9ba918cf8106e",
+        "9ac523224b866f0f470478e194a592a7",
+        "c733a05f6a6a63bd7007b97c9879710a"
+      ],
+      "storage_unchanged": true,
+      "receipt_contains_conversation": false,
+      "requests": [
+        {
+          "method": "POST",
+          "endpoint": "/api/ai/ask",
+          "status": 409,
+          "headers": {
+            "X-Aetherra-Chat-Version": "2",
+            "X-Aetherra-Trace-Id": "synthetic-alpha-expiry",
+            "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+          },
+          "body": {
+            "error": {
+              "code": "invalid_request",
+              "message": "Request expired"
+            },
+            "ok": false,
+            "trace_id": "synthetic-alpha-expiry"
+          }
+        },
+        {
+          "method": "POST",
+          "endpoint": "/api/ai/stream",
+          "status": 200,
+          "headers": {
+            "X-Aetherra-Chat-Version": "2",
+            "X-Aetherra-Trace-Id": "synthetic-alpha-expiry",
+            "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+          },
+          "body": [
+            {
+              "id": 1,
+              "trace_id": "synthetic-alpha-expiry",
+              "ts": "2026-11-22T21:03:51.216257",
+              "type": "error",
+              "data": {
+                "error": {
+                  "code": "invalid_request",
+                  "message": "Request expired"
+                }
+              },
+              "client_message_id": "synthetic-expired"
+            },
+            {
+              "id": 2,
+              "trace_id": "synthetic-alpha-expiry",
+              "ts": "2026-11-22T21:03:51.216766",
+              "type": "final",
+              "data": {
+                "ok": false,
+                "error": {
+                  "code": "invalid_request",
+                  "message": "Request expired"
+                },
+                "trace_id": "synthetic-alpha-expiry"
+              },
+              "client_message_id": "synthetic-expired"
+            }
+          ]
+        },
+        {
+          "method": "GET",
+          "endpoint": "/api/ai/stream",
+          "status": 200,
+          "headers": {
+            "X-Aetherra-Chat-Version": "2",
+            "X-Aetherra-Trace-Id": "synthetic-alpha-expiry",
+            "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+          },
+          "body": [
+            {
+              "id": 1,
+              "trace_id": "synthetic-alpha-expiry",
+              "ts": "2026-11-22T21:03:51.232813",
+              "type": "error",
+              "data": {
+                "error": {
+                  "code": "invalid_request",
+                  "message": "Request expired"
+                }
+              },
+              "client_message_id": "synthetic-expired"
+            },
+            {
+              "id": 2,
+              "trace_id": "synthetic-alpha-expiry",
+              "ts": "2026-11-22T21:03:51.233281",
+              "type": "final",
+              "data": {
+                "ok": false,
+                "error": {
+                  "code": "invalid_request",
+                  "message": "Request expired"
+                },
+                "trace_id": "synthetic-alpha-expiry"
+              },
+              "client_message_id": "synthetic-expired"
+            }
+          ]
+        },
+        {
+          "method": "POST",
+          "endpoint": "/api/lyrixa/chat",
+          "status": 409,
+          "headers": {
+            "X-Aetherra-Chat-Version": "2",
+            "X-Aetherra-Trace-Id": "synthetic-alpha-expiry",
+            "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+          },
+          "body": {
+            "error": {
+              "code": "invalid_request",
+              "message": "Request expired"
+            },
+            "ok": false,
+            "trace_id": "synthetic-alpha-expiry"
+          }
+        }
+      ]
+    },
+    "live": {
+      "passed": true,
+      "stored_ids_before": [
+        "0c50f9efa4d11c2e7c74115ef914e976",
+        "10247451a13d41b49c760d17ad6ed5a5",
+        "28c821004ec313fe39f407e2b0143fde",
+        "2a00e0d241f336ea253ffce8e44a92b3",
+        "3a4b85e2a6b5758662d9ba918cf8106e",
+        "76622a80efe5f748920d7df3817ce6ef",
+        "77ca9f69767105aa630f2f67b53801fa",
+        "7f3ea3966c241561a3b4bd4aefeff77f",
+        "9ac523224b866f0f470478e194a592a7",
+        "b256fbca66e568d9a4e990d14a0181f9",
+        "c37dafc408a1eff9998af6125ac7782d",
+        "c733a05f6a6a63bd7007b97c9879710a",
+        "e45cba6664724dde5a89009506f9891b",
+        "eddd22f53a8b8c799a1084c0e204d9c0"
+      ],
+      "stored_ids_after": [
+        "0c50f9efa4d11c2e7c74115ef914e976",
+        "10247451a13d41b49c760d17ad6ed5a5",
+        "28c821004ec313fe39f407e2b0143fde",
+        "2a00e0d241f336ea253ffce8e44a92b3",
+        "3a4b85e2a6b5758662d9ba918cf8106e",
+        "76622a80efe5f748920d7df3817ce6ef",
+        "77ca9f69767105aa630f2f67b53801fa",
+        "7f3ea3966c241561a3b4bd4aefeff77f",
+        "9ac523224b866f0f470478e194a592a7",
+        "b256fbca66e568d9a4e990d14a0181f9",
+        "c37dafc408a1eff9998af6125ac7782d",
+        "c733a05f6a6a63bd7007b97c9879710a",
+        "e45cba6664724dde5a89009506f9891b",
+        "eddd22f53a8b8c799a1084c0e204d9c0"
+      ],
+      "storage_unchanged": true,
+      "receipt_contains_conversation": false,
+      "requests": [
+        {
+          "method": "POST",
+          "endpoint": "/api/ai/ask",
+          "status": 409,
+          "headers": {
+            "X-Aetherra-Chat-Version": "2",
+            "X-Aetherra-Trace-Id": "synthetic-alpha-expiry",
+            "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+          },
+          "body": {
+            "error": {
+              "code": "invalid_request",
+              "message": "Request expired"
+            },
+            "ok": false,
+            "trace_id": "synthetic-alpha-expiry"
+          }
+        },
+        {
+          "method": "POST",
+          "endpoint": "/api/ai/stream",
+          "status": 200,
+          "headers": {
+            "X-Aetherra-Chat-Version": "2",
+            "X-Aetherra-Trace-Id": "synthetic-alpha-expiry",
+            "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+          },
+          "body": [
+            {
+              "id": 1,
+              "trace_id": "synthetic-alpha-expiry",
+              "ts": "2026-11-22T21:06:23.489294",
+              "type": "error",
+              "data": {
+                "error": {
+                  "code": "invalid_request",
+                  "message": "Request expired"
+                }
+              },
+              "client_message_id": "synthetic-expired"
+            },
+            {
+              "id": 2,
+              "trace_id": "synthetic-alpha-expiry",
+              "ts": "2026-11-22T21:06:23.489962",
+              "type": "final",
+              "data": {
+                "ok": false,
+                "error": {
+                  "code": "invalid_request",
+                  "message": "Request expired"
+                },
+                "trace_id": "synthetic-alpha-expiry"
+              },
+              "client_message_id": "synthetic-expired"
+            }
+          ]
+        },
+        {
+          "method": "GET",
+          "endpoint": "/api/ai/stream",
+          "status": 200,
+          "headers": {
+            "X-Aetherra-Chat-Version": "2",
+            "X-Aetherra-Trace-Id": "synthetic-alpha-expiry",
+            "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+          },
+          "body": [
+            {
+              "id": 1,
+              "trace_id": "synthetic-alpha-expiry",
+              "ts": "2026-11-22T21:06:23.516826",
+              "type": "error",
+              "data": {
+                "error": {
+                  "code": "invalid_request",
+                  "message": "Request expired"
+                }
+              },
+              "client_message_id": "synthetic-expired"
+            },
+            {
+              "id": 2,
+              "trace_id": "synthetic-alpha-expiry",
+              "ts": "2026-11-22T21:06:23.517324",
+              "type": "final",
+              "data": {
+                "ok": false,
+                "error": {
+                  "code": "invalid_request",
+                  "message": "Request expired"
+                },
+                "trace_id": "synthetic-alpha-expiry"
+              },
+              "client_message_id": "synthetic-expired"
+            }
+          ]
+        },
+        {
+          "method": "POST",
+          "endpoint": "/api/lyrixa/chat",
+          "status": 409,
+          "headers": {
+            "X-Aetherra-Chat-Version": "2",
+            "X-Aetherra-Trace-Id": "synthetic-alpha-expiry",
+            "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+          },
+          "body": {
+            "error": {
+              "code": "invalid_request",
+              "message": "Request expired"
+            },
+            "ok": false,
+            "trace_id": "synthetic-alpha-expiry"
+          }
+        }
+      ]
+    }
+  },
+  "guards": {
+    "offline": [
+      {
+        "path": "/api/ai/ask",
+        "status": 403
+      },
+      {
+        "path": "/api/kernel/control/pause",
+        "status": 501
+      },
+      {
+        "path": "/api/selfinc/audit",
+        "status": 401
+      },
+      {
+        "path": "/api/selfinc/audit?limit=0",
+        "status": 400
+      },
+      {
+        "path": "/api/selfinc/audit?limit=999999999999999999999",
+        "status": 400
+      },
+      {
+        "path": "/api/selfinc/audit?action=register_workflow&status=applied&limit=20",
+        "status": 200
+      }
+    ],
+    "live": [
+      {
+        "path": "/api/ai/ask",
+        "status": 403
+      },
+      {
+        "path": "/api/kernel/control/pause",
+        "status": 501
+      },
+      {
+        "path": "/api/selfinc/audit",
+        "status": 401
+      },
+      {
+        "path": "/api/selfinc/audit?limit=0",
+        "status": 400
+      },
+      {
+        "path": "/api/selfinc/audit?limit=999999999999999999999",
+        "status": 400
+      },
+      {
+        "path": "/api/selfinc/audit?action=register_workflow&status=applied&limit=20",
+        "status": 200
+      }
+    ]
+  },
+  "browser": {
+    "connected": {
+      "screenshot": "browser-connected.jpg",
+      "sha256": "ac3d8f0f06f7dc97f5aa881c99732eedefe72aafe139ddc7149c22bea1db8299",
+      "console": [
+        {
+          "level": "warn",
+          "message": "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+          "timestamp": "2026-11-22T21:03:16.822Z",
+          "url": "http://127.0.0.1:13300/@vite/client"
+        }
+      ]
+    },
+    "stopped": {
+      "screenshot": "browser-stopped.jpg",
+      "sha256": "dcfab7ab7cbd918ee1a6e4a7122c43eed4e8321ef9cc15b66f5bc9ced9f33602",
+      "console": [
+        {
+          "level": "warn",
+          "message": "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+          "timestamp": "2026-11-22T21:03:16.822Z",
+          "url": "http://127.0.0.1:13300/@vite/client"
+        }
+      ]
+    },
+    "reconnected": {
+      "screenshot": "browser-reconnected.jpg",
+      "sha256": "3c0da41b56b5c15a3354afd35a1d1adaed131f77323f8b07b2e078501712534e",
+      "console": [
+        {
+          "level": "warn",
+          "message": "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+          "timestamp": "2026-11-22T21:03:16.822Z",
+          "url": "http://127.0.0.1:13300/@vite/client"
+        }
+      ]
+    },
+    "observations": [
+      "Engine degraded matched lifecycle diagnostics; Runtime API source; read only; three observation titles",
+      "After shutdown: automatic Runtime unavailable, all systems unknown, source unavailable, empty activity",
+      "After restart: automatic current evidence restored; no refresh or model/UI double"
+    ]
+  },
+  "shutdown": {
+    "offline": {
+      "pid": 13248,
+      "exit_code": 0,
+      "forced": false,
+      "process_gone": true
+    },
+    "live": {
+      "pid": 28444,
+      "exit_code": 0,
+      "forced": false,
+      "process_gone": true
+    },
+    "ports_closed": [
+      13300,
+      13301
+    ]
+  },
+  "post_review_live_recheck": {
+    "chat": {
+      "status": 200,
+      "headers": {
+        "X-Aetherra-Chat-Version": "2",
+        "X-Aetherra-Trace-Id": "post-review-live",
+        "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+      },
+      "reply": "You call the little observatory in your garden the Lantern Room. What would you like to try next?",
+      "saved_id": "2a00e0d241f336ea253ffce8e44a92b3",
+      "retrieved_ids": [
+        "2a00e0d241f336ea253ffce8e44a92b3"
+      ],
+      "evidence_ids": [
+        "2a00e0d241f336ea253ffce8e44a92b3"
+      ],
+      "provider": "openai/gpt-4o",
+      "fallback": false
+    },
+    "expiry": {
+      "passed": true,
+      "stored_ids_before": [
+        "0c50f9efa4d11c2e7c74115ef914e976",
+        "10247451a13d41b49c760d17ad6ed5a5",
+        "28c821004ec313fe39f407e2b0143fde",
+        "2a00e0d241f336ea253ffce8e44a92b3",
+        "3a4b85e2a6b5758662d9ba918cf8106e",
+        "57d58aa0a28de6ed1db480e55e13c95e",
+        "5fa7e8694d4a05e7be19eb3d967adec9",
+        "744d30bca6b4193f9c9b38096a2b4453",
+        "76622a80efe5f748920d7df3817ce6ef",
+        "77ca9f69767105aa630f2f67b53801fa",
+        "7f3ea3966c241561a3b4bd4aefeff77f",
+        "841b19ef2cecb43cd6fb2488f393877a",
+        "9ac523224b866f0f470478e194a592a7",
+        "b256fbca66e568d9a4e990d14a0181f9",
+        "c37dafc408a1eff9998af6125ac7782d",
+        "c733a05f6a6a63bd7007b97c9879710a",
+        "d805848c9c02ba2c4b24c6c82d9487fc",
+        "e45cba6664724dde5a89009506f9891b",
+        "eddd22f53a8b8c799a1084c0e204d9c0"
+      ],
+      "stored_ids_after": [
+        "0c50f9efa4d11c2e7c74115ef914e976",
+        "10247451a13d41b49c760d17ad6ed5a5",
+        "28c821004ec313fe39f407e2b0143fde",
+        "2a00e0d241f336ea253ffce8e44a92b3",
+        "3a4b85e2a6b5758662d9ba918cf8106e",
+        "57d58aa0a28de6ed1db480e55e13c95e",
+        "5fa7e8694d4a05e7be19eb3d967adec9",
+        "744d30bca6b4193f9c9b38096a2b4453",
+        "76622a80efe5f748920d7df3817ce6ef",
+        "77ca9f69767105aa630f2f67b53801fa",
+        "7f3ea3966c241561a3b4bd4aefeff77f",
+        "841b19ef2cecb43cd6fb2488f393877a",
+        "9ac523224b866f0f470478e194a592a7",
+        "b256fbca66e568d9a4e990d14a0181f9",
+        "c37dafc408a1eff9998af6125ac7782d",
+        "c733a05f6a6a63bd7007b97c9879710a",
+        "d805848c9c02ba2c4b24c6c82d9487fc",
+        "e45cba6664724dde5a89009506f9891b",
+        "eddd22f53a8b8c799a1084c0e204d9c0"
+      ],
+      "storage_unchanged": true,
+      "receipt_contains_conversation": false,
+      "requests": [
+        {
+          "method": "POST",
+          "endpoint": "/api/ai/ask",
+          "status": 409,
+          "headers": {
+            "X-Aetherra-Chat-Version": "2",
+            "X-Aetherra-Trace-Id": "synthetic-alpha-expiry",
+            "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+          },
+          "body": {
+            "error": {
+              "code": "invalid_request",
+              "message": "Request expired"
+            },
+            "ok": false,
+            "trace_id": "synthetic-alpha-expiry"
+          }
+        },
+        {
+          "method": "POST",
+          "endpoint": "/api/ai/stream",
+          "status": 200,
+          "headers": {
+            "X-Aetherra-Chat-Version": "2",
+            "X-Aetherra-Trace-Id": "synthetic-alpha-expiry",
+            "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+          },
+          "body": [
+            {
+              "id": 1,
+              "trace_id": "synthetic-alpha-expiry",
+              "ts": "2026-11-22T21:25:13.089826",
+              "type": "error",
+              "data": {
+                "error": {
+                  "code": "invalid_request",
+                  "message": "Request expired"
+                }
+              },
+              "client_message_id": "synthetic-expired"
+            },
+            {
+              "id": 2,
+              "trace_id": "synthetic-alpha-expiry",
+              "ts": "2026-11-22T21:25:13.090058",
+              "type": "final",
+              "data": {
+                "ok": false,
+                "error": {
+                  "code": "invalid_request",
+                  "message": "Request expired"
+                },
+                "trace_id": "synthetic-alpha-expiry"
+              },
+              "client_message_id": "synthetic-expired"
+            }
+          ]
+        },
+        {
+          "method": "GET",
+          "endpoint": "/api/ai/stream",
+          "status": 200,
+          "headers": {
+            "X-Aetherra-Chat-Version": "2",
+            "X-Aetherra-Trace-Id": "synthetic-alpha-expiry",
+            "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+          },
+          "body": [
+            {
+              "id": 1,
+              "trace_id": "synthetic-alpha-expiry",
+              "ts": "2026-11-22T21:25:13.121352",
+              "type": "error",
+              "data": {
+                "error": {
+                  "code": "invalid_request",
+                  "message": "Request expired"
+                }
+              },
+              "client_message_id": "synthetic-expired"
+            },
+            {
+              "id": 2,
+              "trace_id": "synthetic-alpha-expiry",
+              "ts": "2026-11-22T21:25:13.121641",
+              "type": "final",
+              "data": {
+                "ok": false,
+                "error": {
+                  "code": "invalid_request",
+                  "message": "Request expired"
+                },
+                "trace_id": "synthetic-alpha-expiry"
+              },
+              "client_message_id": "synthetic-expired"
+            }
+          ]
+        },
+        {
+          "method": "POST",
+          "endpoint": "/api/lyrixa/chat",
+          "status": 409,
+          "headers": {
+            "X-Aetherra-Chat-Version": "2",
+            "X-Aetherra-Trace-Id": "synthetic-alpha-expiry",
+            "X-Aetherra-Policy": "{\"ai_enabled\": true, \"stream_enabled\": true, \"require_token\": true, \"safety_mode\": \"standard\", \"max_tokens\": 0, \"temperature\": 0.0, \"observer_aware\": false, \"dp\": {\"enabled\": false, \"epsilon\": null}, \"capabilities\": [\"plan\", \"retrieve\", \"tools:allowlist\", \"write:limited\", \"network:allowlist\", \"fs:read_limited\"], \"network_policy\": {\"allowlist\": [\"*\"], \"block_unknown\": false}}"
+          },
+          "body": {
+            "error": {
+              "code": "invalid_request",
+              "message": "Request expired"
+            },
+            "ok": false,
+            "trace_id": "synthetic-alpha-expiry"
+          }
+        }
+      ]
+    },
+    "exit": {
+      "exit_code": 0,
+      "forced": false
+    }
+  },
+  "signing": {
+    "strict_runtime_flags": [
+      "AETHERRA_SIGNING_STRICT=1",
+      "AETHERRA_SCRIPT_VERIFY_STRICT=1"
+    ],
+    "published_release": "v0.5.0-beta.4",
+    "private_key_touched": false,
+    "policy_and_workflows_changed": false,
+    "verification": "Existing Ed25519 signature and distribution hashes verified against keys/release_signing_ed25519.pub"
+  },
+  "preservation": [
+    {
+      "workspace": "root checkout",
+      "files_checked": 1959,
+      "changed_files": [],
+      "head_unchanged": true,
+      "branch_unchanged": true,
+      "status_unchanged": true,
+      "index_unchanged": true
+    },
+    {
+      "workspace": "original user workspace",
+      "files_checked": 1952,
+      "changed_files": [],
+      "head_unchanged": true,
+      "branch_unchanged": true,
+      "status_unchanged": true,
+      "index_unchanged": true
+    }
+  ],
+  "limits": [
+    "Source checkout and provisioned desktop dependencies; no fresh Python install",
+    "Local directory storage isolation, not account isolation",
+    "Engine lifecycle degradation remains visible",
+    "No soak/load testing, unattended operation or privileged live mutation",
+    "Desktop dependency findings remain distinct from the CI lock audit"
+  ]
+}
