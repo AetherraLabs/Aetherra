@@ -27,7 +27,7 @@ black>=22.0.0
 flake8>=7.5.0
 
 # HTTP Support
-aiohttp>=3.14.4
+aiohttp>=3.14.5
 httpx>=0.25.0
 
 # WebSocket support for WS tests
