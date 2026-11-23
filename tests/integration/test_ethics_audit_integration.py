@@ -7,10 +7,12 @@ audit trail recording, and dashboard API functionality.
 """
 
 # Standard library imports
-import os
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
+
+# Third party imports
+import pytest
 
 # Aetherra imports
 # Import the classes we need to test
@@ -42,19 +44,20 @@ class TestEthicsEngine:
 
         # Weights should sum to 1.0
         total_weight = sum(self.ethics_engine.profile_weights.values())
-        assert abs(total_weight - 1.0) < 0.01, (
-            f"Weights sum to {total_weight}, expected ~1.0"
-        )
+        message = f"Weights sum to {total_weight}, expected ~1.0"
+        assert abs(total_weight - 1.0) < 0.01, message
 
     def test_ethics_profile_loading(self) -> None:
         """Test different ethics profile configurations."""
         # Test strict profile
-        with patch.dict(os.environ, {"AETHERRA_ETHICS_PROFILE": "strict"}):
+        with pytest.MonkeyPatch.context() as env:
+            env.setenv("AETHERRA_ETHICS_PROFILE", "strict")
             engine = EthicsEngine(self.config)
             assert engine.profile_weights["deontological"] == 0.6
 
         # Test consequentialist profile
-        with patch.dict(os.environ, {"AETHERRA_ETHICS_PROFILE": "consequentialist"}):
+        with pytest.MonkeyPatch.context() as env:
+            env.setenv("AETHERRA_ETHICS_PROFILE", "consequentialist")
             engine = EthicsEngine(self.config)
             assert engine.profile_weights["utilitarian"] == 0.7
 
@@ -82,18 +85,15 @@ class TestEthicsEngine:
 
         # Should be a positive score for verified, well-behaved plugin
         assert isinstance(score, EthicsScore)
-        assert score.overall_score > 0.5, (
-            f"Expected positive score, got {score.overall_score}"
-        )
-        assert score.confidence > 0.3, (
-            f"Expected reasonable confidence, got {score.confidence}"
-        )
+        message = f"Expected positive score, got {score.overall_score}"
+        assert score.overall_score > 0.5, message
+        message = f"Expected reasonable confidence, got {score.confidence}"
+        assert score.confidence > 0.3, message
         assert len(score.reasoning) > 0, "Expected reasoning to be provided"
 
         # Verified plugins should score well on deontological scale
-        assert score.deontological_score > 0.6, (
-            "Verified plugins should score well deontologically"
-        )
+        message = "Verified plugins should score well deontologically"
+        assert score.deontological_score > 0.6, message
 
     def test_high_risk_integration_evaluation(self) -> None:
         """Test ethical evaluation of a high-risk integration."""
@@ -119,18 +119,17 @@ class TestEthicsEngine:
         score = self.ethics_engine.evaluate_integration(action, target, safety_decision)
 
         # Should be a negative score for high-risk plugin
-        assert score.overall_score < 0.5, (
+        message = (
             f"Expected negative score for high-risk plugin, got {score.overall_score}"
         )
+        assert score.overall_score < 0.5, message
         assert len(score.risk_factors) > 0, "Expected risk factors to be identified"
 
         # Quarantined items should score poorly on all scales
-        assert score.utilitarian_score < 0.5, (
-            "High-risk should score poorly on utilitarian scale"
-        )
-        assert score.deontological_score < 0.5, (
-            "Quarantined should score poorly on deontological scale"
-        )
+        message = "High-risk should score poorly on utilitarian scale"
+        assert score.utilitarian_score < 0.5, message
+        message = "Quarantined should score poorly on deontological scale"
+        assert score.deontological_score < 0.5, message
 
     def test_ethical_framework_consistency(self) -> None:
         """Test that different ethical frameworks are properly balanced."""
@@ -162,17 +161,15 @@ class TestEthicsEngine:
         ]
 
         for framework_score in frameworks:
-            assert 0.0 <= framework_score <= 1.0, (
-                f"Framework score {framework_score} out of range"
-            )
+            message = f"Framework score {framework_score} out of range"
+            assert 0.0 <= framework_score <= 1.0, message
 
         # For a straightforward, low-risk integration, scores should be reasonably consistent
         score_variance = sum((s - score.overall_score) ** 2 for s in frameworks) / len(
             frameworks
         )
-        assert score_variance < 0.25, (
-            f"Framework scores too inconsistent: variance {score_variance}"
-        )
+        message = f"Framework scores too inconsistent: variance {score_variance}"
+        assert score_variance < 0.25, message
 
 
 class TestEthicsIntegration:
@@ -287,7 +284,8 @@ class TestEthicsIntegration:
         self.service._run_integration_planning = mock_risky_planning
 
         # Set a high ethics threshold
-        with patch.dict(os.environ, {"AETHERRA_ETHICS_THRESHOLD": "0.8"}):
+        with pytest.MonkeyPatch.context() as env:
+            env.setenv("AETHERRA_ETHICS_THRESHOLD", "0.8")
             # Standard library imports
             import asyncio
 
@@ -403,9 +401,11 @@ def test_end_to_end_ethics_workflow() -> None:
             )
 
             min_score, max_score = case["expected_score_range"]
-            assert min_score <= score.overall_score <= max_score, (
-                f"{case['name']}: score {score.overall_score} not in range {case['expected_score_range']}"
+            message = (
+                f"{case['name']}: score {score.overall_score} not in range "
+                f"{case['expected_score_range']}"
             )
+            assert min_score <= score.overall_score <= max_score, message
 
         # 3. Test audit trail recording
         test_plan = {
@@ -426,7 +426,8 @@ def test_end_to_end_ethics_workflow() -> None:
         service.safety_index.get_decision = Mock(return_value=None)
 
         # Test with low threshold to ensure ethics blocking works
-        with patch.dict(os.environ, {"AETHERRA_ETHICS_THRESHOLD": "0.9"}):
+        with pytest.MonkeyPatch.context() as env:
+            env.setenv("AETHERRA_ETHICS_THRESHOLD", "0.9")
             # Standard library imports
             import asyncio
 
