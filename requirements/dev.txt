@@ -33,7 +33,7 @@ notebook>=7.0.0
 pre-commit>=3.3.0
 
 # Build Tools
-build>=0.10.0
+build>=1.6.1
 wheel>=0.41.0
 setuptools>=68.0.0
 
