@@ -1,6 +1,215 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.8 (2026-11-23)
+
+### Bug Fixes
+
+- **ci**: Respect merge policy and bound only blocked cleanup
+  ([`3b46a79`](https://github.com/AetherraLabs/Aetherra/commit/3b46a7942c63699c48cc4216ec6178cfed9b8334))
+
+- **deps**: Align Socket.IO and Engine.IO lockfiles
+  ([`b334ed5`](https://github.com/AetherraLabs/Aetherra/commit/b334ed56ef28a6785eee889b4c1291185098c3e8))
+
+- **deps**: Retain supported TypeScript compiler API
+  ([`701b6f0`](https://github.com/AetherraLabs/Aetherra/commit/701b6f0cb3c7a49ca1027aee8503eb4a03612399))
+
+### Chores
+
+- **deps**: Bump actions/setup-python from 6 to 7
+  ([`7959489`](https://github.com/AetherraLabs/Aetherra/commit/7959489be4e90070c01496dc0d7b4981ed334669))
+
+Bumps [actions/setup-python](https://github.com/actions/setup-python) from 6 to 7. - [Release
+  notes](https://github.com/actions/setup-python/releases) -
+  [Commits](https://github.com/actions/setup-python/compare/v6...v7)
+
+--- updated-dependencies: - dependency-name: actions/setup-python dependency-version: '7'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump docker/build-push-action from 6 to 7
+  ([`154f85b`](https://github.com/AetherraLabs/Aetherra/commit/154f85b8797bc8f31d09f15efa171cf5eff4bbaa))
+
+Bumps [docker/build-push-action](https://github.com/docker/build-push-action) from 6 to 7. -
+  [Release notes](https://github.com/docker/build-push-action/releases) -
+  [Commits](https://github.com/docker/build-push-action/compare/v6...v7)
+
+--- updated-dependencies: - dependency-name: docker/build-push-action dependency-version: '7'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump framer-motion in /Aetherra/lyrixa/gui
+  ([`7ee825d`](https://github.com/AetherraLabs/Aetherra/commit/7ee825dc7ae1e01f95ff69194034b7dba65c4889))
+
+Bumps [framer-motion](https://github.com/motiondivision/motion) from 14.13.0 to 14.14.0. -
+  [Changelog](https://github.com/motiondivision/motion/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/motiondivision/motion/compare/v14.13.0...v14.14.0)
+
+--- updated-dependencies: - dependency-name: framer-motion dependency-version: 14.14.0
+
+dependency-type: direct:production
+
+update-type: version-update:semver-minor ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump recharts from 3.10.1 to 3.11.0 in /Aetherra/lyrixa/gui
+  ([`de9853d`](https://github.com/AetherraLabs/Aetherra/commit/de9853deacd14c50eb3e6425a564745646a38377))
+
+Bumps [recharts](https://github.com/recharts/recharts) from 3.10.1 to 3.11.0. - [Release
+  notes](https://github.com/recharts/recharts/releases) -
+  [Changelog](https://github.com/recharts/recharts/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/recharts/recharts/compare/v3.10.1...v3.11.0)
+
+--- updated-dependencies: - dependency-name: recharts dependency-version: 3.11.0
+
+dependency-type: direct:production
+
+update-type: version-update:semver-minor ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Integrate the reviewed dependency queue
+  ([`c905bac`](https://github.com/AetherraLabs/Aetherra/commit/c905bac55486ea1071a4dbd36ad3b7342d39525f))
+
+- **deps**: Refresh PR 329 with CI fixes
+  ([`1343878`](https://github.com/AetherraLabs/Aetherra/commit/13438787a19660a2f4af142530fcf0a4f7324904))
+
+- **deps**: Refresh PR 330 with CI fixes
+  ([`b7ae5e6`](https://github.com/AetherraLabs/Aetherra/commit/b7ae5e62380fd3b44c7dc430add5271a5cf3e8b1))
+
+- **deps**: Refresh PR 332 with CI fixes
+  ([`6506544`](https://github.com/AetherraLabs/Aetherra/commit/6506544e8e41eb0417c3655c06a4d31db4c2de21))
+
+- **deps**: Refresh PR 334 with CI fixes
+  ([`76f31f0`](https://github.com/AetherraLabs/Aetherra/commit/76f31f0c5b03e2cd2c8570894847b39ddeab6bc7))
+
+- **deps**: Refresh PR 338 with CI fixes
+  ([`2c08770`](https://github.com/AetherraLabs/Aetherra/commit/2c08770810defa3a12d9817c025ae949b59ca442))
+
+- **deps**: Refresh PR 339 with CI fixes
+  ([`3fac8bd`](https://github.com/AetherraLabs/Aetherra/commit/3fac8bdc0845ecb41feb2b31f84097c3f2c1d5d0))
+
+- **deps**: Refresh PR 340 with CI fixes
+  ([`eb530c2`](https://github.com/AetherraLabs/Aetherra/commit/eb530c2b0bf314ce6954f29210c1ce8cad8d425c))
+
+- **deps**: Refresh PR 342 with CI fixes
+  ([`d311024`](https://github.com/AetherraLabs/Aetherra/commit/d3110244b742f49d5cdb4e520c2709723a0210b9))
+
+- **deps**: Refresh PR 345 with CI fixes
+  ([`11b52be`](https://github.com/AetherraLabs/Aetherra/commit/11b52bebfa1b5f5ce3f3a0de4fe2739e071f6f5b))
+
+- **deps**: Update python-socketio requirement
+  ([`858d7ea`](https://github.com/AetherraLabs/Aetherra/commit/858d7eaf56fd4f6f390821e2542d51f3cc11f956))
+
+Updates the requirements on [python-socketio](https://github.com/sponsors/miguelgrinberg) to permit
+  the latest version. - [Commits](https://github.com/sponsors/miguelgrinberg/commits)
+
+--- updated-dependencies: - dependency-name: python-socketio dependency-version: 5.18.1
+
+dependency-type: direct:production ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps-dev**: Bump @vitejs/plugin-react in /Aetherra/lyrixa/gui
+  ([`a731646`](https://github.com/AetherraLabs/Aetherra/commit/a731646afa42e012ad578e8033e1631f7d985479))
+
+Bumps
+  [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/tree/HEAD/packages/plugin-react)
+  from 6.1.2 to 6.3.0. - [Release notes](https://github.com/vitejs/vite-plugin-react/releases) -
+  [Changelog](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/CHANGELOG.md)
+  -
+  [Commits](https://github.com/vitejs/vite-plugin-react/commits/plugin-react@6.3.0/packages/plugin-react)
+
+--- updated-dependencies: - dependency-name: "@vitejs/plugin-react" dependency-version: 6.3.0
+
+dependency-type: direct:development
+
+update-type: version-update:semver-minor ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps-dev**: Bump postcss in /Aetherra/lyrixa/gui
+  ([`0210fee`](https://github.com/AetherraLabs/Aetherra/commit/0210fee56ca2a6872ce4498692498ab9880a1f43))
+
+Bumps [postcss](https://github.com/postcss/postcss) from 8.5.32 to 8.5.33. - [Release
+  notes](https://github.com/postcss/postcss/releases) -
+  [Changelog](https://github.com/postcss/postcss/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/postcss/postcss/compare/8.5.32...8.5.33)
+
+--- updated-dependencies: - dependency-name: postcss dependency-version: 8.5.33
+
+dependency-type: direct:development
+
+update-type: version-update:semver-patch ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps-dev**: Bump the runtime-observatory-tooling group
+  ([`3d45ad7`](https://github.com/AetherraLabs/Aetherra/commit/3d45ad7bca8359d9564375f2ece75da0cb5375dd))
+
+Bumps the runtime-observatory-tooling group in /Aetherra/lyrixa/gui with 2 updates:
+  [eslint-plugin-react-refresh](https://github.com/ArnaudBarre/eslint-plugin-react-refresh) and
+  [typescript](https://github.com/microsoft/TypeScript).
+
+Updates `eslint-plugin-react-refresh` from 0.5.7 to 0.5.8 - [Release
+  notes](https://github.com/ArnaudBarre/eslint-plugin-react-refresh/releases) -
+  [Changelog](https://github.com/ArnaudBarre/eslint-plugin-react-refresh/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/ArnaudBarre/eslint-plugin-react-refresh/compare/v0.5.7...v0.5.8)
+
+Updates `typescript` from 6.0.3 to 7.0.2 - [Release
+  notes](https://github.com/microsoft/TypeScript/releases) -
+  [Commits](https://github.com/microsoft/TypeScript/compare/v6.0.3...v7.0.2)
+
+--- updated-dependencies: - dependency-name: eslint-plugin-react-refresh dependency-version: 0.5.8
+
+dependency-type: direct:development
+
+update-type: version-update:semver-patch
+
+dependency-group: runtime-observatory-tooling
+
+- dependency-name: typescript dependency-version: 7.0.2
+
+update-type: version-update:semver-major
+
+dependency-group: runtime-observatory-tooling ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps-dev**: Update build requirement from >=0.10.0 to >=1.6.1
+  ([`69dce27`](https://github.com/AetherraLabs/Aetherra/commit/69dce272c26212484863ea32333aa5dd4f22e073))
+
+Updates the requirements on [build](https://github.com/pypa/build) to permit the latest version. -
+  [Release notes](https://github.com/pypa/build/releases) -
+  [Changelog](https://github.com/pypa/build/blob/main/CHANGELOG.rst) -
+  [Commits](https://github.com/pypa/build/compare/0.10.0...1.6.1)
+
+--- updated-dependencies: - dependency-name: build dependency-version: 1.6.1
+
+dependency-type: direct:development ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+### Code Style
+
+- **tests**: Satisfy existing formatter checks
+  ([`a298dd7`](https://github.com/AetherraLabs/Aetherra/commit/a298dd7148d8f21bd600a2520e30aff2145f3ecc))
+
+### Testing
+
+- Preserve native Windows environment during teardown
+  ([`a409608`](https://github.com/AetherraLabs/Aetherra/commit/a409608429c0057c902b3e55104f8038e895be54))
+
+
 ## v0.5.0-beta.7 (2026-11-23)
 
 ### Bug Fixes
@@ -12,6 +221,22 @@
   ([`c2a6154`](https://github.com/AetherraLabs/Aetherra/commit/c2a615456b2842e3c08408e2d61834b476f39823))
 
 ### Chores
+
+- **deps**: Bump actions/stale from 10 to 11
+  ([`b00004a`](https://github.com/AetherraLabs/Aetherra/commit/b00004ac48a7fe3b8c84969f1793a50dc3418332))
+
+Bumps [actions/stale](https://github.com/actions/stale) from 10 to 11. - [Release
+  notes](https://github.com/actions/stale/releases) -
+  [Changelog](https://github.com/actions/stale/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/actions/stale/compare/v10...v11)
+
+--- updated-dependencies: - dependency-name: actions/stale dependency-version: '11'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
 
 - **deps**: Bump the prod-deps group with 2 updates
   ([`1b17192`](https://github.com/AetherraLabs/Aetherra/commit/1b17192e84d4fed0bf648bbdfa7f609108fb55f0))
