@@ -1,7 +1,7 @@
 # Technical documentation and company website publishing
 
 The private [AetherraLabs/Aetherra-Website repository](https://github.com/AetherraLabs/Aetherra-Website)
-is the intended sole source and publisher for the company website at
+is the sole source and publisher for the company website at
 `aetherra.dev` and `www.aetherra.dev`. Company homepage builds, assets, hosting,
 and compatibility redirects belong there.
 
@@ -13,9 +13,9 @@ pages, Markdown documents, evidence JSON, and schemas. Legacy `/docs/*` routes
 must resolve through the Website repository's compatibility handling without
 masking actual documentation files.
 
-## Cutover prerequisite
+## Verified cutover
 
-**CLEANUP MUST NOT MERGE until all of the following are verified:**
+Completed on 2026-11-23 UTC (November 22 local time), before the cleanup merge:
 
 - The approved company site is served successfully over HTTPS at both
   `https://aetherra.dev/` and `https://www.aetherra.dev/` by the new publisher.
@@ -24,11 +24,21 @@ masking actual documentation files.
 - GitHub Pages is disabled for `AetherraLabs/Aetherra`, so this repository can
   no longer overwrite the company website.
 
+Both hostnames passed 343 checks each: 285 content responses, 56 redirects and
+two real 404s. All 265 retained documents matched their expected hashes,
+including `/PERSONAL_CONTINUITY.md` and its `/docs/` alias. The approved design
+was unchanged and the user confirmed the preview looked correct.
+
+Verified Website revision: `c1c79eb481db24905e3f4a3ccd3426328e4d34c8`;
+Cloudflare Pages deployment: `a12532cc-1a14-4883-bf0b-de94efc7ec56`.
+The Website repository remains private and builds directly through its Git
+integration. Its release guide contains exact build and live-check commands.
+
 The old repository settings published `main:/docs` independently of the
-`deploy-pages.yml` workflow. Deleting that workflow and `docs/CNAME` alone does
-not disable the legacy Pages source. This cleanup is prepared before cutover;
-its presence on a branch is not evidence that the live migration is complete.
-Record the deployed Website revision and verification results before merging.
+`deploy-pages.yml` workflow. The workflow was disabled and the Pages site deleted
+after live verification; a Pages API read returned 404. Automatic production and
+preview builds on the obsolete Cloudflare `aetherra` project are also disabled.
+The Website migration record includes old DNS settings and rollback instructions.
 
 ## Retained documentation
 
