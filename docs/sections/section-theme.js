@@ -16,7 +16,7 @@
         } catch { }
     }
 
-    async function injectSiteHeaderOrFallback() {
+    function injectDocsNavigation() {
         const addMainOffset = (px) => {
             try {
                 const main = document.querySelector('main');
@@ -25,69 +25,14 @@
                 if (cur < px) main.style.marginTop = (px) + 'px';
             } catch { }
         };
-        const waitFor = async (root, selector, timeoutMs = 4000) => {
-            const start = Date.now();
-            return await new Promise((resolve) => {
-                const tryFind = () => {
-                    try {
-                        const el = root && root.querySelector(selector);
-                        if (el) return resolve(el);
-                    } catch { }
-                    if (Date.now() - start >= timeoutMs) return resolve(null);
-                    setTimeout(tryFind, 100);
-                };
-                tryFind();
-            });
-        };
-        try {
-            // Try to clone the real site header from the homepage (same-origin)
-            const iframe = document.createElement('iframe');
-            iframe.src = '/';
-            iframe.setAttribute('aria-hidden', 'true');
-            Object.assign(iframe.style, { position: 'absolute', width: '0', height: '0', border: '0', padding: '0', margin: '0', clipPath: 'inset(50%)', overflow: 'hidden' });
-            const onLoad = new Promise((resolve) => { iframe.onload = resolve; });
-            document.body.appendChild(iframe);
-            await onLoad;
-            let cloned = null;
-            try {
-                const idoc = iframe.contentDocument;
-                if (idoc) {
-                    const headerSel = 'header.site-header, header[role="banner"], header, nav[role="navigation"], nav.site-nav';
-                    const footerSel = 'footer.site-footer, footer, .site-footer';
-                    const headerCand = (idoc.querySelector(headerSel)) || (await waitFor(idoc, headerSel, 4000));
-                    if (headerCand) {
-                        cloned = headerCand.cloneNode(true);
-                        cloned.classList.add('site-header-cloned');
-                        // Ensure default link behavior (same-tab on internal, safe external)
-                        cloned.querySelectorAll('a').forEach(a => a.setAttribute('data-link-fixed', '1'));
-                        document.body.insertBefore(cloned, document.body.firstChild);
-                        // Add spacing under header based on computed height
-                        await new Promise((r) => requestAnimationFrame(r));
-                        try {
-                            const h = cloned.getBoundingClientRect().height || 56;
-                            addMainOffset(Math.ceil(h + 8));
-                        } catch { addMainOffset(56); }
-                    }
-                    // Try cloning footer for full site parity
-                    const footerCand = (idoc.querySelector(footerSel)) || (await waitFor(idoc, footerSel, 1500));
-                    if (footerCand) {
-                        const f = footerCand.cloneNode(true);
-                        f.classList.add('site-footer-cloned');
-                        document.body.appendChild(f);
-                    }
-                }
-            } catch { /* cross-origin or other issue */ }
-            try { document.body.removeChild(iframe); } catch { }
-            if (cloned) return; // success
-        } catch { /* fall through */ }
-        // Fallback: simple themed top nav
+        // Documentation navigation is independent of the company homepage.
         try {
             if (document.querySelector('.sec-topnav')) return;
             const nav = document.createElement('nav');
             nav.className = 'sec-topnav';
             nav.innerHTML = [
                 '<div class="nav-inner">',
-                '  <a class="brand" href="/">Aetherra</a>',
+                '  <a class="brand" href="/sections/hub.html">Aetherra</a>',
                 '  <div class="links">',
                 '    <a href="/sections/developers.html">Developers</a>',
                 '    <a href="/sections/runtime-cli.html">Runtime & CLI</a>',
@@ -132,6 +77,6 @@
         } catch { }
     }
 
-    function start() { injectSiteHeaderOrFallback(); injectBreadcrumb(); setupCopy(); fixLegalEntity(); }
+    function start() { injectDocsNavigation(); injectBreadcrumb(); setupCopy(); fixLegalEntity(); }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
