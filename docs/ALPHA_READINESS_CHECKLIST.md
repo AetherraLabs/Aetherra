@@ -36,6 +36,12 @@ All 1,547 frozen source/control hashes matched. See the
 and [review evidence](evidence/integration_phase_b_pr_review_2026-11-24.json).
 Hosted PR CI and merged-main acceptance remain separate gates.
 
+The full-suite checkpoint is `3ea0df0`. A subsequent CI-only subprocess import
+failure was reproduced and corrected in the test harness; 90 focused tests and
+style checks pass. Production source is unchanged. See the
+[CI follow-up](ALPHA_READINESS_DECISION.md#ci-subprocess-import-follow-up)
+for the verification boundary and current PR checks.
+
 This checklist defines what must be true before Aetherra should be called ready
 for an internal alpha. It is not a marketing launch checklist. It is a
 technical and safety gate for proving that the current functional foundations

@@ -399,12 +399,18 @@ def test_blocked_maintenance_probe_does_not_delay_process_shutdown(
     monkeypatch, tmp_path
 ):
     # Standard library imports
+    import os
     import subprocess
     import sys
+    from pathlib import Path
 
+    # Do not rely on an import path inherited from the parent test runner.
+    monkeypatch.delenv("PYTHONPATH", raising=False)
     monkeypatch.setenv("AETHERRA_REGISTRY_URL", "")
     monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(tmp_path))
     monkeypatch.setenv("AETHERRA_POLICY_HOME", str(tmp_path / "policy"))
+    child_env = os.environ.copy()
+    child_env["PYTHONPATH"] = str(Path(__file__).resolve().parents[3])
     script = """
 import asyncio
 import threading
@@ -434,6 +440,7 @@ print("SHUTDOWN_COMPLETE", flush=True)
     result = subprocess.run(
         [sys.executable, "-c", script],
         cwd=tmp_path,
+        env=child_env,
         capture_output=True,
         text=True,
         timeout=15,

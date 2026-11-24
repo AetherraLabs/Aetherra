@@ -35,7 +35,7 @@ provenance. Genuine measured zero values remain supported. Both real-validator
 regressions failed before the fix and now pass through the registered intake
 and SQLite reload; proposal routing remains intact.
 
-The reviewed source passed **3,472 tests, 38 skips and 5 passing subtests** with
+The source at `3ea0df0` passed **3,472 tests, 38 skips and 5 passing subtests** with
 default collection, options and coverage in an independent clean source
 snapshot. All 1,547 frozen source/control hashes match the candidate. The focused
 provenance/flow bundle passed 87 tests; the unchanged Python quality gate reports
@@ -54,6 +54,22 @@ Earlier browser/live-model evidence retains its original source scope and was
 not repeated for this backend-only repair. Pending temporal work, original
 workspaces, historical evidence and signing/release controls are preserved.
 See [review evidence](evidence/integration_phase_b_pr_review_2026-11-24.json).
+
+### CI Subprocess Import Follow-Up
+
+The first PR #352 CI Quality Gates run exposed a test-harness dependency: the
+blocked-maintenance shutdown subprocess ran from its temporary profile without
+an explicit repository import path. The local runner supplied `PYTHONPATH`, so
+the default suite above did not expose that dependency. Clearing the inherited
+path reproduced the same `ModuleNotFoundError` locally. The test now supplies
+its own child import path while retaining the real blocked probe, temporary
+profile, shutdown assertions and 15-second deadline. The corrected case and all
+90 focused heartbeat/observe-only tests pass, as do all four style checks.
+
+Production source is identical to the full-suite/runtime checkpoint above.
+The changed harness has focused verification; current hosted CI is recorded on
+[PR #352](https://github.com/AetherraLabs/Aetherra/pull/352). The bounded GO decision
+and signing controls remain unchanged. See [CI correction evidence](evidence/phase_b_ci_import_isolation_2026-11-24.json).
 
 ## Hub Heartbeat Follow-Up
 

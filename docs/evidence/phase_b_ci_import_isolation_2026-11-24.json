@@ -1,0 +1,167 @@
+{
+  "date": "2026-11-24",
+  "milestone": "Phase B CI subprocess import isolation",
+  "tested_parent_commit": "3ea0df03daebc612e580b3c72c570fff008ed481",
+  "failed_ci": "https://github.com/AetherraLabs/Aetherra/actions/runs/45460496003",
+  "failure": "Blocked-maintenance shutdown test child ran in a temporary directory without PYTHONPATH and failed importing Aetherra. The earlier local runner supplied PYTHONPATH and masked this harness dependency.",
+  "fix": "The existing test clears inherited PYTHONPATH, then explicitly supplies the checkout root only in the child environment.",
+  "preserved": [
+    "real blocked Maintenance status probe",
+    "temporary working directory and profile/policy paths",
+    "graceful shutdown and unchanged heartbeat assertions",
+    "15-second timeout, zero exit and completion marker",
+    "all production source, signing, release and CI controls"
+  ],
+  "verification": {
+    "red": "1 failed with the same ModuleNotFoundError",
+    "green": "1 passed",
+    "focused": "90 passed",
+    "root_config_style_checks": "black, isort, ruff, ruff-format passed",
+    "full_suite_scope": "The 3472-pass default suite and two runtime launches were recorded before this test-only change. Production source is identical; the changed harness is verified by the focused bundle and subsequent PR CI."
+  },
+  "changed_test": "tests/unit/homeostasis/test_launcher_observation_heartbeats.py",
+  "changed_test_sha256": "7f4eb59054b9e8058a33cace08bfb3b56f0e34ed4045d71a0b29f5acfe7fdd6a",
+  "checks": {
+    "red": {
+      "base_commit": "3ea0df03daebc612e580b3c72c570fff008ed481",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "tests/unit/homeostasis/test_launcher_observation_heartbeats.py",
+        "-k",
+        "blocked_maintenance_probe",
+        "-q",
+        "--no-cov",
+        "-o",
+        "addopts=",
+        "-o",
+        "cache_dir=D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124\\ci-followup\\pytest-cache",
+        "--basetemp",
+        "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124\\ci-followup\\pytest-heartbeat-child-import-red-01"
+      ],
+      "exit_code": 1,
+      "seconds": 2.25
+    },
+    "green": {
+      "base_commit": "3ea0df03daebc612e580b3c72c570fff008ed481",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "tests/unit/homeostasis/test_launcher_observation_heartbeats.py",
+        "-k",
+        "blocked_maintenance_probe",
+        "-q",
+        "--no-cov",
+        "-o",
+        "addopts=",
+        "-o",
+        "cache_dir=D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124\\ci-followup\\pytest-cache",
+        "--basetemp",
+        "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124\\ci-followup\\pytest-heartbeat-child-import-green-01"
+      ],
+      "exit_code": 0,
+      "seconds": 3.36
+    },
+    "focused": {
+      "base_commit": "3ea0df03daebc612e580b3c72c570fff008ed481",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "tests/unit/homeostasis/test_launcher_observation_heartbeats.py",
+        "tests/unit/homeostasis/test_launcher_hub_heartbeat.py",
+        "tests/unit/homeostasis/test_observe_only_enforcement.py",
+        "-q",
+        "--no-cov",
+        "-o",
+        "addopts=",
+        "-o",
+        "cache_dir=D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124\\ci-followup\\pytest-cache",
+        "--basetemp",
+        "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124\\ci-followup\\pytest-heartbeat-child-import-focused-01"
+      ],
+      "exit_code": 0,
+      "seconds": 37.71
+    },
+    "black": {
+      "base_commit": "3ea0df03daebc612e580b3c72c570fff008ed481",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "black",
+        "--check",
+        "--config",
+        "pyproject.toml",
+        "tests/unit/homeostasis/test_launcher_observation_heartbeats.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.6
+    },
+    "isort": {
+      "base_commit": "3ea0df03daebc612e580b3c72c570fff008ed481",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "isort",
+        "--profile=black",
+        "--check-only",
+        "--filter-files",
+        "--settings-path",
+        "pyproject.toml",
+        "tests/unit/homeostasis/test_launcher_observation_heartbeats.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.33
+    },
+    "ruff": {
+      "base_commit": "3ea0df03daebc612e580b3c72c570fff008ed481",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "check",
+        "--config",
+        "pyproject.toml",
+        "tests/unit/homeostasis/test_launcher_observation_heartbeats.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.83
+    },
+    "ruff-format": {
+      "base_commit": "3ea0df03daebc612e580b3c72c570fff008ed481",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "format",
+        "--check",
+        "--config",
+        "pyproject.toml",
+        "tests/unit/homeostasis/test_launcher_observation_heartbeats.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.92
+    }
+  },
+  "evidence_root": "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124\\ci-followup",
+  "artifact_sha256": {
+    "failed-job.log": "0039d2e2c22df2e6325a8064d84bc3624ddb308164f181713824e0433bfd8065",
+    "heartbeat-child-import-red-01.json": "007c3310cdf64335dc56e254bde5ea834565156fbaddfb4d60e95d5f273b4159",
+    "heartbeat-child-import-red-01.log": "71c49ca990aa9d4ac5d60cf4575757fe25eb071c23504fb11da11b59e259ce37",
+    "heartbeat-child-import-green-01.json": "41146566624341f76aa010f89b9da417f1a720df8d73fe3c67b5a4b82636e778",
+    "heartbeat-child-import-green-01.log": "f7d9c8a8e32fbaa2afd2cbd77b88b7bb1806321d3664df9868f11981b480f8a9",
+    "heartbeat-child-import-focused-01.json": "ac3fe722f9c50d21a225efa033c058c84d3d6681d38f357455921ba3eddc5cd6",
+    "heartbeat-child-import-focused-01.log": "958938b5f20a16c599b04c7f9a342bd7f12e45f7e0520c664df02f36c7b7a10c",
+    "heartbeat-child-import-black-01.json": "5d181c14ad7434bf3b944ccabd357c0d32fae2a5b9d1acb05fff5a2094392d9b",
+    "heartbeat-child-import-black-01.log": "b746261942fbf2a3759f07dc70d3825a6fc444269a620032fadcdd3ac05eb2e4",
+    "heartbeat-child-import-isort-01.json": "b44782d6100f79c5e2868bb91ba71c22ca8e46342326c635a7c79875eb83af9b",
+    "heartbeat-child-import-isort-01.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "heartbeat-child-import-ruff-01.json": "bd8b4b8fd292aad39815695463d16181a21fe7dbf602f92b8717736e9dd8afd6",
+    "heartbeat-child-import-ruff-01.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "heartbeat-child-import-ruff-format-01.json": "277505d3aa8dcf2bad80379d548777b01e3afa0cf01a5b598946c39325c591e9",
+    "heartbeat-child-import-ruff-format-01.log": "fd2299c9f1c6dc869070883e281051bfe93aacf66c1a3b0069f45b4aa410ca50"
+  },
+  "hosted_ci": "Follow-up head checked separately on PR #352; no merge or production release claimed."
+}
