@@ -5,6 +5,8 @@ from __future__ import annotations
 # Standard library imports
 import asyncio
 import inspect
+import math
+import time
 from datetime import UTC, datetime
 from hashlib import sha256
 from threading import BoundedSemaphore, Event, Thread
@@ -29,6 +31,7 @@ _SERVICES = {
 _AUTHORITIES = {
     "security": "enforce",
     "homeostasis": "observe_verify",
+    "consciousness": "observe",
     "agents": "observe",
     "self_improvement": "diagnose_propose",
     "self_incorporation": "execute_after_approval",
@@ -122,6 +125,34 @@ def _observe_service(name, service_names, registry, observation, now) -> None:
         metrics["evidence"] = "placeholder_service"
         observation["summary"] = (
             "Only a placeholder is registered; live service status is unknown."
+        )
+        return
+    if name == "consciousness":
+        raw = _read_status(getattr(info.instance, "get_runtime_status", None))
+        if raw is None:
+            observation["status"] = "unknown"
+            metrics["evidence"] = "service_status_unavailable"
+            observation["summary"] = (
+                "No bounded Consciousness observer status is available."
+            )
+            return
+        projected = consciousness_runtime_metrics(raw)
+        metrics.update(projected)
+        state = projected["runtime_state"]
+        observation["status"] = (
+            "active"
+            if projected["available"]
+            else {
+                "blocked": "degraded",
+                "failed": "offline",
+                "stopped": "offline",
+                "stopping": "offline",
+                "stale": "degraded",
+                "running": "degraded",
+            }.get(state, "unknown")
+        )
+        observation["summary"] = (
+            "Observed Consciousness lifecycle and completed ticks; no action authority is granted."
         )
         return
     heartbeat = info.last_heartbeat
@@ -253,6 +284,82 @@ def _observe_service(name, service_names, registry, observation, now) -> None:
     observation["summary"] = (
         f"Service readiness: {readiness['readiness']} ({reasons}); registry: {registry_status}."
     )
+
+
+def consciousness_runtime_metrics(raw: dict[str, Any]) -> dict[str, Any]:
+    """Allowlist observer evidence; never call the core's mutating status API."""
+    states = {
+        "starting",
+        "running",
+        "blocked",
+        "failed",
+        "stopping",
+        "stopped",
+        "stale",
+    }
+    state = raw.get("runtime_state")
+    result: dict[str, Any] = {
+        "evidence": "observer_runtime",
+        "authority": "observe",
+        "runtime_state": state if isinstance(state, str) and state in states else None,
+        "autonomy_mode": "observe" if raw.get("autonomy_mode") == "observe" else None,
+        "readiness_verified": False,
+    }
+    for key in (
+        "running",
+        "thread_alive",
+        "persistence_enabled",
+        "qfac_persistence_enabled",
+        "action_execution_enabled",
+        "think_stream_available",
+    ):
+        value = raw.get(key)
+        result[key] = value if isinstance(value, bool) else None
+    for key in ("ticks_attempted", "ticks_completed", "events_processed"):
+        value = raw.get(key)
+        result[key] = value if type(value) is int and 0 <= value <= 2**53 - 1 else None
+
+    def finite(value):
+        return type(value) in (int, float) and math.isfinite(value)
+
+    interval = raw.get("tick_interval_seconds")
+    interval = interval if finite(interval) and 0 < interval <= 86400 else None
+    last_tick = raw.get("last_tick_at")
+    age = time.time() - last_tick if finite(last_tick) and last_tick > 0 else None
+    age = age if age is not None and math.isfinite(age) and age >= 0 else None
+    threshold = max(3 * interval, 3.0) if interval is not None else None
+    fresh = age is not None and threshold is not None and age <= threshold
+    result.update(
+        tick_interval_seconds=interval,
+        last_tick_at=last_tick if age is not None else None,
+        last_tick_age_seconds=round(age, 3) if age is not None else None,
+        freshness=(
+            "fresh"
+            if fresh
+            else ("stale" if age is not None and threshold is not None else "unknown")
+        ),
+    )
+    attempted, completed = result["ticks_attempted"], result["ticks_completed"]
+    result["available"] = (
+        result["runtime_state"] == "running"
+        and result["running"] is True
+        and result["thread_alive"] is True
+        and completed is not None
+        and completed > 0
+        and attempted is not None
+        and attempted >= completed
+        and fresh
+        and result["autonomy_mode"] == "observe"
+        and all(
+            result[key] is False
+            for key in (
+                "persistence_enabled",
+                "qfac_persistence_enabled",
+                "action_execution_enabled",
+            )
+        )
+    )
+    return result
 
 
 def _homeostasis_metrics(raw: dict[str, Any]) -> dict[str, Any]:

@@ -28,13 +28,24 @@ Offline and live competing-fact/profile checks and core recall are recorded
 in [PERSONAL_CONTINUITY.md](PERSONAL_CONTINUITY.md). This establishes local storage
 isolation, not account isolation or full-runtime readiness.
 
-Phase A integration candidate (2026-11-23): actual-core readiness, bounded Hub
-observation during chat and effective disabled Self-Incorporation are under the
-normal full-launch verification gate. See the
-[decision addendum](ALPHA_READINESS_DECISION.md#phase-a-core-integration-candidate)
-and [reproducible smoke](ALPHA_OPERATOR_RUNBOOK.md#integration-smoke-phase-a).
-Foundation labels below do not certify optional cognitive-loop behavior or grant
-new authority; Phase B/C activation work remains separate.
+Integrated alpha baseline (2026-11-24): Phase A core readiness and Phase B
+observe/propose-only Homeostasis and Maintenance are merged through
+[PR #352](https://github.com/AetherraLabs/Aetherra/pull/352), released as
+`v0.5.0-beta.11` at `17a833cd0653556b50d869be1f22b989d5633cb4`.
+See the [clean-main checkpoint](ALPHA_READINESS_DECISION.md#phase-b-merged-main-checkpoint).
+
+Phase C1 local acceptance (2026-11-24): **GO for supervised Windows operation of
+the frozen opt-in ConsciousnessCore observer candidate.** The full suite passed
+3,651 tests, 38 skips and 5 passing subtests. Allowed and denied normal-launch
+profiles each crossed 215 seconds; real Observatory HTTP status, signed audit
+chains, independent observer stop and continued chat passed. The candidate is
+uncommitted and unmerged; hosted CI, browser and live-model checks are unverified.
+See [source-bound evidence](evidence/integration_phase_c1_2026-11-24.json), the
+[C1 contract](AETHERRA_CONSCIOUSNESS_SYSTEM.md#phase-c1-normal-runtime-contract)
+and [operator procedure](ALPHA_OPERATOR_RUNBOOK.md#consciousness-observer-smoke-phase-c1).
+Next is C2: safe profile-scoped continuity restore/write and accurate trust
+rehydration through existing interfaces. Pending temporal observer work remains
+separate and preserved. No action authority or broader readiness is granted.
 
 | System | Status | Primary Reference |
 | --- | --- | --- |

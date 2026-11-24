@@ -1,6 +1,6 @@
 # Alpha Operator Runbook
 
-Updated: 2026-11-23
+Updated: 2026-11-24
 
 **Current decision: GO for supervised internal alpha on the documented Windows
 source-runtime profile.** At the 2026-11-22 desktop checkpoint, PR #327 was
@@ -18,6 +18,14 @@ At that desktop checkpoint, normal-launcher stop/restart, three gpt-4o turns
 without fallback, and browser reconnection passed. Its default suite passed:
 **3,136 passed / 40 skipped**, exit 0. Current candidate results and limits are
 recorded in [the Phase A addendum](ALPHA_READINESS_DECISION.md#phase-a-core-integration-candidate).
+
+The current integrated baseline is PR #352 and signed `v0.5.0-beta.11`; see the
+[clean-main checkpoint](ALPHA_READINESS_DECISION.md#phase-b-merged-main-checkpoint).
+Phase C1 has local GO for supervised operation of the frozen Windows candidate;
+it remains uncommitted and unmerged. Hosted CI, fresh installation, browser and
+live-model checks are unverified for C1. See the
+[C1 evidence](evidence/integration_phase_c1_2026-11-24.json). The desktop counts
+above remain a historical installation checkpoint.
 
 ## Operating Boundary
 
@@ -818,6 +826,182 @@ correlates real records through Hub and Observatory. Retain its source, input,
 HTTP snapshots, record IDs, process receipts and source hashes as evidence.
 Run the existing offline and intentional live-provider continuity smoke as a
 separate regression gate; a no-provider fallback cannot pass a live-model check.
+
+## Consciousness Observer Smoke (Phase C1)
+
+C1 has local GO for supervised operation on the frozen Windows candidate,
+which remains uncommitted and unmerged. The
+[acceptance evidence](evidence/integration_phase_c1_2026-11-24.json) records the
+full suite (3,651 passed, 38 skipped, 5 passing subtests), boot/integration and
+quality gates, two 215-second observer profiles and a three-process default
+restart/profile check. Both signed audit chains pass; all processes exit zero
+without force or generation fallback. Browser and live-model checks are
+unverified for C1. Use synthetic data and the provisioned offline embedding model.
+From the checkout, in the isolated regression environment, run:
+
+```powershell
+$observerOutput = Join-Path $env:TEMP ('aetherra-consciousness-' + [guid]::NewGuid().ToString('N'))
+python tools/alpha_consciousness_smoke.py --output $observerOutput --observe-seconds 20
+Get-Content (Join-Path $observerOutput 'summary.json')
+```
+
+The 20-second run is a quick check. For the extended gate, use a separate new
+output directory and cross the registry's default 180-second stale threshold:
+
+```powershell
+$observerExtended = Join-Path $env:TEMP ('aetherra-consciousness-extended-' + [guid]::NewGuid().ToString('N'))
+python tools/alpha_consciousness_smoke.py --output $observerExtended --observe-seconds 215
+Get-Content (Join-Path $observerExtended 'summary.json')
+```
+
+After the smoke processes have exited, verify both signed audit ledgers from
+this checkout. For the extended run, first set `$observerOutput = $observerExtended`.
+The check uses each disposable profile's existing local audit key, removes only
+inherited audit-secret overrides from its Python process, and prints no key or
+ledger contents. A nonzero exit means verification failed.
+
+```powershell
+@'
+import os
+import sys
+from pathlib import Path
+from Aetherra.security.audit_ledger import SecurityAuditLedger
+
+for name in ("AETHERRA_SECURITY_AUDIT_SECRET", "AETHERRA_SECURITY_STATE_SECRET"):
+    os.environ.pop(name, None)
+root = Path(sys.argv[1]).resolve()
+for label in ("allowed", "denied"):
+    ledger = SecurityAuditLedger(root / label / ".aetherra/security/audit.jsonl")
+    if not ledger.verify_integrity(require_signed_records=True):
+        raise SystemExit(1)
+print("Signed audit verification passed for allowed and denied profiles.")
+'@ | python - $observerOutput
+```
+
+The helper accepts 5–300 observation seconds. Require fresh owned Engine and
+observer registry heartbeats and increasing completed ticks through the end of
+the 215-second window; a short successful start does not pass this extended gate.
+The accepted allowed window advanced completed ticks 1 → 214 and measured
+events 4 → 856; the denied profile remained blocked at zero completed ticks.
+After observer stop, ThinkStream was unavailable and Observatory status offline,
+while ordinary chat still retrieved its saved evidence. Reproduce these checks
+against the exact source under review; earlier receipts do not certify new edits.
+
+The output directory must not exist. This invokes the real full-launcher CLI
+with allowed and default-denied reflection profiles. Only text generation is
+replaced with a deterministic context-derived responder. Retain source hashes,
+policy/audit records, bounded endpoint snapshots, opaque memory evidence IDs and
+process-exit receipts. Raw captured conversation data is synthetic test evidence,
+not a pattern for ordinary private-conversation logging. This command verifies
+Observatory HTTP payloads; it is not a browser or live-provider pass.
+
+For manual launch, use the disposable alpha environment and an existing valid
+scoped policy as in the integration smoke. Merge these root keys into that
+profile's `launcher.json` while preserving its other settings:
+
+```json
+{
+  "consciousness_enabled": true,
+  "consciousness_mode": "observe",
+  "consciousness_tick_hz": 1
+}
+```
+
+Enablement is a JSON boolean, or `AETHERRA_CONSCIOUSNESS_ENABLED=1` when the root
+key is absent. It defaults off. Only `observe` is accepted; `suggest`, `assist`
+and `autopilot` do not grant observer authority. The rate must be finite and
+between 0.1 and 5 Hz, default 1 Hz. Keep `AETHERRA_GUARDIAN_ENABLED=1`,
+`AETHERRA_GUARDIAN_MODE=enforcing`, `AETHERRA_GUARDIAN_REQUIRE_POLICY=1`,
+`AETHERRA_REQUIRE_CAPABILITIES=1`, `AETHERRA_SIGNING_STRICT=1`,
+`AETHERRA_SCRIPT_VERIFY_STRICT=1` and `AETHERRA_AUDIT=1`; retain the alpha network
+policy and other observe-only flags. These settings do not replace successful
+core activation or a valid policy. Readiness must match the registry's actual
+Memory and Engine implementations through their concrete launcher adapters;
+foreign registrations are preserved, not replaced to make the observer ready.
+
+The observer's status monitor keeps unchanged live heartbeats at 30-second
+intervals by default, coalescing repeated updates while still handling lifecycle
+transitions. Authorization uses one daemon worker slot per registry and requires
+an audit receipt. Concurrent requests wait asynchronously for that slot; slot
+acquisition and authorization share one total one-second deadline. Mutation and
+broadcast remain on the calling event loop after ownership revalidation;
+cancellation or timeout discards late results. A stuck worker retains its slot
+instead of creating more workers. The post-authorization `apply_if` guard can
+only refuse mutation, never replace permission.
+
+The normal launcher refreshes its Engine on the existing 30-second lifecycle
+cadence only while the concrete adapter's implementation is initialized, its
+owned Kernel and linked local task are live, and the exact Engine and Kernel
+registrations remain healthy. The same conditions are checked after audit before
+mutation. Stopped, cancelled, replaced, mock or unhealthy owners receive no false
+refresh. Verify freshness beyond 180 seconds separately from Engine generation
+readiness; a heartbeat does not establish live-model availability. These repairs
+do not grant authority or bypass Guardian and signing checks.
+
+The allowed synthetic profile adds only these reflection rules to its existing
+`allow` array; retain its registry, chat and shutdown rules and default deny:
+
+```json
+[
+  {
+    "requester": "consciousness:core",
+    "subsystem": "consciousness",
+    "action": "consciousness.micro_reflection_update",
+    "target": "reflection:micro"
+  },
+  {
+    "requester": "consciousness:core",
+    "subsystem": "consciousness",
+    "action": "consciousness.macro_reflection_update",
+    "target": "reflection:macro"
+  }
+]
+```
+
+Missing permission or an unavailable signed-audit receipt must block reflection;
+never disable enforcement to obtain a running status. No QFAC, continuity-save,
+consolidation or actuation permission is added. The ordinary entry point is:
+
+```powershell
+Push-Location $alphaProfile
+& $alphaPython (Join-Path $alphaRepo 'aetherra_os_launcher.py') --mode full --no-gui --config (Join-Path $alphaProfile 'launcher.json')
+Pop-Location
+```
+
+Read the existing endpoints with the runbook's `Read-AlphaJson` helper:
+
+```powershell
+$think = Read-AlphaJson '/api/consciousness/state'
+$observer = (Read-AlphaJson '/api/runtime-ui/subsystems/consciousness').subsystem
+$think.runtime
+$observer.metrics
+```
+
+For a running allowed observer require `runtime_state=running`, `running=true`,
+`thread_alive=true`, `freshness=fresh`, increasing `ticks_completed`,
+`ticks_attempted >= ticks_completed` and real `events_processed`.
+`autonomy_mode=observe`; `persistence_enabled`, `qfac_persistence_enabled` and
+`action_execution_enabled` must all be false. `readiness_verified=false` is
+intentional: these counters do not certify cognition or broader alpha readiness.
+The inspector exposes these bounded fields, not raw narrative, filesystem paths
+or exception text. The ThinkStream endpoint contains the bounded current internal
+health snapshot and never uses a previous pushed snapshot to hide an unavailable
+owned observer. Blocked, failed, stale, stopping and stopped owners are not live;
+the ThinkStream route returns HTTP 503 when unavailable.
+
+The smoke's trusted local launcher instrumentation stops only its owned observer,
+then verifies ordinary chat, actual retrieved IDs and generator input. It adds
+no public stop route. Normal operator shutdown remains Ctrl+C in the launcher
+terminal. Follow the browser procedure below to inspect Consciousness and compare
+its metrics with HTTP, then verify unavailable state after stop. No browser pass
+is implied by unit tests or successful HTTP reads.
+
+C1 performs no persistent continuity read/write and has fixed 64-entry windows
+for working events, narrative moments and active intents. State resets on restart.
+C2 must implement safe isolated restore/write and accurate trust restoration;
+the separate pending temporal observer is not activated. An intentional live
+provider continuity check remains the separate Phase A procedure above; report
+that evidence separately from this offline observer check. Signing stays strict.
 
 ## Browser Observation And Stop/Restart
 

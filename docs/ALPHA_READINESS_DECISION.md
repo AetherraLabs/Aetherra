@@ -8,11 +8,14 @@ signing pass. **NO-GO for unattended or production operation and unverified
 installation graphs.** The operating boundary below remains in force.
 
 - Decision owner: Aetherra Labs.
-- Current integrated baseline: [PR #351](https://github.com/AetherraLabs/Aetherra/pull/351),
-  merged as `da982385d30510f0e7010f33e2cffe2d5cbdc3f6`.
-- Released main: `ba3a04ad44f85dbb0fd2b2291142dca40a6562d4`, `v0.5.0-beta.10`.
-- Phase B is a separately reviewed PR candidate; the historical desktop and Phase A
-  checkpoints below retain their own revision and verification boundaries.
+- Current integrated baseline: [PR #352](https://github.com/AetherraLabs/Aetherra/pull/352),
+  merged as `42b8f6a7483c588a8cdc91450ffd095a10c1d992`.
+- Released main: `17a833cd0653556b50d869be1f22b989d5633cb4`, `v0.5.0-beta.11`.
+- Phase C1 local acceptance: GO for supervised operation of the frozen Windows
+  source-runtime candidate, still uncommitted and unmerged. Hosted CI, browser
+  and live-model checks are unverified; see the C1 checkpoint below.
+- Historical desktop and Phase A/B checkpoints retain their own revision and
+  verification boundaries; they are not substituted for C1 evidence.
 - Supported profile: Windows x64, Python 3.13.7 source checkout, Node 22.18.0,
   PowerShell 7.5+, the normal full launcher and React Runtime Observatory.
 - All conversations are synthetic. Separate local directories isolate storage;
@@ -24,6 +27,94 @@ See [the checklist](ALPHA_READINESS_CHECKLIST.md),
 [operator commands](ALPHA_OPERATOR_RUNBOOK.md) and
 [fresh-install evidence](evidence/desktop_alpha_2026-11-22.json) and
 [clean-main acceptance](evidence/desktop_alpha_main_2026-11-22.json).
+
+## Phase B Merged-Main Checkpoint
+
+[PR #352](https://github.com/AetherraLabs/Aetherra/pull/352) merged after final
+review and 37 passing PR checks (one expected skip). A clean checkout of merge
+`42b8f6a7` passed **3,494 tests, 38 skips and 5 passing subtests**, exit zero.
+Fresh GUI installation passed all 29 tests, build, lint and type checking.
+Two normal full-launch processes each crossed a 215-second observation window,
+restored the same proposal/cycle identifiers and retained zero actuation.
+
+All 12 main workflows passed, including required production signing and trusted
+key enforcement in [CI Quality Gates](https://github.com/AetherraLabs/Aetherra/actions/runs/45489540011).
+The [automatic Release](https://github.com/AetherraLabs/Aetherra/actions/runs/45491286465)
+published [v0.5.0-beta.11](https://github.com/AetherraLabs/Aetherra/releases/tag/v0.5.0-beta.11);
+its Ed25519 signature and both signed distribution checksums were independently
+verified. The released checkout was clean: 1,995 of 1,998 file bytes matched the
+merge, with only three version/changelog files changed. Version checks and four
+release-version tests passed. Browser and live-model checks were not repeated
+for this merge; earlier evidence retains its original scope.
+
+The source-bound merge/release receipt is `main-verification-summary.json` in
+the operator's `2026-11-24` PR352 evidence set, SHA-256
+`cc3e3a752cb025d9903a3e9af4c0fc16d9bbb3d3f2b535d01d24275b0704a7cf`.
+The PR summary records this acceptance. The earlier review checkpoints below
+are historical and do not replace this clean-main result.
+
+## Phase C1 Observer Candidate
+
+**GO for supervised C1 operation on the frozen Windows source-runtime candidate.**
+This is local acceptance of `codex/phase-c-observer` based on released main
+`17a833cd`; the candidate remains uncommitted and unmerged. Hosted CI, a fresh
+installation, browser rendering and live-model operation are unverified for C1.
+Unattended/production operation and action execution remain NO-GO. The
+[source-bound evidence](evidence/integration_phase_c1_2026-11-24.json) records the
+exact source hashes, commands, result counts, audit references and limitations.
+
+The baseline component bundle passed 18 tests with one Windows skip. The first
+normal-launch failure was an ownership comparison: Memory and Engine adapters
+were compared with their registered implementations. The corrected check uses
+only concrete adapters. The extended run then exposed a missing owned Engine
+heartbeat beyond the 180-second stale threshold. The observer correctly blocked;
+the launcher now refreshes only a live, initialized, exactly owned healthy Engine,
+rechecking those conditions after audited authorization. The failed captures are
+retained in the evidence. Other repairs require reflection audit receipts, bound
+history to 64 entries, serialize audit preflight off the chat loop and preserve
+foreign registrations. Status reads remain cached and do not evaluate autopilot.
+
+The final default suite passed **3,651 tests, 38 skips and 5 passing subtests**,
+with exit zero after 1,469.82 seconds including process exit. Configured coverage
+was 45.29%, above the unchanged 22% requirement. Boot validation and Integration
+Validation passed. The Python quality gate reports zero new/edited violations
+with 954 unchanged legacy files. The final Engine/registry compatibility bundle
+passed 166 tests. These results apply to the frozen candidate, not a merged main.
+
+Allowed and denied profiles each ran the normal full launcher for a 215-second
+observation window. In the allowed profile, completed ticks advanced **1 → 214**
+and measured events **4 → 856**, with fresh Engine and observer registrations.
+After independent observer stop, ThinkStream returned HTTP 503, the Observatory
+reported offline, and chat still retrieved the saved fact without fallback.
+The denied profile stayed blocked with zero completed ticks and no healthy
+observer refresh. Both signed audit chains verified cryptographically; both
+processes exited zero without force. The observer performed no continuity-file
+access or QFAC writes and enabled no Memory consolidation or actuation. Existing
+chat Memory and other runtime services retain their independent ownership.
+
+A separate default-disabled run used three fresh processes: write, restart with
+empty chat history, and a separate profile. The observer registration was absent
+throughout, all processes exited zero and no generation fallback ran. One compact
+restart trace is saved record `b53ff4fc40f5dfacaf9867e7380d31f7` in process 40348 →
+retrieval of that same ID in process 60896 → the identical provider evidence ID →
+the context-derived answer naming aunt Leona. The separate profile lacked that
+fact and the unknown attribute remained unknown. These are deterministic
+responder checks through real storage, retrieval and HTTP, not live-model passes.
+Local directories establish storage isolation, not account isolation.
+
+Follow the [C1 operator procedure](ALPHA_OPERATOR_RUNBOOK.md#consciousness-observer-smoke-phase-c1)
+for the short and extended runs and independent signed-ledger check. Actual
+Observatory HTTP payloads were verified; no browser or live provider was used.
+Harness stop uses trusted local instrumentation and SIGINT, not interactive
+keyboard evidence. Historical browser/gpt-4o checks retain their earlier scope.
+Signing, Guardian/Security, release controls, original workspaces and pending
+temporal work are preserved. No commit, push or remote CI is claimed.
+
+C1 state intentionally resets on restart and attaches no chat Memory consolidator
+or SafetyEnvelope actuator. **Next: C2 safe profile-scoped continuity** through
+existing interfaces, including failed/corrupt-restore protection and accurate
+trust rehydration before durable consciousness history is enabled. The separate
+pending TemporalConsciousnessEngine observer is not activated by C1.
 
 ## Merge Review: Maintenance Restore And Status
 
