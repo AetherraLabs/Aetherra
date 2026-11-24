@@ -1,6 +1,25 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.11 (2026-11-24)
+
+### Bug Fixes
+
+- **runtime**: Connect Phase B observation and maintenance
+  ([#352](https://github.com/AetherraLabs/Aetherra/pull/352),
+  [`42b8f6a`](https://github.com/AetherraLabs/Aetherra/commit/42b8f6a7483c588a8cdc91450ffd095a10c1d992))
+
+* fix(runtime): connect Phase B observation and maintenance
+
+* test(runtime): isolate maintenance probe subprocess imports
+
+* fix(runtime): preserve maintenance history after failed restore
+
+---------
+
+Co-authored-by: Timothy Holdorff <zyonic88@gmail.com>
+
+
 ## v0.5.0-beta.10 (2026-11-24)
 
 ### Bug Fixes
