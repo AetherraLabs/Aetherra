@@ -1,6 +1,23 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.10 (2026-11-24)
+
+### Bug Fixes
+
+- **runtime**: Stabilize Phase A core integration
+  ([#351](https://github.com/AetherraLabs/Aetherra/pull/351),
+  [`da98238`](https://github.com/AetherraLabs/Aetherra/commit/da982385d30510f0e7010f33e2cffe2d5cbdc3f6))
+
+Make normal-launcher readiness truthful, honor disabled execution, and keep bounded Hub observations
+  responsive with retained request ownership. Add deterministic regressions, normal-launcher
+  continuity smoke and Phase A operator evidence.
+
+Verified before merge: full suite 3348 passed / 38 skipped / 5 passing subtests; 107 fresh focused
+  tests; seven gpt-4o turns without fallback; all current PR checks pass. Preserve signing controls
+  and pending temporal work.
+
+
 ## v0.5.0-beta.9 (2026-11-24)
 
 ### Bug Fixes
