@@ -58,8 +58,8 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install .[dev]
-          pip install -r requirements/quality.txt python-semantic-release==9.21.1 build pynacl
+          pip install . -r requirements/release.txt
+          python -m pip check
 
       - name: Quick quality (lint + minimal test)
         run: |
@@ -78,8 +78,10 @@ jobs:
 
       - name: Security audit (pip-audit)
         run: |
-          pip install pip-audit
-          pip-audit || true
+          # Audit every installed third-party package, including build tooling.
+          # Aetherra itself is the source under review, not a PyPI dependency.
+          python -m pip freeze --all --exclude aetherra > release-environment.lock
+          python tools/vuln_scan.py --lock release-environment.lock --exact-pins --fail-level low
 
       - name: Semantic Release
         env:
