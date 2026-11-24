@@ -1,0 +1,513 @@
+"""Governed exact checkpoint I/O owned by one existing Memory instance.
+
+The daemon owns its SQLite connection and one outstanding slot, including audit.
+A timeout closes result acceptance; it does not assert that a commit rolled back.
+"""
+
+from __future__ import annotations
+
+# Standard library imports
+import json
+import math
+import os
+import re
+import sqlite3
+import threading
+import time
+import uuid
+from collections.abc import Callable
+from concurrent.futures import Future, TimeoutError
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
+from pathlib import Path
+
+_OWNER = "consciousness:observer"
+_SCOPE = "observer_continuity:v1"
+_HANDLE = re.compile(r"[0-9a-f]{32}\Z")
+_MAX_BYTES = 65536
+
+
+class CheckpointError(Exception):
+    """Sanitized checkpoint failure; never includes payloads or paths."""
+
+    def __init__(self, code: str):
+        self.code = code
+        super().__init__(code)
+
+
+@dataclass(frozen=True)
+class LifecycleCheckpoint:
+    record_id: str
+    checkpoint_id: str
+    payload: dict
+
+
+@dataclass(frozen=True)
+class CheckpointJobControl:
+    cancelled: threading.Event
+    deadline: float
+    still_owned: Callable[[], bool]
+    _lock: threading.RLock = field(
+        default_factory=threading.RLock, init=False, repr=False
+    )
+    _closed: bool = field(default=False, init=False, repr=False)
+    _bound_deadline: float | None = field(default=None, init=False, repr=False)
+
+    def __post_init__(self):
+        if (
+            not isinstance(self.cancelled, threading.Event)
+            or isinstance(self.deadline, bool)
+            or not isinstance(self.deadline, (int, float))
+            or not math.isfinite(self.deadline)
+            or not callable(self.still_owned)
+        ):
+            raise CheckpointError("invalid")
+
+    def cancel(self):
+        with self._lock:
+            object.__setattr__(self, "_closed", True)
+            self.cancelled.set()
+
+    def _bind(self):
+        with self._lock:
+            # A token is never refreshed or extended by resubmission.
+            deadline = min(self.deadline, time.monotonic() + 1.0)
+            if self._bound_deadline is not None:
+                deadline = min(deadline, self._bound_deadline)
+            object.__setattr__(self, "_bound_deadline", deadline)
+
+    def active(self) -> bool:
+        with self._lock:
+            if self._closed:
+                return False
+            try:
+                active = (
+                    not self.cancelled.is_set()
+                    and time.monotonic()
+                    < min(
+                        self.deadline,
+                        (
+                            self._bound_deadline
+                            if self._bound_deadline is not None
+                            else self.deadline
+                        ),
+                    )
+                    and self.still_owned() is True
+                )
+            except Exception:
+                active = False
+            if not active:
+                object.__setattr__(self, "_closed", True)
+            return active
+
+    def check(self):
+        if not self.active():
+            raise CheckpointError("cancelled")
+
+
+class _CheckpointFuture(Future):
+    def __init__(self, control: CheckpointJobControl, *, writing: bool):
+        super().__init__()
+        self.control = control
+        self._writing = writing
+        self._intent = None
+        self.set_running_or_notify_cancel()
+
+    def cancel(self):
+        self.control.cancel()
+        # Running audit/I/O remains owned until actual completion.
+        return super().cancel()
+
+    def result(self, timeout=None):
+        try:
+            result = super().result(timeout)
+        except TimeoutError:
+            self.control.cancel()
+            raise
+        try:
+            _recheck_policy(self._intent)
+        except CheckpointError as exc:
+            self.control.cancel()
+            raise CheckpointError("uncertain" if self._writing else exc.code) from None
+        with self.control._lock:
+            if not self.control.active():
+                raise CheckpointError("uncertain" if self._writing else "cancelled")
+            return result
+
+
+def failed_checkpoint_future(code: str) -> Future:
+    future = Future()
+    future.set_exception(CheckpointError(code))
+    return future
+
+
+def _identity(owner, scope, checkpoint_id):
+    if (
+        owner != _OWNER
+        or scope != _SCOPE
+        or not isinstance(checkpoint_id, str)
+        or not _HANDLE.fullmatch(checkpoint_id)
+    ):
+        raise CheckpointError("invalid")
+
+
+def _decode(data: bytes | str, checkpoint_id: str):
+    # Aetherra imports
+    from Aetherra.consciousness.checkpoint import (
+        encode_checkpoint,
+        load_checkpoint_json,
+    )
+
+    try:
+        payload = encode_checkpoint(load_checkpoint_json(data))
+        _identity(payload["owner"], payload["scope"], payload["checkpoint_id"])
+        if payload["checkpoint_id"] != checkpoint_id:
+            raise ValueError
+        return payload
+    except Exception:
+        raise CheckpointError("invalid") from None
+
+
+def _freeze(payload: dict, checkpoint_id: str) -> bytes:
+    # Aetherra imports
+    from Aetherra.consciousness.checkpoint import (
+        decode_checkpoint,
+        dump_checkpoint_json,
+    )
+
+    try:
+        # The codec validates structure before serialization can traverse it.
+        frozen = dump_checkpoint_json(decode_checkpoint(payload))
+        _decode(frozen, checkpoint_id)
+        return frozen
+    except Exception:
+        raise CheckpointError("invalid") from None
+
+
+def _strict_policy():
+    # Aetherra imports
+    from Aetherra.guardian import guardian_enabled, guardian_mode, load_guardian_policy
+    from Aetherra.security.capabilities import _load_policy_full
+
+    try:
+        if (
+            not guardian_enabled()
+            or guardian_mode().value != "enforcing"
+            or os.getenv("AETHERRA_PROD_UNSAFE_ALLOW", "0") == "1"
+            or any(
+                os.getenv(key) != "1"
+                for key in (
+                    "AETHERRA_REQUIRE_CAPABILITIES",
+                    "AETHERRA_GUARDIAN_REQUIRE_POLICY",
+                    "AETHERRA_SIGNING_STRICT",
+                    "AETHERRA_SCRIPT_VERIFY_STRICT",
+                    "AETHERRA_AUDIT",
+                )
+            )
+        ):
+            raise ValueError
+        load_guardian_policy(require_valid_policy=True)
+        _load_policy_full(require_valid_policy=True)
+    except Exception:
+        raise CheckpointError("denied") from None
+
+
+def _recheck_policy(intent):
+    # Aetherra imports
+    from Aetherra.guardian.policy import evaluate_guardian_policy
+    from Aetherra.security.capabilities import has_capability
+
+    _strict_policy()
+    if (
+        (os.getenv("AETHERRA_PRINCIPAL", "").strip() or "consciousness:core")
+        != intent.requester
+        or not evaluate_guardian_policy(intent, require_valid_policy=True).allowed
+        or not all(has_capability(intent.requester, cap) for cap in intent.capabilities)
+    ):
+        raise CheckpointError("denied")
+
+
+def _authorize(operation: str, checkpoint_id: str):
+    # Aetherra imports
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+    from Aetherra.security.capabilities import has_capability
+
+    _strict_policy()
+    caps = ("consciousness:write", "memory:read", "fs:read")
+    if operation == "save":
+        caps = ("consciousness:write", "memory:write", "fs:read", "fs:write")
+    intent = IntentDeclaration(
+        requester=os.getenv("AETHERRA_PRINCIPAL", "").strip() or "consciousness:core",
+        subsystem="consciousness",
+        action=f"consciousness.continuity_{operation}",
+        target="memory:core",
+        purpose="Bounded exact observer continuity checkpoint",
+        capabilities=caps,
+        reversible=True,
+        rollback_plan="Rollback uncommitted transaction; preserve immutable committed rows on uncertainty.",
+        evidence=("observer_continuity:v1",),
+        metadata={"checkpoint_id": checkpoint_id, "operation": operation, "schema": 1},
+    )
+    try:
+        decision = evaluate_intent(
+            intent,
+            capability_checker=has_capability,
+            require_valid_policy=True,
+        )
+    except Exception:
+        raise CheckpointError("audit_failed") from None
+    if not decision.allowed:
+        raise CheckpointError("denied")
+    if not isinstance(decision.audit_id, str) or not decision.audit_id.strip():
+        raise CheckpointError("audit_failed")
+    return intent
+
+
+@dataclass(frozen=True)
+class _Job:
+    operation: str
+    checkpoint_id: str
+    data: bytes | None
+    control: CheckpointJobControl
+    future: _CheckpointFuture
+
+
+class LifecycleCheckpointWorker:
+    """One lazy daemon and one slot; no checkpoint job queue or shared connection."""
+
+    def __init__(self, database_path: str):
+        self._database_path = database_path
+        if (
+            isinstance(database_path, (str, os.PathLike))
+            and str(database_path)
+            and str(database_path) != ":memory:"
+            and not str(database_path).lower().startswith("file:")
+        ):
+            # Bind relative paths at Core construction, not on a later worker tick.
+            self._database_path = os.path.abspath(database_path)
+        self._condition = threading.Condition()
+        self._job: _Job | None = None
+        self._thread: threading.Thread | None = None
+        self._closing = False
+
+    def pending(self) -> bool:
+        with self._condition:
+            return self._job is not None
+
+    def submit(self, *, operation, owner, scope, checkpoint_id, control, payload=None):
+        try:
+            _identity(owner, scope, checkpoint_id)
+            if not isinstance(control, CheckpointJobControl):
+                raise CheckpointError("invalid")
+            control._bind()
+            # Freeze before admission, never authorize a caller-owned dictionary.
+            data = _freeze(payload, checkpoint_id) if operation == "save" else None
+            path = self._database_path
+            if (
+                not isinstance(path, (str, os.PathLike))
+                or not str(path)
+                or str(path) == ":memory:"
+                or str(path).lower().startswith("file:")
+            ):
+                raise CheckpointError("unavailable")
+            with self._condition:
+                if self._closing:
+                    raise CheckpointError("unavailable")
+                if self._job is not None:
+                    raise CheckpointError("busy")
+                control.check()
+                future = _CheckpointFuture(control, writing=operation == "save")
+                self._job = _Job(operation, checkpoint_id, data, control, future)
+                if self._thread is None:
+                    self._thread = threading.Thread(
+                        target=self._run,
+                        name="memory-lifecycle-checkpoint",
+                        daemon=True,
+                    )
+                    try:
+                        self._thread.start()
+                    except Exception:
+                        self._job = None
+                        self._closing = True
+                        raise CheckpointError("unavailable") from None
+                self._condition.notify_all()
+                return future
+        except CheckpointError as exc:
+            return failed_checkpoint_future(exc.code)
+        except Exception:
+            return failed_checkpoint_future("invalid")
+
+    def shutdown(self, timeout: float = 1.0) -> bool:
+        with self._condition:
+            self._closing = True
+            thread = self._thread
+            self._condition.notify_all()
+        if thread is None:
+            return True
+        if thread is threading.current_thread():
+            return False
+        thread.join(max(0.0, timeout))
+        return not thread.is_alive()
+
+    def _run(self):
+        connection = None
+        try:
+            while True:
+                with self._condition:
+                    self._condition.wait_for(
+                        lambda: self._job is not None or self._closing
+                    )
+                    job = self._job
+                    if job is None:
+                        return
+                result = None
+                failure = None
+                committing = False
+                try:
+                    job.control.check()
+                    intent = _authorize(job.operation, job.checkpoint_id)
+                    job.future._intent = intent
+                    job.control.check()
+                    _recheck_policy(intent)
+                    job.control.check()
+                    if connection is None:
+                        uri = Path(self._database_path).resolve().as_uri() + "?mode=rw"
+                        connection = sqlite3.connect(uri, uri=True, timeout=0.25)
+                        connection.execute("PRAGMA busy_timeout=250")
+                    job.control.check()
+                    _recheck_policy(intent)
+                    job.control.check()
+                    if job.operation == "save":
+                        payload = _decode(job.data, job.checkpoint_id)
+                        connection.execute("BEGIN IMMEDIATE")
+                        job.control.check()
+                        _recheck_policy(intent)
+                        existing = connection.execute(
+                            "SELECT id FROM memories WHERE memory_type=? LIMIT 1",
+                            ("consciousness_observer_checkpoint:" + job.checkpoint_id,),
+                        ).fetchone()
+                        if existing is not None:
+                            raise CheckpointError("ambiguous")
+                        record_id = uuid.uuid4().hex
+                        while record_id == job.checkpoint_id:
+                            record_id = uuid.uuid4().hex
+                        context = {
+                            "owner": _OWNER,
+                            "scope": _SCOPE,
+                            "schema": 1,
+                            "checkpoint_id": job.checkpoint_id,
+                            "record_id": record_id,
+                        }
+                        now = datetime.now(UTC).isoformat()
+                        connection.execute(
+                            "INSERT INTO memories (id,content,context,tags,importance,created_at,last_accessed,access_count,memory_type) VALUES (?,?,?,?,?,?,?,?,?)",
+                            (
+                                record_id,
+                                job.data.decode("utf-8"),
+                                json.dumps(context),
+                                "[]",
+                                0.0,
+                                now,
+                                now,
+                                0,
+                                "consciousness_observer_checkpoint:"
+                                + job.checkpoint_id,
+                            ),
+                        )
+                        job.control.check()
+                        _recheck_policy(intent)
+                        job.control.check()
+                        committing = True
+                        connection.commit()
+                        result = LifecycleCheckpoint(
+                            record_id, job.checkpoint_id, payload
+                        )
+                    else:
+                        result = self._load(connection, job.checkpoint_id)
+                except CheckpointError as exc:
+                    failure = CheckpointError("uncertain" if committing else exc.code)
+                except Exception:
+                    failure = CheckpointError(
+                        "uncertain" if committing else "unavailable"
+                    )
+                finally:
+                    if connection is not None and connection.in_transaction:
+                        try:
+                            connection.rollback()
+                        except Exception:
+                            connection.close()
+                            connection = None
+                # Publish only while acceptance is still owned. Clearing the slot and
+                # publishing occur under the same lock so a completed future is drained.
+                with self._condition, job.control._lock:
+                    if not job.control.active():
+                        failure = CheckpointError(
+                            "uncertain" if committing else "cancelled"
+                        )
+                    self._job = None
+                    if failure is None:
+                        job.future.set_result(result)
+                    else:
+                        job.future.set_exception(failure)
+                    self._condition.notify_all()
+        finally:
+            if connection is not None:
+                connection.close()
+
+    @staticmethod
+    def _load(connection, checkpoint_id):
+        # CASE prevents materializing oversized content/context in Python.
+        records = connection.execute(
+            "SELECT id, length(CAST(content AS BLOB)), "
+            "CASE WHEN length(CAST(content AS BLOB))<=? THEN content END, "
+            "length(CAST(context AS BLOB)), "
+            "CASE WHEN length(CAST(context AS BLOB))<=? THEN context END "
+            "FROM memories WHERE memory_type=? LIMIT 2",
+            (
+                _MAX_BYTES,
+                _MAX_BYTES,
+                "consciousness_observer_checkpoint:" + checkpoint_id,
+            ),
+        ).fetchall()
+        if not records:
+            raise CheckpointError("missing")
+        if len(records) != 1:
+            raise CheckpointError("ambiguous")
+        record_id, content_size, content, context_size, raw_context = records[0]
+        if (
+            not isinstance(record_id, str)
+            or not _HANDLE.fullmatch(record_id)
+            or record_id == checkpoint_id
+            or content_size is None
+            or content_size > _MAX_BYTES
+            or context_size is None
+            or context_size > _MAX_BYTES
+            or not isinstance(content, str)
+            or not isinstance(raw_context, str)
+        ):
+            raise CheckpointError("invalid")
+        expected = {
+            "owner": _OWNER,
+            "scope": _SCOPE,
+            "schema": 1,
+            "checkpoint_id": checkpoint_id,
+            "record_id": record_id,
+        }
+        try:
+
+            def unique(pairs):
+                result = {}
+                for key, value in pairs:
+                    if key in result:
+                        raise ValueError
+                    result[key] = value
+                return result
+
+            context = json.loads(raw_context, object_pairs_hook=unique)
+            if context != expected or type(context["schema"]) is not int:
+                raise ValueError
+        except Exception:
+            raise CheckpointError("invalid") from None
+        return LifecycleCheckpoint(
+            record_id, checkpoint_id, _decode(content, checkpoint_id)
+        )

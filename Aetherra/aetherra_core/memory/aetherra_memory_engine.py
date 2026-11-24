@@ -362,6 +362,48 @@ class AetherraMemoryEngineAdvanced:
             # Never fail constructor due to STORM wiring
             self._storm_engine = None
 
+    def submit_load_lifecycle_checkpoint(self, *, owner, scope, checkpoint_id, control):
+        # Local imports
+        from .lifecycle_checkpoint import failed_checkpoint_future
+
+        if type(self.core_memory) is not LyrixaMemorySystem:
+            return failed_checkpoint_future("unavailable")
+        return self.core_memory.submit_load_lifecycle_checkpoint(
+            owner=owner,
+            scope=scope,
+            checkpoint_id=checkpoint_id,
+            control=control,
+        )
+
+    def submit_store_lifecycle_checkpoint(
+        self, *, owner, scope, checkpoint_id, payload, control
+    ):
+        # Local imports
+        from .lifecycle_checkpoint import failed_checkpoint_future
+
+        if type(self.core_memory) is not LyrixaMemorySystem:
+            return failed_checkpoint_future("unavailable")
+        return self.core_memory.submit_store_lifecycle_checkpoint(
+            owner=owner,
+            scope=scope,
+            checkpoint_id=checkpoint_id,
+            payload=payload,
+            control=control,
+        )
+
+    def lifecycle_checkpoint_pending(self) -> bool:
+        return (
+            type(self.core_memory) is LyrixaMemorySystem
+            and self.core_memory.lifecycle_checkpoint_pending()
+        )
+
+    def drain_lifecycle_checkpoints(self, timeout: float = 1.0) -> bool:
+        return type(
+            self.core_memory
+        ) is LyrixaMemorySystem and self.core_memory.drain_lifecycle_checkpoints(
+            timeout
+        )
+
     def store(self, content, metadata=None):
         """Store memory for test compatibility"""
         self._mem.append({"content": content, "metadata": metadata or {}})
