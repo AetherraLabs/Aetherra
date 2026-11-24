@@ -1,6 +1,11 @@
 # Alpha Readiness Checklist
 
-Updated: 2026-11-22
+Updated: 2026-11-23
+
+Phase A candidate verification and boundaries are recorded in
+[the current decision addendum](ALPHA_READINESS_DECISION.md#phase-a-core-integration-candidate)
+and [evidence](evidence/integration_phase_a_2026-11-23.json). Historical main and
+release passes below do not certify an unmerged candidate or its hosted CI.
 
 **GO for supervised internal alpha on the documented Windows source-runtime
 profile.** PR #327 merged as `a0e8857c`; released main `f55d48a9`
@@ -96,6 +101,8 @@ Required before alpha:
 - Guardian and Security decisions are audited without exposing raw sensitive
   payloads.
 - Self-Improvement remains proposal-only.
+- Full launch defaults Self-Incorporation off; effective disabled status and
+  no automatic Self-Improvement implementation must match the requested profile.
 - Self-Incorporation validates approved plan scope before execution.
 - Non-dry-run Self-Incorporation mutation has truthful rollback support or
   fails closed before mutation.
@@ -123,6 +130,12 @@ Required before alpha:
 - Kernel starts and exposes readiness state.
 - Hub starts and exposes health/readiness endpoints.
 - Core services register or report absence cleanly.
+- Missing/starting core services and unselected providers cannot make startup
+  ready; provider selection is not proof of a successful live response.
+- Only live Kernel evidence can establish safe scheduling. Daemon/file fallback
+  remains diagnostic, with unknown guards rather than fabricated passing checks.
+- Poll the four core observation routes during a chat turn; verify bounded busy
+  responses, retained SSE ownership and shutdown during active generation.
 - Missing optional services degrade gracefully.
 - Startup does not require stale UI files, generated databases, local logs, or
   machine-specific paths.
@@ -222,12 +235,14 @@ git status --short
 
 ## Gate 8: CI And Security Checks
 
-Status: Fresh dependency consistency, lock sync and audit pass. All 168 installed
-distributions have zero advisory findings and zero skips. Python quality reports
-zero new violations, 978 unchanged legacy files and 55 resolved, with no baseline
-change. The final default suite passes: **3,136 passed / 40 skipped**, exit 0,
-with default collection/addopts/coverage. Hosted Windows installation also passes
-87 regressions and the 18-test Observatory suite; reviewed runtime CI is green.
+Status at the 2026-11-22 desktop checkpoint: Fresh dependency consistency, lock
+sync and audit passed. All 168 installed distributions had zero advisory findings
+and zero skips. Python quality reported zero new violations, 978 unchanged legacy
+files and 55 resolved, with no baseline change. That default suite passed:
+**3,136 passed / 40 skipped**, exit 0, with default collection/addopts/coverage.
+Hosted Windows installation passed 87 regressions and the 18-test Observatory
+suite; reviewed runtime CI was green. Current candidate verification is separate
+in [the Phase A addendum](ALPHA_READINESS_DECISION.md#phase-a-core-integration-candidate).
 
 The metadata compatibility, project-ancestor filtering and metrics listener
 isolation regressions pass. No new skips were added to hide a failure. Optional
@@ -260,8 +275,8 @@ GitHub Actions remain the source of truth for remote CI status.
 The first supervised-use exercise on PR #328 main completed 600 + 300 seconds
 across restart: 32 samples, 12 JSON endpoints each, 16 gpt-4o turns without
 fallback, normal shutdown and browser reconnection. Initial disclosure wording
-failed despite successful persistence; the candidate prompt correction needs
-review/integration. Cold-start recall delayed health polling; the subsequent
+failed despite successful persistence; the prompt correction integrated in
+PR #347. Cold-start recall delayed health polling; the subsequent
 steady-state window does not establish uninterrupted responsiveness. See
 [the decision and limitations](ALPHA_READINESS_DECISION.md) and
 [exercise evidence](evidence/supervised_alpha_2026-11-22.json).
@@ -306,7 +321,8 @@ Decision record:
 
 ## Current Next Actions
 
-1. Review/integrate the disclosure correction, then investigate cold-start responsiveness before repeating supervised use.
+1. Review/integrate the Phase A core candidate and its verification evidence;
+   then begin Phase B's bounded observation/maintenance loop.
 2. Preserve strict signing, Guardian/Security enforcement and observation-only behavior.
 3. Verify optional features, other platforms and broader operating modes separately before extending the GO decision.
 

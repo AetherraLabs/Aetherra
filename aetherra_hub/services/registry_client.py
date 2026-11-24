@@ -11,6 +11,7 @@ import asyncio
 import datetime as dt
 import json
 import logging
+import math
 import threading
 import time
 from pathlib import Path
@@ -154,21 +155,23 @@ def get_kernel_status() -> dict[str, Any] | None:
                     age_sec_daemon = None
                     running = False
                     try:
-                        age_sec_daemon = max(0.0, float(now_ts - float(last)))
-                        running = age_sec_daemon <= 180.0
+                        age_sec_daemon = now_ts - float(last)
+                        if not math.isfinite(age_sec_daemon):
+                            raise ValueError("invalid_heartbeat_timestamp")
+                        running = (
+                            status_str == "healthy" and 0.0 <= age_sec_daemon <= 180.0
+                        )
                     except Exception:
                         age_sec_daemon = None
-                    if status_str in ("healthy",):
-                        running = True
                     payload_daemon: dict[str, Any] = {
                         "running": bool(running),
                         "paused": False,
                         "uptime": 0,
                         "cycle_count": 0,
                         "plugin_invoke_timeout_sec": 30.0,
-                        "backpressure_guard_pass": True,
+                        "backpressure_guard_pass": None,
                         "backpressure_guard_violations": [],
-                        "night_schedule_guard_pass": True,
+                        "night_schedule_guard_pass": None,
                         "metrics": {"_source": "registry_daemon"},
                         "queue_sizes": {
                             "high_priority": 0,
@@ -215,8 +218,11 @@ def get_kernel_status() -> dict[str, Any] | None:
                             file_age_sec = (
                                 dt.datetime.now(dt.UTC) - ts
                             ).total_seconds()
-                            # Consider ONLINE if metrics were flushed recently (<= 180s)
-                            running = file_age_sec <= 180.0
+                            # Recent activity is diagnostic, never live guard evidence.
+                            running = (
+                                not metrics.get("shutdown_time")
+                                and 0.0 <= file_age_sec <= 180.0
+                            )
                         except Exception as exc:  # pragma: no cover
                             logger.debug(
                                 "kernel metrics timestamp parse failed: %s", exc
@@ -230,9 +236,9 @@ def get_kernel_status() -> dict[str, Any] | None:
                         "plugin_invoke_timeout_sec": metrics.get(
                             "plugin_invoke_timeout_sec", 30.0
                         ),
-                        "backpressure_guard_pass": True,
+                        "backpressure_guard_pass": None,
                         "backpressure_guard_violations": [],
-                        "night_schedule_guard_pass": True,
+                        "night_schedule_guard_pass": None,
                         "metrics": metrics,
                         "queue_sizes": {
                             "high_priority": 0,

@@ -28,6 +28,14 @@ Offline and live competing-fact/profile checks and core recall are recorded
 in [PERSONAL_CONTINUITY.md](PERSONAL_CONTINUITY.md). This establishes local storage
 isolation, not account isolation or full-runtime readiness.
 
+Phase A integration candidate (2026-11-23): actual-core readiness, bounded Hub
+observation during chat and effective disabled Self-Incorporation are under the
+normal full-launch verification gate. See the
+[decision addendum](ALPHA_READINESS_DECISION.md#phase-a-core-integration-candidate)
+and [reproducible smoke](ALPHA_OPERATOR_RUNBOOK.md#integration-smoke-phase-a).
+Foundation labels below do not certify optional cognitive-loop behavior or grant
+new authority; Phase B/C activation work remains separate.
+
 | System | Status | Primary Reference |
 | --- | --- | --- |
 | Security | Functional complete | `docs/AETHERRA_SECURITY_SYSTEM.md` |

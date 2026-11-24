@@ -1,0 +1,1009 @@
+{
+  "date": "2026-11-23",
+  "timezone": "America/Denver",
+  "base": "8902e161c728dca50f95555e16bfdfccf5f303b8",
+  "branch": "codex/integration-phase-a",
+  "integration_status": "local verification snapshot before publication; hosted CI and integration are separate PR gates",
+  "code_sha256": {
+    "Aetherra/aetherra_core/engine/aetherra_engine.py": "d6fd021f06b38a143c4d0af407dce741a7ffebeb1fee1b7dd2d8fa6d4fa0e07b",
+    "Aetherra/aetherra_core/engine/readiness.py": "e6f6657862f4d8f9befeaecc9cccb69c6011c6c8ec0c469d51e0058cd147d158",
+    "Aetherra/aetherra_core/os_kernel/readiness.py": "f1ca918d6b6260b0c5266c2bfa1e9a23889af9a7c4f793a74670fef9e3e94891",
+    "Aetherra/alpha_boot_validation.py": "0508458498fd4434184e9eaecaadcbb1b97d7a4a9e7aad4e48995de653488d44",
+    "aetherra_hub/compat.py": "39ab35a49cd404dd9179d6a6068e7043d668cf3922c13374352bcd18f4049bd0",
+    "aetherra_hub/errors.py": "d6a7756cb0d5c2f69fac98fa5a71edd8bfb338419a8feadecd67683c950cecb1",
+    "aetherra_hub/request_server.py": "4d2762bb73947b00b4d027c44171021e978b0bef4e62393e5805c6865b30fe17",
+    "aetherra_hub/services/ai_stream.py": "2028523aa8afcc2dca5ec8fc362cd97844c28f355b91744d89f72148000a289b",
+    "aetherra_hub/services/registry_client.py": "1960945150d9f5032cd69d4055940c7a479db71c8e36ed7397d61b9516c450ff",
+    "aetherra_hub/services/request_ownership.py": "0c3c29bb2fef4653972be20664c337417c5ffa2a9699e0313eb3b0bc6da1bbe4",
+    "aetherra_os_launcher.py": "eed52f524e2ade92a86d872e2b7565ad836d74c7a093649a7d540dcbe861ee48",
+    "aetherra_self_incorporation.py": "ae0d415f7faffb83deff2a110c15ff7d7be1a35b3d3a3b39243414322cedd8a8",
+    "tests/acceptance/test_launcher_active_shutdown.py": "71437c32bd07e768ca9ad3f4e237016c90bcd580be478251c820f1a58ef9d637",
+    "tests/test_headers_and_expiry.py": "2c76d4444cf1feff2c05209c72aa84cbe94a28915cd61c927ee99a9878512c9e",
+    "tests/test_sse_v2.py": "1fef2d8d4cdbeb88db45be0cf3ec47fd156657b52d3fa0d00b8db1593f60a4f9",
+    "tests/tools/test_alpha_integration_smoke.py": "f9a347033e8927c9a5be0bdc4eb889441a1d6bcaf527ced7d0ebdae9f3b68849",
+    "tests/unit/test_aetherra_engine_hardening.py": "d8a4c1b50b83ac147ee71fc560f2c61fa823c692f034324ee0fc6e9399099f9a",
+    "tests/unit/test_alpha_boot_validation.py": "0bbcd6f3695798901a26a21e768ee5ab605c3181290f2d1328b095326b259509",
+    "tests/unit/test_engine_generation_readiness.py": "1ceee2e8cd3c6282afa453f702332ba024c89713cb3531031c13e68258531469",
+    "tests/unit/test_hub_request_responsiveness.py": "3b45b9b9011d9fe4c4d99c5bbff199e784c4b3d0a3b6aa40fb324814c003eeef",
+    "tests/unit/test_kernel_readiness_sources.py": "35a4ef4f83e7f64f28de5ee7b17883b8b474823ae9d473e80188bf4910198e4e",
+    "tests/unit/test_launcher_readiness.py": "650e798517b7627866e90c8c2f0d7ec576292d1db3c2abff3cea42ccbdd0ad2a",
+    "tests/unit/test_launcher_selfinc_modes.py": "65525e68e6763462369becef34295886febd6f1737d2cf6b5b5a49f90be9fd12",
+    "tools/alpha_integration_smoke.py": "574b3ebee2c516965dfab86488921bc33e231c741f521231d5273f9509538239"
+  },
+  "checks": [
+    {
+      "base_commit": "8902e161c728dca50f95555e16bfdfccf5f303b8",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "tools/alpha_boot_validation.py"
+      ],
+      "exit_code": 0,
+      "seconds": 2.78,
+      "label": "phase-a-boot-baseline",
+      "log_sha256": "e18cda5fd730e9fc169271ea7455b31fd111057a8555a52623ca53551145b863",
+      "pytest_summary": []
+    },
+    {
+      "base_commit": "8902e161c728dca50f95555e16bfdfccf5f303b8",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "Aetherra.integration_validation"
+      ],
+      "exit_code": 0,
+      "seconds": 1.43,
+      "label": "phase-a-integration-baseline",
+      "log_sha256": "96fda51202328d29b120dab1dbaadd25ae0904bea29527d9eb129e23170dfdce",
+      "pytest_summary": []
+    },
+    {
+      "base_commit": "8902e161c728dca50f95555e16bfdfccf5f303b8",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "addopts=",
+        "tests/unit/test_launcher_readiness.py",
+        "tests/unit/test_engine_generation_readiness.py",
+        "tests/unit/test_kernel_readiness_sources.py",
+        "tests/unit/test_kernel_readiness.py",
+        "tests/unit/test_ai_readiness.py",
+        "tests/unit/test_hub_readiness.py",
+        "tests/unit/test_aetherra_engine_hardening.py",
+        "-o",
+        "cache_dir=C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-cache",
+        "--basetemp",
+        "C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-readiness-final"
+      ],
+      "exit_code": 0,
+      "seconds": 22.05,
+      "label": "readiness-final",
+      "log_sha256": "38b5be26f6507ebbf3f6db21daded6b03b072a6ead5ebb4028f1a0f9dbd33038",
+      "pytest_summary": [
+        "169 passed in 20.06s"
+      ]
+    },
+    {
+      "base_commit": "8902e161c728dca50f95555e16bfdfccf5f303b8",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "addopts=",
+        "tests/unit/test_launcher_selfinc_modes.py",
+        "-o",
+        "cache_dir=C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-cache",
+        "--basetemp",
+        "C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-modes-final-verified"
+      ],
+      "exit_code": 0,
+      "seconds": 9.83,
+      "label": "modes-final-verified",
+      "log_sha256": "24f5aa925e2ffb0253243625a62b4477cb0762ca8d4c6d5abed1aad7d1527222",
+      "pytest_summary": [
+        "16 passed in 8.63s"
+      ]
+    },
+    {
+      "base_commit": "8902e161c728dca50f95555e16bfdfccf5f303b8",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "addopts=",
+        "tests/unit/test_selfinc_integration_guardian.py",
+        "tests/unit/test_self_incorporation_security.py",
+        "tests/unit/test_selfinc_proposal_consumer.py",
+        "tests/capabilities/test_selfinc_proposal_consumer.py",
+        "tests/unit/test_hub_self_improvement_guardian.py",
+        "tests/unit/test_hub_app_selfinc_status.py",
+        "tests/unit/test_hub_maintenance_status.py",
+        "tests/capabilities/test_self_improvement_metrics.py",
+        "tests/unit/homeostasis/test_launcher_hub_ownership.py",
+        "tests/unit/homeostasis/test_observe_only_enforcement.py",
+        "tests/unit/test_integration_validation.py",
+        "-o",
+        "cache_dir=C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-cache",
+        "--basetemp",
+        "C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-modes-governance"
+      ],
+      "exit_code": 0,
+      "seconds": 23.81,
+      "label": "modes-governance",
+      "log_sha256": "9bfddc9d93308aa694ba7a989bcdbf0c2b890c0d4ac694f8f0ed3584a18b674b",
+      "pytest_summary": [
+        "129 passed in 22.38s"
+      ]
+    },
+    {
+      "base_commit": "8902e161c728dca50f95555e16bfdfccf5f303b8",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "addopts=",
+        "tests/unit/test_hub_request_responsiveness.py",
+        "tests/unit/test_hub_inthread.py",
+        "tests/unit/test_hub_ingress_security.py",
+        "tests/unit/test_chat_request_contract.py",
+        "tests/unit/test_chat_idempotency.py",
+        "tests/unit/test_chat_guardian.py",
+        "tests/unit/test_ai_stream_engine_failures.py",
+        "tests/unit/test_ai_stream_replay_and_timeout.py",
+        "tests/unit/test_hub_chat_safety_preflight.py",
+        "tests/unit/test_chat_memory_retrieval.py",
+        "tests/unit/homeostasis/test_launcher_hub_ownership.py",
+        "tests/capabilities/test_launcher_shutdown.py",
+        "-o",
+        "cache_dir=C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-cache",
+        "--basetemp",
+        "C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-responsiveness-regression"
+      ],
+      "exit_code": 0,
+      "seconds": 95.87,
+      "label": "responsiveness-regression",
+      "log_sha256": "68db4196c3f54358356c39a786ee46aee21d6a3f0bb6dfd19f71994139c98038",
+      "pytest_summary": [
+        "113 passed in 92.57s (0:01:32)"
+      ]
+    },
+    {
+      "base_commit": "8902e161c728dca50f95555e16bfdfccf5f303b8",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "addopts=",
+        "tests/unit/test_hub_request_responsiveness.py",
+        "tests/acceptance/test_launcher_active_shutdown.py",
+        "-o",
+        "cache_dir=C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-cache",
+        "--basetemp",
+        "C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-responsiveness-review-green"
+      ],
+      "exit_code": 0,
+      "seconds": 47.99,
+      "label": "responsiveness-review-green",
+      "log_sha256": "4b76bc115459cc606a9491e62e7e52966359c3f2ca79c92cfeb06d1a8b287709",
+      "pytest_summary": [
+        "14 passed in 46.10s"
+      ]
+    },
+    {
+      "base_commit": "8902e161c728dca50f95555e16bfdfccf5f303b8",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "C:/Users/enigm/AppData/Local/Temp/aetherra-integration-phase-a-evidence-20261123/repro_legacy_sse.py",
+        "legacy-sse-fixed"
+      ],
+      "exit_code": 0,
+      "seconds": 43.07,
+      "label": "responsiveness-legacy-green",
+      "log_sha256": "23d5b7f9d8228cd7a280ab03b6b730e209a52c40818add3c9963e1665724a4d6",
+      "pytest_summary": [
+        "15 passed in 41.22s"
+      ]
+    },
+    {
+      "base_commit": "8902e161c728dca50f95555e16bfdfccf5f303b8",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "addopts=",
+        "tests/unit/test_hub_request_responsiveness.py",
+        "tests/acceptance/test_launcher_active_shutdown.py",
+        "tests/unit/test_hub_inthread.py",
+        "tests/unit/test_chat_request_contract.py",
+        "tests/unit/test_chat_memory_retrieval.py",
+        "-o",
+        "cache_dir=C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-cache",
+        "--basetemp",
+        "C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-responsiveness-post-legacy-regression"
+      ],
+      "exit_code": 0,
+      "seconds": 91.54,
+      "label": "responsiveness-post-legacy-regression",
+      "log_sha256": "a28c6136cbd67b890f974f1910d285a6f0cf14740d96710303226fdaca6fb127",
+      "pytest_summary": [
+        "81 passed in 87.41s (0:01:27)"
+      ]
+    },
+    {
+      "base_commit": "8902e161c728dca50f95555e16bfdfccf5f303b8",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "addopts=",
+        "tests/tools/test_alpha_integration_smoke.py",
+        "-o",
+        "cache_dir=C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-cache",
+        "--basetemp",
+        "C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-smoke-tool-final"
+      ],
+      "exit_code": 0,
+      "seconds": 2.7,
+      "label": "smoke-tool-final",
+      "log_sha256": "dcb5bcd72c7117359cce339d10294c60c165024d27db18c5de12233d7bbb0f4d",
+      "pytest_summary": [
+        "28 passed in 1.60s"
+      ]
+    },
+    {
+      "base_commit": "8902e161c728dca50f95555e16bfdfccf5f303b8",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "addopts=",
+        "tests/tools/test_alpha_integration_smoke.py",
+        "tests/capabilities/test_static_security_scan.py",
+        "-o",
+        "cache_dir=C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-cache",
+        "--basetemp",
+        "C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-smoke-security-regression"
+      ],
+      "exit_code": 0,
+      "seconds": 6.93,
+      "label": "smoke-security-regression",
+      "log_sha256": "fe5592b1431ce01a7819df8d8611b244d819eb18a55850f1d61326ba2a257c50",
+      "pytest_summary": [
+        "29 passed in 5.87s"
+      ]
+    },
+    {
+      "base_commit": "8902e161c728dca50f95555e16bfdfccf5f303b8",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "addopts=",
+        "tests/tools/test_release_signing.py",
+        "tests/test_hub_signing.py",
+        "tests/test_discovery_signing.py",
+        "-o",
+        "cache_dir=C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-cache",
+        "--basetemp",
+        "C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-phase-a-signing"
+      ],
+      "exit_code": 0,
+      "seconds": 9.59,
+      "label": "phase-a-signing",
+      "log_sha256": "28b430c8ea5d4c8e11afb539bde7e43debe0bc8d9a882009df0fbe3ae9237591",
+      "pytest_summary": [
+        "13 passed in 7.57s"
+      ]
+    },
+    {
+      "base_commit": "8902e161c728dca50f95555e16bfdfccf5f303b8",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "Aetherra.integration_validation"
+      ],
+      "exit_code": 0,
+      "seconds": 2.21,
+      "label": "phase-a-integration",
+      "log_sha256": "c59685e08a630d4b79f9ae833e602550448e58dd42aca2210c9d13169075a67e",
+      "pytest_summary": []
+    },
+    {
+      "base_commit": "8902e161c728dca50f95555e16bfdfccf5f303b8",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "tools/alpha_boot_validation.py"
+      ],
+      "exit_code": 0,
+      "seconds": 3.59,
+      "label": "readiness-boot-validator",
+      "log_sha256": "9fb78bc8d6fe84d2057529ce587ae8a8c024694df30b6c09eb98f1efee2ce812",
+      "pytest_summary": []
+    },
+    {
+      "base_commit": "8902e161c728dca50f95555e16bfdfccf5f303b8",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "tools/python_quality.py"
+      ],
+      "exit_code": 0,
+      "seconds": 143.8,
+      "label": "phase-a-quality-release",
+      "log_sha256": "10594be081b4f12ba5d4704e04d0267136e447602419139841b74e6c2490dc58",
+      "pytest_summary": []
+    },
+    {
+      "base_commit": "8902e161c728dca50f95555e16bfdfccf5f303b8",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "tools/verify_docs_consistency.py"
+      ],
+      "exit_code": 0,
+      "seconds": 6.75,
+      "label": "phase-a-docs-release",
+      "log_sha256": "aa7d4ad89de560c090b6322a9634ae8688ce811d493d27e5acb1d29b3d1ab0e6",
+      "pytest_summary": []
+    },
+    {
+      "base_commit": "8902e161c728dca50f95555e16bfdfccf5f303b8",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "addopts=",
+        "tests/unit/test_engine_generation_readiness.py",
+        "tests/unit/test_kernel_readiness_sources.py",
+        "tests/unit/test_launcher_readiness.py",
+        "tests/unit/test_launcher_selfinc_modes.py",
+        "tests/unit/test_ai_readiness.py",
+        "tests/unit/test_kernel_readiness.py",
+        "-o",
+        "cache_dir=C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-cache",
+        "--basetemp",
+        "C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-core-review-check"
+      ],
+      "exit_code": 0,
+      "seconds": 11.0,
+      "label": "core-review-check",
+      "log_sha256": "1e65a3746ccc3b25b8f36f3ad5905bc20d86dd73b4ee900831110e1fdffbe73d",
+      "pytest_summary": [
+        "106 passed in 9.76s"
+      ]
+    },
+    {
+      "base_commit": "8902e161c728dca50f95555e16bfdfccf5f303b8",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "addopts=",
+        "tests/unit/test_hub_request_responsiveness.py",
+        "tests/unit/test_hub_inthread.py",
+        "tests/acceptance/test_launcher_active_shutdown.py",
+        "tests/tools/test_alpha_integration_smoke.py",
+        "-o",
+        "cache_dir=C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-cache",
+        "--basetemp",
+        "C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123\\pytest-concurrency-frozen-review"
+      ],
+      "exit_code": 0,
+      "seconds": 75.37,
+      "label": "concurrency-frozen-review",
+      "log_sha256": "f56ad9c0461542c8041bc574bed3c643819522f177506e2657d9e5c7929b7bef",
+      "pytest_summary": [
+        "59 passed in 72.87s (0:01:12)"
+      ]
+    },
+    {
+      "base_commit": "8902e161c728dca50f95555e16bfdfccf5f303b8",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "tools/verify_docs_consistency.py"
+      ],
+      "exit_code": 0,
+      "seconds": 4.11,
+      "label": "phase-a-docs-accepted",
+      "log_sha256": "aa7d4ad89de560c090b6322a9634ae8688ce811d493d27e5acb1d29b3d1ab0e6",
+      "pytest_summary": []
+    }
+  ],
+  "smokes": [
+    {
+      "passed": true,
+      "entry": "aetherra_os_launcher.py --mode full --no-gui --config PROFILE/launcher.json",
+      "responder": "deterministic-context-responder",
+      "trace": {
+        "record_id": "ffd9912911372d1c3b250c6461054ee2",
+        "write_pid": 50404,
+        "recall_pid": 52828,
+        "retrieved_ids": [
+          "ffd9912911372d1c3b250c6461054ee2"
+        ],
+        "provider_evidence_ids": [
+          "ffd9912911372d1c3b250c6461054ee2"
+        ],
+        "llm": {
+          "diag": {
+            "event": "ok",
+            "model": {
+              "model": "context-responder",
+              "provider": "deterministic"
+            }
+          },
+          "evidence_ids": [
+            "ffd9912911372d1c3b250c6461054ee2"
+          ],
+          "fallback": false,
+          "model": {
+            "model": "context-responder",
+            "provider": "deterministic"
+          },
+          "used": true
+        },
+        "response": "You told me: My aunt Leona taught me to mend a flat bike tire. What would you like to try next?"
+      },
+      "unknown_response": "I don't know that detail yet. You haven't told me.",
+      "separate_response": "I don't have that in my memories yet. What would you like to try next?",
+      "process_exits": [
+        0,
+        0,
+        0
+      ],
+      "stop_mechanism": "test-harness SIGINT; not interactive ConPTY keyboard evidence",
+      "browser": "not exercised: headless entry",
+      "max_observation_seconds": 0.225,
+      "label": "smoke-second",
+      "artifacts": [
+        {
+          "path": "primary/write-result.json",
+          "sha256": "7c422dfa7270e63da6de7ed26cb683b58739a3bbf4b609c352f701562ef4b44f",
+          "pid": 50404,
+          "process_exit": 0,
+          "forced_stop": false,
+          "turn_seconds": [
+            0.131,
+            18.827,
+            0.162,
+            0.176
+          ],
+          "observation_count": 400
+        },
+        {
+          "path": "primary/recall-result.json",
+          "sha256": "f5b45447bafaf9c0f9ae83c40b58b7b75bac62e96061d3aa0f0bc214b4548ef6",
+          "pid": 52828,
+          "process_exit": 0,
+          "forced_stop": false,
+          "turn_seconds": [
+            18.003,
+            0.261
+          ],
+          "observation_count": 400
+        },
+        {
+          "path": "separate/empty-result.json",
+          "sha256": "b10a04161be49db461cc22bdb6411dbbc1335437e20a6a7a93236499c24611c7",
+          "pid": 50404,
+          "process_exit": 0,
+          "forced_stop": false,
+          "turn_seconds": [
+            0.134
+          ],
+          "observation_count": 4
+        }
+      ]
+    },
+    {
+      "passed": true,
+      "entry": "aetherra_os_launcher.py --mode full --no-gui --config PROFILE/launcher.json",
+      "responder": "gpt-4o",
+      "trace": {
+        "record_id": "bd677f03cc74dc28d354ef6149e56d8e",
+        "write_pid": 28764,
+        "recall_pid": 47544,
+        "retrieved_ids": [
+          "bd677f03cc74dc28d354ef6149e56d8e"
+        ],
+        "provider_evidence_ids": [
+          "bd677f03cc74dc28d354ef6149e56d8e"
+        ],
+        "llm": {
+          "diag": {
+            "event": "ok",
+            "model": {
+              "context_window": 8192,
+              "is_local": false,
+              "max_tokens": 4096,
+              "model_name": "gpt-4o",
+              "provider": "openai",
+              "temperature": 0.7
+            }
+          },
+          "evidence_ids": [
+            "bd677f03cc74dc28d354ef6149e56d8e"
+          ],
+          "fallback": false,
+          "model": {
+            "context_window": 8192,
+            "is_local": false,
+            "max_tokens": 4096,
+            "model_name": "gpt-4o",
+            "provider": "openai",
+            "temperature": 0.7
+          },
+          "used": true
+        },
+        "response": "Your aunt Leona taught you how to mend a flat bike tire. What would you like to try next?"
+      },
+      "unknown_response": "I haven't been told what color your bicycle is. If you'd like to share that detail with me, feel free to let me know! What would you like to try next?",
+      "separate_response": "I haven't been told who showed you how to repair a puncture on your bicycle. If you share that information with me, I'll make sure to remember it for the future. What would you like to try next?",
+      "process_exits": [
+        0,
+        0,
+        0
+      ],
+      "stop_mechanism": "test-harness SIGINT; not interactive ConPTY keyboard evidence",
+      "browser": "not exercised: headless entry",
+      "max_observation_seconds": 0.248,
+      "label": "smoke-live-authorized",
+      "artifacts": [
+        {
+          "path": "primary/write-result.json",
+          "sha256": "fa8e6e2a84adde01f0059a43ac7d606be03df0bfeba086421182d85b1ab4bfb3",
+          "pid": 28764,
+          "process_exit": 0,
+          "forced_stop": false,
+          "turn_seconds": [
+            3.624,
+            17.224,
+            2.18,
+            1.37
+          ],
+          "observation_count": 512
+        },
+        {
+          "path": "primary/recall-result.json",
+          "sha256": "4f09fcf0f03440ab6d3e86775a42655c59f470ff4181e0234523e11af334a601",
+          "pid": 47544,
+          "process_exit": 0,
+          "forced_stop": false,
+          "turn_seconds": [
+            25.64,
+            1.252
+          ],
+          "observation_count": 520
+        },
+        {
+          "path": "separate/empty-result.json",
+          "sha256": "f5d2569c063853d97f0a7ab670c8539303a96f7fe17c0c7a36fb1058b85d9b8a",
+          "pid": 30120,
+          "process_exit": 0,
+          "forced_stop": false,
+          "turn_seconds": [
+            3.392
+          ],
+          "observation_count": 72
+        }
+      ]
+    },
+    {
+      "passed": true,
+      "entry": "aetherra_os_launcher.py --mode full --no-gui --config PROFILE/launcher.json",
+      "responder": "deterministic-context-responder",
+      "trace": {
+        "record_id": "f16dd42e57e81c9e7ee8797f5a3148f4",
+        "write_pid": 21064,
+        "recall_pid": 52684,
+        "retrieved_ids": [
+          "f16dd42e57e81c9e7ee8797f5a3148f4"
+        ],
+        "provider_evidence_ids": [
+          "f16dd42e57e81c9e7ee8797f5a3148f4"
+        ],
+        "llm": {
+          "diag": {
+            "event": "ok",
+            "model": {
+              "model": "context-responder",
+              "provider": "deterministic"
+            }
+          },
+          "evidence_ids": [
+            "f16dd42e57e81c9e7ee8797f5a3148f4"
+          ],
+          "fallback": false,
+          "model": {
+            "model": "context-responder",
+            "provider": "deterministic"
+          },
+          "used": true
+        },
+        "response": "You told me: My aunt Leona taught me to mend a flat bike tire. What would you like to try next?"
+      },
+      "unknown_response": "I don't know that detail yet. You haven't told me.",
+      "separate_response": "I don't have that in my memories yet. What would you like to try next?",
+      "process_exits": [
+        0,
+        0,
+        0
+      ],
+      "stop_mechanism": "test-harness SIGINT; not interactive ConPTY keyboard evidence",
+      "browser": "not exercised: headless entry",
+      "max_observation_seconds": 0.663,
+      "label": "smoke-offline-final",
+      "artifacts": [
+        {
+          "path": "primary/write-result.json",
+          "sha256": "e2cf9d752d001f761d71996f307c20c870f23382a06f856a6b09c9521ba1986d",
+          "pid": 21064,
+          "process_exit": 0,
+          "forced_stop": false,
+          "turn_seconds": [
+            0.148,
+            26.322,
+            0.233,
+            0.31
+          ],
+          "observation_count": 468
+        },
+        {
+          "path": "primary/recall-result.json",
+          "sha256": "c21cfeae8ca0cee6f7223643d124273a957cec692292a4dcf8b688a763009c8a",
+          "pid": 52684,
+          "process_exit": 0,
+          "forced_stop": false,
+          "turn_seconds": [
+            33.222,
+            0.298
+          ],
+          "observation_count": 536
+        },
+        {
+          "path": "separate/empty-result.json",
+          "sha256": "5b1c2bb11f6339119a01f74553fd4ce92b1053e03ad3815c79c0c6e0848ad850",
+          "pid": 14928,
+          "process_exit": 0,
+          "forced_stop": false,
+          "turn_seconds": [
+            0.167
+          ],
+          "observation_count": 4
+        }
+      ]
+    },
+    {
+      "passed": true,
+      "entry": "aetherra_os_launcher.py --mode full --no-gui --config PROFILE/launcher.json",
+      "responder": "gpt-4o",
+      "trace": {
+        "record_id": "533780ffd6bf9e383ebe5c4ebf9ce2cf",
+        "write_pid": 35000,
+        "recall_pid": 55152,
+        "retrieved_ids": [
+          "533780ffd6bf9e383ebe5c4ebf9ce2cf"
+        ],
+        "provider_evidence_ids": [
+          "533780ffd6bf9e383ebe5c4ebf9ce2cf"
+        ],
+        "llm": {
+          "diag": {
+            "event": "ok",
+            "model": {
+              "context_window": 8192,
+              "is_local": false,
+              "max_tokens": 4096,
+              "model_name": "gpt-4o",
+              "provider": "openai",
+              "temperature": 0.7
+            }
+          },
+          "evidence_ids": [
+            "533780ffd6bf9e383ebe5c4ebf9ce2cf"
+          ],
+          "fallback": false,
+          "model": {
+            "context_window": 8192,
+            "is_local": false,
+            "max_tokens": 4096,
+            "model_name": "gpt-4o",
+            "provider": "openai",
+            "temperature": 0.7
+          },
+          "used": true
+        },
+        "response": "Your aunt Leona showed you how to repair a puncture on your bicycle. What would you like to try next?"
+      },
+      "unknown_response": "I haven't been told what color your bicycle is. If you'd like, you can share that information with me now!",
+      "separate_response": "I haven't been told who showed you how to repair a puncture on your bicycle. If you'd like to share more details, I'd be happy to help with any related questions! What would you like to try next?",
+      "process_exits": [
+        0,
+        0,
+        0
+      ],
+      "stop_mechanism": "test-harness SIGINT; not interactive ConPTY keyboard evidence",
+      "browser": "not exercised: headless entry",
+      "max_observation_seconds": 0.546,
+      "label": "smoke-live-final",
+      "artifacts": [
+        {
+          "path": "primary/write-result.json",
+          "sha256": "2912edadb595fafa101015f799cceb7bf0e4ffa08daaed82e0dd56bee6f4e597",
+          "pid": 35000,
+          "process_exit": 0,
+          "forced_stop": false,
+          "turn_seconds": [
+            3.919,
+            26.367,
+            1.72,
+            1.753
+          ],
+          "observation_count": 604
+        },
+        {
+          "path": "primary/recall-result.json",
+          "sha256": "a3cee189562b4baff9c91b024085cf544990007f421d7820eff9d02a8683b772",
+          "pid": 55152,
+          "process_exit": 0,
+          "forced_stop": false,
+          "turn_seconds": [
+            36.354,
+            1.73
+          ],
+          "observation_count": 660
+        },
+        {
+          "path": "separate/empty-result.json",
+          "sha256": "b4509a09b9e9535b72801362f26102f8f57322cdf958d69be76c5adf955e443f",
+          "pid": 36008,
+          "process_exit": 0,
+          "forced_stop": false,
+          "turn_seconds": [
+            2.918
+          ],
+          "observation_count": 68
+        }
+      ]
+    }
+  ],
+  "active_shutdown": {
+    "process_exit": 1,
+    "seconds_after_stop": 14.518,
+    "generation_completed": true,
+    "http_reply": {
+      "status": 200,
+      "seconds": 14.197,
+      "body": {
+        "ok": true,
+        "result": {
+          "ab_bucket": "classical",
+          "confidence": 0.215,
+          "confidence_details": {
+            "coherence": 0.8,
+            "grounding": 0.6,
+            "model": 0.215,
+            "safety": 0.95
+          },
+          "evidence": [],
+          "input_persistence": {
+            "memory": {
+              "status": "stored"
+            },
+            "persistent_memory": {
+              "status": "not_attempted"
+            }
+          },
+          "llm": {
+            "diag": {
+              "event": "ok",
+              "model": {
+                "model": "context-responder",
+                "provider": "deterministic"
+              }
+            },
+            "evidence_ids": [],
+            "fallback": false,
+            "model": {
+              "model": "context-responder",
+              "provider": "deterministic"
+            },
+            "used": true
+          },
+          "memory_id": "29a5502b9b8ce3d650d3779d020427a5",
+          "optional_processing": {
+            "callbacks": [],
+            "session_metrics": {
+              "status": "recorded"
+            },
+            "streaming": {
+              "status": "not_requested"
+            },
+            "style": {
+              "status": "applied"
+            }
+          },
+          "persistence": {
+            "assistant_memory": {
+              "status": "stored"
+            },
+            "metrics": {
+              "status": "recorded"
+            }
+          },
+          "reasoning": "No definitive conclusion reached",
+          "recall": {
+            "ab_metric": {
+              "bucket": "classical",
+              "status": "recorded"
+            },
+            "event": "ok",
+            "mode": "classical",
+            "record_ids": [],
+            "retrieval": "local_semantic_chat",
+            "storm_canary": {
+              "status": "not_sampled"
+            }
+          },
+          "relevant_memories_count": 0,
+          "response": "I don't have that in my memories yet. What would you like to try next?",
+          "session_id": "session_2026-11-23T21:20:44.878806_default",
+          "timestamp": "2026-11-23T21:20:58.984426"
+        }
+      }
+    }
+  },
+  "full_suite": {
+    "source": "D:\\Aetherra Labs\\.codex-integration-phase-a-20261123\\full-final4-source",
+    "file_count": 1984,
+    "command": [
+      "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+      "-m",
+      "pytest",
+      "-o",
+      "cache_dir=D:\\Aetherra Labs\\.codex-integration-phase-a-20261123\\full-final4-cache",
+      "--basetemp",
+      "D:\\Aetherra Labs\\.codex-integration-phase-a-20261123\\full-final4-pytest",
+      "--junitxml",
+      "D:\\Aetherra Labs\\.codex-integration-phase-a-20261123\\full-final4.xml"
+    ],
+    "exit_code": 0,
+    "seconds": 1351.13,
+    "log_sha256": "a479f649a935757b17432728d154c164f41cc83ecd89062e8bdb45144123d641",
+    "junit_sha256": "3e50485b908cb9011c4998f3bcc4ac33ca65720d971b33398f0e274379eec42c",
+    "summary": "====== 3348 passed, 38 skipped, 5 subtests passed in 1331.45s (0:22:11) =======",
+    "skip_reasons": [
+      "SKIPPED [2] tests\\capabilities\\test_reflection_memory_stability.py:33: Reflection system unavailable: No module named 'Aetherra.aetherra_core.system.emotion_detector'",
+      "SKIPPED [2] tests\\tools\\test_release_bootstrap.py:15: could not import 'semantic_release': No module named 'semantic_release'",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:154: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:168: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:225: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:237: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:337: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:302: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:314: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:414: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:375: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:387: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:486: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:464: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:450: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:531: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:556: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:516: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:631: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:593: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:605: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:672: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:686: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:750: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:771: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:725: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:804: GUI components not available",
+      "SKIPPED [1] tests\\ai\\test_neural_interface.py:821: GUI components not available",
+      "SKIPPED [1] tests\\capabilities\\test_perception_shutdown.py:30: Windows terminate does not deliver SIGTERM",
+      "SKIPPED [1] tests\\capabilities\\test_storm_acceptance.py:138: STORM not enabled",
+      "SKIPPED [1] tests\\capabilities\\test_storm_acceptance.py:206: STORM not enabled",
+      "SKIPPED [1] tests\\capabilities\\test_storm_acceptance.py:306: Memory system not returning results - persistence issue",
+      "SKIPPED [1] tests\\unit\\test_hub_quantum_and_chat_metrics.py:20: Flask not available in test env",
+      "SKIPPED [1] tests\\unit\\test_hub_quantum_and_chat_metrics.py:34: Flask not available in test env",
+      "SKIPPED [1] tests\\unit\\test_signature_verifier.py:419: Symlinks not supported on this system",
+      "SKIPPED [1] tests\\unit\\test_sse_replay_gap_metric.py:20: Flask dependency or environment heavy; placeholder smoke"
+    ],
+    "coverage_summary": [
+      "TOTAL                                       4688   2544   1548    138    45%"
+    ]
+  },
+  "controls": {
+    "signing_controls_changed": false,
+    "strict_runtime_signing": true,
+    "guardian": "enforcing",
+    "homeostasis": "observe_only",
+    "self_incorporation": "disabled",
+    "automatic_implementation": false,
+    "storage_isolation": "distinct local profile directories; no account isolation claim"
+  },
+  "failed_attempts": [
+    {
+      "label": "smoke-first",
+      "reason": "harness used wrong Self-Improvement endpoint; safe GET admission overlap; corrected without retrying chat"
+    },
+    {
+      "label": "phase-a-live",
+      "reason": "sandbox WinError10013 outbound denial; fallback observed, excluded from live passes"
+    },
+    {
+      "label": "active-shutdown-review",
+      "reason": "old lifecycle hung after missed drain; owned test child force-stopped, excluded from clean exits"
+    },
+    {
+      "label": "phase-a-full",
+      "reason": "task harness Git ownership exception missing; pytest never started; corrected with command-scoped safe.directory"
+    },
+    {
+      "label": "phase-a-full-verified",
+      "reason": "superseded test-only route was detected as public API by docs checker; owned suite stopped and frozen snapshot restarted after correction"
+    },
+    {
+      "label": "concurrency-final-review",
+      "reason": "mixed-revision test/child during author edits; excluded; frozen independent review passed59"
+    }
+  ],
+  "limits": [
+    "Headless CLI parser/main is instrumented read-only; generation-only double offline, provider-input spy live.",
+    "No new browser or interactive ConPTY keyboard evidence.",
+    "Optional experimental/cognitive startup and its existing diagnostics remain Phase C work.",
+    "External/shared Hub reuse is not verified.",
+    "Raw pre-parse saturation may reset a Windows connection before readable503; parsed busy replies are explicit.",
+    "Cold turn latency includes retrieval and generation; model warmup is not separately measured.",
+    "Shutdown exceeding5s retains ownership and normal CLI exits1 only after admitted work and teardown finish.",
+    "Separate pending temporal observer and original worktree are preserved."
+  ],
+  "artifact_root": "C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-integration-phase-a-evidence-20261123",
+  "source_equivalence": {
+    "label": "full-final4",
+    "python_files": 1412,
+    "all_python_bytes_equal": true,
+    "differences": [],
+    "source_manifest_sha256": "37cd7f3acf6199d881d4863169d0c5ce075510747dfa36242263f3667da3967b"
+  },
+  "diagnostic_full_suite": {
+    "source": "D:\\Aetherra Labs\\.codex-integration-phase-a-20261123\\full-final3-source",
+    "file_count": 1984,
+    "command": [
+      "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+      "-m",
+      "pytest",
+      "-o",
+      "cache_dir=D:\\Aetherra Labs\\.codex-integration-phase-a-20261123\\full-final3-cache",
+      "--basetemp",
+      "D:\\Aetherra Labs\\.codex-integration-phase-a-20261123\\full-final3-pytest",
+      "--junitxml",
+      "D:\\Aetherra Labs\\.codex-integration-phase-a-20261123\\full-final3.xml"
+    ],
+    "exit_code": 1,
+    "seconds": 1374.11,
+    "summary": "= 5 failed, 3343 passed, 38 skipped, 5 subtests passed in 1347.58s (0:22:27) ==",
+    "repairs": "Test-only: short invalid dummy API keys for static scanner; bounded SSE ownership completion barriers, preserving expiry409/resume assertions and no POST replay."
+  }
+}

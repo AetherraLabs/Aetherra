@@ -1606,8 +1606,37 @@ class AetherraEngine:
             "health_monitoring", self.introspection.get_health_status
         )
 
+        # Observe the selection made during initialization. This is configuration
+        # evidence only: status reporting must not contact or select a model.
+        generation = {
+            "status": "unavailable",
+            "model_selected": False,
+            "check_scope": "configuration_only",
+        }
+        manager = self._llm_manager
+        if manager is not None:
+            try:
+                current = manager.get_current_model_info()
+                primary = getattr(
+                    getattr(manager, "primary_provider", None), "value", None
+                )
+                selected = (
+                    self._llm_selected is True
+                    and isinstance(primary, str)
+                    and bool(primary.strip())
+                    and isinstance(current, dict)
+                    and current.get("provider") == primary
+                )
+                generation.update(
+                    status="configured" if selected else "not_selected",
+                    model_selected=selected,
+                )
+            except Exception:
+                generation["status"] = "unknown"
+
         return {
             "engine_status": "active" if self.initialized else "inactive",
+            "generation": generation,
             "session_active": self.session_id is not None,
             "memory_system": memory_stats,
             "improvement_system": improvement_status,

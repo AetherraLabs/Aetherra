@@ -25,6 +25,21 @@ This document provides a comprehensive reference for all REST API endpoints expo
 - **API Version**: v1 (implicit, no version prefix)
 - **Readiness**: `GET /api/hub/readiness`
 
+The full launcher's compatibility server bounds HTTP concurrency to eight
+workers. Only GET/HEAD `/health`, `/api/hub/readiness`, `/api/kernel/readiness`
+and `/api/ai/status` may overlap application work. Other requests are serialized
+through ownership that survives an SSE response ending while generation is
+still active. A competing request receives `503 hub_busy`, `retryable=true`
+and `Retry-After: 1`; it is not queued or replayed. Before parsing, saturation
+attempts `hub_saturated` without a request trace; clients may instead observe a
+connection reset before reading that best-effort response. Parsed busy replies
+preserve configured CORS. A matched Flask automatic OPTIONS response may also
+pass busy admission; custom OPTIONS handlers remain blocked. Five-second socket I/O limits
+bound stalled clients, not total generation time. Standalone app/Engine callers
+retain their existing interfaces. See the
+[alpha runbook](ALPHA_OPERATOR_RUNBOOK.md#integration-smoke-phase-a) for endpoint
+meaning, effective modes and shutdown limits.
+
 ## Functional foundation completion
 
 The Hub is functionally foundation complete for the current Aetherra milestone.

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+# Standard library imports
 from collections.abc import Mapping
 from typing import Any
 
@@ -92,6 +93,11 @@ def assess_kernel_readiness(status: Mapping[str, Any] | None) -> dict[str, Any]:
     if missing_keys:
         reasons.append("status_contract_incomplete")
 
+    source = str(status_map.get("_source") or "live_kernel")
+    live_source = source == "live_kernel"
+    if not live_source:
+        reasons.append("kernel_status_inferred")
+
     running = bool(status_map.get("running", False))
     paused = bool(status_map.get("paused", False))
     if not running:
@@ -102,10 +108,14 @@ def assess_kernel_readiness(status: Mapping[str, Any] | None) -> dict[str, Any]:
     backpressure_ok = status_map.get("backpressure_guard_pass")
     if backpressure_ok is False:
         reasons.append("backpressure_guard_failed")
+    elif backpressure_ok is not True:
+        reasons.append("backpressure_guard_unavailable")
 
     night_schedule_ok = status_map.get("night_schedule_guard_pass")
     if night_schedule_ok is False:
         reasons.append("night_schedule_guard_failed")
+    elif night_schedule_ok is not True:
+        reasons.append("night_schedule_guard_unavailable")
 
     plugin_cb_open = bool(status_map.get("plugin_cb_open", False))
     if plugin_cb_open:
@@ -125,18 +135,25 @@ def assess_kernel_readiness(status: Mapping[str, Any] | None) -> dict[str, Any]:
         "kernel_status_unavailable",
         "status_contract_incomplete",
         "backpressure_guard_failed",
+        "backpressure_guard_unavailable",
         "night_schedule_guard_failed",
+        "night_schedule_guard_unavailable",
         "invalid_inflight_counts",
     }
-    if any(reason.startswith("invalid_queue_") for reason in reasons):
-        readiness = "blocked"
-    elif any(reason in blocking_reasons for reason in reasons):
+    if any(
+        reason.startswith("invalid_queue_") or reason in blocking_reasons
+        for reason in reasons
+    ):
         readiness = "blocked"
     elif not running:
         readiness = "offline"
-    elif paused or plugin_cb_open or any("queue_near_limit" in r for r in reasons):
-        readiness = "degraded"
-    elif any("queue_at_or_over_limit" in r for r in reasons):
+    elif (
+        not live_source
+        or paused
+        or plugin_cb_open
+        or any("queue_near_limit" in r for r in reasons)
+        or any("queue_at_or_over_limit" in r for r in reasons)
+    ):
         readiness = "degraded"
     else:
         readiness = "ready"
@@ -157,8 +174,9 @@ def assess_kernel_readiness(status: Mapping[str, Any] | None) -> dict[str, Any]:
             "missing_status_keys": missing_keys,
             "running": running,
             "paused": paused,
-            "backpressure_guard_pass": backpressure_ok is not False,
-            "night_schedule_guard_pass": night_schedule_ok is not False,
+            "backpressure_guard_pass": backpressure_ok is True,
+            "night_schedule_guard_pass": night_schedule_ok is True,
+            "status_source_live": live_source,
             "plugin_circuit_breaker_open": plugin_cb_open,
             "queue_pressure": queue_pressure,
             "inflight_valid": inflight_valid,
@@ -180,7 +198,7 @@ def assess_kernel_readiness(status: Mapping[str, Any] | None) -> dict[str, Any]:
                 "Runtime UI rendering",
             ],
         },
-        "source": str(status_map.get("_source") or "live_kernel"),
+        "source": source,
     }
 
 

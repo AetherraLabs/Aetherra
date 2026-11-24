@@ -40,6 +40,7 @@ from .chat_contract import (
 # Import chat_metrics at module scope for type checkers (was imported lazily earlier)
 from .guardian_chat import evaluate_chat_ingress
 from .metrics_accum import inc_chat_rate_limited
+from .request_ownership import retain_current_request
 from .security import policy_snapshot, safety_precheck
 from .tokenizer import count_tokens
 
@@ -517,15 +518,16 @@ def stream_sse(
 
     # Start worker thread with dedicated loop
     def _thread_runner():
-        loop = None
-        try:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            loop.run_until_complete(_run_engine())
-        finally:
-            if loop:
-                with contextlib.suppress(Exception):
-                    loop.close()
+        with worker_ownership:
+            loop = None
+            try:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                loop.run_until_complete(_run_engine())
+            finally:
+                if loop:
+                    with contextlib.suppress(Exception):
+                        loop.close()
 
     # Pre-flight: give registry a moment if engine likely not ready
     preflight_engine = _get_engine()
@@ -545,8 +547,13 @@ def stream_sse(
         CHAT_METRICS.start_stream(principal)
         CHAT_METRICS.inc_request()
         CHAT_METRICS.add_input_stats(red_prompt, count_tokens(red_prompt))
-    t = threading.Thread(target=_thread_runner, daemon=True)
-    t.start()
+    worker_ownership = retain_current_request()
+    try:
+        t = threading.Thread(target=_thread_runner, daemon=True)
+        t.start()
+    except BaseException:
+        worker_ownership.close()
+        raise
 
     # Schedule an early heartbeat chunk if engine produces no events quickly to unblock TTFT metrics/tests
     def _early_heartbeat():

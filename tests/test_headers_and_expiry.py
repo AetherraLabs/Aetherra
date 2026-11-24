@@ -28,7 +28,10 @@ def _ensure_env():
 
 def _start_hub():
     _ensure_env()
-    start_hub_server(PORT)
+    server = start_hub_server(PORT)
+    # Health is liveness, not an admission/stream-completion barrier. Earlier
+    # header-only tests deliberately close SSE before its owned work finishes.
+    assert server._ownership.wait_for_idle(timeout=10), "Hub work did not finish"
     # Wait for server
     for _ in range(50):
         try:

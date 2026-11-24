@@ -1,6 +1,6 @@
 # Internal Alpha Readiness Decision
 
-Date: 2026-11-22 (America/Denver)
+Date: 2026-11-23 (America/Denver)
 
 **GO for supervised internal alpha on the documented Windows source-runtime
 profile.** Desktop blockers, clean-main acceptance and required production
@@ -24,6 +24,71 @@ See [the checklist](ALPHA_READINESS_CHECKLIST.md),
 [operator commands](ALPHA_OPERATOR_RUNBOOK.md) and
 [fresh-install evidence](evidence/desktop_alpha_2026-11-22.json) and
 [clean-main acceptance](evidence/desktop_alpha_main_2026-11-22.json).
+
+## Phase A Core Integration Candidate
+
+Candidate base: `8902e161c728dca50f95555e16bfdfccf5f303b8`, on
+`codex/integration-phase-a`. This addendum describes an unmerged focused change;
+the historical main/release evidence below remains scoped to those revisions.
+
+The baseline boot/Integration Validation checks passed, but targeted reproduction
+found three integration defects: a startup scan could say ready with Memory and
+Engine missing; daemon/file-derived Kernel observations could certify scheduling;
+and a single Hub request thread blocked health behind generation. Full startup
+also overrode Self-Incorporation disablement. The candidate requires actual core
+registration and readiness, discloses provider selection as configuration-only,
+retains optional states, honors disabled execution, and adds bounded concurrent
+observation with serialized mutation ownership.
+
+The normal full CLI parser/main passed the instrumented headless smoke with
+real storage/retrieval and a generation-only offline double, then seven gpt-4o
+turns without fallback. Both runs started empty local profiles and stopped/restarted
+the runtime; all six processes exited zero without force. The live recall supplied
+the original record and content to OpenAI after restart; a color not supplied
+remained unknown, and a separate profile returned empty evidence. Live status
+probes during chat peaked at 546 ms in the final live rerun (663 ms offline,
+with other verification running concurrently). This is bounded responsiveness
+evidence, not a throughput or soak guarantee, and does not reduce the cold
+semantic-retrieval latency itself.
+
+```text
+PID 35000 writes 533780ffd6bf9e383ebe5c4ebf9ce2cf: Leona taught bicycle repair
+  exit 0 -> PID 55152, same SQLite, empty conversation context
+  retrieved ID = supplied evidence ID = 533780ffd6bf9e383ebe5c4ebf9ce2cf
+  openai/gpt-4o: "Your aunt Leona showed you..."; fallback=false
+```
+
+Guardian remained enabled/enforcing with intact audit. Homeostasis was
+`observe_only` with zero actuator attempts/executions/blocks; Self-Incorporation
+reported disabled and Self-Improvement reported no automatic implementation.
+Strict capability/network/script/signing settings remained enabled; release
+workflows, trust keys and the fixed quality baseline are unchanged.
+
+Independent review additionally reproduced shutdown during active generation
+and configured cross-origin busy-response gaps; their focused repairs and final
+regressions are recorded with the [Phase A evidence](evidence/integration_phase_a_2026-11-23.json).
+The final default suite passed **3,348 tests, with 38 skips and 5 passing subtests**,
+then exited zero. It retained default collection, addopts and coverage; all
+1,412 Python files match the frozen verification source byte-for-byte. The
+existing optional/platform skips and diagnostic failures are recorded in the
+evidence, not counted as passes. Boot validation (4 checks), Integration Validation
+(5 checks), signing regressions (13 tests), the fixed quality baseline and docs
+checks passed. Independent review found no remaining blockers in the candidate.
+The initial live attempt was sandbox-network denied and used fallback; it is
+retained as a failed attempt, not counted in the seven live turns.
+
+**Decision: retain the bounded supervised internal-alpha GO on the previously
+verified profile; do not advance Stage 22 or extend authority.** Candidate
+integration/hosted CI remain separate gates. Phase B observation/maintenance is
+next after this candidate is reviewed and integrated. The separate pending
+TemporalConsciousnessEngine observer is preserved and not absorbed here.
+
+This headless run did not repeat browser/interactive ConPTY verification. External
+or shared Hub reuse is unverified. Current optional experimental/cognitive startup
+is not quarantined yet; its existing diagnostics can fail independently of the
+core and generic registry health is not proof of useful loop work. Phase C owns
+that activation-order work. No unattended, production, alternate-platform or
+account-isolation claim is made.
 
 ## First Supervised Use Exercise
 
@@ -74,11 +139,11 @@ PID 55764, same data, empty history: "Who showed me how to repair a puncture...?
 ```
 
 The 15-minute observations describe unchanged main, not the candidate prompt.
-The candidate has focused offline and live checks; its full default suite,
-hosted CI and integration have not run. The earlier 3,136-test result below is
-historical coverage of the prior runtime, not a new candidate-suite pass.
+At that checkpoint the prompt candidate had focused offline and live checks;
+the correction subsequently integrated through PR #347. The earlier 3,136-test
+result below is historical coverage of the prior runtime, not a Phase A pass.
 
-The first post-restart recall took **63.603 seconds** while warming retrieval,
+The first post-restart recall took **63.603 seconds** total,
 and a concurrent 10-second status probe timed out. It recovered without a runtime
 restart or retrying the chat write. The five-minute window began afterward.
 A separate earlier sampler attempt failed on a disappearing child process;
@@ -87,8 +152,8 @@ Neither failed attempt counts toward the 15 minutes. This is **not** evidence of
 uninterrupted cold-start responsiveness, leak-free operation or soak/load capacity.
 
 **Decision: retain the bounded supervised GO; do not advance Stage 22.** The
-disclosure correction needs review/integration before it becomes the supported
-revision. Cold-start responsiveness remains a follow-up within Stage 21.
+disclosure correction is now integrated. The Phase A candidate above addresses
+concurrent status responsiveness within Stage 21.
 Required signing and the approved key remain unchanged. Detailed outcomes and
 artifact digests belong in
 [the supervised-use evidence](evidence/supervised_alpha_2026-11-22.json).
@@ -153,7 +218,7 @@ listener on conflicting fixed ports; they now own real loopback listeners and
 registries and close them after each test. No production metrics semantics,
 test skip or quality-baseline allowance was added to hide a failure.
 
-## Current Verification
+## Historical Desktop Verification (2026-11-22)
 
 | Gate | Result | Evidence / boundary |
 | --- | --- | --- |
