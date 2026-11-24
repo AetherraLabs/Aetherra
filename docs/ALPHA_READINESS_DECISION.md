@@ -12,8 +12,8 @@ installation graphs.** The operating boundary below remains in force.
   merged as `42b8f6a7483c588a8cdc91450ffd095a10c1d992`.
 - Released main: `17a833cd0653556b50d869be1f22b989d5633cb4`, `v0.5.0-beta.11`.
 - Phase C1 local acceptance: GO for supervised operation of the frozen Windows
-  source-runtime candidate, still uncommitted and unmerged. Hosted CI, browser
-  and live-model checks are unverified; see the C1 checkpoint below.
+  source-runtime candidate, committed/pushed as `b8719fa2` and still unmerged.
+  Hosted CI, browser and live-model checks are unverified; see the C1 checkpoint below.
 - Historical desktop and Phase A/B checkpoints retain their own revision and
   verification boundaries; they are not substituted for C1 evidence.
 - Supported profile: Windows x64, Python 3.13.7 source checkout, Node 22.18.0,
@@ -57,8 +57,9 @@ are historical and do not replace this clean-main result.
 
 **GO for supervised C1 operation on the frozen Windows source-runtime candidate.**
 This is local acceptance of `codex/phase-c-observer` based on released main
-`17a833cd`; the candidate remains uncommitted and unmerged. Hosted CI, a fresh
-installation, browser rendering and live-model operation are unverified for C1.
+`17a833cd`; C1 is committed and pushed as `b8719fa2`, still unmerged.
+Hosted CI, a fresh installation, browser rendering and live-model operation
+are unverified for C1.
 Unattended/production operation and action execution remain NO-GO. The
 [source-bound evidence](evidence/integration_phase_c1_2026-11-24.json) records the
 exact source hashes, commands, result counts, audit references and limitations.
@@ -108,13 +109,21 @@ Observatory HTTP payloads were verified; no browser or live provider was used.
 Harness stop uses trusted local instrumentation and SIGINT, not interactive
 keyboard evidence. Historical browser/gpt-4o checks retain their earlier scope.
 Signing, Guardian/Security, release controls, original workspaces and pending
-temporal work are preserved. No commit, push or remote CI is claimed.
+temporal work are preserved. The evidence JSON captures the precommit test
+snapshot; its uncommitted/index fields describe that point in time. C1 was then
+reviewed, committed and pushed as
+[b8719fa2](https://github.com/AetherraLabs/Aetherra/commit/b8719fa22b8bd21ea77b3c4aa721522e312e86ea).
+The committed Python content matches the verified snapshot after Git newline
+normalization. Publication does not add a remote-CI or merged-main claim.
 
 C1 state intentionally resets on restart and attaches no chat Memory consolidator
 or SafetyEnvelope actuator. **Next: C2 safe profile-scoped continuity** through
 existing interfaces, including failed/corrupt-restore protection and accurate
 trust rehydration before durable consciousness history is enabled. The separate
 pending TemporalConsciousnessEngine observer is not activated by C1.
+The [prepared C2a plan](superpowers/plans/2026-11-24-phase-c2-observer-checkpoints.md)
+starts with exact trust restoration and immutable Memory checkpoints. Automatic
+selection/periodic saves are C2b; no C2 implementation or readiness is claimed.
 
 ## Merge Review: Maintenance Restore And Status
 

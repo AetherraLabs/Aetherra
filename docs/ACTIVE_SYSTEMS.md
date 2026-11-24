@@ -38,14 +38,16 @@ Phase C1 local acceptance (2026-11-24): **GO for supervised Windows operation of
 the frozen opt-in ConsciousnessCore observer candidate.** The full suite passed
 3,651 tests, 38 skips and 5 passing subtests. Allowed and denied normal-launch
 profiles each crossed 215 seconds; real Observatory HTTP status, signed audit
-chains, independent observer stop and continued chat passed. The candidate is
-uncommitted and unmerged; hosted CI, browser and live-model checks are unverified.
+chains, independent observer stop and continued chat passed. C1 is committed and
+pushed as `b8719fa2`, still unmerged; hosted CI, browser and live-model
+checks are unverified.
 See [source-bound evidence](evidence/integration_phase_c1_2026-11-24.json), the
 [C1 contract](AETHERRA_CONSCIOUSNESS_SYSTEM.md#phase-c1-normal-runtime-contract)
 and [operator procedure](ALPHA_OPERATOR_RUNBOOK.md#consciousness-observer-smoke-phase-c1).
-Next is C2: safe profile-scoped continuity restore/write and accurate trust
-rehydration through existing interfaces. Pending temporal observer work remains
-separate and preserved. No action authority or broader readiness is granted.
+Next is [C2a checkpoint preparation](superpowers/plans/2026-11-24-phase-c2-observer-checkpoints.md):
+safe profile-scoped restore/write and accurate trust rehydration through existing
+Memory, with automatic selection and periodic saves reserved for C2b. Pending
+temporal observer work remains separate and preserved. No action authority or broader readiness is granted.
 
 | System | Status | Primary Reference |
 | --- | --- | --- |

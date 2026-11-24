@@ -22,8 +22,8 @@ recorded in [the Phase A addendum](ALPHA_READINESS_DECISION.md#phase-a-core-inte
 The current integrated baseline is PR #352 and signed `v0.5.0-beta.11`; see the
 [clean-main checkpoint](ALPHA_READINESS_DECISION.md#phase-b-merged-main-checkpoint).
 Phase C1 has local GO for supervised operation of the frozen Windows candidate;
-it remains uncommitted and unmerged. Hosted CI, fresh installation, browser and
-live-model checks are unverified for C1. See the
+it is committed and pushed as `b8719fa2`, still unmerged. Hosted CI,
+fresh installation, browser and live-model checks are unverified for C1. See the
 [C1 evidence](evidence/integration_phase_c1_2026-11-24.json). The desktop counts
 above remain a historical installation checkpoint.
 
@@ -830,7 +830,7 @@ separate regression gate; a no-provider fallback cannot pass a live-model check.
 ## Consciousness Observer Smoke (Phase C1)
 
 C1 has local GO for supervised operation on the frozen Windows candidate,
-which remains uncommitted and unmerged. The
+committed and pushed as `b8719fa2`, still unmerged. The
 [acceptance evidence](evidence/integration_phase_c1_2026-11-24.json) records the
 full suite (3,651 passed, 38 skipped, 5 passing subtests), boot/integration and
 quality gates, two 215-second observer profiles and a three-process default

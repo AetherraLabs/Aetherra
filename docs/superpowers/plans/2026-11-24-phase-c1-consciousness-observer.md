@@ -25,7 +25,7 @@ the persistent entity and Lyrixa its persona.
   healthy ticks.
 - No broad host sensors or experimental quantum/cosmic/temporal imports in this launch path. Events
   contain bounded measured registry/core health, not conversations.
-- No push/PR/merge in this task; leave focused changes reviewable on the isolated branch.
+- Initial implementation handoff was local-only; the later publication checkpoint is below.
 
 ## Tasks
 
@@ -117,4 +117,16 @@ See the [source-bound evidence](../../evidence/integration_phase_c1_2026-11-24.j
 and [operator procedure](../../ALPHA_OPERATOR_RUNBOOK.md#consciousness-observer-smoke-phase-c1).
 Browser, live-model and remote CI checks were not performed for this candidate.
 C2 remains the next persistence milestone; pending temporal work is preserved.
-No commit, push, PR or merge was performed in this task.
+The initial verification handoff made no commit, push, PR or merge.
+
+## Publication and C2 Preparation
+
+At the user's subsequent request, the reviewed C1 files were committed and pushed
+as [b8719fa2](https://github.com/AetherraLabs/Aetherra/commit/b8719fa22b8bd21ea77b3c4aa721522e312e86ea)
+on `codex/phase-c-observer`. Runtime content matches the frozen verification
+snapshot after Git newline normalization. The evidence JSON remains the original
+precommit checkpoint; no PR/merge or additional CI/live-model pass is claimed.
+
+The [C2a preparation plan](2026-11-24-phase-c2-observer-checkpoints.md) and
+[design](../specs/2026-11-24-phase-c2-observer-continuity-design.md) define the next
+focused checkpoint milestone. They do not implement or enable persistence.

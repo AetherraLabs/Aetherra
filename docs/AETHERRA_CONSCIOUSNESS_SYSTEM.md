@@ -11,7 +11,7 @@ remains the persistent cognitive system and Lyrixa her user-facing persona.
 ## Phase C1 Normal Runtime Contract
 
 **GO for supervised operation of this frozen Windows source-runtime candidate.**
-C1 local acceptance passed; the candidate remains uncommitted and unmerged.
+C1 local acceptance passed; `b8719fa2` is committed and pushed, still unmerged.
 Hosted CI, browser and live-model checks are unverified. This section is
 authoritative for the normal full launcher's Phase C1 path. The component and
 historical phase reference below does not imply every standalone feature is active.
@@ -92,7 +92,9 @@ rehydration before enabling durable consciousness history. This is separate from
 the existing personal-continuity chat Memory path. The pending
 TemporalConsciousnessEngine observer work is preserved and is not imported or
 activated by C1. No production, unattended or autonomous-action GO follows from
-this observer milestone.
+this observer milestone. The [C2a plan](superpowers/plans/2026-11-24-phase-c2-observer-checkpoints.md)
+and [design](superpowers/specs/2026-11-24-phase-c2-observer-continuity-design.md)
+prepare exact Memory checkpoints; none of those proposed APIs/config is active.
 
 ## Architecture overview
 

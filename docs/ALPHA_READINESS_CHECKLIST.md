@@ -10,8 +10,8 @@ passed; the release signature and signed artifact checksums were verified.
 See the [merged-main checkpoint](ALPHA_READINESS_DECISION.md#phase-b-merged-main-checkpoint).
 
 **Phase C1: GO for supervised operation of the frozen Windows source-runtime
-candidate.** It remains uncommitted and unmerged. Hosted CI, fresh installation,
-browser and live-model checks are unverified for C1. Local acceptance is recorded
+candidate.** C1 is committed and pushed as `b8719fa2`, still unmerged.
+Hosted CI, fresh installation, browser and live-model checks are unverified for C1. Local acceptance is recorded
 in the [decision](ALPHA_READINESS_DECISION.md#phase-c1-observer-candidate) and
 [source-bound evidence](evidence/integration_phase_c1_2026-11-24.json):
 
@@ -376,8 +376,8 @@ Primary file:
 Status: GO for supervised internal alpha on the verified Windows source-runtime
 profile and local C1 operation on the frozen candidate. The released Phase B
 baseline passed merge, clean-main and required production/release signing gates.
-C1 remains uncommitted and unmerged, with hosted CI, fresh installation, browser
-and live-model checks unverified. Unattended/production operation and unverified
+C1 is committed and pushed as `b8719fa2`, still unmerged, with hosted CI,
+fresh installation, browser and live-model checks unverified. Unattended/production operation and unverified
 installation graphs remain NO-GO; no broader authority is inferred.
 
 Before calling alpha ready:
@@ -395,11 +395,12 @@ Decision record:
 
 ## Current Next Actions
 
-1. Review the locally verified C1 candidate before any commit, publication and
-   hosted CI; merged-main acceptance remains a separate gate.
-2. Start C2 safe profile-scoped continuity restore/write and accurate trust
-   rehydration through existing interfaces. Keep strict signing and governance;
-   pending temporal observer work remains a separate preserved milestone.
+1. Review published C1 and obtain hosted CI before merge; merged-main acceptance
+   remains a separate gate.
+2. Use the [prepared C2a plan](superpowers/plans/2026-11-24-phase-c2-observer-checkpoints.md)
+   for exact Memory checkpoint restore/write and accurate trust. Automatic
+   selection and periodic saves remain C2b. C2 code is not implemented.
+   Keep strict signing/governance and preserve the separate temporal milestone.
 3. Verify optional features, other platforms and broader operating modes
    separately before extending the GO decision.
 
