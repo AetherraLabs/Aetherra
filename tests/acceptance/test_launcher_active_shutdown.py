@@ -105,7 +105,7 @@ def _wait_file(process, path, timeout=90):
 
 
 def _chat(port, path):
-    connection = http.client.HTTPConnection("127.0.0.1", port, timeout=30)
+    connection = http.client.HTTPConnection("127.0.0.1", port, timeout=120)
     try:
         connection.request(
             "POST",
@@ -155,7 +155,8 @@ def test_normal_cli_sigint_keeps_memory_owned_after_drain_timeout(tmp_path, path
                 boot = _wait_file(process, profile / "active-boot.json")
                 assert boot["readiness"]["status"] == "ready"
                 future = client.submit(_chat, port, path)
-                _wait_file(process, profile / "generation-entered.json", timeout=10)
+                # Cold local retrieval can load its model before generation starts.
+                _wait_file(process, profile / "generation-entered.json")
                 if path.endswith("stream"):
                     status, body = future.result(timeout=5)
                     assert status == 200

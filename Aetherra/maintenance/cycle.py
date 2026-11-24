@@ -9,12 +9,12 @@ diagnosis, approval, enforcement, execution, or verification authority.
 
 from __future__ import annotations
 
+# Standard library imports
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 from uuid import uuid4
-
 
 AUTHORITY_OWNERSHIP: dict[str, tuple[str, ...]] = {
     "homeostasis": ("observe", "verify"),
@@ -378,7 +378,7 @@ class MaintenanceCycle:
             "learning_recorded",
             str(record.get("outcome") or "learning record stored"),
             source="maintenance",
-            details={"keys": sorted(str(key) for key in record.keys())},
+            details={"keys": sorted(str(key) for key in record)},
         )
         self._set_status(MaintenanceCycleStatus.LEARNED)
 
@@ -423,7 +423,9 @@ class MaintenanceCycle:
             cycle.guardian_decision = MaintenanceDecision(**decision)
         cycle.security_enforced = bool(record.get("security_enforced", False))
         security_reason = record.get("security_reason")
-        cycle.security_reason = str(security_reason) if security_reason is not None else None
+        cycle.security_reason = (
+            str(security_reason) if security_reason is not None else None
+        )
         execution = record.get("execution")
         if isinstance(execution, dict):
             cycle.execution = MaintenanceExecution(**execution)
@@ -434,10 +436,7 @@ class MaintenanceCycle:
         if isinstance(learning_record, dict):
             cycle.learning_record = dict(learning_record)
         cycle.failures = [
-            {
-                str(key): str(value)
-                for key, value in item.items()
-            }
+            {str(key): str(value) for key, value in item.items()}
             for item in record.get("failures", [])
             if isinstance(item, dict)
         ]
@@ -457,13 +456,19 @@ class MaintenanceCycle:
             "observations": len(self.observations),
             "has_diagnosis": self.diagnosis is not None,
             "has_proposal": self.proposal is not None,
+            "proposal_id": self.proposal.proposal_id if self.proposal else None,
+            "guardian_audit_id": (
+                self.guardian_decision.audit_id if self.guardian_decision else None
+            ),
             "guardian_status": (
                 self.guardian_decision.status if self.guardian_decision else None
             ),
             "security_enforced": self.security_enforced,
             "can_execute": self.can_execute(),
             "execution_status": self.execution.status if self.execution else None,
-            "verification_status": self.verification.status if self.verification else None,
+            "verification_status": (
+                self.verification.status if self.verification else None
+            ),
             "event_count": len(self.events),
             "last_event": asdict(self.events[-1]) if self.events else None,
             "failures": list(self.failures),
@@ -650,7 +655,9 @@ class MaintenanceCoordinator:
             "cycle_count": len(self._cycles),
             "active_cycle_count": len(active),
             "terminal_cycle_count": len(recent) - len(active),
-            "failure_count": sum(len(cycle.failures) for cycle in self._cycles.values()),
+            "failure_count": sum(
+                len(cycle.failures) for cycle in self._cycles.values()
+            ),
             "active_cycles": active,
             "recent_cycles": recent[: self.max_recent],
             "contract": get_maintenance_contract(),

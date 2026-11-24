@@ -1,0 +1,400 @@
+{
+  "milestone": "Phase B final PR review and publication verification",
+  "date": "2026-11-24",
+  "timezone": "America/Denver",
+  "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+  "branch": "codex/integration-phase-b",
+  "state": "Pre-commit verification of the reviewed source; hosted PR checks are a separate gate and no merge is claimed.",
+  "review": {
+    "backend": "No remaining actionable findings after provenance repair",
+    "surface": "No actionable UI/status/evidence findings",
+    "scope": "Only Phase B implementation, regressions and documentation; protected workspaces unchanged",
+    "found": "Real validator empty defaults and no-input fallback scores could enter SQLite performance history as measurements.",
+    "repair": "Exclude effectiveness summaries without per-score provenance; preserve the diagnostic interface and genuine measured zero values.",
+    "regressions": "Both real validator states reproduced the defect; real registered intake and SQLite reload now exclude effectiveness_* while retaining measured 0.0 and 300.0 and normal proposal routing."
+  },
+  "verification": {
+    "full_suite_summary": "3472 passed, 38 skipped, 5 subtests passed in 1657.01s (0:27:37)",
+    "default_collection_addopts_and_coverage": true,
+    "focused_provenance_and_flow_tests": 87,
+    "quality": "0 new/edited violations; 959 unchanged legacy files; 74 resolved",
+    "checkout": {
+      "passed": true,
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "checkout": "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\verification-publication",
+      "source_files_copied": 1994,
+      "frozen_source_control_files": 1547,
+      "same_candidate_source": true,
+      "ignored_runtime_history_copied": false,
+      "review_changed_source": [
+        "tests/unit/homeostasis/test_proposal_flow.py",
+        "Aetherra/homeostasis/self_improvement_metrics_bridge.py"
+      ]
+    },
+    "runtime": {
+      "passed": true,
+      "recorded_at": "2026-11-24T18:10:44.386956+00:00",
+      "runner": {
+        "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+        "command": [
+          "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+          "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124\\probe.py",
+          "--output",
+          "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124\\runtime-review",
+          "--port",
+          "13401"
+        ],
+        "exit_code": 0,
+        "seconds": 590.1
+      },
+      "source": {
+        "head": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+        "python_files": 1418,
+        "unchanged": true,
+        "before_sha256": "bca943cdd20faf6322a69b43e681377887401f08c3579d31c48bb688dae861d7",
+        "after_sha256": "bca943cdd20faf6322a69b43e681377887401f08c3579d31c48bb688dae861d7",
+        "bridge_sha256": "8fa8802478626864e057d287a4c55679c48c16fd88282b70e380ecf9b95362d4"
+      },
+      "configured_policy": {
+        "provenance": "preserved child_environment builder used by each real launcher subprocess",
+        "builder_sha256": "a8674a8af020cdbdfd0c477b179f6dc3c130327f7b149c9f15f00a4ea00e4b3b",
+        "flags": {
+          "AETHERRA_SIGNING_STRICT": "1",
+          "AETHERRA_SCRIPT_VERIFY_STRICT": "1",
+          "AETHERRA_REQUIRE_CAPABILITIES": "1",
+          "AETHERRA_GUARDIAN_REQUIRE_POLICY": "1",
+          "AETHERRA_AUDIT": "1",
+          "AETHERRA_HOMEOSTASIS_MODE": "observe_only",
+          "AETHERRA_SELFINC_ENABLED": "0",
+          "AETHERRA_HMR_ENABLED": "0",
+          "AETHERRA_SELF_IMPROVEMENT_AUTO_IMPLEMENT": "0"
+        }
+      },
+      "sessions": [
+        {
+          "stage": "first",
+          "runtime_pid": 50416,
+          "launch_pid": 12460,
+          "exit_code": 0,
+          "seconds": 295.92,
+          "forced_stop": false,
+          "hub_samples": 16,
+          "max_hub_heartbeat_age_seconds": 31.49,
+          "heartbeat_advance_seconds": 245.657,
+          "observations": {
+            "baseline": 1,
+            "after_215s": 4
+          },
+          "measured_intake": {
+            "hub_connection": {
+              "memory_count": {
+                "first": 1,
+                "last": 4,
+                "last_advance_age_seconds": 31.053
+              },
+              "sqlite_count": {
+                "first": 1,
+                "last": 4,
+                "last_advance_age_seconds": 31.053
+              }
+            },
+            "plugin_load_success": {
+              "memory_count": {
+                "first": 1,
+                "last": 4,
+                "last_advance_age_seconds": 31.053
+              },
+              "sqlite_count": {
+                "first": 1,
+                "last": 4,
+                "last_advance_age_seconds": 31.053
+              }
+            }
+          },
+          "validator_placeholders_absent": true,
+          "false_hub_pressure_absent": true,
+          "guardian_enforcing_audit_intact": true,
+          "observe_only_unchanged_tuning_zero_actions": true,
+          "selfinc_disabled_auto_implementation_off": true,
+          "cycles_proposed_without_authority_or_execution": 3,
+          "content_receipt_sha256": "58571d07249d12ae4d49c3b25ebc8df98b98230c3acf828143189d4479cfba9d",
+          "runtime_log_sha256": "b9e6975e9e40a47175052e62996a5fd4086ac1ec6fd79a98b614cace1dd1844d"
+        },
+        {
+          "stage": "restart",
+          "runtime_pid": 10376,
+          "launch_pid": 54792,
+          "exit_code": 0,
+          "seconds": 290.78,
+          "forced_stop": false,
+          "hub_samples": 16,
+          "max_hub_heartbeat_age_seconds": 31.173,
+          "heartbeat_advance_seconds": 245.202,
+          "observations": {
+            "baseline": 1,
+            "after_215s": 4
+          },
+          "measured_intake": {
+            "hub_connection": {
+              "memory_count": {
+                "first": 5,
+                "last": 8,
+                "last_advance_age_seconds": 31.514
+              },
+              "sqlite_count": {
+                "first": 5,
+                "last": 8,
+                "last_advance_age_seconds": 31.514
+              }
+            },
+            "plugin_load_success": {
+              "memory_count": {
+                "first": 5,
+                "last": 8,
+                "last_advance_age_seconds": 31.514
+              },
+              "sqlite_count": {
+                "first": 5,
+                "last": 8,
+                "last_advance_age_seconds": 31.514
+              }
+            }
+          },
+          "validator_placeholders_absent": true,
+          "false_hub_pressure_absent": true,
+          "guardian_enforcing_audit_intact": true,
+          "observe_only_unchanged_tuning_zero_actions": true,
+          "selfinc_disabled_auto_implementation_off": true,
+          "cycles_proposed_without_authority_or_execution": 3,
+          "content_receipt_sha256": "d6c5b5061d6dccdd950612db49f056748d3589ce97f3edc1127b05becf566980",
+          "runtime_log_sha256": "4362216a266a2988679ecf1d319fab0993a2eb6b40dfca99b459089bdcd2ea13"
+        }
+      ],
+      "total_hub_samples": 32,
+      "exact_cycle_and_proposal_contents_preserved": true,
+      "cycle_ids": [
+        "maint-homeostasis-821a26d1d803d595",
+        "maint-homeostasis-8c9d93f29e64f8af",
+        "maint-homeostasis-f33eee47d1f97566"
+      ],
+      "proposal_ids": [
+        "si-821a26d1d803d595",
+        "si-8c9d93f29e64f8af",
+        "si-f33eee47d1f97566"
+      ],
+      "synthetic_diagnostic": {
+        "provenance": "synthetic_pressure_not_measured_degradation",
+        "task_latency": 5000.0,
+        "queue_depth": 150.0,
+        "memory_rtt": 900.0,
+        "measured_metrics": [
+          "task_latency",
+          "queue_depth",
+          "memory_rtt"
+        ],
+        "real_bridge_calls": 1,
+        "previous_snapshot_restored": true
+      },
+      "final_sqlite_metric_names": [
+        "actions_executed",
+        "controller_active",
+        "errors_detected",
+        "fixes_successful",
+        "hub_connection",
+        "memory_rtt",
+        "plugin_load_success",
+        "si_discovery_rate",
+        "si_files_classified",
+        "si_files_discovered",
+        "si_files_integrated",
+        "si_files_quarantined",
+        "si_health_score",
+        "si_night_cycle_insights",
+        "si_night_cycles_completed",
+        "system_health_score",
+        "task_latency"
+      ],
+      "browser": "not repeated",
+      "live_model": "not repeated",
+      "limits": "Current Windows source-runtime profile; bounded SIGINT instrumentation; no unattended/deployment-matrix claim",
+      "owned_listener_closed_after_each_session": true,
+      "checker_sha256": {
+        "probe-used.py": "695e81d6ea8c9da93de6e8651600e3058be5270978fe626f3b4bf5c5c953e7d2",
+        "verify_contents.py": "95ae2f7d2a136611802ec0487ecab72fc5e98a68292c8ca6532cb5cd7e9239bb",
+        "verify_provenance.py": "60913f4bf89f5b4844b1157924899ff25144488cd2730e9335fa78ce51408620",
+        "assemble_runtime_review.py": "c897c3a69f6d8919120414684752a70d285123d0dfc9ca8273b7de2e08aab504"
+      },
+      "evidence_sha256": {
+        "summary.json": "b6ecd6bfaf5f84dc9e468112dead8b17f2beb4316cc465d566ed5e106de058bf",
+        "intake-provenance-check.json": "b10e188f67fd6a7665e57ae2069e7aa0151b1084fc4fc48435f0e514090214cb",
+        "restart-content-continuity.json": "b230de6224b8d8465f3842551422daeae6c38e160c462627322b51af0f5ed5c3",
+        "first-hub-monitor.json": "ca72f6151fc088e1d9436b8fca588d354873690e36d7356e533ace6f13e497f4",
+        "restart-hub-monitor.json": "a08469fc7ccb44e9f92108553e6a5059b5b492446d6b49fd3293adc061b2c62c",
+        "first-metric-monitor.json": "f37676eca00c0cff5f3dcc469da6d63b8263442a261d6e514881f77d4a002f0f",
+        "restart-metric-monitor.json": "ea73577b7a9b41b6167e22354e7c95f57149ac208bec8e7b6b099a29679a40b8"
+      }
+    }
+  },
+  "checks": {
+    "full": {
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "--junitxml",
+        "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124\\full.xml",
+        "--cov-report",
+        "html:D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124\\coverage-html",
+        "--cov-report",
+        "xml:D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124\\coverage.xml",
+        "-o",
+        "cache_dir=D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124\\pytest-cache",
+        "--basetemp",
+        "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124\\pytest-full"
+      ],
+      "exit_code": 0,
+      "seconds": 1675.79
+    },
+    "quality": {
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "tools/python_quality.py"
+      ],
+      "exit_code": 0,
+      "seconds": 125.39
+    },
+    "validator-provenance-red-02": {
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "tests/unit/homeostasis/test_proposal_flow.py",
+        "-k",
+        "validator_defaults_never",
+        "-q",
+        "--no-cov",
+        "-o",
+        "addopts=",
+        "-o",
+        "cache_dir=D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124\\pytest-cache",
+        "--basetemp",
+        "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124\\pytest-validator-provenance-red-02"
+      ],
+      "exit_code": 1,
+      "seconds": 3.71
+    },
+    "validator-provenance-green-01": {
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "tests/unit/homeostasis/test_proposal_flow.py",
+        "-k",
+        "validator_defaults_never",
+        "-q",
+        "--no-cov",
+        "-o",
+        "addopts=",
+        "-o",
+        "cache_dir=D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124\\pytest-cache",
+        "--basetemp",
+        "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124\\pytest-validator-provenance-green-01"
+      ],
+      "exit_code": 0,
+      "seconds": 3.51
+    },
+    "validator-provenance-focused-01": {
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "tests/unit/homeostasis/test_proposal_flow.py",
+        "tests/unit/homeostasis/test_measured_metrics.py",
+        "tests/unit/homeostasis/test_observe_only_enforcement.py",
+        "-q",
+        "--no-cov",
+        "-o",
+        "addopts=",
+        "-o",
+        "cache_dir=D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124\\pytest-cache",
+        "--basetemp",
+        "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124\\pytest-validator-provenance-focused-01"
+      ],
+      "exit_code": 0,
+      "seconds": 9.08
+    },
+    "docs": {
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "tools/verify_docs_consistency.py"
+      ],
+      "exit_code": 0,
+      "seconds": 3.81
+    }
+  },
+  "preservation": {
+    "original_and_pending_temporal": "HEAD/index/status and 49/66 protected file hashes unchanged",
+    "historical_phase_b_evidence": "unchanged",
+    "frozen_source_control_files": 1547,
+    "candidate_and_verification_source_identical": true,
+    "signing_release_and_ci_controls_unchanged": true
+  },
+  "decision": "GO for bounded supervised observe/propose operation on the documented Windows source-runtime profile. NO-GO for execution or unattended/production operation.",
+  "limits": [
+    "No repeated browser/live-model check after the backend-only review fix; earlier evidence retains its source scope.",
+    "Two bounded instrumented normal CLI launches using SIGINT, not interactive ConPTY or a soak test.",
+    "Hosted PR CI and merged-main acceptance are separate; production signed release is not claimed by this checkpoint."
+  ],
+  "evidence_root": "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\publication-20261124",
+  "artifact_sha256": {
+    "full.json": "6073d38326531e9bca6eed3d5fdffebc5f37eb68667759f21b2417d737341a2b",
+    "full.log": "fc730da21dd6d904b337a03ac3fa6e2082587713c1a884cf212f9541bf9f4d00",
+    "full.xml": "4fd44c16c858cf318834a841f71480d04b8c1b97fc2d04023382904dadbbfd93",
+    "quality.json": "45bfbd9d5989d780ddedfd09a80bd1667b63dee9fbcd6edab8566e0e698d9444",
+    "quality.log": "e0cc0171e99be24f36fd2c3823c385e8b81e77985e201c37bcfaa3db76df614b",
+    "verification-checkout.json": "c2e093b245573d446cc5d802c610856ab44deb3377f2b01f983fe21b444a3dcc",
+    "source-before-verification.json": "185453dbc759ae312038727d03dd976bdb2fbe791fe401a1f143b44c0bbc3aa5",
+    "runtime-review-summary.json": "576d1c7e27d4901d923910bf002e0deb905569f4d049368482829acdfc16b4ce",
+    "validator-provenance-red-02.json": "69aa35a2a945cc320b5b1f90ec69d898160903200f61efb9d2dc2fa3d6da4ff0",
+    "validator-provenance-red-02.log": "900dddbe5e283ec37d2a0b6ee9903b09fb46430db9b33ff12060687712ffde5e",
+    "validator-provenance-green-01.json": "73d1c4d561fa8534bb29dd31eefe4e900439ae307cbf14ae09ea090cceb4f9cb",
+    "validator-provenance-green-01.log": "3a3784387226af9e12d5db7c8e078ad4b4988a101e976c498b0d941321aa696c",
+    "validator-provenance-focused-01.json": "4f5382344be364ff148ced68d36e1cb05a0a64ede837a91553c8b1e6f01a4cf0",
+    "validator-provenance-focused-01.log": "eae251f89ff7ca00c184deca58c968382d0f5d10ce39868c6ce07515813509fa",
+    "docs.json": "eab95b5b1babd53db8a55b553cbb9c02cbe6d2c6dcbbe324f69a36282e47264e",
+    "docs.log": "ef1b5ca0f6849a97743942db69bdae1129182c78639b1c61b6dbc8e9265e5bf9"
+  },
+  "changed_source_sha256": {
+    "Aetherra/aetherra_core/engine/self_improvement_engine.py": "0d90238f698a4fdb629165825a8d412e112baeb7aad60bb741c25bcf6e063fd1",
+    "Aetherra/homeostasis/homeostasis_integration.py": "5a2d1333c50e142d2b479e47f6d9570d47c1356495a941d2227a7e010bf7e030",
+    "Aetherra/homeostasis/observation.py": "13353816bc728f5e889bc8fb2ed0042672fb50a7fe9bf468f4e3b13f33f294b2",
+    "Aetherra/homeostasis/self_improvement_metrics_bridge.py": "8fa8802478626864e057d287a4c55679c48c16fd88282b70e380ecf9b95362d4",
+    "Aetherra/homeostasis/stability_metrics.py": "71b8a1475e526706f9430270c2a749e2f0864751953b1c857862e8b8325d9b93",
+    "Aetherra/homeostasis/system_supervisor.py": "779a9f686056e73f55c8572dfadf4e6a20da80b0bd6c58b5ca2873400451678d",
+    "Aetherra/lyrixa/gui/src/App.tsx": "9e7c24ff9e7d214ab2420912d907d16189c7fa8135f4bbb07611129578aaca6a",
+    "Aetherra/lyrixa/gui/src/SubsystemEvidence.tsx": "dab58144f92788140f7e667924747545bdf7f88cd715e967f6791eade83e6256",
+    "Aetherra/lyrixa/gui/src/index.css": "1669242d68578ffe390ef031a82af6f9751e8f28ee631d33cc4b960e0b9b571e",
+    "Aetherra/lyrixa/gui/tests/evidence.test.mjs": "090d8b2c998960bb862f2fc09f24c74f9fe9aeadb5dd58e409ea1d1bb1acac05",
+    "Aetherra/maintenance/cycle.py": "e7ac718842b41df8fd3c031a0a49030faf3ed7ac3848ea0e98e2575336f1c75d",
+    "Aetherra/runtime_ui/snapshot.py": "4995cb0f972a87ffaffac14f9274b2eb4040e1d1fd74a0223edce4e84aff5bf7",
+    "aetherra_hub/app.py": "2a432fb45a283a674b0c2e28912ecb1ac500d723381f85720100a8ee18aa223d",
+    "aetherra_os_launcher.py": "582e308f9ea528cc8c7e5a2b162420cd37c6e7382a84e7a031bd18533be8caa5",
+    "tests/acceptance/test_launcher_active_shutdown.py": "58bc5e9e457526fe6ee621922c2ab67709d649947cf69627bfb7177a344803bf",
+    "tests/test_aether_workflow_additional_paths.py": "bfd7997868abbd43700ce7f2d603f2d999f8be243ccf733cb7a35ad84d8ad4ea",
+    "tests/test_alert_intelligence.py": "40c4d2773f64e151528ad279fae728b53b39d11846d79665086433084765cb25",
+    "tests/unit/homeostasis/test_launcher_hub_heartbeat.py": "ffd8de7801e88c7898c12a2dbe0c39437225d0361df3e2261dcf1da9d829fe84",
+    "tests/unit/homeostasis/test_launcher_observation_heartbeats.py": "48400a67385b474adad317606770e8c1485cc1d6b6a6e764d3174d855de249ff",
+    "tests/unit/homeostasis/test_measured_metrics.py": "298ff5cfcd4915d6facd1985f97108d2f13c6a2469799834af8e6386f6e8d278",
+    "tests/unit/homeostasis/test_observe_only_enforcement.py": "6dc8e0775ff3e4897a03d6ec45151a9b216b84497ae51743177e136ca45279b4",
+    "tests/unit/homeostasis/test_profile_config.py": "6b47910732c3d81d02c2e94c475ba5007d35f544690adc0b7e53c7f836aa4e5c",
+    "tests/unit/homeostasis/test_proposal_flow.py": "2fef411af4734b9ed23f7cde9c99759628a511ffc8fda73fe84fde8fc8c5f505",
+    "tests/unit/test_maintenance_cycle.py": "93f1db2595422a7f5ad1cb32054318685f8f338e3d5524877a35ce731e4ffe8f",
+    "tests/unit/test_runtime_ui_maintenance.py": "b2a372b8a896d99ea7c4a9ccbdd68a125b5dcfeb70affa34acb57a426cd53d24"
+  }
+}

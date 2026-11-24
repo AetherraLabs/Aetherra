@@ -24,6 +24,48 @@ Current completion focus: **Phase 5 - Learning**
 
 Completion status: **Functional foundation complete; advanced adaptive optimization remains future work.**
 
+## Runtime Liveness
+
+The full launcher's existing 30-second lifecycle loop refreshes Homeostasis and
+Self-Improvement registrations only while their owned collection/bridge and
+improvement tasks are live. It probes the owned passive Maintenance facade with
+a bounded read. The same loop refreshes the local Hub only while its exact
+launcher-owned server has a live serving thread; request teardown does not own
+that lifetime. Canonical names and compatibility aliases receive the same
+check. A stopped task, failed or blocked status read, replaced instance, denied
+heartbeat or shutdown does not refresh the affected registration's heartbeat.
+Registry status is never upgraded by this refresh, and the existing stale
+threshold is unchanged.
+
+A slow Maintenance getter has at most one pending daemon reader. Its late
+result is discarded; a fresh successful read is required for a later heartbeat.
+This prevents a blocked read from delaying shutdown or accumulating workers.
+Registry freshness establishes lifecycle availability, not diagnosis accuracy or
+permission to act. The operator smoke crosses the three-minute expiry window
+and requires observation delivery to continue.
+
+## Supervised Integration Mode
+
+The supported alpha profile sets `AETHERRA_HOMEOSTASIS_MODE=observe_only`.
+Default Homeostasis configuration resolves beside the package source, including
+from an empty profile working directory; explicit configuration paths still win.
+Homeostasis collects metrics and feedback and produces read-only observations;
+the existing metrics bridge delivers them to Self-Improvement for diagnosis and
+proposal generation. Maintenance records the resulting proposal without
+approval or execution. See [the Maintenance flow](AETHERRA_MAINTENANCE_SYSTEM.md#phase-b-observe-and-propose).
+
+Observe-only restrictions also cover feedback threshold adjustment and validator
+self-tuning, including direct tuning calls. Validation history and recommendations
+remain available while adaptive weights and thresholds remain unchanged. Both an
+operator observation request and the effective controller's `observe_only` mode
+restrict adaptation. This milestone does not enable active correction or alter
+Guardian, Security, release signing or the pending temporal observer.
+
+The Observatory distinguishes a running lifecycle from permission to act and
+shows actual actuator counts. Missing measurements remain unknown. A synthetic
+pressure probe establishes wiring only; it is not evidence of real degradation
+or successful remediation.
+
 ## Architecture overview
 
 The homeostasis system operates on a closed-loop control principle with four primary layers:

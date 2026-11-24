@@ -1,6 +1,7 @@
+# Aetherra imports
 from Aetherra.maintenance import (
-    MaintenanceCycle,
     MaintenanceCoordinator,
+    MaintenanceCycle,
     MaintenanceCycleStatus,
     MaintenanceDecision,
     MaintenanceEvidence,
@@ -392,3 +393,24 @@ def test_coordinator_exports_and_loads_cycle_records_with_counts():
     assert restored.get_cycle("maint-export-denied").status == (
         MaintenanceCycleStatus.DENIED
     )
+
+
+def test_summary_correlates_only_actual_proposal_and_guardian_records():
+    cycle = _diagnosed_cycle()
+    assert cycle.summary()["proposal_id"] is None
+    assert cycle.summary()["guardian_audit_id"] is None
+    cycle.record_proposal(_proposal())
+    assert cycle.summary()["proposal_id"] == "proposal-1"
+    assert cycle.summary()["guardian_audit_id"] is None
+    assert cycle.summary()["guardian_status"] is None
+    assert cycle.summary()["can_execute"] is False
+    cycle.record_guardian_decision(
+        MaintenanceDecision(
+            status="deny", reason="test denial", audit_id="audit-real-record"
+        )
+    )
+    restored = MaintenanceCycle.from_record(cycle.to_record())
+    assert restored.summary()["proposal_id"] == "proposal-1"
+    assert restored.summary()["guardian_audit_id"] == "audit-real-record"
+    assert restored.summary()["guardian_status"] == "deny"
+    assert restored.summary()["can_execute"] is False

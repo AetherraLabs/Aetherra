@@ -38,6 +38,30 @@ Self-Improvement acts as:
 - **Proposal Author**: creates structured improvement requests for Guardian and operators.
 - **Learning Surface**: records outcomes from approved changes so future proposals can improve.
 
+## Phase B Runtime Intake
+
+The full launcher's existing adapter accepts
+`selfimprovement.observe_homeostasis` from the metrics bridge. The engine owns
+`propose_from_homeostasis`: it validates fresh, finite, explicitly observed
+fields, uses the existing diagnosis/recommendation rules, persists a genuine
+Self-Improvement proposal, and routes its stable identity into Maintenance.
+Unknown/default or stale samples cannot become current evidence. Validator
+effectiveness summaries remain diagnostic output: their interface does not
+distinguish measured samples from default or fallback scores, so the bridge
+does not copy them into scalar metric history. Explicitly measured zero values
+remain valid inputs. Repeated observations and restart reuse existing records;
+dismissed proposals stay closed. Failed writes do not publish newer evidence in the in-process cache,
+and retries compare against persisted evidence before recording a cycle.
+
+`get_improvement_status().homeostasis_flow` exposes bounded observation,
+proposal and routing counts, last cycle IDs, and explicit degraded reasons.
+Estimated impact is not a validated simulation or an implementation-ready
+rollback plan. This intake records review proposals only: it does not request
+Guardian approval, enforce execution permissions, call Self-Incorporation or
+record a remediation outcome. Automatic implementation remains disabled.
+See [Maintenance](AETHERRA_MAINTENANCE_SYSTEM.md#phase-b-observe-and-propose) and
+the [operator procedure](ALPHA_OPERATOR_RUNBOOK.md#observation-and-maintenance-smoke-phase-b).
+
 ## Completion strategy
 
 Self-Improvement must mature in strict phases:

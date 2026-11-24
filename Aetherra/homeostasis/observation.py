@@ -8,6 +8,7 @@ state.
 
 from __future__ import annotations
 
+# Standard library imports
 import time
 from dataclasses import asdict, is_dataclass
 from typing import Any
@@ -107,8 +108,15 @@ def _as_mapping(value: Any | None) -> dict[str, Any]:
 
 def _metric_values(snapshot: dict[str, Any]) -> dict[str, float]:
     values: dict[str, float] = {}
+    raw = snapshot.get("raw_data")
+    measured = None
+    if isinstance(raw, dict) and "measured_metrics" in raw:
+        declared = raw["measured_metrics"]
+        if not isinstance(declared, (list, tuple)):
+            return values
+        measured = {name for name in declared[:64] if isinstance(name, str)}
     for name in _OBSERVED_METRICS:
-        if name not in snapshot:
+        if name not in snapshot or (measured is not None and name not in measured):
             continue
         number = _to_float(snapshot.get(name))
         if number is not None:
@@ -161,7 +169,11 @@ def _metric_pressure(
         critical_threshold,
     ):
         level = "critical"
-        direction = "below_critical" if _is_lower_better(target, critical_threshold) else "above_critical"
+        direction = (
+            "below_critical"
+            if _is_lower_better(target, critical_threshold)
+            else "above_critical"
+        )
     elif min_acceptable is not None and value < min_acceptable:
         level = "high"
         direction = "below_minimum"

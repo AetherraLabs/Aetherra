@@ -3,7 +3,7 @@
 > Maintained and officially operated by **Aetherra Labs**.
 > **Powered by Aetherra Labs.**
 
-Updated: 2026-06-20
+Updated: 2026-11-24
 
 This document provides a comprehensive reference for all REST API endpoints exposed by the Aetherra Hub server. The Hub acts as the primary integration point between the Aetherra OS core, frontend clients, and external services.
 
@@ -40,6 +40,30 @@ retain their existing interfaces. See the
 [alpha runbook](ALPHA_OPERATOR_RUNBOOK.md#integration-smoke-phase-a) for endpoint
 meaning, effective modes and shutdown limits.
 
+## Registry heartbeat ownership
+
+On the normal full-launcher path, the launcher registers the actual
+`AetherraHubServer` and refreshes `aetherra_hub` from its existing 30-second
+lifecycle loop. The registered instance must still match the launcher's owned
+server, remain healthy and have a live serving thread. Guardian's existing
+heartbeat capability check still applies. Idle periods and ordinary Flask
+request/application-context teardown do not stop this lifecycle check.
+
+Stopped servers, dead serving threads, replaced registrations, external/proxy
+Hubs and launcher shutdown receive no false refresh. The check does not promote
+a degraded or failed registration or relax the registry's stale threshold.
+A fresh heartbeat establishes serving lifecycle availability; request readiness,
+latency and useful work remain separate observations.
+
+The Flask app factory assembles the HTTP application without owning the Hub's
+serving lifetime. It does not register a dummy Hub, start a heartbeat worker
+or stop server resources on request
+teardown. Flask's removed `before_first_request` hook is no longer used for
+registry lifecycle management; see the [Flask 2.3 changes](https://flask.palletsprojects.com/en/stable/changes/#version-2-3-0).
+Bare `create_app()` and directly managed `AetherraHubServer` callers retain their
+interfaces without acquiring registry ownership automatically. Standalone tools
+that explicitly register a service remain responsible for its lifecycle.
+
 ## Functional foundation completion
 
 The Hub is functionally foundation complete for the current Aetherra milestone.
@@ -63,7 +87,7 @@ What it does:
   memory, telemetry, KLM, and KEB.
 - Enforces request authentication gates for protected AI, control, script, and
   administrative paths.
-- Registers the Hub with the service registry and emits Hub heartbeat signals.
+- Registers and heartbeats the actual Hub through its runtime owner on the full-launcher path.
 - Exposes `GET /api/hub/readiness` so clients can determine whether the Hub is
   ready, degraded, or blocked.
 

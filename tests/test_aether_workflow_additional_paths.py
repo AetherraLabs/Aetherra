@@ -5,9 +5,12 @@
 retry=3 backoff duration, and metadata parity checks.
 """
 
+# Standard library imports
 import asyncio
 import time
+from unittest.mock import patch
 
+# Aetherra imports
 from aetherra_script_service import AetherScriptService
 
 
@@ -52,24 +55,34 @@ def test_max_retries_failure_path():
     assert s["end_time"] >= s["start_time"]
 
 
-def test_tiny_timeout_fast_path():
-    # Very small timeouts should trigger immediate timeout path without large sleeps.
+def test_tiny_timeout_fast_path(monkeypatch):
+    # Observe scheduling only inside the step; setup includes Guardian and audit work.
+    execute_step = AetherScriptService._execute_workflow_step
+    scheduled_waits = []
+
+    async def observe_step(self, step, context):
+        with (
+            patch.object(asyncio, "sleep", wraps=asyncio.sleep) as sleep,
+            patch.object(asyncio, "wait_for", wraps=asyncio.wait_for) as wait_for,
+        ):
+            result = await execute_step(self, step, context)
+        scheduled_waits.append((sleep.call_count, wait_for.call_count))
+        return result
+
+    monkeypatch.setattr(AetherScriptService, "_execute_workflow_step", observe_step)
     script = """
     goal "tiny timeout"
     workflow
         - slow_step timeout=5ms
     """
-    t0 = time.time()
     payload = run(script)
-    t1 = time.time()
     steps = extract_steps(payload)
     assert len(steps) == 1
     s = steps[0]
     assert s["success"] is False
     assert "Timeout" in s.get("error", "")
-    wall = t1 - t0
-    # Should be very quick (<0.1s on typical schedulers); allow leeway for CI.
-    assert wall < 0.2, f"expected fast-path timeout under ~200ms, got {wall:.3f}s"
+    assert s["attempts"] == 1
+    assert scheduled_waits == [(0, 0)]
     assert s.get("duration_ms", 0.0) >= 0.0
 
 

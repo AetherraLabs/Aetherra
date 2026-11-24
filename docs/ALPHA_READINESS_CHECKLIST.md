@@ -1,22 +1,40 @@
 # Alpha Readiness Checklist
 
-Updated: 2026-11-23
+Updated: 2026-11-24
 
-Phase A candidate verification and boundaries are recorded in
-[the current decision addendum](ALPHA_READINESS_DECISION.md#phase-a-core-integration-candidate)
-and [evidence](evidence/integration_phase_a_2026-11-23.json). Historical main and
-release passes below do not certify an unmerged candidate or its hosted CI.
+Current released baseline: `ba3a04ad` (`v0.5.0-beta.10`), incorporating
+Phase A through PR #351. The focused Phase B local candidate is recorded in
+[the decision addendum](ALPHA_READINESS_DECISION.md#phase-b-observation-and-maintenance-candidate)
+and [evidence](evidence/integration_phase_b_2026-11-24.json). Those evidence records capture pre-commit verification; PR CI and integration
+are separate gates. Historical main/release passes below do not certify this
+candidate.
 
-**GO for supervised internal alpha on the documented Windows source-runtime
-profile.** PR #327 merged as `a0e8857c`; released main `f55d48a9`
-(`v0.5.0-beta.6`) is clean and verified. The full suite passes 3,136 tests
-(40 skips, 5 passing subtests); clean main adds 87 focused regressions and three
-gpt-4o turns without fallback. All 12 main validation workflows and Release pass;
-production and published-release signatures verify against the approved key.
-See [the decision](ALPHA_READINESS_DECISION.md),
-[installation procedure](DESKTOP_INSTALLATION.md),
-[fresh evidence](evidence/desktop_alpha_2026-11-22.json) and
-[main acceptance](evidence/desktop_alpha_main_2026-11-22.json).
+**GO remains bounded to supervised internal alpha on the documented Windows
+source-runtime profile.** The initial Phase B checkpoint passed 3,455 tests,
+38 skips and 5 passing subtests. Its Hub heartbeat concern is repaired and
+passed 15 new regressions, a 129-test focused bundle and two extended normal
+launch sessions. Its final default full suite passed 3,470 tests, with
+38 skips and 5 passing subtests, after correcting a cold-start allowance
+in the active-shutdown test and isolating a legacy alert fixture from shared
+metric history, and replacing an unrelated whole-script timing benchmark with
+a deterministic timeout-path regression. Existing shutdown and alert assertions
+remain unchanged. The final run used an independent clean source snapshot.
+See [the follow-up decision](ALPHA_READINESS_DECISION.md#hub-heartbeat-follow-up)
+and [evidence](evidence/hub_heartbeat_followup_2026-11-24.json).
+
+Observe-only behavior and durable proposal/cycle correlation across restart
+remain verified. Earlier Observatory/browser and live-model evidence retain
+their original source scope. Execution, unattended/production operation and
+Stage 22 remain outside the verified boundary.
+
+Final PR review repaired validator defaults/fallback estimates entering measured
+history. The reviewed source passed **3,472 tests, 38 skips and 5 passing
+subtests**, 87 focused provenance/flow tests, the unchanged quality gate, and
+two further 215-second normal launches with real SQLite/history checks.
+All 1,547 frozen source/control hashes matched. See the
+[review checkpoint](ALPHA_READINESS_DECISION.md#phase-b-pr-review-checkpoint)
+and [review evidence](evidence/integration_phase_b_pr_review_2026-11-24.json).
+Hosted PR CI and merged-main acceptance remain separate gates.
 
 This checklist defines what must be true before Aetherra should be called ready
 for an internal alpha. It is not a marketing launch checklist. It is a
@@ -321,10 +339,12 @@ Decision record:
 
 ## Current Next Actions
 
-1. Review/integrate the Phase A core candidate and its verification evidence;
-   then begin Phase B's bounded observation/maintenance loop.
-2. Preserve strict signing, Guardian/Security enforcement and observation-only behavior.
-3. Verify optional features, other platforms and broader operating modes separately before extending the GO decision.
+1. Complete review and integration of the focused Phase B observation/maintenance
+   candidate and its evidence. Phase A is merged; Phase C remains separate.
+2. Preserve strict signing, Guardian/Security enforcement and observation-only
+   behavior. Resume pending temporal/Phase C work separately.
+3. Verify optional features, other platforms and broader operating modes
+   separately before extending the GO decision.
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

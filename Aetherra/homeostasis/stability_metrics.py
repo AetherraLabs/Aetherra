@@ -25,6 +25,7 @@ Author: Aetherra Labs
 # Standard library imports
 import asyncio
 import logging
+import math
 import statistics
 import time
 from collections import defaultdict, deque
@@ -37,8 +38,6 @@ from typing import Any, Dict, List, Optional
 import yaml
 
 # Aetherra imports
-from aetherra_service_registry import get_service_registry
-
 from aetherra_hub.services.registry_client import (
     get_hmr_audit_counters,
     get_kernel_status,
@@ -46,6 +45,7 @@ from aetherra_hub.services.registry_client import (
     get_memory_quantum_status,
     get_registry_status,
 )
+from aetherra_service_registry import get_service_registry
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +113,9 @@ class StabilityMetrics:
 
     def __init__(self, config_path: Optional[str] = None):
         """Initialize the stability metrics collector."""
-        self.config_path = config_path or "Aetherra/homeostasis/configs/setpoints.yaml"
+        self.config_path = config_path or str(
+            Path(__file__).resolve().parent / "configs" / "setpoints.yaml"
+        )
         self.setpoints = self._load_setpoints()
 
         # Metric storage
@@ -145,7 +147,9 @@ class StabilityMetrics:
                     data = yaml.safe_load(f)
                     return data if isinstance(data, dict) else {}
             else:
-                logger.warning(f"Setpoints config not found at {self.config_path}, using defaults")
+                logger.warning(
+                    f"Setpoints config not found at {self.config_path}, using defaults"
+                )
                 return {}
         except Exception as e:
             logger.error(f"Failed to load setpoints config: {e}")
@@ -154,7 +158,9 @@ class StabilityMetrics:
     async def collect_snapshot(self) -> MetricSnapshot:
         """Collect a complete snapshot of all system metrics."""
         timestamp = time.time()
-        snapshot = MetricSnapshot(timestamp=timestamp)
+        snapshot = MetricSnapshot(
+            timestamp=timestamp, raw_data={"measured_metrics": []}
+        )
 
         # Collect from all sources in parallel for efficiency
         collection_tasks = [
@@ -175,7 +181,9 @@ class StabilityMetrics:
             if isinstance(result, Exception):
                 source_name = collection_tasks[i].__name__
                 self.collection_errors[source_name] += 1
-                if self.collection_errors[source_name] % 10 == 1:  # Log every 10th error
+                if (
+                    self.collection_errors[source_name] % 10 == 1
+                ):  # Log every 10th error
                     logger.warning(f"Error collecting from {source_name}: {result}")
 
         # Store snapshot
@@ -186,8 +194,23 @@ class StabilityMetrics:
         # Update metric buffers for trend analysis
         self._update_metric_buffers(snapshot)
 
-        logger.debug(f"📊 Collected metrics snapshot at {datetime.fromtimestamp(timestamp)}")
+        logger.debug(
+            f"📊 Collected metrics snapshot at {datetime.fromtimestamp(timestamp)}"
+        )
         return snapshot
+
+    @staticmethod
+    def _record_measurement(snapshot: MetricSnapshot, name: str, value: Any) -> bool:
+        """Keep legacy numeric fields while identifying actual finite observations."""
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return False
+        if not math.isfinite(value):
+            return False
+        setattr(snapshot, name, value)
+        measured = snapshot.raw_data.setdefault("measured_metrics", [])
+        if name not in measured:
+            measured.append(name)
+        return True
 
     async def _get_service_registry(self) -> Optional[Any]:
         """Get service registry with caching."""
@@ -209,10 +232,14 @@ class StabilityMetrics:
         try:
             registry_status = get_registry_status()
             if registry_status:
-                snapshot.registry_health = (
-                    1.0 if registry_status.get("status") == "healthy" else 0.0
-                )
-                snapshot.service_count = len(registry_status.get("services", {}))
+                running = registry_status.get("running")
+                if isinstance(running, bool):
+                    self._record_measurement(
+                        snapshot, "registry_health", float(running)
+                    )
+                services = registry_status.get("services")
+                if isinstance(services, dict):
+                    self._record_measurement(snapshot, "service_count", len(services))
                 snapshot.raw_data["service_registry"] = registry_status
                 self.last_successful_collection["service_registry"] = time.time()
         except Exception as e:
@@ -223,14 +250,21 @@ class StabilityMetrics:
         """Collect metrics from the memory system."""
         try:
             # Get memory status from multiple sources
-            memory_status = get_memory_quantum_status()
-            memory_audit = get_memory_audit()
+            memory_status = get_memory_quantum_status(allow_fallback=False)
+            memory_audit = get_memory_audit(allow_fallback=False)
 
             if memory_status:
                 # Extract RTT and timeout information
                 quantum_data = memory_status.get("quantum_data", {})
-                snapshot.memory_rtt = quantum_data.get("avg_response_time", 50.0)
-                snapshot.memory_timeouts = quantum_data.get("timeout_count", 0.0)
+                if isinstance(quantum_data, dict) and not memory_status.get(
+                    "ephemeral"
+                ):
+                    self._record_measurement(
+                        snapshot, "memory_rtt", quantum_data.get("avg_response_time")
+                    )
+                    self._record_measurement(
+                        snapshot, "memory_timeouts", quantum_data.get("timeout_count")
+                    )
                 snapshot.raw_data["memory_quantum"] = memory_status
 
             if memory_audit:
@@ -263,7 +297,9 @@ class StabilityMetrics:
             # Look for memory service
             memory_service = registry.get_service_info("memory_system")
             if not memory_service or not memory_service.instance:
-                logger.debug("[HOMEOSTASIS] Memory service not available for health metrics")
+                logger.debug(
+                    "[HOMEOSTASIS] Memory service not available for health metrics"
+                )
                 return
 
             memory_engine = memory_service.instance
@@ -296,7 +332,9 @@ class StabilityMetrics:
                         "sheaf_inconsistency": storm_snapshot.get(
                             "aetherra_storm_sheaf_inconsistency", 0.0
                         ),
-                        "ot_cost_avg": storm_snapshot.get("aetherra_storm_ot_cost_avg", 0.0),
+                        "ot_cost_avg": storm_snapshot.get(
+                            "aetherra_storm_ot_cost_avg", 0.0
+                        ),
                         "tt_rank": storm_snapshot.get("aetherra_storm_tt_rank", 0),
                         "recall_latency_ms_p95": storm_snapshot.get(
                             "aetherra_storm_recall_latency_ms_p95", 0.0
@@ -315,9 +353,14 @@ class StabilityMetrics:
                         ),
                     }
                     # Calculate coherence from sheaf inconsistency
-                    sheaf_inc = storm_snapshot.get("aetherra_storm_sheaf_inconsistency", 0.0)
-                    storm_coherence = 1.0 / (1.0 + sheaf_inc) if sheaf_inc is not None else 1.0
-                    snapshot.raw_data["storm_metrics"]["coherence_score"] = storm_coherence
+                    sheaf_inc = storm_snapshot.get(
+                        "aetherra_storm_sheaf_inconsistency", 0.0
+                    )
+                    storm_coherence = (
+                        1.0 / (1.0 + sheaf_inc) if sheaf_inc is not None else 1.0
+                    )
+                    storm_metrics = snapshot.raw_data["storm_metrics"]
+                    storm_metrics["coherence_score"] = storm_coherence
 
                     logger.debug(
                         f"[HOMEOSTASIS] STORM metrics: inconsistency={sheaf_inc:.4f}, "
@@ -325,18 +368,23 @@ class StabilityMetrics:
                     )
 
             # Collect narrative completeness (if available)
-            if hasattr(memory_engine, "generate_narrative") and "last_narrative" in getattr(
-                memory_engine, "_narrative_cache", {}
-            ):
+            if hasattr(
+                memory_engine, "generate_narrative"
+            ) and "last_narrative" in getattr(memory_engine, "_narrative_cache", {}):
                 # Check for recent narrative generation status (optional and non-blocking)
-                narrative_data = memory_engine._narrative_cache.get("last_narrative", {})
+                narrative_data = memory_engine._narrative_cache.get(
+                    "last_narrative", {}
+                )
                 completeness = narrative_data.get("completeness", 1.0)
                 snapshot.raw_data["narrative_completeness"] = completeness
-                logger.debug(f"[HOMEOSTASIS] Narrative completeness: {completeness:.2f}")
+                logger.debug(
+                    f"[HOMEOSTASIS] Narrative completeness: {completeness:.2f}"
+                )
 
         except Exception as e:
             logger.debug(
-                f"[HOMEOSTASIS] Memory health metrics collection failed: {e}", exc_info=True
+                f"[HOMEOSTASIS] Memory health metrics collection failed: {e}",
+                exc_info=True,
             )
 
     async def _collect_plugin_metrics(self, snapshot: MetricSnapshot):
@@ -352,8 +400,16 @@ class StabilityMetrics:
 
                 # Calculate plugin success rate
                 if plugin_services:
-                    healthy_plugins = sum(1 for s in plugin_services if s.status.value == "HEALTHY")
-                    snapshot.plugin_load_success = (healthy_plugins / len(plugin_services)) * 100.0
+                    healthy_plugins = sum(
+                        1
+                        for s in plugin_services
+                        if s.status.value.lower() == "healthy"
+                    )
+                    self._record_measurement(
+                        snapshot,
+                        "plugin_load_success",
+                        healthy_plugins / len(plugin_services) * 100.0,
+                    )
                 else:
                     snapshot.plugin_load_success = 100.0  # No plugins to fail
 
@@ -370,12 +426,13 @@ class StabilityMetrics:
             if registry:
                 # Look for Hub-related services
                 hub_service = registry.get_service_info("aetherra_hub")
-                if hub_service and hub_service.status.value == "HEALTHY":
-                    snapshot.hub_connection = 1.0
-                    snapshot.hub_websocket_status = 1.0
-                else:
-                    snapshot.hub_connection = 0.0
-                    snapshot.hub_websocket_status = 0.0
+                if hub_service:
+                    self._record_measurement(
+                        snapshot,
+                        "hub_connection",
+                        float(hub_service.status.value.lower() == "healthy"),
+                    )
+                # Registry health is not a measurement of WebSocket connectivity.
 
                 snapshot.raw_data["hub_service"] = (
                     hub_service.status.value if hub_service else "NOT_FOUND"
@@ -393,12 +450,17 @@ class StabilityMetrics:
             if registry:
                 # Look for self-improvement engine or similar cognitive services
                 engine_service = registry.get_service_info("aetherra_engine")
-                if engine_service and hasattr(engine_service.instance, "get_learning_metrics"):
+                if engine_service and hasattr(
+                    engine_service.instance, "get_learning_metrics"
+                ):
                     metrics = await engine_service.instance.get_learning_metrics()
-                    snapshot.learning_rate = metrics.get("learning_rate", 0.01)
-                    snapshot.confidence_level = metrics.get("confidence", 0.8)
-                    snapshot.uncertainty_level = metrics.get("uncertainty", 0.1)
-                    snapshot.reflection_stability = metrics.get("stability", 0.9)
+                    for field_name, key in (
+                        ("learning_rate", "learning_rate"),
+                        ("confidence_level", "confidence"),
+                        ("uncertainty_level", "uncertainty"),
+                        ("reflection_stability", "stability"),
+                    ):
+                        self._record_measurement(snapshot, field_name, metrics.get(key))
                     snapshot.raw_data["cognitive_metrics"] = metrics
 
             self.last_successful_collection["cognitive"] = time.time()
@@ -418,7 +480,9 @@ class StabilityMetrics:
 
                 if gui_services:
                     # Calculate average responsiveness
-                    healthy_guis = sum(1 for s in gui_services if s.status.value == "HEALTHY")
+                    healthy_guis = sum(
+                        1 for s in gui_services if s.status.value.lower() == "healthy"
+                    )
                     snapshot.gui_heartbeat = 1.0 if healthy_guis > 0 else 10.0
                     snapshot.gui_responsiveness = (
                         100.0 if healthy_guis == len(gui_services) else 500.0
@@ -437,17 +501,24 @@ class StabilityMetrics:
             hmr_counters = get_hmr_audit_counters()
 
             if kernel_status:
-                snapshot.kernel_loop_health = (
-                    1.0 if kernel_status.get("status") == "healthy" else 0.0
-                )
+                running = kernel_status.get("running")
+                if isinstance(running, bool) and not kernel_status.get("_source"):
+                    self._record_measurement(
+                        snapshot, "kernel_loop_health", float(running)
+                    )
                 snapshot.os_runlevel = kernel_status.get("runlevel", "UNKNOWN")
                 snapshot.raw_data["kernel_status"] = kernel_status
 
             if hmr_counters:
                 # Extract task throughput and latency from HMR counters
-                snapshot.task_throughput = hmr_counters.get("tasks_per_second", 0.0)
-                snapshot.task_latency = hmr_counters.get("avg_task_latency_ms", 100.0)
-                snapshot.queue_depth = hmr_counters.get("queue_depth", 0.0)
+                for field_name, key in (
+                    ("task_throughput", "tasks_per_second"),
+                    ("task_latency", "avg_task_latency_ms"),
+                    ("queue_depth", "queue_depth"),
+                ):
+                    self._record_measurement(
+                        snapshot, field_name, hmr_counters.get(key)
+                    )
                 snapshot.raw_data["hmr_counters"] = hmr_counters
 
             self.last_successful_collection["kernel"] = time.time()
@@ -555,8 +626,7 @@ class StabilityMetrics:
                 value = category_config[metric_name]
                 if isinstance(value, dict):
                     return value
-                else:
-                    return None
+                return None
         return None
 
     def is_metric_in_bounds(self, metric_name: str) -> Optional[bool]:
@@ -613,7 +683,9 @@ class StabilityMetrics:
             ]
         )
         healthy_metrics = total_metrics - len(out_of_bounds)
-        health_score = (healthy_metrics / total_metrics) * 100.0 if total_metrics > 0 else 0.0
+        health_score = (
+            (healthy_metrics / total_metrics) * 100.0 if total_metrics > 0 else 0.0
+        )
 
         # Determine status
         if health_score >= 95.0:
@@ -631,7 +703,9 @@ class StabilityMetrics:
             "total_metrics": total_metrics,
             "healthy_metrics": healthy_metrics,
             "out_of_bounds_metrics": out_of_bounds,
-            "last_collection": datetime.fromtimestamp(self.last_collection_time).isoformat(),
+            "last_collection": datetime.fromtimestamp(
+                self.last_collection_time
+            ).isoformat(),
             "collection_errors": dict(self.collection_errors),
         }
 
@@ -640,7 +714,9 @@ class StabilityMetrics:
         if interval:
             self.collection_interval = interval
 
-        logger.info(f"🔄 Starting continuous metrics collection every {self.collection_interval}s")
+        logger.info(
+            f"🔄 Starting continuous metrics collection every {self.collection_interval}s"
+        )
 
         while True:
             try:
@@ -680,6 +756,7 @@ def get_stability_metrics() -> StabilityMetrics:
 
 if __name__ == "__main__":
     # Test the metrics collection
+    # Standard library imports
     import asyncio
 
     async def test_metrics():

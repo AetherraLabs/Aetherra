@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import SubsystemEvidence from "./SubsystemEvidence";
 
 type NodeStatus = "active" | "stable" | "degraded" | "contained" | "offline" | "unknown";
 
@@ -290,6 +291,7 @@ function App() {
                     <Sparkles size={16} />
                     <span>{authorityLabel(selected?.metrics)}</span>
                 </div>
+                <SubsystemEvidence name={selected?.name} metrics={selected?.metrics} live={source === "api"} />
                 <div className="event-feed">
                     <p className="eyebrow">Recent Activity</p>
                     {(payload.activity.events.length ? payload.activity.events : payload.observatory.events).slice(0, 5).map((event) => (
