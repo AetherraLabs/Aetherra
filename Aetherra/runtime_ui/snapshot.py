@@ -200,7 +200,12 @@ def _observe_service(name, service_names, registry, observation, now) -> None:
 
     if name == "maintenance":
         available = raw.get("available")
-        if raw.get("degraded") is True or registry_status == "degraded":
+        record_metrics = _maintenance_metrics(raw)
+        if (
+            record_metrics["persistence_state"] == "error"
+            or raw.get("degraded") is True
+            or registry_status == "degraded"
+        ):
             observation["status"] = "degraded"
         else:
             observation["status"] = "active" if available is True else "unknown"
@@ -208,11 +213,11 @@ def _observe_service(name, service_names, registry, observation, now) -> None:
             {
                 "available": available is True,
                 "evidence": "service_status",
-                **_maintenance_metrics(raw),
+                **record_metrics,
             }
         )
         observation["summary"] = (
-            "Maintenance record status observed; proposals do not imply approval or execution."
+            "Current in-process Maintenance records observed; persistence and execution are separate evidence."
         )
         return
 
@@ -290,9 +295,38 @@ def _homeostasis_metrics(raw: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
+def _maintenance_persistence_state(raw: dict[str, Any]) -> str:
+    """Describe configuration/errors without claiming durability or leaking details."""
+    service = raw.get("service")
+    if not isinstance(service, dict):
+        return "unknown"
+    load_error = service.get("last_load_error")
+    persist_error = service.get("last_persist_error")
+    if service.get("load_failed") is True or any(
+        isinstance(error, str) and error for error in (load_error, persist_error)
+    ):
+        return "error"
+    if (
+        ("load_failed" in service and service["load_failed"] is not False)
+        or ("last_load_error" in service and load_error is not None)
+        or "last_persist_error" not in service
+        or persist_error is not None
+    ):
+        return "unknown"
+    configured = service.get("record_store_configured")
+    if configured is False:
+        return "no_store"
+    if configured is True:
+        if service.get("autosave") is True:
+            return "autosave_enabled"
+        if service.get("autosave") is False:
+            return "autosave_disabled"
+    return "unknown"
+
+
 def _maintenance_metrics(raw: dict[str, Any]) -> dict[str, Any]:
     """Project bounded record evidence, excluding raw events, paths, and text."""
-    result: dict[str, Any] = {}
+    result: dict[str, Any] = {"persistence_state": _maintenance_persistence_state(raw)}
     for key in (
         "cycle_count",
         "active_cycle_count",

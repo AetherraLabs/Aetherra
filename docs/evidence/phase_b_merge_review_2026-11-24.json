@@ -1,0 +1,261 @@
+{
+  "milestone": "Phase B final merge-review repairs",
+  "date": "2026-11-24",
+  "reviewed_parent": "ebd216cd68d355cd139e0f7371a98b9445f05ca5",
+  "findings": [
+    {
+      "priority": "P1",
+      "problem": "Failed restore could be overwritten by automatic proposal routing or existing-cycle save retry.",
+      "repair": "Latch load_failed/last_load_error; refuse service saves and automatic routing until successful explicit reload.",
+      "proof": "Real JSONL malformed parse, partial cycle restore and injected read failure preserve original bytes and Guardian history across repeated observations; recovery and ordinary save retry pass."
+    },
+    {
+      "priority": "P2",
+      "problem": "Observatory could show active/empty records while persisted evidence failed to load.",
+      "repair": "Bounded persistence_state, degraded errors, explicit in-process counts and cycle labels; no paths or exception details."
+    }
+  ],
+  "verification": {
+    "backend_focused": 234,
+    "integrated_python": 158,
+    "gui_tests": 29,
+    "gui_build_typecheck_lint": "passed",
+    "python_quality": "passed with unchanged fixed baseline",
+    "independent_repair_review": "no remaining blocking findings",
+    "full_suite_and_normal_runtime": "Fresh clean-main verification follows merge; prior published full-suite/runtime records retain their original source scope."
+  },
+  "checks": {
+    "restore-fix/restore-red": {
+      "base_commit": "ebd216cd68d355cd139e0f7371a98b9445f05ca5",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "--no-cov",
+        "-o",
+        "addopts=",
+        "tests/unit/test_maintenance_service.py",
+        "tests/unit/homeostasis/test_proposal_flow.py",
+        "-k",
+        "failed_restore or missing_or_empty_store",
+        "-q",
+        "-o",
+        "cache_dir=D:\\Aetherra Labs\\.codex-phase-b-main-pr352-20261124\\evidence\\restore-fix\\pytest-cache",
+        "--basetemp",
+        "D:\\Aetherra Labs\\.codex-phase-b-main-pr352-20261124\\evidence\\restore-fix\\pytest-restore-red"
+      ],
+      "exit_code": 1,
+      "seconds": 6.89,
+      "summary": "8 failed before fix",
+      "receipt_sha256": "f8671fa5e2274f964526d9e32a6f7b3488c7f9014e04c7655842065c0a1c0123",
+      "log_sha256": "3ee211bd1affb1fa635ba793ee8b495c04068b50ef0aa87ec662e5cf9c7328b5"
+    },
+    "restore-fix/restore-focused-final": {
+      "base_commit": "ebd216cd68d355cd139e0f7371a98b9445f05ca5",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "--no-cov",
+        "-o",
+        "addopts=",
+        "tests/unit/homeostasis",
+        "tests/unit/test_maintenance_service.py",
+        "tests/unit/test_maintenance_store.py",
+        "tests/unit/test_maintenance_cycle.py",
+        "tests/unit/test_launcher_maintenance_system.py",
+        "tests/unit/test_hub_maintenance_status.py",
+        "tests/unit/test_hub_self_improvement_guardian.py",
+        "-q",
+        "-o",
+        "cache_dir=D:\\Aetherra Labs\\.codex-phase-b-main-pr352-20261124\\evidence\\restore-fix\\pytest-cache",
+        "--basetemp",
+        "D:\\Aetherra Labs\\.codex-phase-b-main-pr352-20261124\\evidence\\restore-fix\\pytest-restore-focused-final"
+      ],
+      "exit_code": 0,
+      "seconds": 64.28,
+      "summary": "234 passed",
+      "receipt_sha256": "a63f2b46fafdb17ff9d2b5e813cd3c31df50b53f04e6bfd147850b4d97d1c1b3",
+      "log_sha256": "10fd4b114a6f39349e94acbbb30720ce60ddf43c1c88386d8eb953ba990f0a74"
+    },
+    "persistence-fix/python-red-01": {
+      "base_commit": "ebd216cd68d355cd139e0f7371a98b9445f05ca5",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "tests/unit/test_runtime_ui_maintenance.py",
+        "-q",
+        "--no-cov",
+        "-o",
+        "addopts=",
+        "-o",
+        "cache_dir=D:\\Aetherra Labs\\.codex-phase-b-main-pr352-20261124\\evidence\\persistence-fix\\pytest-cache",
+        "--basetemp",
+        "D:\\Aetherra Labs\\.codex-phase-b-main-pr352-20261124\\evidence\\persistence-fix\\pytest-python-red-01"
+      ],
+      "cwd": "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\candidate",
+      "exit_code": 1,
+      "seconds": 15.39,
+      "summary": "12 failed, 7 passed before projection fix",
+      "receipt_sha256": "dc4b3cbf546e33892b04f3ab2b53c1f3f0b44f5bc2514d707660ad9902dd1362",
+      "log_sha256": "c9c6f70d1ca7223fea6882192785d013e8761d38fade845008914dd9833357cf"
+    },
+    "persistence-fix/python-integrated-final-01": {
+      "base_commit": "ebd216cd68d355cd139e0f7371a98b9445f05ca5",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "tests/unit/test_runtime_ui_maintenance.py",
+        "tests/unit/test_runtime_ui_snapshot.py",
+        "tests/unit/test_runtime_ui_api.py",
+        "tests/unit/test_runtime_ui_payload.py",
+        "tests/unit/test_runtime_ui_observatory.py",
+        "tests/unit/test_runtime_ui_manifest.py",
+        "tests/unit/test_runtime_ui_query.py",
+        "tests/unit/test_runtime_ui_scene.py",
+        "tests/unit/test_runtime_ui_contract.py",
+        "tests/unit/test_maintenance_cycle.py",
+        "tests/unit/test_maintenance_service.py",
+        "tests/unit/test_maintenance_store.py",
+        "tests/unit/homeostasis/test_proposal_flow.py",
+        "-q",
+        "--no-cov",
+        "-o",
+        "addopts=",
+        "-o",
+        "cache_dir=D:\\Aetherra Labs\\.codex-phase-b-main-pr352-20261124\\evidence\\persistence-fix\\pytest-cache",
+        "--basetemp",
+        "D:\\Aetherra Labs\\.codex-phase-b-main-pr352-20261124\\evidence\\persistence-fix\\pytest-python-integrated-final-01"
+      ],
+      "cwd": "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\candidate",
+      "exit_code": 0,
+      "seconds": 28.22,
+      "summary": "158 passed",
+      "receipt_sha256": "fe03420fea598a34572a09a7ec6a5d103ddc37dba985a2d4463adf69c3a9aeab",
+      "log_sha256": "192778f3bbce19edd1517ba2a91f7399316a391610bfb4df9c222e21cefbb487"
+    },
+    "persistence-fix/gui-red-01": {
+      "base_commit": "ebd216cd68d355cd139e0f7371a98b9445f05ca5",
+      "command": [
+        "C:/Program Files/nodejs/node.exe",
+        "--test",
+        "tests/evidence.test.mjs"
+      ],
+      "cwd": "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\candidate\\Aetherra\\lyrixa\\gui",
+      "exit_code": 1,
+      "seconds": 3.27,
+      "summary": "4 failed, 7 passed before renderer fix",
+      "receipt_sha256": "e9eed0110a354efc14000b9dc91cc76657a39d8eba787f22b795ae37c7e9b6d3",
+      "log_sha256": "f5e9266c6b664d5830c6d5e672f7e685c58226d040f19b7a5a02a3338a3267a5"
+    },
+    "persistence-fix/gui-green-01": {
+      "base_commit": "ebd216cd68d355cd139e0f7371a98b9445f05ca5",
+      "command": [
+        "C:/Program Files/nodejs/node.exe",
+        "--test",
+        "tests/*.test.mjs"
+      ],
+      "cwd": "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\candidate\\Aetherra\\lyrixa\\gui",
+      "exit_code": 0,
+      "seconds": 26.91,
+      "summary": "29 passed",
+      "receipt_sha256": "5752de0b911100b65b2254001bc6341378f530c8049d4b15c25bda1c4bc4ff8b",
+      "log_sha256": "5a43c85f8bc79609d668a7a170e70906d870d7e2557bc0713557ca6678babeb0"
+    },
+    "persistence-fix/gui-build-01": {
+      "base_commit": "ebd216cd68d355cd139e0f7371a98b9445f05ca5",
+      "command": [
+        "C:/Program Files/nodejs/node.exe",
+        "node_modules/vite/bin/vite.js",
+        "build",
+        "--outDir",
+        "D:/Aetherra Labs/.codex-phase-b-main-pr352-20261124/evidence/persistence-fix/gui-dist"
+      ],
+      "cwd": "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\candidate\\Aetherra\\lyrixa\\gui",
+      "exit_code": 0,
+      "seconds": 6.18,
+      "summary": "passed",
+      "receipt_sha256": "21ecf9a85af8e162a7eb9b3f06981d9d4f91bbb1a2e7d288cf33c26c28751fd6",
+      "log_sha256": "c3ca91d60f1c0f4c3e7303bedcc19a76a4e93d120861d4b726cb4da4038289f0"
+    },
+    "persistence-fix/gui-typecheck-01": {
+      "base_commit": "ebd216cd68d355cd139e0f7371a98b9445f05ca5",
+      "command": [
+        "C:/Program Files/nodejs/node.exe",
+        "node_modules/typescript/bin/tsc"
+      ],
+      "cwd": "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\candidate\\Aetherra\\lyrixa\\gui",
+      "exit_code": 0,
+      "seconds": 6.84,
+      "summary": "passed",
+      "receipt_sha256": "fc7e25189ed52fc74090b949dedec703362226d319b6dd84fd992d3e988ea831",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "persistence-fix/gui-lint-01": {
+      "base_commit": "ebd216cd68d355cd139e0f7371a98b9445f05ca5",
+      "command": [
+        "C:/Program Files/nodejs/node.exe",
+        "node_modules/eslint/bin/eslint.js",
+        ".",
+        "--ext",
+        "ts,tsx",
+        "--report-unused-disable-directives",
+        "--max-warnings",
+        "0"
+      ],
+      "cwd": "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\candidate\\Aetherra\\lyrixa\\gui",
+      "exit_code": 0,
+      "seconds": 11.61,
+      "summary": "passed",
+      "receipt_sha256": "d6a2a962815af6b504932eb57887cf2f519ae1d22526d5d1b99306ed06a97b12",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "quality-review": {
+      "head": "ebd216cd68d355cd139e0f7371a98b9445f05ca5",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "tools/python_quality.py"
+      ],
+      "cwd": "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\candidate",
+      "ambient_pythonpath_absent": true,
+      "exit_code": 0,
+      "seconds": 183.74,
+      "summary": "0 new/edited violations",
+      "receipt_sha256": "24224f9559bdce8ec671d0862c2b4d59ac0b403cd76b7c98a632f9603ea2b899",
+      "log_sha256": "d9a3acc462afb0cf1701b714c0ded9f37f062fff8ba68d51409ef4ecc5361e0f"
+    }
+  },
+  "source_sha256": {
+    "Aetherra/runtime_ui/snapshot.py": "2004ba05edb10b02cce993caa4a8e471ebb93d0b42fbdd025e056b6e1bcf77be",
+    "Aetherra/lyrixa/gui/src/SubsystemEvidence.tsx": "a4f62bd591cb75dbf6df9c17de886e042f0ff8bbc276c011185a23852f85f04d",
+    "tests/unit/test_runtime_ui_maintenance.py": "b2c1abbb45d63f653253a6671153c088a40fd11901acbaae9862da6934c043db",
+    "Aetherra/lyrixa/gui/tests/evidence.test.mjs": "1d2ad5bc6e7f4367dc80e0c900756d8f364a96d690da693ac1ed2011762785da",
+    "Aetherra/maintenance/service.py": "ab2a8643b89b58c15b96aff66c8fedddba92283dcf08ab8c4f847849306dad9b",
+    "Aetherra/aetherra_core/engine/self_improvement_engine.py": "d62088c44f77ae4012798e152b72c666fb1df34c10f4827476e46fe2b703a376",
+    "tests/unit/test_maintenance_service.py": "51923aacb4e3fa13530d8bf8270395ed4d8f510e31363edb155d930ba8bfca4f",
+    "tests/unit/homeostasis/test_proposal_flow.py": "bbb0fb88c20afb8f282298f6612eba826b011253eeb00c3a0029e29aaa99daca"
+  },
+  "post_test_comment_binding": {
+    "path": "Aetherra/maintenance/service.py",
+    "before_sha256": "2e09daf46287f60d845c207668b2dcbb4cbcb4f5238db25f8be32dcc34ac45b1",
+    "after_sha256": "ab2a8643b89b58c15b96aff66c8fedddba92283dcf08ab8c4f847849306dad9b",
+    "matches_integrated_test_snapshot": true,
+    "integrated_test_snapshot": "D:\\Aetherra Labs\\.codex-phase-b-main-pr352-20261124\\evidence\\persistence-fix\\source-before-final.json",
+    "ast_equivalent": true,
+    "change": "Only two nested-import section comments were added for isort.",
+    "before_bytes_provenance": "Reconstructed by removing exactly those two comments; verified against the pre-test SHA-256."
+  },
+  "preservation": {
+    "signing_release_ci_dependency_controls": "unchanged",
+    "authority": "observe/propose only; no execution permission added",
+    "original_and_pending_temporal": "verified unchanged before work; rechecked before commit"
+  },
+  "evidence_root": "D:\\Aetherra Labs\\.codex-phase-b-main-pr352-20261124\\evidence",
+  "limits": [
+    "No browser or live-model rerun for this repair.",
+    "Passing autosave configuration is not proof of durable contents; runtime verification checks stored records independently.",
+    "This record precedes new-head hosted CI and clean-main verification."
+  ]
+}

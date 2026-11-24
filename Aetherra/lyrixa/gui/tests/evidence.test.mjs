@@ -53,7 +53,7 @@ test('a recorded proposal shows absence of approval and execution without manufa
         latest_security_enforced: false, latest_cycle_id_hash: '0123456789abcdef',
         latest_proposal_id_hash: 'abcdef0123456789', latest_guardian_audit_id_hash: null,
     })
-    assert.match(html, /Latest cycle<\/dt><dd>Proposed<\/dd>/)
+    assert.match(html, /Latest in-process cycle<\/dt><dd>Proposed<\/dd>/)
     assert.match(html, /Diagnosis<\/dt><dd>Recorded<\/dd>/)
     assert.match(html, /Proposal<\/dt><dd>Recorded<\/dd>/)
     assert.match(html, /Guardian decision<\/dt><dd>Not recorded<\/dd>/)
@@ -75,12 +75,12 @@ test('Guardian authorization is distinct from execution and real execution remai
 
 test('an empty observed record is distinct from unavailable Maintenance data', async () => {
     const empty = await renderEvidence('maintenance', { cycle_count: 0, latest_cycle_present: false })
-    assert.match(empty, /Recorded cycles<\/dt><dd>0<\/dd>/)
-    assert.match(empty, /Latest cycle<\/dt><dd>No cycle recorded<\/dd>/)
+    assert.match(empty, /In-process cycles<\/dt><dd>0<\/dd>/)
+    assert.match(empty, /Latest in-process cycle<\/dt><dd>No in-process cycle<\/dd>/)
     const missing = await renderEvidence('maintenance', {})
-    assert.match(missing, /Recorded cycles<\/dt><dd>Unknown<\/dd>/)
-    assert.match(missing, /Latest cycle<\/dt><dd>Unknown<\/dd>/)
-    assert.doesNotMatch(missing, /No execution recorded|No cycle recorded/)
+    assert.match(missing, /In-process cycles<\/dt><dd>Unknown<\/dd>/)
+    assert.match(missing, /Latest in-process cycle<\/dt><dd>Unknown<\/dd>/)
+    assert.doesNotMatch(missing, /No execution recorded|No in-process cycle/)
 })
 
 test('Guardian configuration reports effective mode and integrity without claiming individual approval', async () => {
@@ -135,4 +135,44 @@ test('a recorded Guardian decision with a missing audit reference keeps that rel
     assert.match(html, /Guardian audit ref<\/dt><dd>Unknown<\/dd>/)
     assert.match(html, /Proposal ref<\/dt><dd>Unknown<\/dd>/)
     assert.match(html, /Cycle ref<\/dt><dd>Unknown<\/dd>/)
+})
+
+
+test('failed persistence preserves in-process evidence without claiming the store is empty or durable', async () => {
+    const empty = await renderEvidence('maintenance', {
+        persistence_state: 'error', cycle_count: 0, latest_cycle_present: false,
+    })
+    assert.match(empty, /Persistence<\/dt><dd>Error; durability unknown<\/dd>/)
+    assert.match(empty, /In-process cycles<\/dt><dd>0<\/dd>/)
+    assert.match(empty, /Latest in-process cycle<\/dt><dd>No in-process cycle<\/dd>/)
+    assert.doesNotMatch(empty, /No cycle recorded|Store empty|Durable|<button|<a\s/)
+    const proposed = await renderEvidence('maintenance', {
+        persistence_state: 'error', cycle_count: 1, latest_cycle_present: true,
+        latest_cycle_status: 'proposed', latest_cycle_id_hash: '0123456789abcdef',
+        latest_execution_status: 'not_recorded', latest_guardian_status: 'not_recorded',
+    })
+    assert.match(proposed, /Latest in-process cycle<\/dt><dd>Proposed<\/dd>/)
+    assert.match(proposed, /Cycle ref<\/dt><dd>0123456789abcdef<\/dd>/)
+    assert.match(proposed, /Execution<\/dt><dd>No execution recorded<\/dd>/)
+    assert.match(proposed, /Persistence<\/dt><dd>Error; durability unknown<\/dd>/)
+})
+
+test('persistence configuration does not claim verified durability and absent or invalid metadata stays unknown', async () => {
+    for (const [state, label] of [
+        ['autosave_enabled', 'Autosave enabled; durability unverified'],
+        ['autosave_disabled', 'Autosave disabled'],
+        ['no_store', 'No store configured'],
+        ['unknown', 'Unknown'], [undefined, 'Unknown'],
+        ['private-path-error', 'Unknown'], [{ private: 'error' }, 'Unknown'],
+    ]) {
+        const html = await renderEvidence('maintenance', { persistence_state: state })
+        assert.ok(html.includes(`Persistence</dt><dd>${label}</dd>`))
+        assert.doesNotMatch(html, /private|\[object Object\]|Durability verified/)
+    }
+    const offline = await renderEvidence('maintenance', {
+        persistence_state: 'error', cycle_count: 1, latest_cycle_present: true,
+    }, false)
+    assert.match(offline, /Persistence<\/dt><dd>Unknown<\/dd>/)
+    assert.match(offline, /In-process cycles<\/dt><dd>Unknown<\/dd>/)
+    assert.doesNotMatch(offline, /Error; durability unknown/)
 })

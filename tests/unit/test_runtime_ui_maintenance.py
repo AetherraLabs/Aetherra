@@ -43,8 +43,8 @@ def _register(registry, service, *, name="maintenance_system", stale=False):
     )
 
 
-def _proposed_service():
-    service = MaintenanceService(autosave=False)
+def _proposed_service(service=None):
+    service = service or MaintenanceService(autosave=False)
     cycle = service.route_proposal(
         MaintenanceProposal(
             proposal_id="private-proposal-reference",
@@ -220,4 +220,169 @@ def test_missing_or_failed_maintenance_status_does_not_claim_an_empty_record(reg
     assert maintenance["status"] == "unknown"
     assert maintenance["metrics"]["evidence"] == "service_status_unavailable"
     assert "cycle_count" not in maintenance["metrics"]
+    assert "private" not in str(maintenance)
+
+
+def test_failed_store_load_is_degraded_without_exposing_error_or_path(
+    registry, tmp_path
+):
+    original = MaintenanceService.with_default_store(tmp_path)
+    original.create_cycle("private-load-cycle")
+    store_path = original.record_store.file_path
+    saved = store_path.read_bytes()
+    store_path.write_text("private-invalid-json", encoding="utf-8")
+    service = MaintenanceService.with_default_store(tmp_path)
+    assert service.get_status()["service"]["last_persist_error"] == "ValueError"
+    _register(registry, service)
+
+    failed = collect_runtime_ui_system_status()["maintenance"]
+    assert failed["status"] == "degraded"
+    assert failed["metrics"]["persistence_state"] == "error"
+    assert failed["metrics"]["cycle_count"] == 0
+    assert failed["metrics"]["latest_cycle_present"] is False
+    assert "private" not in str(failed)
+    assert "ValueError" not in str(failed)
+    assert str(tmp_path) not in str(failed)
+    assert store_path.read_text(encoding="utf-8") == "private-invalid-json"
+
+    store_path.write_bytes(saved)
+    assert service.load_records() == 1
+    recovered = collect_runtime_ui_system_status()["maintenance"]
+    assert recovered["status"] == "active"
+    assert recovered["metrics"]["persistence_state"] == "autosave_enabled"
+    assert recovered["metrics"]["cycle_count"] == 1
+    assert recovered["metrics"]["latest_cycle_present"] is True
+    assert store_path.read_bytes() == saved
+
+
+def test_failed_store_save_keeps_in_process_proposal_visible_and_can_recover(
+    registry, tmp_path
+):
+    service = MaintenanceService.with_default_store(tmp_path)
+    store_path = service.record_store.file_path
+    blocked_temp = store_path.with_suffix(".jsonl.tmp")
+    blocked_temp.mkdir(parents=True)
+    service, cycle = _proposed_service(service)
+    error = service.get_status()["service"]["last_persist_error"]
+    assert error
+    assert not store_path.exists()
+    before = service.export_records()
+    _register(registry, service)
+
+    failed = collect_runtime_ui_system_status()["maintenance"]
+    assert failed["status"] == "degraded"
+    assert failed["metrics"]["persistence_state"] == "error"
+    assert failed["metrics"]["cycle_count"] == 1
+    assert failed["metrics"]["latest_cycle_status"] == "proposed"
+    assert failed["metrics"]["latest_guardian_status"] == "not_recorded"
+    assert failed["metrics"]["latest_execution_status"] == "not_recorded"
+    assert "private" not in str(failed)
+    assert error not in str(failed)
+    assert str(tmp_path) not in str(failed)
+    assert service.export_records() == before
+    assert not store_path.exists()
+
+    blocked_temp.rmdir()
+    assert service.save_records() is True
+    saved = store_path.read_bytes()
+    recovered = collect_runtime_ui_system_status()["maintenance"]
+    assert recovered["status"] == "active"
+    assert recovered["metrics"]["persistence_state"] == "autosave_enabled"
+    assert (
+        recovered["metrics"]["latest_cycle_id_hash"]
+        == failed["metrics"]["latest_cycle_id_hash"]
+    )
+    assert store_path.read_bytes() == saved
+    assert (
+        MaintenanceService.with_default_store(tmp_path).get_cycle(cycle.cycle_id)
+        is not None
+    )
+
+
+@pytest.mark.parametrize(
+    ("configured", "autosave", "expected"),
+    [
+        (True, True, "autosave_enabled"),
+        (True, False, "autosave_disabled"),
+        (False, True, "no_store"),
+    ],
+)
+def test_persistence_configuration_is_not_a_durability_claim(
+    registry, tmp_path, configured, autosave, expected
+):
+    service = (
+        MaintenanceService.with_default_store(tmp_path, autosave=autosave)
+        if configured
+        else MaintenanceService(autosave=autosave)
+    )
+    _register(registry, service)
+    maintenance = collect_runtime_ui_system_status()["maintenance"]
+    assert maintenance["metrics"]["persistence_state"] == expected
+    assert maintenance["metrics"]["readiness_verified"] is False
+
+
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        None,
+        "private-metadata",
+        {},
+        {"record_store_configured": True, "autosave": True},
+        {
+            "record_store_configured": "private",
+            "autosave": True,
+            "last_persist_error": None,
+        },
+        {
+            "record_store_configured": True,
+            "autosave": "private",
+            "last_persist_error": None,
+        },
+        {
+            "record_store_configured": True,
+            "autosave": True,
+            "last_persist_error": {"private": "error"},
+        },
+    ],
+)
+def test_missing_or_malformed_persistence_metadata_stays_unknown(registry, metadata):
+    _register(
+        registry,
+        SimpleNamespace(
+            get_status=lambda: {
+                "available": True,
+                "cycle_count": 0,
+                "recent_cycles": [],
+                "service": metadata,
+            }
+        ),
+    )
+    maintenance = collect_runtime_ui_system_status()["maintenance"]
+    assert maintenance["metrics"]["persistence_state"] == "unknown"
+    assert "private" not in str(maintenance)
+
+
+@pytest.mark.parametrize(
+    "restore", [{"load_failed": True}, {"last_load_error": "private-load-error"}]
+)
+def test_known_restore_failure_degrades_even_without_a_write_error(registry, restore):
+    _register(
+        registry,
+        SimpleNamespace(
+            get_status=lambda: {
+                "available": True,
+                "cycle_count": 0,
+                "recent_cycles": [],
+                "service": {
+                    "record_store_configured": True,
+                    "autosave": True,
+                    "last_persist_error": None,
+                    **restore,
+                },
+            }
+        ),
+    )
+    maintenance = collect_runtime_ui_system_status()["maintenance"]
+    assert maintenance["status"] == "degraded"
+    assert maintenance["metrics"]["persistence_state"] == "error"
     assert "private" not in str(maintenance)

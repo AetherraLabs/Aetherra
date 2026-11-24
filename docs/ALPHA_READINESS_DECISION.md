@@ -25,6 +25,31 @@ See [the checklist](ALPHA_READINESS_CHECKLIST.md),
 [fresh-install evidence](evidence/desktop_alpha_2026-11-22.json) and
 [clean-main acceptance](evidence/desktop_alpha_main_2026-11-22.json).
 
+## Merge Review: Maintenance Restore And Status
+
+Review of PR #352 on 2026-11-24 found two linked blockers: a failed Maintenance
+restore could be overwritten by automatic proposal routing/autosave, and the
+Observatory could display active/empty records while persistence had failed.
+The service now retains a restore-failure guard until a successful explicit
+reload. Automatic routing and save retries stop with
+`maintenance_restore_failed`, preserving unread or partially restored history.
+Ordinary failed-save recovery and valid new/empty stores remain supported.
+The Observatory reports a sanitized persistence state, degrades known errors,
+and labels cycle evidence as current in-process records.
+
+The new regressions reproduced both defects. The repaired backend passed 234
+focused tests; the integrated UI/Maintenance/proposal bundle passed 158 tests.
+All 29 GUI tests, type checking, build and lint pass. Final independent review
+found no remaining blocker in these repairs. Two import-heading comments added
+after the integrated run are bound by exact reconstructed-byte hashes and AST
+equivalence; no behavior changed after those tests.
+
+The earlier full-suite/runtime checkpoints below retain their original source
+scope. The new head's CI and clean-main verification remain separate gates on
+[PR #352](https://github.com/AetherraLabs/Aetherra/pull/352). No execution authority
+or broader readiness claim is granted. See
+[merge-review evidence](evidence/phase_b_merge_review_2026-11-24.json).
+
 ## Phase B PR Review Checkpoint
 
 Final review on 2026-11-24 found one remaining measured-provenance defect:
@@ -37,7 +62,7 @@ and SQLite reload; proposal routing remains intact.
 
 The source at `3ea0df0` passed **3,472 tests, 38 skips and 5 passing subtests** with
 default collection, options and coverage in an independent clean source
-snapshot. All 1,547 frozen source/control hashes match the candidate. The focused
+snapshot. All 1,547 frozen source/control hashes matched that candidate. The focused
 provenance/flow bundle passed 87 tests; the unchanged Python quality gate reports
 zero new or edited violations.
 
@@ -66,7 +91,7 @@ its own child import path while retaining the real blocked probe, temporary
 profile, shutdown assertions and 15-second deadline. The corrected case and all
 90 focused heartbeat/observe-only tests pass, as do all four style checks.
 
-Production source is identical to the full-suite/runtime checkpoint above.
+At `ebd216c`, production source was identical to the full-suite/runtime checkpoint above.
 The changed harness has focused verification; current hosted CI is recorded on
 [PR #352](https://github.com/AetherraLabs/Aetherra/pull/352). The bounded GO decision
 and signing controls remain unchanged. See [CI correction evidence](evidence/phase_b_ci_import_isolation_2026-11-24.json).

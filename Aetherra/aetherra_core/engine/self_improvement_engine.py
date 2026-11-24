@@ -1586,6 +1586,13 @@ class SelfImprovementEngine:
             maintenance = (
                 registry.get_service("maintenance_system") if registry else None
             )
+            if maintenance is not None:
+                service_status = maintenance.get_status().get("service", {})
+                if service_status.get("load_failed") or service_status.get(
+                    "last_load_error"
+                ):
+                    flow.update(status="degraded", reason="maintenance_restore_failed")
+                    return {**flow, "last_cycle_ids": []}
             route_failed = False
             persisted_failed = False
             persistence_unavailable = False

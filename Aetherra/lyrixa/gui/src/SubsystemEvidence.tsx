@@ -25,6 +25,16 @@ function reference(value: EvidenceValue): string {
     return typeof value === "string" && /^[a-f0-9]{16}$/.test(value) ? value : "Unknown";
 }
 
+function persistence(value: EvidenceValue): string {
+    switch (value) {
+        case "error": return "Error; durability unknown";
+        case "autosave_enabled": return "Autosave enabled; durability unverified";
+        case "autosave_disabled": return "Autosave disabled";
+        case "no_store": return "No store configured";
+        default: return "Unknown";
+    }
+}
+
 export default function SubsystemEvidence({ name, metrics, live }: Props) {
     const observed = live ? metrics ?? {} : {};
     let rows: Array<[string, string]>;
@@ -42,8 +52,9 @@ export default function SubsystemEvidence({ name, metrics, live }: Props) {
         note = "The lifecycle badge describes whether Homeostasis is running. Effective mode and actuator counters show its operating behavior.";
     } else if (name === "maintenance") {
         rows = [
-            ["Recorded cycles", count(observed.cycle_count)],
-            ["Latest cycle", observed.latest_cycle_present === false ? "No cycle recorded" : status(observed.latest_cycle_status, ["created", "observed", "observation_degraded", "diagnosed", "proposed", "approved", "denied", "contained", "security_enforced", "security_blocked", "executed", "execution_failed", "verified", "verification_failed", "learned"])],
+            ["Persistence", persistence(observed.persistence_state)],
+            ["In-process cycles", count(observed.cycle_count)],
+            ["Latest in-process cycle", observed.latest_cycle_present === false ? "No in-process cycle" : status(observed.latest_cycle_status, ["created", "observed", "observation_degraded", "diagnosed", "proposed", "approved", "denied", "contained", "security_enforced", "security_blocked", "executed", "execution_failed", "verified", "verification_failed", "learned"])],
         ];
         if (observed.latest_cycle_present === true) {
             rows.push(
@@ -61,7 +72,7 @@ export default function SubsystemEvidence({ name, metrics, live }: Props) {
             const updated = observed.latest_updated_at;
             rows.push(["Record updated", typeof updated === "string" && updated.length <= 64 && Number.isFinite(Date.parse(updated)) ? updated : "Unknown"]);
         }
-        note = "Latest recorded cycle only. Guardian decides; Security enforces; Maintenance records. References identify related records without exposing their contents.";
+        note = "Current in-process records only; store configuration does not verify durability. Guardian decides; Security enforces; Maintenance records. References identify related records without exposing their contents.";
     } else if (name === "guardian") {
         rows = [
             ["Enabled", flag(observed.enabled)],

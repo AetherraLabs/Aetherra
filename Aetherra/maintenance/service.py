@@ -5,10 +5,12 @@
 
 from __future__ import annotations
 
+# Standard library imports
 import logging
 from pathlib import Path
 from typing import Any
 
+# Local imports
 from .cycle import (
     MaintenanceCoordinator,
     MaintenanceDecision,
@@ -71,6 +73,7 @@ class MaintenanceService:
         self.autosave = bool(autosave)
         self._loaded_records = 0
         self._last_persist_error: str | None = None
+        self._last_load_error: str | None = None
 
         if self.record_store is not None and autoload:
             self.load_records()
@@ -146,6 +149,10 @@ class MaintenanceService:
     def save_records(self) -> bool:
         """Persist coordinator records if a record store is configured."""
 
+        # An incomplete restore must never replace the previous durable history.
+        # Only an explicit successful reload can make this coordinator writable.
+        if self._last_load_error is not None:
+            return False
         if self.record_store is None:
             return False
         try:
@@ -165,11 +172,13 @@ class MaintenanceService:
             return 0
         try:
             self._loaded_records = self.record_store.load_into(self.coordinator)
+            self._last_load_error = None
             self._last_persist_error = None
             return self._loaded_records
         except Exception as exc:
             self._loaded_records = 0
-            self._last_persist_error = exc.__class__.__name__
+            self._last_load_error = exc.__class__.__name__[:120]
+            self._last_persist_error = self._last_load_error
             logger.debug("[MAINT] failed to load maintenance records: %s", exc)
             return 0
 
@@ -184,6 +193,8 @@ class MaintenanceService:
             "autosave": self.autosave,
             "loaded_records": self._loaded_records,
             "last_persist_error": self._last_persist_error,
+            "last_load_error": self._last_load_error,
+            "load_failed": self._last_load_error is not None,
         }
         return status
 
@@ -214,6 +225,7 @@ async def register_maintenance_service(
             metadata=metadata,
         )
     else:
+        # Aetherra imports
         from aetherra_service_registry import register_service
 
         registered = await register_service(
@@ -236,6 +248,7 @@ async def register_maintenance_service(
                         metadata=alias_metadata,
                     )
                 else:
+                    # Aetherra imports
                     from aetherra_service_registry import register_service
 
                     await register_service(alias, instance, metadata=alias_metadata)

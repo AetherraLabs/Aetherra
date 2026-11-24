@@ -42,6 +42,13 @@ style checks pass. Production source is unchanged. See the
 [CI follow-up](ALPHA_READINESS_DECISION.md#ci-subprocess-import-follow-up)
 for the verification boundary and current PR checks.
 
+Final merge review also repaired failed-restore overwrite and hidden persistence
+errors. The backend and integrated bundles passed 234 and 158 tests respectively;
+29 GUI tests, type checking, build and lint pass. Earlier full-suite records do
+not certify these later edits. See the
+[merge-review checkpoint](ALPHA_READINESS_DECISION.md#merge-review-maintenance-restore-and-status)
+and its evidence; current-head CI and clean-main verification are separate.
+
 This checklist defines what must be true before Aetherra should be called ready
 for an internal alpha. It is not a marketing launch checklist. It is a
 technical and safety gate for proving that the current functional foundations

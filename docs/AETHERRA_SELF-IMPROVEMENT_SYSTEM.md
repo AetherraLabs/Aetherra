@@ -52,6 +52,10 @@ does not copy them into scalar metric history. Explicitly measured zero values
 remain valid inputs. Repeated observations and restart reuse existing records;
 dismissed proposals stay closed. Failed writes do not publish newer evidence in the in-process cache,
 and retries compare against persisted evidence before recording a cycle.
+Maintenance restore failures are separate from retryable save failures:
+`maintenance_restore_failed` blocks cycle routing and autosave retries until the
+existing service reloads successfully. The unread or partially restored store
+must remain intact; a new observation does not authorize discarding its history.
 
 `get_improvement_status().homeostasis_flow` exposes bounded observation,
 proposal and routing counts, last cycle IDs, and explicit degraded reasons.

@@ -358,6 +358,63 @@ async def test_persistence_failure_is_visible_and_retryable(
     )
 
 
+@pytest.mark.parametrize("failure", ["json", "cycle", "read"])
+async def test_failed_restore_blocks_routing_until_successful_reload(
+    isolated_runtime, tmp_path, monkeypatch, failure
+):
+    registry, _ = isolated_runtime
+    service = MaintenanceService.with_default_store(tmp_path)
+    assert await registry.register_service("maintenance_system", service)
+    engine = SelfImprovementEngine(str(tmp_path / "self_improvement.db"))
+    await engine.propose_from_homeostasis(_observation())
+    cycle_id = service.export_records()[0]["cycle_id"]
+    cycle = service.get_cycle(cycle_id)
+    cycle.record_guardian_decision(
+        MaintenanceDecision(
+            status="deny", reason="prior review", audit_id="prior-denial"
+        )
+    )
+    assert service.save_records()
+    original_records = service.export_records()
+    path = service.record_store.file_path
+    original = path.read_bytes()
+    if failure == "json":
+        path.write_bytes(original + b"{invalid json}\n")
+    elif failure == "cycle":
+        path.write_bytes(original + b'{"cycle_id":"broken","status":"invalid"}\n')
+    protected = path.read_bytes()
+
+    with monkeypatch.context() as blocked:
+        if failure == "read":
+            read_text = Path.read_text
+
+            def unreadable(self, *args, **kwargs):
+                if self == path:
+                    raise PermissionError("private record path is unreadable")
+                return read_text(self, *args, **kwargs)
+
+            blocked.setattr(Path, "read_text", unreadable)
+        restarted = MaintenanceService.with_default_store(tmp_path)
+        assert await registry.register_service("maintenance_system", restarted)
+        before = restarted.export_records()
+        for _ in range(2):
+            result = await engine.propose_from_homeostasis(_observation())
+            assert path.read_bytes() == protected
+            assert restarted.export_records() == before
+            assert result["status"] == "degraded"
+            assert result["reason"] == "maintenance_restore_failed"
+            assert result["last_cycle_ids"] == []
+        assert restarted.get_status()["service"]["load_failed"] is True
+
+    path.write_bytes(original)
+    assert restarted.load_records() == 1
+    result = await engine.propose_from_homeostasis(_observation())
+    assert result["status"] == "proposed"
+    assert result["last_cycle_ids"] == [cycle_id]
+    assert restarted.export_records() == original_records
+    assert path.read_bytes() == original
+
+
 @pytest.mark.parametrize(
     "damage",
     ["actions_enabled", "stale", "nonfinite", "invalid_level", "invalid_direction"],

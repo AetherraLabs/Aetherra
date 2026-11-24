@@ -762,10 +762,24 @@ diagnosis and genuine Self-Improvement proposal ID, `can_execute=false`, no
 Guardian decision/audit ID, `security_enforced=false`, and no execution or
 verification record. The Maintenance service must have its store configured,
 autosave enabled and no persistence error before claiming restart durability.
+If `service.load_failed` is true, stop the supervised exercise and preserve the
+profile. Diagnose storage access or recover a known-good record file before
+restarting through the normal launcher; embedded callers can explicitly call
+`load_records()` after recovery. Failed restore blocks `save_records()` and
+automatic proposal routing until reload succeeds. Repeated observations are
+not recovery, and must not overwrite the original store. A failed save after a
+successful load remains retryable through the existing proposal path.
 Records are local coordinator evidence, not signed Guardian approvals. Its
 existing JSONL file is under the profile's
 `artifacts/maintenance/maintenance_cycles.jsonl`; the proposal is also persisted
 in the profile's Self-Improvement database. Compare actual IDs, not only counts.
+
+In the Observatory, Maintenance persistence must show `autosave_enabled` for the
+configured profile; this describes configuration, not proven durability.
+`error` makes status degraded. `autosave_disabled`, `no_store`, and `unknown`
+remain distinct. Cycle counts and the latest cycle are explicitly in-process
+evidence, including when a failed load leaves none visible. No raw store path
+or exception detail is projected.
 
 In the Observatory select Homeostasis, Maintenance, Guardian and Memory. Verify
 mode and counters, the latest real cycle and proposal references, actual Guardian
