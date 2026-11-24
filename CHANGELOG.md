@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.9 (2026-11-24)
+
+### Bug Fixes
+
+- **deps**: Align runtime inputs and audit release tooling
+  ([`f97acf9`](https://github.com/AetherraLabs/Aetherra/commit/f97acf91836d999cc0b37653d26eeac19c328290))
+
+
 ## v0.5.0-beta.8 (2026-11-23)
 
 ### Bug Fixes
