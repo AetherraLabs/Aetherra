@@ -15,7 +15,13 @@ from __future__ import annotations
 import math
 import time
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import Callable, Dict, List
+
+from Aetherra.consciousness.checkpoint import (
+    TrustCheckpoint,
+    TrustRecord,
+    validate_trust_checkpoint,
+)
 
 
 @dataclass
@@ -42,7 +48,9 @@ class SelfTrust:
     Trust decays exponentially toward a healthy baseline (90.0) when no events occur.
     """
 
-    def __init__(self, half_life_s: int = 3600):
+    def __init__(
+        self, half_life_s: int = 3600, *, clock: Callable[[], float] | None = None
+    ):
         """Initialize self-trust tracker.
 
         Args:
@@ -50,6 +58,34 @@ class SelfTrust:
         """
         self.subsystems: Dict[str, SubsystemTrust] = {}
         self.half_life = half_life_s
+        self._clock = clock if clock is not None else lambda: time.time()
+
+    def export_checkpoint(self) -> TrustCheckpoint:
+        """Capture exact aggregate state without decay or invented observations."""
+        if len(self.subsystems) > 64:
+            raise ValueError("checkpoint_invalid")
+        state = TrustCheckpoint(
+            self.half_life,
+            tuple(
+                TrustRecord(
+                    name, trust.score, trust.last_event_ts, tuple(trust.history[-64:])
+                )
+                for name, trust in sorted(self.subsystems.items())
+            ),
+        )
+        return validate_trust_checkpoint(state)
+
+    def restore_checkpoint(self, state: TrustCheckpoint) -> None:
+        """Validate fully before replacing the trust map; import performs no decay."""
+        state = validate_trust_checkpoint(state)
+        restored = {
+            item.name: SubsystemTrust(
+                item.name, item.score, item.last_event_ts, list(item.history)
+            )
+            for item in state.subsystems
+        }
+        self.subsystems = restored
+        self.half_life = state.half_life_s
 
     def _decay(self, s: SubsystemTrust) -> None:
         """Apply exponential decay toward baseline 90.0.
@@ -57,7 +93,7 @@ class SelfTrust:
         Args:
             s: Subsystem trust to decay
         """
-        now = time.time()
+        now = self._clock()
         dt = max(0.0, now - s.last_event_ts)
         if dt <= 0:
             return
@@ -76,7 +112,7 @@ class SelfTrust:
             outcome: "ok" | "repaired" | "failed"
         """
         s = self.subsystems.setdefault(name, SubsystemTrust(name=name))
-        s.last_event_ts = time.time()
+        s.last_event_ts = self._clock()
         self._decay(s)
 
         if outcome == "ok":

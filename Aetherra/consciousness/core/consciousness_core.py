@@ -16,6 +16,7 @@ import contextlib
 import hashlib
 import logging
 import os
+import threading
 import time
 from typing import List, Optional
 
@@ -24,6 +25,12 @@ from Aetherra.aetherra_core.memory.qfac import qfac_store
 
 # Consciousness components (alphabetical)
 from Aetherra.consciousness.autopilot_manager import AutopilotManager
+from Aetherra.consciousness.checkpoint import (
+    QUALIA_NAMES,
+    ObserverCheckpoint,
+    decode_checkpoint,
+    encode_checkpoint,
+)
 from Aetherra.consciousness.consolidation import Consolidator
 from Aetherra.consciousness.continuity_memory import ContinuityMemory
 from Aetherra.consciousness.dashboards import ConsciousnessDashboard
@@ -101,6 +108,7 @@ class ConsciousnessCore:
         if observer_only and (safety_envelope is not None or memory_engine is not None):
             raise ValueError("observer_only rejects actuators and memory consolidation")
         self.observer_only = observer_only
+        self._checkpoint_owner_thread = threading.get_ident()
         self.bus = perception_bus
         self.safety_envelope = safety_envelope
         self.memory_engine = memory_engine
@@ -151,6 +159,34 @@ class ConsciousnessCore:
         # Rehydrate from latest continuity snapshot (if available)
         if not self.observer_only:
             self._rehydrate_from_continuity()
+
+    def _require_checkpoint_owner(self) -> None:
+        if threading.get_ident() != self._checkpoint_owner_thread:
+            raise RuntimeError("checkpoint_wrong_thread")
+        if not self.observer_only:
+            raise RuntimeError("checkpoint_requires_observer")
+
+    def export_observer_checkpoint(self, checkpoint_id: str) -> ObserverCheckpoint:
+        """Capture a detached aggregate on the Core owner thread without I/O."""
+        self._require_checkpoint_owner()
+        state = ObserverCheckpoint(
+            checkpoint_id,
+            time.time(),
+            tuple((name, getattr(self.qualia, name)) for name in QUALIA_NAMES),
+            self.self_trust.export_checkpoint(),
+        )
+        return decode_checkpoint(encode_checkpoint(state))
+
+    def restore_observer_checkpoint(self, state: ObserverCheckpoint) -> None:
+        """Apply a fully validated aggregate before ticks; never replay lifecycle."""
+        self._require_checkpoint_owner()
+        if self.tick_count:
+            raise RuntimeError("checkpoint_restore_after_tick")
+        state = decode_checkpoint(encode_checkpoint(state))
+        qualia = QualiaVector(**dict(state.qualia))
+        # Trust validates/builds its replacement before mutation; no event/decay.
+        self.self_trust.restore_checkpoint(state.trust)
+        self.qualia = qualia
 
     def tick(self) -> None:
         """Single consciousness cycle: perceive → appraise → attend → intend → reflect."""
