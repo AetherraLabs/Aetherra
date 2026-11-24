@@ -1,6 +1,6 @@
 # Internal Alpha Readiness Decision
 
-Date: 2026-11-23 (America/Denver)
+Date: 2026-11-24 (America/Denver)
 
 **GO for supervised internal alpha on the documented Windows source-runtime
 profile.** Desktop blockers, clean-main acceptance and required production
@@ -8,11 +8,11 @@ signing pass. **NO-GO for unattended or production operation and unverified
 installation graphs.** The operating boundary below remains in force.
 
 - Decision owner: Aetherra Labs.
-- Integration: [PR #327](https://github.com/AetherraLabs/Aetherra/pull/327),
-  merged as `a0e8857c22092b0acf0e997f8b02cf5e04f23be1`.
-- Released main: `f55d48a94559364d393fbf10a1e84e397a5109aa`, `v0.5.0-beta.6`.
-- Full-suite runtime checkpoint: `374a7213`; its runtime source is unchanged
-  by the merge and version-only release commit.
+- Current integrated baseline: [PR #351](https://github.com/AetherraLabs/Aetherra/pull/351),
+  merged as `da982385d30510f0e7010f33e2cffe2d5cbdc3f6`.
+- Released main: `ba3a04ad44f85dbb0fd2b2291142dca40a6562d4`, `v0.5.0-beta.10`.
+- Phase B is a separately reviewed PR candidate; the historical desktop and Phase A
+  checkpoints below retain their own revision and verification boundaries.
 - Supported profile: Windows x64, Python 3.13.7 source checkout, Node 22.18.0,
   PowerShell 7.5+, the normal full launcher and React Runtime Observatory.
 - All conversations are synthetic. Separate local directories isolate storage;
@@ -25,11 +25,239 @@ See [the checklist](ALPHA_READINESS_CHECKLIST.md),
 [fresh-install evidence](evidence/desktop_alpha_2026-11-22.json) and
 [clean-main acceptance](evidence/desktop_alpha_main_2026-11-22.json).
 
+## Merge Review: Maintenance Restore And Status
+
+Review of PR #352 on 2026-11-24 found two linked blockers: a failed Maintenance
+restore could be overwritten by automatic proposal routing/autosave, and the
+Observatory could display active/empty records while persistence had failed.
+The service now retains a restore-failure guard until a successful explicit
+reload. Automatic routing and save retries stop with
+`maintenance_restore_failed`, preserving unread or partially restored history.
+Ordinary failed-save recovery and valid new/empty stores remain supported.
+The Observatory reports a sanitized persistence state, degrades known errors,
+and labels cycle evidence as current in-process records.
+
+The new regressions reproduced both defects. The repaired backend passed 234
+focused tests; the integrated UI/Maintenance/proposal bundle passed 158 tests.
+All 29 GUI tests, type checking, build and lint pass. Final independent review
+found no remaining blocker in these repairs. Two import-heading comments added
+after the integrated run are bound by exact reconstructed-byte hashes and AST
+equivalence; no behavior changed after those tests.
+
+The earlier full-suite/runtime checkpoints below retain their original source
+scope. The new head's CI and clean-main verification remain separate gates on
+[PR #352](https://github.com/AetherraLabs/Aetherra/pull/352). No execution authority
+or broader readiness claim is granted. See
+[merge-review evidence](evidence/phase_b_merge_review_2026-11-24.json).
+
+## Phase B PR Review Checkpoint
+
+Final review on 2026-11-24 found one remaining measured-provenance defect:
+the real validator's empty defaults and no-input fallback estimates could enter
+Self-Improvement's SQLite metric history. The bridge now leaves those summaries
+as diagnostic output because they do not declare per-score measurement
+provenance. Genuine measured zero values remain supported. Both real-validator
+regressions failed before the fix and now pass through the registered intake
+and SQLite reload; proposal routing remains intact.
+
+The source at `3ea0df0` passed **3,472 tests, 38 skips and 5 passing subtests** with
+default collection, options and coverage in an independent clean source
+snapshot. All 1,547 frozen source/control hashes matched that candidate. The focused
+provenance/flow bundle passed 87 tests; the unchanged Python quality gate reports
+zero new or edited violations.
+
+Two fresh normal full-launch processes again crossed 215 seconds each, restored
+the same persisted proposal/cycle records, and exited zero without force.
+Real measurements continued reaching both memory and SQLite near the end of
+each window; validator effectiveness defaults remained absent. Hub ownership,
+HTTP readiness, Guardian enforcement, audit integrity, unchanged tuning and zero
+actuator attempts/executions passed. Strict signing flags remained configured.
+
+**GO remains bounded to supervised observe/propose operation.** This checkpoint
+supports PR publication; hosted CI and merged-main acceptance remain separate.
+Earlier browser/live-model evidence retains its original source scope and was
+not repeated for this backend-only repair. Pending temporal work, original
+workspaces, historical evidence and signing/release controls are preserved.
+See [review evidence](evidence/integration_phase_b_pr_review_2026-11-24.json).
+
+### CI Subprocess Import Follow-Up
+
+The first PR #352 CI Quality Gates run exposed a test-harness dependency: the
+blocked-maintenance shutdown subprocess ran from its temporary profile without
+an explicit repository import path. The local runner supplied `PYTHONPATH`, so
+the default suite above did not expose that dependency. Clearing the inherited
+path reproduced the same `ModuleNotFoundError` locally. The test now supplies
+its own child import path while retaining the real blocked probe, temporary
+profile, shutdown assertions and 15-second deadline. The corrected case and all
+90 focused heartbeat/observe-only tests pass, as do all four style checks.
+
+At `ebd216c`, production source was identical to the full-suite/runtime checkpoint above.
+The changed harness has focused verification; current hosted CI is recorded on
+[PR #352](https://github.com/AetherraLabs/Aetherra/pull/352). The bounded GO decision
+and signing controls remain unchanged. See [CI correction evidence](evidence/phase_b_ci_import_isolation_2026-11-24.json).
+
+## Hub Heartbeat Follow-Up
+
+Verification date: 2026-11-24. The initial Phase B stale-Hub concern is repaired
+in the same isolated `codex/integration-phase-b` candidate. This checkpoint predates commit and PR publication; it claims no hosted CI or
+merged-main acceptance.
+
+The old Flask factory used a removed first-request hook, attached shutdown to
+request-context teardown, and could substitute an always-alive dummy Hub.
+The normal full launcher's existing lifecycle loop now refreshes only its actual
+owned local server while its serving thread is alive. Existing registration
+identity, healthy-status and Guardian capability checks remain mandatory.
+Factory creation and ordinary requests no longer own a background registry
+worker. External/proxy Hubs and direct standalone callers retain their explicit
+ownership; no replacement service, timer, status promotion or relaxed expiry
+was introduced.
+
+The existing baseline passed 67 tests. New regressions failed for both idle and
+request-teardown operation at logical expiry, and for the missing heartbeat
+authorization audit. All 15 new cases now pass, including stopped/dead threads,
+replacement, absent ownership, unhealthy registrations, shutdown and denial.
+The focused 129-test bundle includes Phase B durability and all 13 signing
+regressions; boot, Integration Validation and the unchanged quality gate pass.
+The first full run passed 3,469 tests with 38 skips and 5 passing subtests,
+but one active-stream shutdown test timed out before generation began. Its
+real local retrieval model took about 25 seconds to load against a 10-second
+setup wait. The child still persisted work and completed shutdown; the same
+test passed unchanged in isolation. The acceptance harness now uses its existing
+90-second readiness budget and the normal smoke's 120-second HTTP budget.
+The one-second stream timeout, 0.15-second drain budget, post-signal deadlines
+and all ownership/persistence assertions remain unchanged. A second run exposed a separate legacy alert-test isolation defect: shared
+metric history crossed its learning threshold. A private copy with 52 samples
+reproduced the failure; empty history passed. Its fixture now supplies fresh
+real detector and Lyrixa integration instances, retaining the original assertions.
+Both 20-test module sequences passed with seeded and empty histories. No
+production alert behavior or shared history was changed.
+
+A third run exposed a legacy workflow benchmark measuring the entire script
+call, including Guardian and metadata, against 200 ms. The timeout step itself
+remained correct and took less than 0.01 ms in the partitioned check. Its test
+now verifies that the fast path schedules no wait or sleep while preserving
+the normal script/security path and timeout-result checks. Deliberately disabling
+the fast path in a private copy fails this test; slow setup still passes.
+
+The final full suite ran from an independent clean checkout with identical
+frozen source, excluding accumulated ignored runtime history. It
+passed 3,470 tests with 38 skips and 5 passing subtests, exit zero, using
+the default collection, options and coverage. All 1,546 frozen source/control
+hashes matched after verification.
+
+Fresh normal full-CLI processes `6072` and `26804` each crossed a 215-second
+checkpoint. All 32 samples found the same actual launcher-owned server healthy,
+with an advancing heartbeat and measured `hub_connection=1`. Maximum sampled
+heartbeat age was 31.028 seconds. HTTP health/readiness passed separately.
+The natural proposal contains the measured service-count threshold crossing,
+with no false Hub-pressure evidence. Exact proposal and cycle contents survived
+restart unchanged. Both processes exited zero without force and closed the Hub
+listener. Observe-only mode, unchanged tuning, zero actuator attempts/executions
+and enforcing Guardian with intact audit remained in effect.
+
+The documented metrics-snapshot endpoint was also checked against the restarted
+Hub. Browser and live-model checks were not repeated for this backend follow-up;
+the earlier Phase B evidence retains its recorded source scope. Raw logs and
+profiles remain outside source. See [follow-up evidence](evidence/hub_heartbeat_followup_2026-11-24.json)
+and [operator checks](ALPHA_OPERATOR_RUNBOOK.md#observation-and-maintenance-smoke-phase-b).
+
+**Decision: GO for bounded supervised observe/propose operation of this local
+candidate; the Hub lifecycle concern is resolved on the verified normal
+full-launcher path.** The supervised
+observe/propose boundary remains unchanged. Serving liveness is not a latency,
+throughput or useful-work guarantee. Optional subsystem issues and Phase C remain
+separate. Original workspaces, pending temporal work, prior Phase B evidence and
+release signing controls are preserved.
+
+## Phase B Observation And Maintenance Candidate
+
+Verification evidence: 2026-11-24 UTC. Candidate branch
+`codex/integration-phase-b`, based on released main
+`ba3a04ad44f85dbb0fd2b2291142dca40a6562d4` (`v0.5.0-beta.10`). This checkpoint records the
+pre-commit isolated candidate. It did not include hosted CI, merge or clean-main
+checks for Phase B. The pending temporal observer and original workspace
+remain separate and unchanged.
+
+The existing component baseline passed 109 focused tests. Full integration
+exposed a bridge expecting wrappers instead of registered instances, absent
+proposal routing, observe-only adaptation, profile-relative configuration,
+unmeasured defaults appearing as evidence, failed-write retry inconsistency,
+and registrations expiring after three minutes. The candidate connects the
+existing bridge, Self-Improvement engine and Maintenance coordinator, preserves
+measured provenance, persists before publishing proposal updates, blocks
+observe-only tuning, and refreshes only owned live Phase B registrations.
+The Observatory projects bounded evidence from the real records.
+
+The normal full CLI ran twice in one fresh profile. Both processes crossed a
+215-second natural observation checkpoint: accepted observations increased
+`1 -> 4`, the same five canonical/alias registrations remained fresh, tuning
+stayed unchanged, and actuator attempts/executions/blocks remained zero.
+The first process ran 430.92 seconds and the restart wrapper 496.16 seconds;
+the latter includes a deliberate pre-launch hold for browser shutdown checks.
+Both exited zero without force. These elapsed times are bounded exercise
+receipts, not a continuous-health or soak guarantee.
+
+One separately labeled synthetic sample exercised the actual bridge and was
+restored immediately afterward. Three `proposed` cycles survived restart.
+Full cycle contents and all substantive proposal fields matched across
+SQLite/JSONL, the services and Hub. Only the natural proposal's repeated-
+observation count and update timestamp advanced. No Guardian decision,
+Security enforcement, execution, verification or learning outcome was supplied.
+
+```text
+synthetic memory_rtt=900ms -> PID 40652
+  proposal si-821a26d1d803d595 -> SQLite
+  cycle maint-homeostasis-821a26d1d803d595 -> Maintenance JSONL
+exit 0 -> PID 58844, same persisted records -> Hub -> Observatory
+  cycle ref a534ccb549f444f6; proposal ref 846b2f703d9efa73
+  proposed; no decision, enforcement or execution
+```
+
+Actual browser verification passed at desktop and 390x844 widths. The inspector
+showed these references, observe-only behavior, enforcing Guardian with verified
+audit, and Memory continuity explicitly unverified. It cleared stale evidence
+after shutdown and reconnected automatically after restart; no console errors
+were observed. The separate continuity smoke passed seven offline and seven
+OpenAI/gpt-4o turns through the same full entry point, with real restart/storage,
+accurate recall, honest unknowns and a separate empty profile. No live fallback
+ran; all six continuity processes exited zero without force.
+
+The final default suite passed **3,455 tests, with 38 skips and 5 passing
+subtests**, then exited zero. Default collection/addopts/coverage were retained,
+and all 1,544 frozen source/control files still matched. The existing optional
+and platform skips are retained, not counted as passes. Focused review passed
+116 tests; all 27 GUI tests, build/lint, four boot checks, five Integration Validation checks,
+13 signing regressions and the unchanged Python quality gate passed. Source
+hashes, exact commands and retained diagnostics are recorded in
+[Phase B evidence](evidence/integration_phase_b_2026-11-24.json).
+
+The initial Phase B checkpoint recorded a Hub heartbeat defect: its setup used
+`before_first_request`, unavailable in pinned Flask. After expiry,
+`hub_connection=0` therefore describes its stale/degraded registration while
+concurrent HTTP health/readiness remain successful. This is not evidence of
+HTTP connectivity loss. The natural proposal also records service count 30
+against the shipped target 8; a threshold crossing is a review trigger, not
+proof of a performance fault. Other optional lifecycle degradation remains
+visible and outside this focused connection. The [Hub follow-up above](#hub-heartbeat-follow-up)
+repairs the stale registration; registry liveness remains distinct from HTTP
+connectivity and useful work.
+
+**Decision: GO for the bounded Phase B observation/proposal candidate on the
+verified Windows profile; retain the supervised internal-alpha boundary. Do
+not advance Stage 22 or grant execution authority.** The records are unsigned coordination evidence, not
+approvals. There is no account isolation, interactive ConPTY, fresh installation,
+alternate-platform, unattended or production claim. Release signing controls
+and approved keys are unchanged. Next: review/integrate this candidate and its
+Hub follow-up, then resume the separate Phase C and temporal work.
+
 ## Phase A Core Integration Candidate
 
-Candidate base: `8902e161c728dca50f95555e16bfdfccf5f303b8`, on
-`codex/integration-phase-a`. This addendum describes an unmerged focused change;
-the historical main/release evidence below remains scoped to those revisions.
+Original candidate base: `8902e161c728dca50f95555e16bfdfccf5f303b8`, on
+`codex/integration-phase-a`. Phase A was integrated through PR #351 at
+`da982385d30510f0e7010f33e2cffe2d5cbdc3f6`; the released main baseline for Phase B is
+`ba3a04ad44f85dbb0fd2b2291142dca40a6562d4` (`v0.5.0-beta.10`). PR checks, clean-main
+verification and the signed release passed. The original candidate evidence
+below remains scoped to its recorded revision.
 
 The baseline boot/Integration Validation checks passed, but targeted reproduction
 found three integration defects: a startup scan could say ready with Memory and
@@ -78,10 +306,10 @@ The initial live attempt was sandbox-network denied and used fallback; it is
 retained as a failed attempt, not counted in the seven live turns.
 
 **Decision: retain the bounded supervised internal-alpha GO on the previously
-verified profile; do not advance Stage 22 or extend authority.** Candidate
-integration/hosted CI remain separate gates. Phase B observation/maintenance is
-next after this candidate is reviewed and integrated. The separate pending
-TemporalConsciousnessEngine observer is preserved and not absorbed here.
+verified profile; do not advance Stage 22 or extend authority.** Phase A
+integration and clean-main checks are complete. Phase B observation/maintenance
+is the current focused work. The separate pending TemporalConsciousnessEngine
+observer is preserved and not absorbed here.
 
 This headless run did not repeat browser/interactive ConPTY verification. External
 or shared Hub reuse is unverified. Current optional experimental/cognitive startup

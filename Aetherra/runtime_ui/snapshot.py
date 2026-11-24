@@ -6,6 +6,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 from datetime import UTC, datetime
+from hashlib import sha256
 from threading import BoundedSemaphore, Event, Thread
 from typing import Any
 
@@ -19,7 +20,7 @@ _SERVICES = {
     "agents": ("agent_fabric",),
     "self_improvement": ("self_improvement_engine",),
     "self_incorporation": ("self_incorporation",),
-    "maintenance": ("maintenance",),
+    "maintenance": ("maintenance_system", "aetherra_maintenance"),
     "aether_script": ("aether_script_service",),
     "kernel": ("kernel_loop",),
     "engine": ("aetherra_engine",),
@@ -38,6 +39,7 @@ _STATUS_METHODS = {
     "kernel": "get_status",
     "engine": "get_system_status",
     "homeostasis": "get_orchestrator_status",
+    "maintenance": "get_status",
 }
 _STATUS_TIMEOUT_SECONDS = 0.5
 _STATUS_READ_SLOTS = BoundedSemaphore(3)
@@ -196,6 +198,29 @@ def _observe_service(name, service_names, registry, observation, now) -> None:
         )
         return
 
+    if name == "maintenance":
+        available = raw.get("available")
+        record_metrics = _maintenance_metrics(raw)
+        if (
+            record_metrics["persistence_state"] == "error"
+            or raw.get("degraded") is True
+            or registry_status == "degraded"
+        ):
+            observation["status"] = "degraded"
+        else:
+            observation["status"] = "active" if available is True else "unknown"
+        metrics.update(
+            {
+                "available": available is True,
+                "evidence": "service_status",
+                **record_metrics,
+            }
+        )
+        observation["summary"] = (
+            "Current in-process Maintenance records observed; persistence and execution are separate evidence."
+        )
+        return
+
     if name == "engine":
         # Aetherra imports
         from Aetherra.aetherra_core.engine.readiness import build_ai_readiness_payload
@@ -267,6 +292,138 @@ def _homeostasis_metrics(raw: dict[str, Any]) -> dict[str, Any]:
             if isinstance(value, int) and not isinstance(value, bool) and value >= 0
             else None
         )
+    return result
+
+
+def _maintenance_persistence_state(raw: dict[str, Any]) -> str:
+    """Describe configuration/errors without claiming durability or leaking details."""
+    service = raw.get("service")
+    if not isinstance(service, dict):
+        return "unknown"
+    load_error = service.get("last_load_error")
+    persist_error = service.get("last_persist_error")
+    if service.get("load_failed") is True or any(
+        isinstance(error, str) and error for error in (load_error, persist_error)
+    ):
+        return "error"
+    if (
+        ("load_failed" in service and service["load_failed"] is not False)
+        or ("last_load_error" in service and load_error is not None)
+        or "last_persist_error" not in service
+        or persist_error is not None
+    ):
+        return "unknown"
+    configured = service.get("record_store_configured")
+    if configured is False:
+        return "no_store"
+    if configured is True:
+        if service.get("autosave") is True:
+            return "autosave_enabled"
+        if service.get("autosave") is False:
+            return "autosave_disabled"
+    return "unknown"
+
+
+def _maintenance_metrics(raw: dict[str, Any]) -> dict[str, Any]:
+    """Project bounded record evidence, excluding raw events, paths, and text."""
+    result: dict[str, Any] = {"persistence_state": _maintenance_persistence_state(raw)}
+    for key in (
+        "cycle_count",
+        "active_cycle_count",
+        "terminal_cycle_count",
+        "failure_count",
+    ):
+        value = raw.get(key)
+        result[key] = (
+            value
+            if isinstance(value, int) and not isinstance(value, bool) and value >= 0
+            else None
+        )
+
+    recent = raw.get("recent_cycles")
+    latest = recent[0] if isinstance(recent, list) and recent else None
+    result["latest_cycle_present"] = (
+        True if isinstance(latest, dict) else False if recent == [] else None
+    )
+    latest = latest if isinstance(latest, dict) else {}
+    for key in ("cycle_id", "proposal_id", "guardian_audit_id"):
+        value = latest.get(key)
+        result[f"latest_{key}_hash"] = (
+            sha256(value.encode("utf-8")).hexdigest()[:16]
+            if isinstance(value, str) and 0 < len(value) <= 256
+            else None
+        )
+    for key in ("has_diagnosis", "has_proposal", "security_enforced"):
+        value = latest.get(key)
+        result[f"latest_{key}"] = value if isinstance(value, bool) else None
+    observations = latest.get("observations")
+    result["latest_observations"] = (
+        observations
+        if isinstance(observations, int)
+        and not isinstance(observations, bool)
+        and observations >= 0
+        else None
+    )
+    states = {
+        "status": {
+            "created",
+            "observed",
+            "observation_degraded",
+            "diagnosed",
+            "proposed",
+            "approved",
+            "denied",
+            "contained",
+            "security_enforced",
+            "security_blocked",
+            "executed",
+            "execution_failed",
+            "verified",
+            "verification_failed",
+            "learned",
+        },
+        "guardian_status": {
+            "allow",
+            "allow_limited",
+            "deny",
+            "require_approval",
+            "contain",
+        },
+        "execution_status": {
+            "applied",
+            "accepted",
+            "succeeded",
+            "success",
+            "failed",
+            "blocked",
+            "skipped",
+            "denied",
+        },
+        "verification_status": {"passed", "stable", "improved", "failed"},
+    }
+    for key, allowed in states.items():
+        value = latest.get(key)
+        output_key = "latest_cycle_status" if key == "status" else f"latest_{key}"
+        result[output_key] = (
+            value
+            if isinstance(value, str) and value in allowed
+            else (
+                "not_recorded"
+                if key != "status" and key in latest and value is None
+                else None
+            )
+        )
+    result["latest_updated_at"] = None
+    updated_at = latest.get("updated_at")
+    if isinstance(updated_at, str) and len(updated_at) <= 64:
+        try:
+            stamp = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
+            if stamp.tzinfo is not None:
+                result["latest_updated_at"] = (
+                    stamp.astimezone(UTC).isoformat().replace("+00:00", "Z")
+                )
+        except ValueError:
+            pass
     return result
 
 

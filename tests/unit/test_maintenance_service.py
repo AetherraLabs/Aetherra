@@ -1,3 +1,6 @@
+# Standard library imports
+from pathlib import Path
+
 # Third party imports
 import pytest
 
@@ -153,6 +156,77 @@ def test_service_returns_none_for_unknown_outcome_cycle():
     )
 
     assert result is None
+
+
+@pytest.mark.parametrize("failure", ["json", "cycle", "read"])
+def test_failed_restore_blocks_saving_until_successful_reload(
+    tmp_path, monkeypatch, failure
+):
+    first = MaintenanceService.with_default_store(tmp_path)
+    first.route_proposal(
+        _proposal(),
+        diagnosis=_diagnosis(),
+        guardian_decision=MaintenanceDecision(
+            status="deny", reason="preserve prior review", audit_id="audit-before-load"
+        ),
+        cycle_id="maint-before-load",
+    )
+    path = first.record_store.file_path
+    original = path.read_bytes()
+    if failure == "json":
+        path.write_bytes(original + b"{invalid json}\n")
+    elif failure == "cycle":
+        path.write_bytes(original + b'{"cycle_id":"broken","status":"invalid"}\n')
+    protected = path.read_bytes()
+
+    with monkeypatch.context() as blocked:
+        if failure == "read":
+            read_text = Path.read_text
+
+            def unreadable(self, *args, **kwargs):
+                if self == path:
+                    raise PermissionError("private record path is unreadable")
+                return read_text(self, *args, **kwargs)
+
+            blocked.setattr(Path, "read_text", unreadable)
+        service = MaintenanceService.with_default_store(tmp_path)
+        assert service.save_records() is False
+        service.create_cycle("unpersisted-cycle")
+        assert path.read_bytes() == protected
+        state = service.get_status()["service"]
+        assert state["load_failed"] is True
+        assert state["last_load_error"] == (
+            "PermissionError" if failure == "read" else "ValueError"
+        )
+        assert state["last_persist_error"] == state["last_load_error"]
+        if failure == "cycle":
+            restored_cycle = service.get_cycle("maint-before-load")
+            assert restored_cycle.guardian_decision.audit_id == "audit-before-load"
+
+    path.write_bytes(original)
+    assert service.load_records() == 1
+    state = service.get_status()["service"]
+    assert state["load_failed"] is False
+    assert state["last_load_error"] is None
+    assert state["last_persist_error"] is None
+    assert service.get_cycle("maint-before-load").guardian_decision.status == "deny"
+    assert service.save_records() is True
+    restored = MaintenanceService.with_default_store(tmp_path)
+    assert restored.get_cycle("maint-before-load").guardian_decision.audit_id == (
+        "audit-before-load"
+    )
+
+
+@pytest.mark.parametrize("existing_empty", [False, True])
+def test_missing_or_empty_store_allows_first_save(tmp_path, existing_empty):
+    store = MaintenanceRecordStore.default(tmp_path)
+    if existing_empty:
+        store.file_path.parent.mkdir(parents=True)
+        store.file_path.write_bytes(b"")
+    service = MaintenanceService(record_store=store)
+    service.create_cycle("first-cycle")
+    assert service.get_status()["service"]["load_failed"] is False
+    assert MaintenanceService(record_store=store).get_cycle("first-cycle") is not None
 
 
 def test_service_can_use_supplied_coordinator():

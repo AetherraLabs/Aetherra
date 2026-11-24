@@ -23,8 +23,10 @@ import signal
 import sys
 import time
 import traceback
+from concurrent.futures import Future
 from datetime import datetime
 from pathlib import Path
+from threading import Thread
 from typing import Any
 
 # Early .env loader: ensure API keys and config from .env are available at startup
@@ -394,6 +396,7 @@ class AetherraOSLauncher:
         self.readiness_report: dict[str, Any] | None = None
         # Self-maintenance
         self._improvement_telemetry_task = None
+        self._maintenance_liveness_future: Future | None = None
         # STORM feature tracking
         self._storm_enabled = False
         # Registry Daemon heartbeat tasks
@@ -1412,6 +1415,11 @@ class AetherraOSLauncher:
                                 "status": "error",
                                 "error": "metric_intake_failed",
                             }
+                    if mt == "selfimprovement.observe_homeostasis":
+                        result = await self.impl.propose_from_homeostasis(payload)
+                        if result.get("status") == "rejected":
+                            raise ValueError("invalid_homeostasis_observation")
+                        return result
                     if mt.endswith("status"):
                         return self.impl.get_improvement_status()
                     if mt.endswith("trends"):
@@ -3649,12 +3657,127 @@ class AetherraOSLauncher:
 
         self.running = True
 
+    async def _refresh_observation_service_heartbeats(self):
+        """Refresh only healthy registrations backed by this launcher's live services."""
+        registry = self.service_registry
+        if not self.running or registry is None or not registry._running:
+            return
+
+        def task_active(task):
+            return (
+                isinstance(task, asyncio.Task)
+                and not task.done()
+                and not task.cancelling()
+                and task.get_loop().is_running()
+            )
+
+        for key, names in (
+            ("homeostasis", ("homeostasis_system", "aetherra_homeostasis")),
+            ("self_improvement", ("self_improvement_engine",)),
+            ("maintenance", ("maintenance_system", "aetherra_maintenance")),
+            ("aetherra_hub", ("aetherra_hub",)),
+        ):
+            owned = self.systems.get(key)
+            if owned is None:
+                continue
+            try:
+                if key == "homeostasis":
+                    bridge = getattr(owned, "metrics_bridge", None)
+                    live = (
+                        owned.initialized
+                        and owned.running
+                        and task_active(getattr(owned, "metrics_collection_task", None))
+                        and bridge is not None
+                        and bridge.running
+                        and task_active(bridge._task)
+                    )
+                elif key == "self_improvement":
+                    impl = owned.impl
+                    live = impl.improvement_active and task_active(
+                        impl.improvement_task
+                    )
+                elif key == "aetherra_hub":
+                    # Flask request/app contexts do not own the serving lifetime.
+                    # External Hubs and proxy registrations remain their owner's job.
+                    live = (
+                        owned is getattr(self, "_presence_owned_hub", None)
+                        and owned.is_running() is True
+                    )
+                else:
+                    # The passive facade has no loop. Probe its actual status, only
+                    # when an owned registration exists, without blocking the OS loop.
+                    if not any(
+                        (info := registry.get_service_info(name)) is not None
+                        and info.instance is owned
+                        and info.status is ServiceStatus.HEALTHY
+                        for name in names
+                    ):
+                        continue
+                    pending = self._maintenance_liveness_future
+                    if pending is not None and not pending.done():
+                        continue
+                    # Discard a late result: only a fresh probe is liveness evidence.
+                    pending = Future()
+                    self._maintenance_liveness_future = pending
+
+                    def read_status(method=owned.get_status, result=pending):
+                        try:
+                            result.set_result(method())
+                        except Exception:
+                            result.set_result(None)
+
+                    # One daemon worker at most; a hung getter cannot accumulate
+                    # readers or delay asyncio's default-executor shutdown.
+                    try:
+                        Thread(
+                            target=read_status,
+                            name="maintenance-liveness",
+                            daemon=True,
+                        ).start()
+                    except RuntimeError:
+                        self._maintenance_liveness_future = None
+                        raise
+                    status = await asyncio.wait_for(
+                        asyncio.shield(asyncio.wrap_future(pending)), timeout=1.0
+                    )
+                    self._maintenance_liveness_future = None
+                    live = (
+                        isinstance(status, dict)
+                        and isinstance(status.get("service"), dict)
+                        and status["service"].get("available") is True
+                    )
+                if not live:
+                    continue
+                for name in names:
+                    # A status probe can yield while shutdown or replacement occurs.
+                    if (
+                        not self.running
+                        or self.service_registry is not registry
+                        or not registry._running
+                        or self.systems.get(key) is not owned
+                    ):
+                        break
+                    info = registry.get_service_info(name)
+                    if (
+                        info is not None
+                        and info.instance is owned
+                        and info.status is ServiceStatus.HEALTHY
+                    ):
+                        await registry.update_heartbeat(name)
+            except Exception:
+                logger.debug(
+                    "[HEARTBEAT] Observation service liveness unavailable: %s",
+                    key,
+                )
+
     async def _main_operation_loop(self):
         """[LOOP] Main operation loop - keeps the OS running."""
         logger.info("[LOOP] Entering main operation loop...")
 
         try:
             while self.running:
+                await self._refresh_observation_service_heartbeats()
+
                 # Write OS status file for cross-process detection
                 await self._write_os_status()
 

@@ -14,10 +14,11 @@ import logging
 import math
 import os
 import sqlite3
+import time
 import traceback
 import uuid
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
@@ -28,7 +29,7 @@ try:
     import numpy as np  # type: ignore[assignment]
 except ImportError:
     # Fallback numpy-like functions
-    class np:
+    class _NumpyFallback:
         @staticmethod
         def mean(values):
             return sum(values) / len(values) if values else 0
@@ -80,6 +81,8 @@ except ImportError:
 
             correlation = numerator / (denom_x * denom_y) ** 0.5
             return [[1, correlation], [correlation, 1]]
+
+    np = _NumpyFallback
 
 
 logger = logging.getLogger(__name__)
@@ -203,7 +206,8 @@ class MetricsCollector:
 
         # Calculate trend using linear regression
         timestamps = [
-            (m.timestamp - recent_metrics[0].timestamp).total_seconds() for m in recent_metrics
+            (m.timestamp - recent_metrics[0].timestamp).total_seconds()
+            for m in recent_metrics
         ]
         values = [m.value for m in recent_metrics]
 
@@ -211,20 +215,23 @@ class MetricsCollector:
             slope = np.polyfit(timestamps, values, 1)[0]
             if slope > 0.01:
                 return slope, "improving"
-            elif slope < -0.01:
+            if slope < -0.01:
                 return slope, "degrading"
-            else:
-                return slope, "stable"
+            return slope, "stable"
 
         return 0.0, "stable"
 
-    def get_metric_statistics(self, name: str, window_hours: int = 24) -> Dict[str, float]:
+    def get_metric_statistics(
+        self, name: str, window_hours: int = 24
+    ) -> Dict[str, float]:
         """Get statistics for a metric"""
         if name not in self.metrics_history:
             return {}
 
         cutoff = datetime.now() - timedelta(hours=window_hours)
-        recent_metrics = [m.value for m in self.metrics_history[name] if m.timestamp > cutoff]
+        recent_metrics = [
+            m.value for m in self.metrics_history[name] if m.timestamp > cutoff
+        ]
 
         if not recent_metrics:
             return {}
@@ -260,13 +267,17 @@ class PatternAnalyzer:
                 patterns.append(pattern)
 
             # Analyze correlation patterns
-            correlation_pattern = self._analyze_correlations(metric_name, metric_list, metrics)
+            correlation_pattern = self._analyze_correlations(
+                metric_name, metric_list, metrics
+            )
             if correlation_pattern:
                 patterns.append(correlation_pattern)
 
         return patterns
 
-    def _analyze_temporal_pattern(self, name: str, metrics: List[PerformanceMetric]) -> Dict | None:
+    def _analyze_temporal_pattern(
+        self, name: str, metrics: List[PerformanceMetric]
+    ) -> Dict | None:
         """Analyze temporal patterns in metrics"""
         if len(metrics) < 10:
             return None
@@ -409,7 +420,9 @@ class ImprovementGenerator:
         if pattern["type"] == "trend" and pattern.get("slope", 0) < -0.1:
             # Degrading performance trend
             issue = f"{pattern['metric']} is trending downward"
-            proposed_change = f"Review and tune the subsystem affecting {pattern['metric']}"
+            proposed_change = (
+                f"Review and tune the subsystem affecting {pattern['metric']}"
+            )
             fingerprint = self._fingerprint(
                 ImprovementType.PERFORMANCE,
                 issue,
@@ -449,7 +462,9 @@ class ImprovementGenerator:
         elif pattern["type"] == "cyclical":
             # Optimize cyclical patterns
             issue = f"{pattern['metric']} shows recurring cyclical variance"
-            proposed_change = f"Investigate smoothing or scheduling controls for {pattern['metric']}"
+            proposed_change = (
+                f"Investigate smoothing or scheduling controls for {pattern['metric']}"
+            )
             fingerprint = self._fingerprint(
                 ImprovementType.EFFICIENCY,
                 issue,
@@ -487,7 +502,9 @@ class ImprovementGenerator:
 
         return proposals
 
-    def _generate_from_metrics(self, metrics: Dict[str, Any]) -> List[ImprovementProposal]:
+    def _generate_from_metrics(
+        self, metrics: Dict[str, Any]
+    ) -> List[ImprovementProposal]:
         """Generate improvements from metric analysis"""
         proposals = []
 
@@ -500,12 +517,10 @@ class ImprovementGenerator:
                         improvement_type=ImprovementType.PERFORMANCE,
                         issue="CPU utilization is consistently high",
                         potential_cause=(
-                            "Scheduler pressure, process contention, or inefficient "
-                            "work batching"
+                            "Scheduler pressure, process contention, or inefficient work batching"
                         ),
                         proposed_change=(
-                            "Analyze CPU-heavy paths and propose scheduler or "
-                            "batching improvements"
+                            "Analyze CPU-heavy paths and propose scheduler or batching improvements"
                         ),
                         description=(
                             "Optimize CPU usage - consistently high utilization detected"
@@ -690,7 +705,9 @@ class ImprovementGenerator:
         payload = {
             "type": improvement_type.value,
             "issue": issue.strip().lower(),
-            "components": sorted(component.strip().lower() for component in affected_components),
+            "components": sorted(
+                component.strip().lower() for component in affected_components
+            ),
             "proposed_change": proposed_change.strip().lower(),
         }
         raw = json.dumps(payload, sort_keys=True, separators=(",", ":"))
@@ -713,7 +730,9 @@ class ImprovementGenerator:
         benefit = max(0.0, min(1.0, float(expected_benefit)))
         cost = max(0.0, min(1.0, float(implementation_cost)))
         risk = max(0.0, min(1.0, float(risk_level)))
-        confidence = max(0.0, min(1.0, (benefit * 0.5) + ((1.0 - cost) * 0.2) + ((1.0 - risk) * 0.3)))
+        confidence = max(
+            0.0, min(1.0, (benefit * 0.5) + ((1.0 - cost) * 0.2) + ((1.0 - risk) * 0.3))
+        )
         return {
             "estimated_impact": benefit,
             "implementation_cost": cost,
@@ -722,13 +741,65 @@ class ImprovementGenerator:
             "testable": bool(testable),
             "rollback_available": bool(rollback_available),
             "recommendation": (
-                "review"
-                if risk >= 0.5 or not rollback_available
-                else "candidate"
+                "review" if risk >= 0.5 or not rollback_available else "candidate"
             ),
         }
 
-    def _generate_performance_improvements(self, context: Dict) -> List[ImprovementProposal]:
+    def generate_from_homeostasis(
+        self, observation: dict[str, Any]
+    ) -> list[tuple[ImprovementProposal, dict[str, Any]]]:
+        """Own proposal generation from bounded, read-only Homeostasis evidence."""
+        # Aetherra imports
+        from Aetherra.homeostasis.diagnosis import build_diagnosis_report
+        from Aetherra.homeostasis.recommendation import build_recommendation_report
+
+        diagnosis = build_diagnosis_report(observation)
+        recommendations = build_recommendation_report(observation, diagnosis)
+        causes = {cause["category"]: cause for cause in diagnosis["causes"]}
+        proposals = []
+        for recommendation in recommendations["recommendations"][:8]:
+            category = recommendation["cause_category"]
+            cause = causes[category]
+            action = recommendation["action_type"]
+            target = recommendation["target_service"]
+            evidence = [
+                "source:homeostasis",
+                f"cause:{category}",
+                f"severity:{cause['severity']}",
+            ]
+            for item in cause["evidence"][:8]:
+                # Only fields produced by the bounded diagnosis builder are retained.
+                evidence.append(json.dumps(item, sort_keys=True, allow_nan=False))
+            proposal = self._build_metric_proposal(
+                improvement_type=ImprovementType.RELIABILITY,
+                issue=f"Homeostasis detected {category}",
+                potential_cause=f"Homeostasis diagnosis: {category}",
+                proposed_change=f"Review {action} for {target}; obtain Guardian and Security approval before any change",
+                description=f"Review Homeostasis {category} recommendation",
+                expected_benefit=0.85,
+                implementation_cost=0.1,
+                risk_level={"critical": 0.5, "high": 0.35}.get(cause["severity"], 0.2),
+                affected_components=[target],
+                success_criteria=[recommendation["expected_impact"]],
+                evidence=evidence,
+                rollback_plan=(
+                    "No change is authorized by this proposal. Before implementation, "
+                    "capture the target configuration and obtain a reviewed restoration plan."
+                ),
+            )
+            proposal.simulation.update(
+                confidence=cause["confidence"],
+                estimate_only=True,
+                rollback_available=False,
+                testable=False,
+                recommendation="review",
+            )
+            proposals.append((proposal, cause))
+        return proposals
+
+    def _generate_performance_improvements(
+        self, context: Dict
+    ) -> List[ImprovementProposal]:
         """Generate performance-focused improvements"""
         metrics = context.get("metrics") if isinstance(context, dict) else None
         if isinstance(metrics, dict):
@@ -739,7 +810,9 @@ class ImprovementGenerator:
             ]
         return []
 
-    def _generate_efficiency_improvements(self, context: Dict) -> List[ImprovementProposal]:
+    def _generate_efficiency_improvements(
+        self, context: Dict
+    ) -> List[ImprovementProposal]:
         """Generate efficiency improvements"""
         metrics = context.get("metrics") if isinstance(context, dict) else None
         if isinstance(metrics, dict):
@@ -750,7 +823,9 @@ class ImprovementGenerator:
             ]
         return []
 
-    def _generate_reliability_improvements(self, context: Dict) -> List[ImprovementProposal]:
+    def _generate_reliability_improvements(
+        self, context: Dict
+    ) -> List[ImprovementProposal]:
         """Generate reliability improvements"""
         metrics = context.get("metrics") if isinstance(context, dict) else None
         if isinstance(metrics, dict):
@@ -761,7 +836,9 @@ class ImprovementGenerator:
             ]
         return []
 
-    def _generate_pattern_improvements(self, context: Dict) -> List[ImprovementProposal]:
+    def _generate_pattern_improvements(
+        self, context: Dict
+    ) -> List[ImprovementProposal]:
         """Generate improvements based on pattern analysis"""
         pattern = context.get("pattern") if isinstance(context, dict) else None
         metrics = context.get("metrics", {}) if isinstance(context, dict) else {}
@@ -794,6 +871,17 @@ class SelfImprovementEngine:
         # Lightweight counters
         self._suppressed_exceptions: int = 0
         self._analysis_cycles: int = 0
+        self._homeostasis_flow = {
+            "mode": "observe_diagnose_propose",
+            "actions_enabled": False,
+            "status": "not_observed",
+            "reason": None,
+            "observations_received": 0,
+            "proposals_generated": 0,
+            "cycles_routed": 0,
+            "cycles_existing": 0,
+            "last_cycle_ids": [],
+        }
         self._init_database()
         self._load_recent_metrics_from_db()
         self._load_reviewable_proposals()
@@ -806,10 +894,11 @@ class SelfImprovementEngine:
                 conn.execute("PRAGMA journal_mode=WAL;")
                 conn.execute("PRAGMA synchronous=NORMAL;")
                 conn.execute("PRAGMA busy_timeout=3000;")
-            except Exception:
-                pass
-            conn.execute(
-                """
+            except Exception as exc:
+                logger.debug(
+                    "Optional database tuning unavailable (%s)", type(exc).__name__
+                )
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS performance_metrics (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
@@ -818,11 +907,9 @@ class SelfImprovementEngine:
                     timestamp TEXT NOT NULL,
                     context TEXT
                 )
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS improvement_proposals (
                     proposal_id TEXT PRIMARY KEY,
                     improvement_type TEXT NOT NULL,
@@ -837,12 +924,10 @@ class SelfImprovementEngine:
                     implemented_at TEXT,
                     outcome TEXT
                 )
-            """
-            )
+            """)
             self._ensure_proposal_columns(conn)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS learning_outcomes (
                     session_id TEXT PRIMARY KEY,
                     method TEXT NOT NULL,
@@ -852,11 +937,9 @@ class SelfImprovementEngine:
                     learning_data TEXT NOT NULL,
                     timestamp TEXT NOT NULL
                 )
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS proposal_lifecycle_events (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     proposal_id TEXT NOT NULL,
@@ -868,17 +951,13 @@ class SelfImprovementEngine:
                     timestamp TEXT NOT NULL,
                     metadata TEXT
                 )
-            """
-            )
-            conn.execute(
-                """
+            """)
+            conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_proposal_lifecycle_proposal_time
                 ON proposal_lifecycle_events(proposal_id, timestamp)
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS system_evolution (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     component TEXT NOT NULL,
@@ -887,8 +966,7 @@ class SelfImprovementEngine:
                     performance_impact REAL NOT NULL,
                     timestamp TEXT NOT NULL
                 )
-            """
-            )
+            """)
 
             conn.commit()
         finally:
@@ -899,7 +977,9 @@ class SelfImprovementEngine:
         """Add proposal metadata columns for existing databases."""
         existing = {
             row[1]
-            for row in conn.execute("PRAGMA table_info(improvement_proposals)").fetchall()
+            for row in conn.execute(
+                "PRAGMA table_info(improvement_proposals)"
+            ).fetchall()
         }
         columns = {
             "issue": "TEXT",
@@ -969,8 +1049,7 @@ class SelfImprovementEngine:
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
         try:
-            rows = conn.execute(
-                """
+            rows = conn.execute("""
                 SELECT proposal_id, improvement_type, description, expected_benefit,
                        implementation_cost, risk_level, affected_components,
                        success_criteria, status, created_at, issue, potential_cause,
@@ -980,10 +1059,11 @@ class SelfImprovementEngine:
                 FROM improvement_proposals
                 WHERE status IN ('active', 'proposed', 'proposed_for_review')
                 ORDER BY created_at DESC
-                """
-            ).fetchall()
+                """).fetchall()
         except sqlite3.Error as exc:
-            logger.warning("Failed to load persisted self-improvement proposals: %s", exc)
+            logger.warning(
+                "Failed to load persisted self-improvement proposals: %s", exc
+            )
             return
         finally:
             conn.close()
@@ -995,7 +1075,9 @@ class SelfImprovementEngine:
                     continue
                 improvement_type = ImprovementType(str(row["improvement_type"]))
                 created_at = datetime.fromisoformat(str(row["created_at"]))
-                proposal = self._proposal_from_row(row, improvement_type, created_at, status)
+                proposal = self._proposal_from_row(
+                    row, improvement_type, created_at, status
+                )
                 self.active_proposals[proposal.proposal_id] = proposal
             except Exception as exc:
                 logger.debug(
@@ -1031,7 +1113,9 @@ class SelfImprovementEngine:
                 str(row["status"] or "proposed"),
             )
         except Exception as exc:
-            logger.debug("Failed to load self-improvement proposal %s: %s", proposal_id, exc)
+            logger.debug(
+                "Failed to load self-improvement proposal %s: %s", proposal_id, exc
+            )
             return None
 
     def get_proposal_history(
@@ -1190,9 +1274,11 @@ class SelfImprovementEngine:
             simulation=self._json_dict(row["simulation"]),
             rollback_plan=str(row["rollback_plan"] or ""),
             status_reason=str(row["status_reason"] or ""),
-            updated_at=datetime.fromisoformat(str(row["updated_at"]))
-            if row["updated_at"]
-            else None,
+            updated_at=(
+                datetime.fromisoformat(str(row["updated_at"]))
+                if row["updated_at"]
+                else None
+            ),
             proposal_fingerprint=str(row["proposal_fingerprint"] or ""),
             occurrence_count=max(1, int(row["occurrence_count"] or 1)),
             readiness_status=str(row["readiness_status"] or "unknown"),
@@ -1225,7 +1311,9 @@ class SelfImprovementEngine:
             return {}
         return parsed if isinstance(parsed, dict) else {}
 
-    async def start_improvement_cycle(self, loop: asyncio.AbstractEventLoop | None = None):
+    async def start_improvement_cycle(
+        self, loop: asyncio.AbstractEventLoop | None = None
+    ):
         """Start the continuous improvement cycle"""
         if self.improvement_active:
             logger.warning("Improvement cycle already active")
@@ -1291,7 +1379,9 @@ class SelfImprovementEngine:
                     on_current_loop = False
 
                 if on_current_loop or (
-                    task_loop is not None and current_loop is not None and task_loop is current_loop
+                    task_loop is not None
+                    and current_loop is not None
+                    and task_loop is current_loop
                 ):
                     # Same loop: await directly
                     try:
@@ -1299,7 +1389,10 @@ class SelfImprovementEngine:
                         await self.improvement_task
                     except asyncio.CancelledError:
                         pass
-                elif task_loop is not None and getattr(task_loop, "is_running", lambda: False)():
+                elif (
+                    task_loop is not None
+                    and getattr(task_loop, "is_running", lambda: False)()
+                ):
                     # Different running loop: wait using a thread-safe done callback
                     # Standard library imports
                     import concurrent.futures as _cf
@@ -1311,22 +1404,29 @@ class SelfImprovementEngine:
                             waiter.set_result(True)
 
                     try:
-                        logger.debug("[SIE] Waiting for improvement task via thread-safe callback")
+                        logger.debug(
+                            "[SIE] Waiting for improvement task via thread-safe callback"
+                        )
                         task_loop.call_soon_threadsafe(
                             self.improvement_task.add_done_callback, _mark_done
                         )  # type: ignore[arg-type]
                         # Also poke the loop in case it's idle
                         task_loop.call_soon_threadsafe(lambda: None)
                         waiter.result(timeout=3)
-                    except Exception:
-                        pass
+                    except Exception as exc:
+                        logger.debug(
+                            "Improvement task shutdown wait unavailable (%s)",
+                            type(exc).__name__,
+                        )
 
                 else:
                     # Loop not available/running; best-effort only
                     logger.debug("[SIE] Task loop not running; skipping await")
                     pass
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.debug(
+                    "Improvement task shutdown unavailable (%s)", type(exc).__name__
+                )
 
         # Clear reference
         self.improvement_task = None
@@ -1361,7 +1461,9 @@ class SelfImprovementEngine:
                 metric_stats[name] = self.metrics_collector.get_metric_statistics(name)
 
             # Generate improvement proposals
-            proposals = self.improvement_generator.generate_improvements(patterns, metric_stats)
+            proposals = self.improvement_generator.generate_improvements(
+                patterns, metric_stats
+            )
 
             # Process proposals
             for proposal in proposals:
@@ -1372,6 +1474,238 @@ class SelfImprovementEngine:
         except Exception as e:
             logger.error(f"Error in analysis and improvement: {e}")
             self._suppressed_exceptions += 1
+
+    @staticmethod
+    def _bounded_homeostasis_observation(observation: Any) -> dict[str, Any] | None:
+        """Accept only current known metric/state facts, never control instructions."""
+        # Aetherra imports
+        from Aetherra.homeostasis.observation import _OBSERVED_METRICS
+
+        if (
+            not isinstance(observation, dict)
+            or observation.get("phase") != "observation"
+            or observation.get("actions_enabled") is not False
+        ):
+            return None
+        metrics = observation.get("metrics")
+        pressure = observation.get("pressure")
+        state = observation.get("state", {})
+        if not all(isinstance(item, dict) for item in (metrics, pressure, state)):
+            return None
+        raw_pressure = pressure.get("metrics")
+        if not isinstance(raw_pressure, dict):
+            return None
+
+        def number(value):
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                return None
+            return float(value) if abs(value) <= 1e12 and math.isfinite(value) else None
+
+        timestamp = number(metrics.get("sample_timestamp"))
+        if timestamp is None or not -30.0 <= time.time() - timestamp <= 180.0:
+            return None
+        bounded = {}
+        for name in _OBSERVED_METRICS:
+            if name not in raw_pressure:
+                continue
+            item = raw_pressure[name]
+            if (
+                not isinstance(item, dict)
+                or not isinstance(item.get("level"), str)
+                or item["level"] not in {"nominal", "elevated", "high", "critical"}
+            ):
+                return None
+            value = number(item.get("value"))
+            target = number(item.get("target"))
+            if value is None or (item.get("target") is not None and target is None):
+                return None
+            direction = item.get("direction")
+            if direction is not None and not isinstance(direction, str):
+                return None
+            bounded[name] = {
+                "level": item["level"],
+                "value": value,
+                "target": target,
+                "direction": (
+                    direction
+                    if direction
+                    in {
+                        "within_bounds",
+                        "above_critical",
+                        "below_critical",
+                        "above_maximum",
+                        "below_minimum",
+                        "above_target",
+                        "below_target",
+                    }
+                    else "unknown"
+                ),
+            }
+        if not bounded:
+            return None
+        pending = number(state.get("pending_actions", 0))
+        risk = observation.get("risk")
+        factors = risk.get("factors", []) if isinstance(risk, dict) else []
+        return {
+            "phase": "observation",
+            "actions_enabled": False,
+            "metrics": {"sample_timestamp": timestamp},
+            "pressure": {"metrics": bounded},
+            "state": {
+                "emergency_stop": state.get("emergency_stop") is True,
+                "pending_actions": max(0, min(10000, int(pending or 0))),
+            },
+            "risk": {
+                "factors": (
+                    ["guardian_containment_active"]
+                    if isinstance(factors, list)
+                    and "guardian_containment_active" in factors[:8]
+                    else []
+                )
+            },
+        }
+
+    async def propose_from_homeostasis(self, observation: Any) -> dict[str, Any]:
+        """Diagnose, persist proposals, and route review records; never execute."""
+        # Aetherra imports
+        from Aetherra.maintenance import MaintenanceEvidence, MaintenanceProposal
+        from aetherra_service_registry import get_service_registry
+
+        flow = self._homeostasis_flow
+        flow.update(status="rejected", reason="invalid_observation", last_cycle_ids=[])
+        bounded = self._bounded_homeostasis_observation(observation)
+        if bounded is None:
+            return {**flow, "last_cycle_ids": []}
+        flow["observations_received"] += 1
+        try:
+            proposals = self.improvement_generator.generate_from_homeostasis(bounded)
+            if not proposals:
+                flow.update(status="nominal", reason=None)
+                return {**flow, "last_cycle_ids": []}
+            registry = await get_service_registry()
+            maintenance = (
+                registry.get_service("maintenance_system") if registry else None
+            )
+            if maintenance is not None:
+                service_status = maintenance.get_status().get("service", {})
+                if service_status.get("load_failed") or service_status.get(
+                    "last_load_error"
+                ):
+                    flow.update(status="degraded", reason="maintenance_restore_failed")
+                    return {**flow, "last_cycle_ids": []}
+            route_failed = False
+            persisted_failed = False
+            persistence_unavailable = False
+            for proposal, cause in proposals:
+                stored_before = self._load_proposal_from_db(proposal.proposal_id)
+                if stored_before is not None and stored_before.status not in {
+                    "active",
+                    "proposed",
+                    "proposed_for_review",
+                }:
+                    continue
+                # A failed refresh must not make the cache stand in for durable evidence.
+                if stored_before is None or stored_before.evidence != proposal.evidence:
+                    await self._process_proposal(proposal)
+                # Route only a proposal actually persisted by Self-Improvement.
+                stored = self._load_proposal_from_db(proposal.proposal_id)
+                if stored is None or stored.status not in {
+                    "active",
+                    "proposed",
+                    "proposed_for_review",
+                }:
+                    continue
+                if stored_before is None:
+                    flow["proposals_generated"] += 1
+                if maintenance is None:
+                    continue
+                cycle_id = f"maint-homeostasis-{proposal.proposal_fingerprint}"
+                try:
+                    if maintenance.get_cycle(cycle_id) is not None:
+                        flow["cycles_existing"] += 1
+                        # Retry a prior failed autosave without modifying cycle events.
+                        service_status = maintenance.get_status().get("service", {})
+                        if service_status.get(
+                            "last_persist_error"
+                        ) and service_status.get("autosave"):
+                            maintenance.save_records()
+                    else:
+                        maintenance.route_proposal(
+                            MaintenanceProposal(
+                                proposal_id=stored.proposal_id,
+                                source="self_improvement",
+                                target_subsystem=stored.affected_components[0],
+                                issue=stored.issue,
+                                proposed_action=stored.proposed_change,
+                                expected_benefit=stored.success_criteria[0],
+                                risk_level=(
+                                    "medium" if stored.risk_level >= 0.34 else "low"
+                                ),
+                                rollback_plan=stored.rollback_plan,
+                                approval_required=True,
+                                evidence=tuple(stored.evidence),
+                                trace_id=stored.proposal_id,
+                            ),
+                            observations=[
+                                MaintenanceEvidence(
+                                    source="homeostasis",
+                                    summary=f"Observed {cause['category']}",
+                                    severity=cause["severity"],
+                                    details={
+                                        "sample_timestamp": bounded["metrics"][
+                                            "sample_timestamp"
+                                        ],
+                                        "evidence": cause["evidence"],
+                                    },
+                                )
+                            ],
+                            diagnosis=MaintenanceEvidence(
+                                source="self_improvement",
+                                summary=stored.potential_cause,
+                                severity=cause["severity"],
+                                details={
+                                    "category": cause["category"],
+                                    "confidence": cause["confidence"],
+                                    "evidence": cause["evidence"],
+                                },
+                            ),
+                            cycle_id=cycle_id,
+                        )
+                        flow["cycles_routed"] += 1
+                    flow["last_cycle_ids"].append(cycle_id)
+                    service_status = maintenance.get_status().get("service", {})
+                    persisted_failed |= bool(service_status.get("last_persist_error"))
+                    persistence_unavailable |= not (
+                        service_status.get("record_store_configured")
+                        and service_status.get("autosave")
+                    )
+                except Exception:
+                    route_failed = True
+            if maintenance is None:
+                flow.update(status="degraded", reason="maintenance_unavailable")
+            elif route_failed:
+                flow.update(status="degraded", reason="maintenance_routing_failed")
+            elif persisted_failed:
+                flow.update(status="degraded", reason="maintenance_persistence_failed")
+            elif persistence_unavailable:
+                flow.update(
+                    status="degraded", reason="maintenance_persistence_unavailable"
+                )
+            else:
+                flow.update(
+                    status=(
+                        "proposed"
+                        if flow["last_cycle_ids"]
+                        else "no_reviewable_proposals"
+                    ),
+                    reason=None,
+                )
+        except Exception as exc:
+            flow.update(status="degraded", reason="proposal_generation_failed")
+            logger.warning(
+                "Homeostasis proposal intake failed (%s)", type(exc).__name__
+            )
+        return {**flow, "last_cycle_ids": list(flow["last_cycle_ids"])}
 
     def _collect_current_metrics(self) -> Dict[str, Any]:
         """Collect current system metrics"""
@@ -1407,6 +1741,8 @@ class SelfImprovementEngine:
 
             existing = self.active_proposals.get(proposal.proposal_id)
             if existing is not None:
+                # Publish refreshed evidence and counts only after the write succeeds.
+                existing = replace(existing)
                 existing.expected_benefit = proposal.expected_benefit
                 existing.implementation_cost = proposal.implementation_cost
                 existing.risk_level = proposal.risk_level
@@ -1419,6 +1755,7 @@ class SelfImprovementEngine:
                 existing.updated_at = datetime.now()
                 existing.status_reason = "refreshed from repeated analysis"
                 await self._store_proposal(existing)
+                self.active_proposals[existing.proposal_id] = existing
                 await self._record_proposal_lifecycle_event(
                     proposal_id=existing.proposal_id,
                     event_type="refreshed",
@@ -1435,8 +1772,8 @@ class SelfImprovementEngine:
 
             proposal.status = "active"
             proposal.occurrence_count = max(1, proposal.occurrence_count)
-            self.active_proposals[proposal.proposal_id] = proposal
             await self._store_proposal(proposal)
+            self.active_proposals[proposal.proposal_id] = proposal
             await self._record_proposal_lifecycle_event(
                 proposal_id=proposal.proposal_id,
                 event_type="created",
@@ -1451,7 +1788,9 @@ class SelfImprovementEngine:
                 },
             )
 
-            logger.info(f"High-confidence proposal: {proposal.description} (score: {score:.2f})")
+            logger.info(
+                f"High-confidence proposal: {proposal.description} (score: {score:.2f})"
+            )
 
             if self.autonomous_implementation_requested:
                 proposal.status_reason = (
@@ -1467,7 +1806,9 @@ class SelfImprovementEngine:
                     to_status=proposal.status,
                     actor="self_improvement_engine",
                     reason=proposal.status_reason,
-                    metadata={"requested_env": "AETHERRA_SELF_IMPROVEMENT_AUTO_IMPLEMENT"},
+                    metadata={
+                        "requested_env": "AETHERRA_SELF_IMPROVEMENT_AUTO_IMPLEMENT"
+                    },
                 )
 
     def _calculate_proposal_score(self, proposal: ImprovementProposal) -> float:
@@ -1483,7 +1824,17 @@ class SelfImprovementEngine:
     def _assess_proposal_readiness(proposal: ImprovementProposal) -> None:
         """Classify whether a proposal is ready for serious review."""
         reasons: list[str] = []
-        simulation = proposal.simulation if isinstance(proposal.simulation, dict) else {}
+        simulation = (
+            proposal.simulation if isinstance(proposal.simulation, dict) else {}
+        )
+        if simulation.get("estimate_only") is True:
+            proposal.readiness_status = "needs_evidence"
+            proposal.readiness_reasons = [
+                "implementation_plan_required",
+                "rollback_not_validated",
+                "validation_not_run",
+            ]
+            return
         rollback_available = bool(simulation.get("rollback_available")) or bool(
             proposal.rollback_plan
         )
@@ -1521,8 +1872,7 @@ class SelfImprovementEngine:
             "type": proposal.improvement_type.value,
             "issue": proposal.issue.strip().lower(),
             "components": sorted(
-                component.strip().lower()
-                for component in proposal.affected_components
+                component.strip().lower() for component in proposal.affected_components
             ),
             "proposed_change": proposal.proposed_change.strip().lower(),
         }
@@ -1555,7 +1905,9 @@ class SelfImprovementEngine:
         """Record a downstream proposal result without executing any changes."""
         proposal_id = str(result.get("proposal_id") or "").strip()
         status = self._normalize_result_status(result.get("status"))
-        details = result.get("details") if isinstance(result.get("details"), dict) else {}
+        details = (
+            result.get("details") if isinstance(result.get("details"), dict) else {}
+        )
         details_keys = self._bounded_detail_keys(details)
         plan_id = self._bounded_text(result.get("plan_id"), default="", limit=120)
         if not proposal_id:
@@ -1638,7 +1990,7 @@ class SelfImprovementEngine:
 
     @staticmethod
     def _bounded_detail_keys(details: dict[str, Any]) -> list[str]:
-        keys = sorted(str(key)[:120] for key in details.keys())
+        keys = sorted(str(key)[:120] for key in details)
         return keys[:50]
 
     @staticmethod
@@ -1649,7 +2001,9 @@ class SelfImprovementEngine:
         return text[:limit] or default
 
     @staticmethod
-    def _coerce_bounded_int(value: Any, *, default: int, minimum: int, maximum: int) -> int:
+    def _coerce_bounded_int(
+        value: Any, *, default: int, minimum: int, maximum: int
+    ) -> int:
         try:
             parsed = int(value)
         except (TypeError, ValueError):
@@ -1767,7 +2121,9 @@ class SelfImprovementEngine:
                 asyncio.run(coro)
             except Exception as exc:
                 self._suppressed_exceptions += 1
-                logger.warning("Self-improvement background %s failed: %s", operation, exc)
+                logger.warning(
+                    "Self-improvement background %s failed: %s", operation, exc
+                )
             return
         task = loop.create_task(coro)
         task.add_done_callback(
@@ -1785,7 +2141,9 @@ class SelfImprovementEngine:
 
     def get_improvement_status(self) -> Dict[str, Any]:
         """Get current improvement system status"""
-        active_count = len([p for p in self.active_proposals.values() if p.status == "active"])
+        active_count = len(
+            [p for p in self.active_proposals.values() if p.status == "active"]
+        )
         implemented_count = len(
             [p for p in self.active_proposals.values() if p.status == "implemented"]
         )
@@ -1803,6 +2161,10 @@ class SelfImprovementEngine:
             "autonomous_implementation_enabled": self.autonomous_implementation_enabled,
             "autonomous_implementation_requested": self.autonomous_implementation_requested,
             "implementation_authority": "guardian_controlled_execution",
+            "homeostasis_flow": {
+                **self._homeostasis_flow,
+                "last_cycle_ids": list(self._homeostasis_flow["last_cycle_ids"]),
+            },
             "review_summary": self.get_review_summary(),
             "learning_summary": self.get_learning_summary(),
         }
@@ -1818,7 +2180,9 @@ class SelfImprovementEngine:
         limit: int = 100,
     ) -> list[dict[str, Any]]:
         """Return reviewable proposals in a JSON-safe, read-only representation."""
-        safe_limit = self._coerce_bounded_int(limit, default=100, minimum=1, maximum=500)
+        safe_limit = self._coerce_bounded_int(
+            limit, default=100, minimum=1, maximum=500
+        )
         safe_max_risk = self._coerce_optional_float(max_risk)
         safe_min_confidence = self._coerce_optional_float(min_confidence)
         proposals = sorted(
@@ -1887,9 +2251,9 @@ class SelfImprovementEngine:
         actor: str = "",
     ) -> dict[str, Any]:
         """Dismiss a reviewable proposal without applying it."""
-        proposal = self.active_proposals.get(proposal_id) or self._load_proposal_from_db(
+        proposal = self.active_proposals.get(
             proposal_id
-        )
+        ) or self._load_proposal_from_db(proposal_id)
         if proposal is None:
             return {"status": "not_found", "proposal_id": proposal_id}
         if proposal.status not in {"active", "proposed", "proposed_for_review"}:
@@ -1977,9 +2341,11 @@ class SelfImprovementEngine:
             "simulation": dict(proposal.simulation),
             "rollback_plan": proposal.rollback_plan,
             "status_reason": proposal.status_reason,
-            "updated_at": proposal.updated_at.isoformat()
-            if proposal.updated_at is not None
-            else None,
+            "updated_at": (
+                proposal.updated_at.isoformat()
+                if proposal.updated_at is not None
+                else None
+            ),
             "proposal_fingerprint": proposal.proposal_fingerprint,
             "occurrence_count": proposal.occurrence_count,
             "readiness_status": proposal.readiness_status,
@@ -2048,7 +2414,9 @@ class SelfImprovementEngine:
         trends = {}
 
         for metric_name in self.metrics_collector.metrics_history:
-            trend_value, trend_direction = self.metrics_collector.get_metric_trend(metric_name)
+            trend_value, trend_direction = self.metrics_collector.get_metric_trend(
+                metric_name
+            )
             stats = self.metrics_collector.get_metric_statistics(metric_name)
 
             trends[metric_name] = {
@@ -2086,8 +2454,10 @@ class SelfImprovementEngine:
                 conn.execute(
                     "CREATE INDEX IF NOT EXISTS idx_proposal_status ON improvement_proposals(status);"
                 )
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.debug(
+                    "Optional metric indexes unavailable (%s)", type(exc).__name__
+                )
             conn.commit()
         finally:
             conn.close()
@@ -2125,9 +2495,11 @@ class SelfImprovementEngine:
                     json.dumps(proposal.simulation),
                     proposal.rollback_plan,
                     proposal.status_reason,
-                    proposal.updated_at.isoformat()
-                    if proposal.updated_at is not None
-                    else None,
+                    (
+                        proposal.updated_at.isoformat()
+                        if proposal.updated_at is not None
+                        else None
+                    ),
                     proposal.proposal_fingerprint,
                     proposal.occurrence_count,
                     proposal.readiness_status,
@@ -2177,8 +2549,16 @@ async def test_self_improvement_engine():
     import random
 
     for _ in range(20):
-        engine.record_performance_metric("response_time", 100 + random.uniform(-20, 50), "ms")
-        engine.record_performance_metric("cpu_usage", 60 + random.uniform(-10, 30), "percent")
+        engine.record_performance_metric(
+            "response_time",
+            100 + random.uniform(-20, 50),  # noqa: S311 - synthetic demo data
+            "ms",
+        )
+        engine.record_performance_metric(
+            "cpu_usage",
+            60 + random.uniform(-10, 30),  # noqa: S311 - synthetic demo data
+            "percent",
+        )
         await asyncio.sleep(0.1)
 
     # Wait for analysis

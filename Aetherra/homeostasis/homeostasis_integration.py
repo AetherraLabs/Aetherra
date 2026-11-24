@@ -28,6 +28,7 @@ import threading
 import time
 import weakref
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 # Aetherra imports
@@ -582,7 +583,7 @@ class HomeostasisOrchestrator:
 
     def __init__(self, config_dir: Optional[str] = None):
         """Initialize the homeostasis orchestrator."""
-        self.config_dir = config_dir or "Aetherra/homeostasis/configs"
+        self.config_dir = config_dir or str(Path(__file__).resolve().parent / "configs")
 
         # Core components
         self.metrics: Optional[StabilityMetrics] = None
@@ -600,6 +601,7 @@ class HomeostasisOrchestrator:
 
         # Task management
         self.background_tasks: List[asyncio.Task] = []
+        self.metrics_collection_task: Optional[asyncio.Task] = None
 
         # Phase 3: Persistent watchdog for guaranteed execution
         self.watchdog: Optional[HomeostasisWatchdog] = None
@@ -1045,6 +1047,7 @@ class HomeostasisOrchestrator:
             metrics_task = asyncio.create_task(
                 self.metrics.start_continuous_collection()
             )
+            self.metrics_collection_task = metrics_task
             self.background_tasks.append(metrics_task)
 
         # Start controller (it depends on metrics and actuators)
@@ -1224,6 +1227,7 @@ class HomeostasisOrchestrator:
                     await task
 
         self.background_tasks.clear()
+        self.metrics_collection_task = None
         logger.debug("🛑 Background tasks stopped")
 
     def _determine_initial_mode(self) -> ControllerMode:
@@ -1996,6 +2000,14 @@ if __name__ == "__main__":
 
 
 # Phase 4: Cross-System Feedback Implementation
+def _adaptation_is_observe_only(orchestrator: HomeostasisOrchestrator) -> bool:
+    """Operator restrictions and the effective controller mode prohibit tuning."""
+    controller = getattr(orchestrator, "controller", None)
+    return observe_only_requested() or (
+        getattr(controller, "mode", None) == ControllerMode.OBSERVE_ONLY
+    )
+
+
 class SystemFeedback:
     """
     Manages bidirectional feedback between homeostasis and monitored systems.
@@ -2082,6 +2094,9 @@ class SystemFeedback:
 
         This implements the core Phase 4 adaptive control logic.
         """
+        if _adaptation_is_observe_only(self.orchestrator):
+            return
+
         metrics = feedback_data.get("metrics", {})
 
         # Initialize source thresholds if not present
@@ -2140,6 +2155,9 @@ class SystemFeedback:
         self, source: str, adjustments: Dict[str, float]
     ):
         """Apply calculated adjustments to the homeostasis controller."""
+        if _adaptation_is_observe_only(self.orchestrator):
+            return
+
         try:
             # Apply CPU sensitivity adjustments
             if "cpu_sensitivity" in adjustments:
@@ -2663,6 +2681,9 @@ class ContinuousValidator:
 
     async def _trigger_self_tuning(self, validation_report: Dict[str, Any]):
         """Trigger self-tuning based on validation results (Phase 5 core feature)."""
+        if _adaptation_is_observe_only(self.orchestrator):
+            return
+
         try:
             logger.info(
                 "🎯 Triggering homeostasis self-tuning based on validation results"
@@ -2685,6 +2706,9 @@ class ContinuousValidator:
 
     async def _apply_specific_tuning(self, score_type: str, score_value: float):
         """Apply specific tuning adjustments based on score type."""
+        if _adaptation_is_observe_only(self.orchestrator):
+            return
+
         try:
             adjustment_factor = (
                 self.min_effectiveness_score - score_value

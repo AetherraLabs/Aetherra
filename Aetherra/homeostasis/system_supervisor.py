@@ -103,7 +103,9 @@ class SystemSupervisor:
 
     def __init__(self, config_path: Optional[str] = None):
         """Initialize the system supervisor."""
-        self.config_path = config_path or "Aetherra/homeostasis/configs/setpoints.yaml"
+        self.config_path = config_path or str(
+            Path(__file__).resolve().parent / "configs" / "setpoints.yaml"
+        )
         self.config = self._load_config()
 
         # Current system state

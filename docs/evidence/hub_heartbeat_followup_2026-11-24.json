@@ -1,0 +1,603 @@
+{
+  "milestone": "Phase B Hub heartbeat lifecycle follow-up",
+  "date": "2026-11-24",
+  "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+  "branch": "codex/integration-phase-b",
+  "candidate_state": "uncommitted isolated local candidate; no hosted CI or merged-main verification",
+  "scope": [
+    "aetherra_hub/app.py",
+    "aetherra_os_launcher.py",
+    "tests/unit/homeostasis/test_launcher_hub_heartbeat.py",
+    "tests/acceptance/test_launcher_active_shutdown.py",
+    "tests/test_alert_intelligence.py",
+    "tests/test_aether_workflow_additional_paths.py"
+  ],
+  "baseline": {
+    "existing_tests_passed": 67,
+    "new_regression_red": "3 failed,12 passed: idle and request-teardown expiry at180s; missing Guardian heartbeat audit",
+    "previous_phase_b_evidence_sha256": "feca16a43386b6cbeb602e35b2b61be03de879129ee7fcb3fab9be4929e39854"
+  },
+  "repair": {
+    "owner": "existing full launcher lifecycle loop",
+    "cadence_seconds": 30,
+    "requires": [
+      "actual launcher-owned local Hub",
+      "same registered instance",
+      "healthy registration",
+      "live serving thread",
+      "existing Guardian heartbeat authorization"
+    ],
+    "factory": "removed obsolete Flask first-request/dummy registration/teardown worker",
+    "no_new_worker": true,
+    "no_stale_threshold_or_status_promotion_change": true
+  },
+  "verification": {
+    "full_suite_summary": "3470 passed, 38 skipped, 5 subtests passed in 1321.15s (0:22:01)",
+    "initial_full_run": {
+      "exit_code": 1,
+      "summary": "1 failed, 3469 passed, 38 skipped, 5 subtests passed in 1424.00s",
+      "failure": "10-second pre-generation readiness wait expired while the real local retrieval model loaded for about 25 seconds",
+      "unchanged_focused_rerun": "stream passed in 12.35 seconds",
+      "test_only_correction": "Use existing 90-second readiness and normal 120-second HTTP allowances; retain 1-second SSE soft timeout, 0.15-second drain and every post-signal ownership/persistence assertion"
+    },
+    "alert_test_isolation": {
+      "second_full_run_receipt": {
+        "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+        "command": [
+          "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+          "-m",
+          "pytest",
+          "--junitxml",
+          "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\full-final.xml",
+          "--cov-report",
+          "html:D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\coverage-final-html",
+          "--cov-report",
+          "xml:D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\coverage-final.xml",
+          "-o",
+          "cache_dir=D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\pytest-cache",
+          "--basetemp",
+          "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\pytest-full-final"
+        ],
+        "exit_code": 1,
+        "seconds": 1505.05
+      },
+      "cause": "The legacy fixture reused the process-wide threshold engine. A private copy with 52 historical samples reproduced an alert on the first test value of 50.",
+      "correction": "fresh real threshold engine with test-local database and fresh real LyrixaAlertIntegration in the manager fixture; original assertions retained",
+      "seeded_and_empty_module_sequences": "20 passed each",
+      "second_full_run_summary": "1 failed, 3469 passed, 38 skipped, 5 subtests passed in 1485.91s"
+    },
+    "workflow_fast_path_test": {
+      "third_full_run_receipt": {
+        "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+        "command": [
+          "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+          "-m",
+          "pytest",
+          "--junitxml",
+          "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\full-final-02.xml",
+          "--cov-report",
+          "html:D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\coverage-final-02-html",
+          "--cov-report",
+          "xml:D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\coverage-final-02.xml",
+          "-o",
+          "cache_dir=D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\pytest-cache",
+          "--basetemp",
+          "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\pytest-full-final-02"
+        ],
+        "exit_code": 1,
+        "seconds": 1559.36
+      },
+      "cause": "The200ms whole-script benchmark included Guardian and metadata overhead; the actual timeout step remained correct and below0.01ms in partitioned observation.",
+      "correction": "Scoped real-call spies verify that the timeout fast path schedules neither sleep nor wait_for, while retaining the normal script/Guardian execution and timeout result checks.",
+      "mutation_check": "Private fast-path disablement fails the corrected test; bounded slow setup passes."
+    },
+    "clean_checkout": {
+      "passed": true,
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "checkout": "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\verification-clean",
+      "copied_source_files": 1993,
+      "frozen_source_control_files_matched": 1546,
+      "prior_ignored_runtime_history_copied": false,
+      "baseline_report_preserved": true,
+      "candidate_and_temporal_unchanged": true
+    },
+    "default_collection_addopts_coverage": true,
+    "focused_tests": 129,
+    "new_regressions": 15,
+    "runtime": {
+      "passed": true,
+      "sessions": [
+        {
+          "stage": "first",
+          "pid": 53376,
+          "launch_pid": 53376,
+          "command": [
+            "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+            "-B",
+            "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\probe.py",
+            "--worker",
+            "--output",
+            "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\runtime-01",
+            "--stage",
+            "first"
+          ],
+          "forced_stop": false,
+          "runtime_pid": 6072,
+          "persistence": {
+            "cycle_ids": [
+              "maint-homeostasis-821a26d1d803d595",
+              "maint-homeostasis-8c9d93f29e64f8af",
+              "maint-homeostasis-f33eee47d1f97566"
+            ],
+            "proposal_ids": [
+              "si-821a26d1d803d595",
+              "si-8c9d93f29e64f8af",
+              "si-f33eee47d1f97566"
+            ],
+            "sqlite_proposals_verified": true,
+            "maintenance_store_sha256": "7edca89eb4ccc9c6292970e3bb40e79ffd2682830a1d64ad4e6b895a225e7cad",
+            "observatory_projection_sha256": "122aed09773becde8a35a21b9393bb07ef84473ca61e5b7ed9df85e4c0fee7f4"
+          },
+          "exit_code": 0,
+          "seconds": 287.16
+        },
+        {
+          "stage": "restart",
+          "pid": 49836,
+          "launch_pid": 49836,
+          "command": [
+            "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+            "-B",
+            "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\probe.py",
+            "--worker",
+            "--output",
+            "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\runtime-01",
+            "--stage",
+            "restart"
+          ],
+          "forced_stop": false,
+          "runtime_pid": 26804,
+          "persistence": {
+            "cycle_ids": [
+              "maint-homeostasis-821a26d1d803d595",
+              "maint-homeostasis-8c9d93f29e64f8af",
+              "maint-homeostasis-f33eee47d1f97566"
+            ],
+            "proposal_ids": [
+              "si-821a26d1d803d595",
+              "si-8c9d93f29e64f8af",
+              "si-f33eee47d1f97566"
+            ],
+            "sqlite_proposals_verified": true,
+            "maintenance_store_sha256": "7edca89eb4ccc9c6292970e3bb40e79ffd2682830a1d64ad4e6b895a225e7cad",
+            "observatory_projection_sha256": "d5e8540d6c552b145785e5ddeca9f87e61ea126c4e10d1ad9c7ae47ea074611e"
+          },
+          "exit_code": 0,
+          "seconds": 291.31
+        }
+      ],
+      "owned_hub_healthy_215s_each_session": true,
+      "natural_hub_connection_always_one": true,
+      "false_hub_pressure_absent": true,
+      "python_source_unchanged": true,
+      "baseline": "natural runtime observations recorded separately",
+      "diagnostic": "one synthetic-pressure snapshot, restored after one real bridge call",
+      "browser": "not repeated; API follow-up with unchanged UI",
+      "stop": "SIGINT instrumentation, not interactive ConPTY",
+      "scope": "current Windows source-runtime profile"
+    },
+    "hub_monitor": {
+      "first": {
+        "sample_count": 16,
+        "max_heartbeat_age_seconds": 29.627,
+        "heartbeat_advanced_seconds": 244.50234007835388,
+        "observations_initial": 1,
+        "observations_215s": 4,
+        "natural_hub_connection": 1,
+        "same_owned_live_server": true,
+        "false_hub_pressure_absent": true,
+        "unchanged_tuning": true
+      },
+      "restart": {
+        "sample_count": 16,
+        "max_heartbeat_age_seconds": 31.028,
+        "heartbeat_advanced_seconds": 244.93441605567932,
+        "observations_initial": 1,
+        "observations_215s": 4,
+        "natural_hub_connection": 1,
+        "same_owned_live_server": true,
+        "false_hub_pressure_absent": true,
+        "unchanged_tuning": true
+      }
+    },
+    "operator_snapshot": {
+      "passed": true,
+      "path": "/api/homeostasis/metrics/snapshot",
+      "status": 200,
+      "snapshot_timestamp": 1795508741.8662646,
+      "snapshot_age_seconds": 7.916,
+      "measured_hub_connection": 1.0,
+      "measured_metrics": [
+        "registry_health",
+        "service_count",
+        "plugin_load_success",
+        "hub_connection",
+        "kernel_loop_health"
+      ],
+      "health_status": "healthy",
+      "hub_safe_for_clients": true,
+      "response_file_sha256": "b0748c04238c3097ab2dfbba98de73564b13cbd3f26592641f475051f6e0eaed"
+    },
+    "operator_readiness_fields": {
+      "passed": true,
+      "observations": {
+        "first": {
+          "health": "healthy",
+          "readiness": "ready",
+          "safe_for_clients": true,
+          "source_sha256": "c69038ac1d7b9afdf662fc252d16068847254871cd33613bcba2a62b3f5b883a"
+        },
+        "restart": {
+          "health": "healthy",
+          "readiness": "ready",
+          "safe_for_clients": true,
+          "source_sha256": "5026fb89c64c2db0ac642f762ea6a19ff9d73330a1797e60325615c66d9a690d"
+        }
+      }
+    },
+    "source_files_verified": 1546,
+    "runtime_source_binding": {
+      "passed": true,
+      "python_files_compared": 1418,
+      "only_changes_since_extended_runtime": [
+        "tests/acceptance/test_launcher_active_shutdown.py",
+        "tests/test_aether_workflow_additional_paths.py",
+        "tests/test_alert_intelligence.py"
+      ],
+      "production_source_unchanged": true
+    }
+  },
+  "decision": "GO for bounded supervised observe/propose operation; original Hub stale-registration concern resolved on the verified normal full-launcher path",
+  "preservation": {
+    "pending_phase_b": "retained; prior evidence unchanged",
+    "temporal_and_original_workspaces": "HEAD/index/status/file hashes unchanged",
+    "release_signing": "enforced and controls unchanged;13 focused signing regressions pass",
+    "no_authority_added": true,
+    "verification": {
+      "passed": true,
+      "protected_workspaces": [
+        "C:\\Users\\enigm\\.codex\\worktrees\\supervised-alpha-session\\main-pr328",
+        "C:\\Users\\enigm\\AppData\\Local\\Temp\\aetherra-temporal-runtime-20261123"
+      ],
+      "candidate_baseline_file_count": 1993,
+      "changed_from_prior_phase_b": [
+        "aetherra_hub/app.py",
+        "aetherra_os_launcher.py",
+        "docs/AETHERRA_HOMEOSTASIS_SYSTEM.md",
+        "docs/AETHERRA_HUB_API_REFERENCE.md",
+        "docs/ALPHA_OPERATOR_RUNBOOK.md",
+        "docs/ALPHA_READINESS_CHECKLIST.md",
+        "docs/ALPHA_READINESS_DECISION.md",
+        "docs/superpowers/plans/2026-11-23-phase-b-observe-propose.md",
+        "tests/acceptance/test_launcher_active_shutdown.py",
+        "tests/test_aether_workflow_additional_paths.py",
+        "tests/test_alert_intelligence.py"
+      ],
+      "new_files": [
+        "docs/evidence/hub_heartbeat_followup_2026-11-24.json",
+        "tests/unit/homeostasis/test_launcher_hub_heartbeat.py"
+      ],
+      "frozen_source_control_files": 1546,
+      "clean_verification_checkout": "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\verification-clean",
+      "clean_checkout_source_hashes_match": true,
+      "head_index_unchanged": true,
+      "signing_and_ci_controls_unchanged": true,
+      "prior_phase_b_evidence_sha256": "feca16a43386b6cbeb602e35b2b61be03de879129ee7fcb3fab9be4929e39854"
+    }
+  },
+  "limits": [
+    "Launcher-owned local Hub only; standalone callers retain explicit lifecycle ownership.",
+    "A serving heartbeat is not a latency, throughput or usefulness measurement; HTTP health/readiness verified separately.",
+    "Other optional degraded/unknown services remain unchanged; no unattended/production or Stage22 authorization.",
+    "Browser/live-provider checks were not repeated in this backend follow-up; earlier PhaseB evidence retains its source scope.",
+    "Runtime uses two bounded instrumented normal CLI processes and SIGINT, not an interactive ConPTY or soak test.",
+    "No new commit, push, hosted CI, merge or release was requested or performed."
+  ],
+  "evidence_root": "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup",
+  "checks": {
+    "baseline": {
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "tests/unit/test_hub_inthread.py",
+        "tests/unit/homeostasis/test_launcher_observation_heartbeats.py",
+        "tests/unit/homeostasis/test_launcher_hub_ownership.py",
+        "-q",
+        "--no-cov",
+        "-o",
+        "cache_dir=D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\pytest-cache",
+        "--basetemp",
+        "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\pytest-baseline"
+      ],
+      "exit_code": 0,
+      "seconds": 67.01,
+      "receipt_sha256": "64f856e2b37322bb12c751c73d3f4d5d0d8dd07096147f05bf43546f5cef6273",
+      "log_sha256": "3cb8ee10d91f7fab3b83c7fb17c859120ea5b5b020724243876b6c555b7503bd"
+    },
+    "hub-owned-green-01": {
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "tests/unit/homeostasis/test_launcher_hub_heartbeat.py",
+        "-q",
+        "--no-cov",
+        "-o",
+        "cache_dir=D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\pytest-cache",
+        "--basetemp",
+        "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\pytest-hub-owned-green-01"
+      ],
+      "exit_code": 0,
+      "seconds": 12.11,
+      "receipt_sha256": "cc2cd2c48047af0f3714c9c45b40a09f1b02fb35fd29306091a850474020425f",
+      "log_sha256": "470a5d0ed3bc54839b99761ff6c541b391debee9be8b46d1ae0b22f9ffb8b3fa"
+    },
+    "focused": {
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "tests/unit/test_hub_inthread.py",
+        "tests/unit/homeostasis/test_launcher_hub_heartbeat.py",
+        "tests/unit/homeostasis/test_launcher_observation_heartbeats.py",
+        "tests/unit/homeostasis/test_launcher_hub_ownership.py",
+        "tests/unit/homeostasis/test_proposal_flow.py",
+        "tests/tools/test_release_signing.py",
+        "tests/test_hub_signing.py",
+        "tests/test_discovery_signing.py",
+        "-q",
+        "--no-cov",
+        "-o",
+        "cache_dir=D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\pytest-cache",
+        "--basetemp",
+        "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\pytest-focused"
+      ],
+      "exit_code": 0,
+      "seconds": 73.66,
+      "receipt_sha256": "fb9712322498410946a59481db7e15eefa2350aa50fd99029ea8c530fca43ae3",
+      "log_sha256": "9033eb6eca24c1c2e52f8456440036fffde27020a625c705dc86df93d000ce4c"
+    },
+    "boot": {
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "tools/alpha_boot_validation.py"
+      ],
+      "exit_code": 0,
+      "seconds": 2.69,
+      "receipt_sha256": "62ffb6c6d0851cc7598f8a7e1743442e8b14e0895cab8b09f780d5ab427a5766",
+      "log_sha256": "d3d419d4a5e4acdcffc9a2cfacc5c70b8959b9ea2c5c62e507cd28d73f6791e5"
+    },
+    "integration": {
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "Aetherra.integration_validation"
+      ],
+      "exit_code": 0,
+      "seconds": 1.1,
+      "receipt_sha256": "0c96bae779384771d058cee477529171c954f3b84b3731e051972dcdd61b64b8",
+      "log_sha256": "bb80a4258d248427e7ebdd46d139c6357dc4ea31ea4602981faa983aea4393f1"
+    },
+    "quality-clean": {
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "tools/python_quality.py"
+      ],
+      "exit_code": 0,
+      "seconds": 121.27,
+      "receipt_sha256": "29c4a79f54affa1f55459d292274901947262a00b9896a2dace0bb918ff73658",
+      "log_sha256": "e0cc0171e99be24f36fd2c3823c385e8b81e77985e201c37bcfaa3db76df614b"
+    },
+    "full-clean": {
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "--junitxml",
+        "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\full-clean.xml",
+        "--cov-report",
+        "html:D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\coverage-clean-html",
+        "--cov-report",
+        "xml:D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\coverage-clean.xml",
+        "-o",
+        "cache_dir=D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\pytest-cache",
+        "--basetemp",
+        "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\pytest-full-clean"
+      ],
+      "exit_code": 0,
+      "seconds": 1339.92,
+      "receipt_sha256": "b57a90178ca9127c0aabea69dab7e5afddad13a0ab835b91ae5779cd5a563150",
+      "log_sha256": "7316d28a2bdff45b949dfb03f9f30bcb409717b98775f1ce8028cda38a022654"
+    },
+    "hub-runtime-01": {
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\probe.py",
+        "--output",
+        "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\runtime-01",
+        "--port",
+        "13401"
+      ],
+      "exit_code": 0,
+      "seconds": 581.48,
+      "receipt_sha256": "11ed531e6c07876fed7e4407d00b303f85e86f79f06309562c8e05bef76bb17d",
+      "log_sha256": "ff6d6329ad336a752cb30de2901334eda2ac01dfaea5687aac056dc340ed0510"
+    },
+    "shutdown-budget-green-01": {
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "tests/acceptance/test_launcher_active_shutdown.py",
+        "-q",
+        "-o",
+        "addopts=",
+        "--no-cov",
+        "-o",
+        "cache_dir=D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\pytest-cache",
+        "--basetemp",
+        "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\pytest-shutdown-budget-green-01"
+      ],
+      "exit_code": 0,
+      "seconds": 23.58,
+      "receipt_sha256": "da072a0bc42d0ec85f7bd629f3951dbc287d5d3b28b048da681844ef8a0f14e6",
+      "log_sha256": "697061628c81bd0bdec664d038518cae822949b1c14756941b1dc6d746293dae"
+    },
+    "alert-fixture-green-01": {
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "tests/legacy/root_standalone/test_alert_intelligence_standalone.py",
+        "tests/test_alert_intelligence.py",
+        "-q",
+        "-o",
+        "addopts=",
+        "--no-cov",
+        "-o",
+        "cache_dir=D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\pytest-cache",
+        "--basetemp",
+        "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\pytest-alert-fixture-green-01"
+      ],
+      "exit_code": 0,
+      "seconds": 17.38,
+      "receipt_sha256": "0b46ebe4ec05ee25cf926ee9581b34f57181f15c8cf79efd4f1a1d4de67bc1be",
+      "log_sha256": "bc5ea5a858428326b0fb1388dc7c9eea1c11a5a7c09f5cca24e6f335a2315a43"
+    },
+    "tiny-timeout-green-01": {
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "tests/test_aether_workflow_additional_paths.py",
+        "-q",
+        "-o",
+        "addopts=",
+        "--no-cov",
+        "-o",
+        "cache_dir=D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\pytest-cache",
+        "--basetemp",
+        "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\pytest-tiny-timeout-green-01"
+      ],
+      "exit_code": 0,
+      "seconds": 6.44,
+      "receipt_sha256": "0497058719689a08e450fe120522beb47ac73b5b84636fa5b1d920fbed0263d6",
+      "log_sha256": "5e1f225d48749e83d5851448dca48fd2c98989e30c58531a120684e19eba5686"
+    },
+    "alert-isolation-seeded-copy-01": {
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\alert-isolation-proposal\\validate.py",
+        "seeded"
+      ],
+      "exit_code": 0,
+      "seconds": 13.29,
+      "receipt_sha256": "d87cfcff122fb3091be3c8c6ca66967ee82513d5c6d678aee95733bc71284e20",
+      "log_sha256": "e81c4e5eb1f4c62c97c58bebbae8b883356704eb8b8b6602281609abe192f635"
+    },
+    "alert-isolation-empty-copy-01": {
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "D:\\Aetherra Labs\\.codex-integration-phase-b-20261123\\evidence\\hub-heartbeat-followup\\alert-isolation-proposal\\validate.py",
+        "empty"
+      ],
+      "exit_code": 0,
+      "seconds": 13.04,
+      "receipt_sha256": "c0192def4cf915aaf9aefbce04330063ad791e1b1adc94f8efbb1accf7f1a124",
+      "log_sha256": "4aaff021d62acf11768c969c347fa4ef5a2639fd86ca8220355e9647ea2ae480"
+    },
+    "docs-final": {
+      "base_commit": "ba3a04ad44f85dbb0fd2b2291142dca40a6562d4",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "tools/verify_docs_consistency.py"
+      ],
+      "exit_code": 0,
+      "seconds": 3.98,
+      "receipt_sha256": "2ad53629bd86cc8768ac0bdb0e126695c2eae3f3ade01a9a2ae1a0bcea545239",
+      "log_sha256": "ac3055975be02a582ddfefdc4ad4e50ea002a99befeefcc27e9c788670249ead"
+    }
+  },
+  "artifact_sha256": {
+    "before.json": "d1450ca20351e28e53dfd598c3bd2e3f89901faf798b2b8f9ea7485c564b90df",
+    "phase-b-before.patch": "ff9c2d7019635e3e2ce1e9fc151d2665e9ba84939250b35b7bc7deedd47fe7b6",
+    "source-before-full.json": "a48d96caaada13ec5c5377c657db9ebbeecb8e436c1241bf14f1e490112d0fb7",
+    "source-before-full-final-02.json": "b763f6f8e1613b42c7534371b49943c473e29c75d256071867987ad6ab07ceab",
+    "source-before-clean-full.json": "d81fb90d73ef8d1b73701fb31414ecedc9fabebcf20e66c87c229eed1fb01738",
+    "clean-checkout-source.json": "a3d3b592422f2c6f32e61d29e1636e16a45894b59c3cff78c145b0fc00cde798",
+    "runtime-01/summary.json": "f0ba61150ae4e5319192552d005d1fcd9090cb4295cfb42da53ebd9138d10461",
+    "runtime-01/source-before.json": "e26fd2176e09fefd65faa1283fb1943705895b1d2192a7d6fdc245a9cf0d7b2a",
+    "runtime-01/source-after.json": "83578f6a05e892e7ca83e5beea05a31bd5a01e095c02c6199f0fe2c9548650e6",
+    "runtime-01/probe-used.py": "8e130b95ca16faabd579e8365822b2bbf3e77b801f76532fde366a5086e7b26d",
+    "runtime-01/first-hub-monitor.json": "7016df1f79010938dd222c7984874890d65ade44297e8a7fd7ac33922e32d9b1",
+    "runtime-01/restart-hub-monitor.json": "220fa3bc5f58dcc9fee1159291896c84364471b456532b2d918a2c3eeb2c2a62",
+    "runtime-01/first-content-verification.json": "af13e054b8c134542087cca9119f607f5030a4d6e5315ec491945dc80eeb964f",
+    "runtime-01/restart-content-verification.json": "f443aa1627aceb0455bcee345665995cc10cb298251af556702943b32a877a59",
+    "runtime-01/restart-content-continuity.json": "b230de6224b8d8465f3842551422daeae6c38e160c462627322b51af0f5ed5c3",
+    "runtime-01/operator-snapshot-check.json": "8ea949430d35ccce8aa6033bd3b60bc76f5dc82073237c6d55e9fc91566e0ab6",
+    "runtime-01/operator-readiness-fields.json": "f85f9d130743923927563e4bb35aa193846dd037978d133f5855a42ac923afd2",
+    "hub-owned-red-01.log": "b23673c2271e355964a2630d69bfd1bd44231d1066d70f8d6d639a0f5f97dc54",
+    "full.xml": "1468c66f4fcfcb7002fa5003f82373ac133d87960cfeb91f7434e3ea45e02cc4",
+    "full.log": "90902dd7716d4cc7467e85fecffd11ce034e51dff0e0a1bf56ca8892fc0aebfa",
+    "full.json": "7ad02e804a0c0029ef75f20e7a0925ff1229f0d8185c4927dde0f11bd72f8988",
+    "full-final.xml": "80c9f6c4f7efa65136ebba77f03b793b4ae92c7c9204d09b6cb2ae098f308e07",
+    "full-final.log": "e293b2fa98e806688243ac0c07ac0dce5d2393cc62e4fbe4fa4dc5c549482db8",
+    "full-final.json": "936e2027eb027844d19e7383578a959c918abc9c94ee11ef11747ec782558cbb",
+    "full-final-02.xml": "59ff8207dd1110d1b06159237a6d2c2f98c52f1ecdf69d3a1faec8f280d86b6c",
+    "full-final-02.json": "ef49b0c55a64ffdf3e2fdfa207e2f10fea16289a39a88cb120f898e97a1875e9",
+    "full-final-02.log": "abdedda9addfeb966b7f5754bc54d95ed1739b067d3b439cd37f079e13bdf8b1",
+    "full-clean.xml": "3d1396f830859601bcb609b54efef48dc33645518c38346d7d04eed787e18aa9",
+    "tiny-timeout-repro-01.json": "6d6217eaa1d3a47127fcf353cdeab4005d177ebfca250f7211d39576eadf25a9",
+    "tiny-timeout-repro-01.log": "a0550f14280fb46d81e3d13b7d4fd6532b901e2e4c086182f705db1f01827105",
+    "tiny-timeout-timing-01.json": "0a37879f70e4c1cc3525c70a88a01e93b5e5e788a758129980750f23e87d44c0",
+    "tiny-timeout-timing-01.log": "e16819208bcfda97330ff4f0e068c396e34fb442b13ade7d24e556aa4a8f61de",
+    "tiny-timeout-slow-setup-red-01.log": "beb825cfbc41a22e142ed671a25351c268860973905df163c13e17d7750f78f5",
+    "tiny-timeout-slow-setup-green-01.log": "297ecc1ee0cd1c8d533b04596b6101a0b6c66d928fcd4053c88f8b8148884bd2",
+    "tiny-timeout-mutant-red-01.log": "14ace0f41f1e8eb448a516be73b1126fc6cd42f11f196ba27ddb0ebde11e797c",
+    "tiny-timeout-proposal/fixture.patch": "2f572d56c567204064ac1c57a7e2e6168839060759ed8abc0b4e4ac546912c8b",
+    "alert-history-repro-01.json": "ccf3585022536a0d73cdfc481d8998790706764ff535745a1a7f1e2fab7b4412",
+    "alert-history-repro-01.log": "28a5ff493b3d760dfe4d0564a2149f380be6638e6402138de4cb4f91f447bbb1",
+    "alert-isolation-proposal/fixture.patch": "be9f0c8828d01e5db1aed88ffecbc080162588bfe103e67ecf440d47c0a67d7d",
+    "shutdown-stream-repro-01.json": "87f8cc4e1665d8515732651a8f3fca78f0adf0a1d357196b82e88833c8ebf400",
+    "shutdown-stream-repro-01.log": "86c12daab73e51b1fe06ff96db1a08b3d31844690f3fefe52f27868de3df609a",
+    "docs-final.json": "2ad53629bd86cc8768ac0bdb0e126695c2eae3f3ade01a9a2ae1a0bcea545239",
+    "docs-final.log": "ac3055975be02a582ddfefdc4ad4e50ea002a99befeefcc27e9c788670249ead",
+    "docs-consistency-final-report.md": "b050aa2b3c451bc24330d23fc853fb9a81485be41eca75c54b975018c220d371",
+    "preservation.json": "d839442148b87bd8d45a33530fe33984a269db044c973d9f43fccc447a0ab70a",
+    "runtime-production-binding.json": "7741cef3b3645b786a32c396259c497b05514f4c033fe0a738e129af2f09f7bb",
+    "generated-artifact-archive.json": "2147f9a9d6a8c1350cb65af8624886bbcc94e59e00419fc3957487a27ca8aba9",
+    "source-before-full-final.json": "a4f6e5ae1c45eb9991be1e37d6339a95486457b0bd0fda59601d50f6553ce028"
+  },
+  "changed_source_sha256": {
+    "aetherra_hub/app.py": "2a432fb45a283a674b0c2e28912ecb1ac500d723381f85720100a8ee18aa223d",
+    "aetherra_os_launcher.py": "582e308f9ea528cc8c7e5a2b162420cd37c6e7382a84e7a031bd18533be8caa5",
+    "tests/unit/homeostasis/test_launcher_hub_heartbeat.py": "ffd8de7801e88c7898c12a2dbe0c39437225d0361df3e2261dcf1da9d829fe84",
+    "tests/acceptance/test_launcher_active_shutdown.py": "58bc5e9e457526fe6ee621922c2ab67709d649947cf69627bfb7177a344803bf",
+    "tests/test_alert_intelligence.py": "40c4d2773f64e151528ad279fae728b53b39d11846d79665086433084765cb25",
+    "tests/test_aether_workflow_additional_paths.py": "bfd7997868abbd43700ce7f2d603f2d999f8be243ccf733cb7a35ad84d8ad4ea"
+  }
+}

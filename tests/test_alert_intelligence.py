@@ -12,13 +12,15 @@ Lyrixa integration, and intelligent alert management.
 Author: Aetherra Labs
 """
 
+# Standard library imports
 import asyncio
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.homeostasis.alert_intelligence import (
     AdaptiveThresholdEngine,
     AlertSeverity,
@@ -26,17 +28,12 @@ from Aetherra.homeostasis.alert_intelligence import (
     AnomalyDetection,
     AnomalyType,
     IntelligentAlert,
-    MetricPattern,
 )
 from Aetherra.homeostasis.intelligent_alert_manager import (
-    AlertEscalationRule,
-    AlertNotificationChannel,
     IntelligentAlertManager,
 )
 from Aetherra.homeostasis.lyrixa_integration import (
     LyrixaAlertIntegration,
-    LyrixaReflectionRequest,
-    LyrixaReflectionResponse,
 )
 
 
@@ -248,8 +245,20 @@ class TestIntelligentAlertManager:
         Path(db_path).unlink(missing_ok=True)
 
     @pytest.fixture
-    def manager(self, temp_db):
-        """Create an alert manager for testing."""
+    def manager(self, temp_db, tmp_path, monkeypatch):
+        """Keep real component state local to this test."""
+        threshold_engine = AdaptiveThresholdEngine(
+            db_path=str(tmp_path / "intelligence.db")
+        )
+        lyrixa_integration = LyrixaAlertIntegration()
+        monkeypatch.setattr(
+            "Aetherra.homeostasis.intelligent_alert_manager.get_adaptive_threshold_engine",
+            lambda: threshold_engine,
+        )
+        monkeypatch.setattr(
+            "Aetherra.homeostasis.intelligent_alert_manager.get_lyrixa_integration",
+            lambda: lyrixa_integration,
+        )
         return IntelligentAlertManager(db_path=temp_db)
 
     @pytest.mark.asyncio
@@ -545,6 +554,7 @@ class TestIntegrationFlow:
 # Helper functions for test execution
 def test_alert_intelligence_import():
     """Test that all alert intelligence modules can be imported."""
+    # Aetherra imports
     from Aetherra.homeostasis.alert_intelligence import AdaptiveThresholdEngine
     from Aetherra.homeostasis.intelligent_alert_manager import IntelligentAlertManager
     from Aetherra.homeostasis.lyrixa_integration import LyrixaAlertIntegration
@@ -561,6 +571,7 @@ if __name__ == "__main__":
 
     # Run a simple integration test
     async def simple_test():
+        # Standard library imports
         import tempfile
         from pathlib import Path
 

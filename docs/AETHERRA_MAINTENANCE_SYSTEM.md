@@ -72,6 +72,51 @@ Verify
 Learn
 ```
 
+## Phase B: Observe And Propose
+
+On the supported full-launcher path, the existing Homeostasis metrics bridge
+sends a bounded observation to the registered Self-Improvement adapter.
+Self-Improvement uses the existing diagnosis and recommendation builders,
+persists its proposal, then routes it through the registered Maintenance
+coordinator. The new connection stops at `proposed`: it supplies no Guardian
+decision, Security enforcement, execution, verification or learning result.
+It cannot enable Self-Incorporation or automatic implementation.
+
+Repeated observations use stable proposal/cycle identities. The existing
+Maintenance store restores records from
+`artifacts/maintenance/maintenance_cycles.jsonl` under the launch profile's
+working directory. A missing service or failed persistence is degraded flow,
+not a durable-success claim. These are unsigned coordinator records; they are
+not Guardian approvals or the signed Security audit ledger.
+
+A failed restore latches `service.load_failed` and `last_load_error`. The service
+refuses to replace the store until an explicit successful `load_records()`;
+Self-Improvement reports `maintenance_restore_failed` and neither routes a new
+cycle nor retries an autosave against incomplete history. Repeated observations
+cannot clear this guard. Ordinary failed-save retries remain supported after a
+successful restore. A new, missing store is a valid empty starting profile.
+
+Use `AETHERRA_HOMEOSTASIS_MODE=observe_only` in the supervised profile. Metric
+collection and feedback history continue, but Homeostasis cannot change its
+adaptive thresholds or weights in that mode. The existing actuator, restart
+and rollback restrictions still apply. Explicit active modes remain outside
+this milestone's authorization and verification.
+
+The Runtime Observatory reads the actual `maintenance_system` (or
+`aetherra_maintenance`) service. Its inspector shows bounded counts, cycle state,
+proposal presence and recorded decision/execution status. Correlation references
+are the first 16 hex characters of SHA-256 over each actual opaque record ID;
+raw event text and store paths are excluded. A bounded `persistence_state`
+distinguishes `error`, `autosave_enabled`, `autosave_disabled`, `no_store` and
+`unknown`. A known load/save error makes the observation degraded. Counts and
+cycle details describe current in-process records; configured autosave does not
+verify durability or prove that an unreadable store is empty. An absent decision says no decision
+was recorded, and an unavailable source remains unknown. Neither registry
+presence nor a proposed cycle proves execution authority or personal continuity.
+
+See the [operator procedure](ALPHA_OPERATOR_RUNBOOK.md) and
+[Phase B plan](superpowers/plans/2026-11-23-phase-b-observe-propose.md).
+
 ## Layer 1: Observation
 
 Purpose: collect facts without mutation.

@@ -25,38 +25,38 @@ except Exception:  # pragma: no cover
     CORS = None
 
 # Local imports
-from .blueprints import (  # pylint: disable=unused-import
+from .blueprints import (
     agents,
     ai_ask,
     ai_stream,
     chat,
     coding,
-    consciousness,  # consciousness state API
-    frontend,  # static file serving for Lyrixa UI
+    consciousness,
+    frontend,
     guardian,
     health,
-    homeostasis,  # new
-    interactive,  # Interactive Lyrixa emotions & expressions
+    homeostasis,
+    interactive,
     keb,
     kernel,
     klm,
     maintenance,
-    memory,  # memory graph stub
+    memory,
     metrics,
     openapi,
-    peers,  # federation stub
+    peers,
     plugins,
     policy,
     qfac_admin,
-    quantum,  # new
+    quantum,
     runtime_ui,
-    scripts,  # new
-    security,  # new
-    self_improvement,  # new
-    self_incorporation,  # new
+    scripts,
+    security,
+    self_improvement,
+    self_incorporation,
     site_status,
-    telemetry,  # new
-    trainer,  # new
+    telemetry,
+    trainer,
 )
 from .config import Settings, settings
 
@@ -251,128 +251,9 @@ def create_app(cfg: Settings | None = None) -> Flask:
     def _ping() -> dict[str, bool]:  # simple liveness
         return {"pong": True}
 
-    # --- Service registry integration: register hub + self-heartbeat ---
-    try:
-        import threading
-        import time as _time
-
-        _hub_hb_thread: threading.Thread | None = None
-        _hub_hb_stop = False  # nonlocal via closure
-
-        class _HubService:
-            async def heartbeat(self):  # registry heartbeat hook
-                return True
-
-            async def ping(self):  # supervisor optional ping hook
-                return True
-
-            def is_alive(self):  # registry stale detector hook
-                return True
-
-        def _start_registry_hb_thread() -> None:
-            nonlocal _hub_hb_thread
-            if _hub_hb_thread is not None and _hub_hb_thread.is_alive():
-                return
-
-            def _runner() -> None:
-                # Local import in thread to avoid import-time coupling
-                try:
-                    import asyncio as _asyncio
-
-                    from aetherra_service_registry import (
-                        get_service_registry as _get_reg,
-                    )
-                    from aetherra_service_registry import (
-                        register_service as _reg,
-                    )
-                    from aetherra_service_registry import (
-                        update_heartbeat as _hb,
-                    )
-
-                    # One-time registration
-                    try:
-                        _asyncio.run(
-                            _reg(
-                                "aetherra_hub",
-                                _HubService(),
-                                metadata={
-                                    "version": getattr(app.settings, "version", "1"),  # type: ignore[attr-defined]
-                                    "url": f"http://127.0.0.1:{getattr(app.settings, 'port', 3001)}",  # type: ignore[attr-defined]
-                                    "self_heartbeat": True,
-                                },
-                                dependencies=["aetherra_engine"],
-                            )
-                        )
-                        # Mark self-heartbeat in registry metadata (best-effort)
-                        try:
-                            reg = _asyncio.run(_get_reg())
-                            with contextlib.suppress(Exception):
-                                reg.mark_service_self_heartbeat("aetherra_hub", True)
-                        except Exception as exc:
-                            logger.debug(
-                                "Hub registry self-heartbeat marker failed: %s",
-                                exc,
-                                exc_info=True,
-                            )
-                    except Exception as exc:
-                        logger.debug(
-                            "Hub service registration failed: %s", exc, exc_info=True
-                        )
-
-                    # Heartbeat loop
-                    try:
-                        interval = 45.0
-                        try:
-                            interval = float(
-                                os.environ.get("AETHERRA_HUB_HEARTBEAT_SEC", "45") or 45
-                            )
-                        except (TypeError, ValueError):
-                            interval = 45.0
-                        while not _hub_hb_stop:
-                            with contextlib.suppress(Exception):
-                                _asyncio.run(_hb("aetherra_hub"))
-                            # split sleep for quicker teardown
-                            slept = 0.0
-                            step = min(1.0, interval)
-                            while not _hub_hb_stop and slept < interval:
-                                _time.sleep(step)
-                                slept += step
-                    except Exception as exc:
-                        logger.debug("Hub heartbeat loop failed: %s", exc, exc_info=True)
-                except Exception as exc:
-                    logger.warning(
-                        "Hub registry heartbeat thread failed to initialize: %s",
-                        exc,
-                        exc_info=True,
-                    )
-
-            _hub_hb_thread = threading.Thread(
-                target=_runner, name="hub-registry-heartbeat", daemon=True
-            )
-            _hub_hb_thread.start()
-
-        @app.before_first_request
-        def _on_first_request() -> None:
-            # Start registry registration + heartbeat in background
-            try:
-                _start_registry_hb_thread()
-            except Exception as exc:
-                logger.warning(
-                    "Unable to start Hub registry heartbeat thread: %s",
-                    exc,
-                    exc_info=True,
-                )
-                logger.debug(
-                    "[REG] hub registry heartbeat thread failed to start", exc_info=True
-                )
-
-        @app.teardown_appcontext
-        def _on_teardown(exception=None):  # noqa: ARG001
-            # Signal heartbeat thread to stop
-            nonlocal _hub_hb_stop
-            _hub_hb_stop = True
-    except Exception as _e:  # pragma: no cover - defensive
-        logger.debug("[REG] Hub registry integration unavailable: %s", _e)
+    # The runtime owner registers and heartbeats its actual serving instance.
+    # App/request contexts can be created or torn down without starting/stopping
+    # a server, so the factory must not own a registry heartbeat worker.
 
     @app.before_request
     def _log_req() -> None:  # lightweight request logging

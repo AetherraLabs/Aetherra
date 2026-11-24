@@ -686,6 +686,139 @@ build dashboard. Keep Stage 21 active until its bounded use work is accepted;
 do not advance Beta Hardening or extend authority merely because this exercise
 passes.
 
+## Observation And Maintenance Smoke (Phase B)
+
+Use the same full launcher, disposable profile, scoped policy and strict flags
+above. Keep `AETHERRA_HOMEOSTASIS_MODE=observe_only`, Self-Incorporation and HMR
+disabled, and automatic implementation off. Default Homeostasis thresholds now
+resolve from the package, so an empty profile does not need copied YAML files.
+Aetherra remains the persistent system and Lyrixa her user-facing persona.
+
+After startup, allow the existing 60-second metrics bridge to collect a fresh
+sample. Inspect the ordinary Hub routes; these reads do not approve or execute:
+
+```powershell
+$homeostasis = Read-AlphaJson '/api/homeostasis/status'
+$flow = (Read-AlphaJson '/api/selfimprove/status').homeostasis_flow
+$maintenance = (Read-AlphaJson '/api/maintenance/status').maintenance
+$inspector = (Read-AlphaJson '/api/runtime-ui/subsystems/maintenance').subsystem
+$homeostasis.controller.mode
+$homeostasis.actuators
+$flow
+$maintenance.service
+$maintenance.recent_cycles | Select-Object cycle_id, proposal_id, status,
+  observations, has_diagnosis, guardian_status, guardian_audit_id,
+  security_enforced, can_execute, execution_status, verification_status
+$inspector.metrics
+```
+
+Require `observe_only`, unchanged tuning parameters, zero actuator attempts and
+executions, `homeostasis_flow.actions_enabled=false`, Self-Incorporation disabled,
+and Guardian enabled/enforcing with intact audit. Inspect `status` and `reason`:
+`nominal` means valid evidence did not warrant a proposal; missing producers or
+failed delivery/storage must not be interpreted as successful routing. Registry
+health and plugin/Hub service availability are registry-derived observations;
+they are not measured request latency, WebSocket connectivity or GUI response
+speed. Only finite fields actually collected in the fresh snapshot are eligible
+for this proposal path. Historical numeric defaults remain compatible but are
+excluded from new observation evidence by `measured_metrics` metadata.
+
+The Hub heartbeat follow-up repairs the false stale registration observed in
+the initial Phase B run. The full launcher now refreshes its actual local Hub
+while that server's serving thread remains alive. Repeated requests and app
+context teardown do not terminate heartbeat ownership; stopped, replaced,
+external/proxy or unhealthy registrations receive no false refresh. Guardian
+still authorizes each heartbeat. See [Hub lifecycle ownership](AETHERRA_HUB_API_REFERENCE.md#registry-heartbeat-ownership).
+
+At the initial, 30-second and >210-second checkpoints, also inspect:
+
+```powershell
+$hubHealth = Read-AlphaJson '/health'
+$hubReadiness = Read-AlphaJson '/api/hub/readiness'
+$snapshot = (Read-AlphaJson '/api/homeostasis/metrics/snapshot').snapshot
+$hubHealth.status
+$hubReadiness.readiness.readiness
+$hubReadiness.readiness.safe_for_clients
+$snapshot.timestamp
+$snapshot.hub_connection
+$snapshot.raw_data.measured_metrics
+```
+
+For the verified local full-launcher profile, require fresh measured
+`hub_connection=1`, continuing observation counts, HTTP health `healthy`,
+readiness `ready` and `safe_for_clients=true`. The outer response `ok` is not
+a readiness decision. A missing measurement is unknown. Registry liveness is still
+separate from measured request latency or useful work. Other optional degraded
+services remain visible; this change does not promote their status or renew
+external Hubs. Repeat the same checks after restart in the same profile.
+
+Validator effectiveness summaries can contain defaults or fallback estimates.
+They remain visible through the existing validation status interface but are
+excluded from Self-Improvement scalar history; they are not measured pressure.
+Explicitly measured zero values are retained.
+
+For a resulting Phase B cycle, require `status=proposed`, an observation,
+diagnosis and genuine Self-Improvement proposal ID, `can_execute=false`, no
+Guardian decision/audit ID, `security_enforced=false`, and no execution or
+verification record. The Maintenance service must have its store configured,
+autosave enabled and no persistence error before claiming restart durability.
+If `service.load_failed` is true, stop the supervised exercise and preserve the
+profile. Diagnose storage access or recover a known-good record file before
+restarting through the normal launcher; embedded callers can explicitly call
+`load_records()` after recovery. Failed restore blocks `save_records()` and
+automatic proposal routing until reload succeeds. Repeated observations are
+not recovery, and must not overwrite the original store. A failed save after a
+successful load remains retryable through the existing proposal path.
+Records are local coordinator evidence, not signed Guardian approvals. Its
+existing JSONL file is under the profile's
+`artifacts/maintenance/maintenance_cycles.jsonl`; the proposal is also persisted
+in the profile's Self-Improvement database. Compare actual IDs, not only counts.
+
+In the Observatory, Maintenance persistence must show `autosave_enabled` for the
+configured profile; this describes configuration, not proven durability.
+`error` makes status degraded. `autosave_disabled`, `no_store`, and `unknown`
+remain distinct. Cycle counts and the latest cycle are explicitly in-process
+evidence, including when a failed load leaves none visible. No raw store path
+or exception detail is projected.
+
+In the Observatory select Homeostasis, Maintenance, Guardian and Memory. Verify
+mode and counters, the latest real cycle and proposal references, actual Guardian
+configuration/integrity, and the explicit limit that continuity is not verified
+by registry presence. The cycle/proposal/audit references are SHA-256 of each
+actual ID, truncated to 16 hex characters. A missing record is distinct from an
+unknown source. The inspector remains read-only and scrolls independently.
+
+Repeat after at least 30 seconds and again beyond 210 seconds after startup.
+The 30-second read may retain the same count with a 60-second bridge interval.
+Require accepted-observation counts to increase across a full bridge interval
+and by the later checkpoint. Require fresh registry heartbeats for Homeostasis,
+Self-Improvement and Maintenance, including their aliases, plus the actual
+launcher-owned `aetherra_hub` registration.
+Then follow the browser stop/restart procedure below using the same profile.
+Require a new process, preserved cycle/proposal IDs, no duplicate cycle for
+repeated identical evidence, no authority increase, and unavailable/unknown UI
+evidence while the runtime is stopped. A natural
+threshold crossing is a recommendation trigger; it is not proof of a diagnosed
+performance defect or successful remediation.
+
+Run deterministic synthetic-pressure, failure, restart-deduplication and UI
+checks from a fresh regression shell, without inheriting the live profile's
+Guardian or runtime environment:
+
+```powershell
+python -m pytest -q -o addopts= tests/unit/homeostasis/test_launcher_hub_heartbeat.py tests/unit/homeostasis/test_launcher_observation_heartbeats.py tests/unit/homeostasis/test_proposal_flow.py tests/unit/homeostasis/test_measured_metrics.py tests/unit/homeostasis/test_profile_config.py tests/unit/homeostasis/test_observe_only_enforcement.py tests/unit/test_maintenance_cycle.py tests/unit/test_maintenance_service.py tests/unit/test_maintenance_store.py tests/unit/test_runtime_ui_maintenance.py
+```
+
+These tests use the real bridge, registry, launcher adapter, proposal database
+and Maintenance store. Synthetic samples explicitly declare measured fields;
+malformed, stale and unmeasured inputs are separate negative cases. They add no
+special HTTP route or execution permission. The bounded full-launch acceptance
+probe separately labels synthetic pressure, restores the previous snapshot and
+correlates real records through Hub and Observatory. Retain its source, input,
+HTTP snapshots, record IDs, process receipts and source hashes as evidence.
+Run the existing offline and intentional live-provider continuity smoke as a
+separate regression gate; a no-provider fallback cannot pass a live-model check.
+
 ## Browser Observation And Stop/Restart
 
 With the full launcher still running, from the repository's GUI directory:

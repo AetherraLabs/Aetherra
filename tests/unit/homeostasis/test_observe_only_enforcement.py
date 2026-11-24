@@ -11,7 +11,9 @@ from types import SimpleNamespace
 import pytest
 
 # Aetherra imports
-from Aetherra.homeostasis import audit_trace_layer
+from Aetherra.homeostasis import (
+    audit_trace_layer,
+)
 from Aetherra.homeostasis import homeostasis_integration as integration
 from Aetherra.homeostasis import system_supervisor as supervisor_module
 from Aetherra.homeostasis.autonomous_error_corrector import AutonomousErrorCorrector
@@ -341,3 +343,78 @@ def test_observation_can_restart_watchdog_monitoring(orchestrator, monkeypatch):
     monkeypatch.setattr(integration.asyncio, "sleep", no_delay)
     asyncio.run(orchestrator._restart_watchdog())
     assert monitor_state.running is True
+
+
+@pytest.mark.parametrize("restriction", ["flag", "mode", "controller", "active"])
+def test_feedback_is_recorded_without_adaptive_mutation_when_observing(
+    orchestrator, monkeypatch, restriction
+):
+    orchestrator.controller.mode = ControllerMode.ACTIVE
+    if restriction == "flag":
+        monkeypatch.setenv("AETHERRA_HOMEOSTASIS_OBSERVE_ONLY", "1")
+    elif restriction == "mode":
+        monkeypatch.setenv("AETHERRA_HOMEOSTASIS_MODE", "observe_only")
+    elif restriction == "controller":
+        orchestrator.controller.mode = ControllerMode.OBSERVE_ONLY
+    feedback = integration.SystemFeedback(orchestrator)
+    accepted = asyncio.run(
+        feedback.receive_system_feedback(
+            "test",
+            {
+                "timestamp": "2026-11-23T00:00:00Z",
+                "metrics": {
+                    "cpu_usage": 99,
+                    "memory_usage": 99,
+                    "response_time": 9,
+                    "error_rate": 20,
+                },
+            },
+        )
+    )
+    assert accepted is True
+    assert len(feedback.feedback_history) == 1
+    assert bool(feedback.threshold_adjustments) is (restriction == "active")
+
+
+@pytest.mark.parametrize("restriction", ["flag", "mode", "controller", "active"])
+@pytest.mark.parametrize("entry_point", ["validation", "direct"])
+def test_validation_records_recommendations_without_self_tuning_when_observing(
+    orchestrator, monkeypatch, restriction, entry_point
+):
+    orchestrator.controller.mode = ControllerMode.ACTIVE
+    if restriction == "flag":
+        monkeypatch.setenv("AETHERRA_HOMEOSTASIS_OBSERVE_ONLY", "1")
+    elif restriction == "mode":
+        monkeypatch.setenv("AETHERRA_HOMEOSTASIS_MODE", "observe_only")
+    elif restriction == "controller":
+        orchestrator.controller.mode = ControllerMode.OBSERVE_ONLY
+    feedback = integration.SystemFeedback(orchestrator)
+    orchestrator.feedback_system = feedback
+    before = dict(feedback.adaptation_weights)
+    validator = integration.ContinuousValidator(orchestrator)
+
+    async def metrics():
+        return {"stability_snapshot": {"memory_rtt": 900.0}}
+
+    async def scores(_metrics):
+        return {
+            "response_time_improvement": 0.1,
+            "error_reduction": 0.1,
+            "resource_efficiency": 0.1,
+        }
+
+    monkeypatch.setattr(validator, "_collect_validation_metrics", metrics)
+    monkeypatch.setattr(validator, "_calculate_effectiveness_scores", scores)
+    if entry_point == "validation":
+        report = asyncio.run(validator.validate_homeostasis_effectiveness())
+        assert report["tuning_required"] is True
+        assert report["recommendations"]
+        assert len(validator.validation_history) == 1
+    else:
+        for score in (
+            "response_time_improvement",
+            "error_reduction",
+            "resource_efficiency",
+        ):
+            asyncio.run(validator._apply_specific_tuning(score, 0.1))
+    assert (feedback.adaptation_weights != before) is (restriction == "active")

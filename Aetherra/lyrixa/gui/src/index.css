@@ -202,6 +202,7 @@ button {
 }
 
 .inspector-panel {
+    overflow-y: auto;
     right: 28px;
     bottom: 64px;
     padding: 18px;
@@ -339,6 +340,41 @@ button {
     border-radius: 8px;
     background: rgba(124, 255, 189, 0.06);
     color: #dffff5;
+}
+
+.subsystem-evidence {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin: 14px 0;
+    padding-top: 12px;
+}
+
+.subsystem-evidence dl {
+    display: grid;
+    gap: 7px;
+    margin: 10px 0;
+    font-size: 12px;
+}
+
+.subsystem-evidence dl > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+}
+
+.subsystem-evidence dt {
+    color: #a4b5b0;
+}
+
+.subsystem-evidence dd {
+    margin: 0;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.evidence-note {
+    color: #a4b5b0;
+    font-size: 12px;
+    line-height: 1.4;
 }
 
 .event-feed {
