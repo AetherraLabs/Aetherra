@@ -4468,7 +4468,7 @@ class SelfIncorporationService:
     async def health_check(self) -> dict[str, Any]:
         """Return service health status."""
         return {
-            "status": self.status.value,
+            "status": self.status.value if self.config.enabled else "disabled",
             "running": self._running,
             "config_enabled": self.config.enabled,
             "roots_count": len(self.config.roots),
@@ -4553,6 +4553,8 @@ class SelfIncorporationService:
 
     async def trigger_classify(self, type_filter: str | None = None) -> dict[str, Any]:
         """Trigger classification of discovered files."""
+        if not self.config.enabled:
+            return {"ok": False, "status": "disabled", "reason": "service_disabled"}
         start_time = time.time()
         logger.info(f"[SELFINC] Starting classification with filter: {type_filter}")
 
@@ -4609,6 +4611,8 @@ class SelfIncorporationService:
         self, trust_filter: str | None = None
     ) -> dict[str, Any]:
         """Trigger security evaluation of classified files."""
+        if not self.config.enabled:
+            return {"ok": False, "status": "disabled", "reason": "service_disabled"}
         start_time = time.time()
         logger.info(
             f"[SELFINC] Starting security evaluation with filter: {trust_filter}"
@@ -4893,6 +4897,8 @@ class SelfIncorporationService:
         By default, executes only when plan status is 'ready'. Use force=True to
         proceed despite 'blocked' status (not recommended).
         """
+        if not self.config.enabled:
+            return {"ok": False, "status": "disabled", "reason": "service_disabled"}
         start_time = time.time()
         logger.info(
             "[SELFINC] Starting integration execution%s",
@@ -5688,6 +5694,8 @@ class SelfIncorporationService:
             }
         """
         start_time = time.time()
+        if not self.config.enabled:
+            return {"ok": False, "status": "disabled", "reason": "service_disabled"}
         logger.info(
             f"[SELFINC][CANARY] Starting canary deployment (canary_percent={canary_percent:.1%}, duration={canary_duration}s)"
         )
@@ -5991,6 +5999,8 @@ class SelfIncorporationService:
 
     async def trigger_scan(self, root_filter: str | None = None) -> dict[str, Any]:
         """Trigger a discovery scan with optional path filter."""
+        if not self.config.enabled:
+            return {"ok": False, "status": "disabled", "reason": "service_disabled"}
         start_time = time.time()
         logger.info(f"[SELFINC] Starting scan with filter: {root_filter}")
 

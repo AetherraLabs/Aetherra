@@ -8,6 +8,7 @@ runtime databases.
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import os
 import tempfile
@@ -105,7 +106,8 @@ def _check_core_imports() -> AlphaBootCheck:
     )
 
 
-def _kernel_ready_status() -> dict[str, Any]:
+def _synthetic_kernel_ready_status() -> dict[str, Any]:
+    """Model an authoritative Kernel contract; this is not observed runtime state."""
     return {
         "running": True,
         "paused": False,
@@ -128,32 +130,55 @@ def _kernel_ready_status() -> dict[str, Any]:
         "dlq_count": 0,
         "hmr": {"attempts": 0, "success": 0, "rollback": 0},
         "inflight": {"engine": 0, "memory": 0, "plugins": 0},
-        "_source": "alpha_boot_validation",
+        "_source": "live_kernel",
     }
 
 
 def _check_kernel_readiness_contract() -> AlphaBootCheck:
+    # Aetherra imports
     from Aetherra.aetherra_core.os_kernel import assess_kernel_readiness
 
-    payload = assess_kernel_readiness(_kernel_ready_status())
+    fixture = _synthetic_kernel_ready_status()
+    payload = assess_kernel_readiness(fixture)
+    inferred = {
+        source: assess_kernel_readiness({**fixture, "_source": source})
+        for source in ("registry_daemon", "file_fallback")
+    }
     passed = bool(
         payload.get("readiness") == "ready"
         and payload.get("safe_to_schedule") is True
         and payload.get("checks", {}).get("status_contract_complete") is True
+        and all(
+            result.get("readiness") != "ready"
+            and result.get("safe_to_schedule") is False
+            and "kernel_status_inferred" in result.get("reasons", [])
+            for result in inferred.values()
+        )
     )
     return AlphaBootCheck(
         name="kernel_readiness_contract",
         passed=passed,
-        summary="Kernel readiness contract reports a schedulable alpha runtime shape",
+        summary="Synthetic Kernel contract accepts live shape and rejects inferred evidence",
         details={
+            "evidence_type": "synthetic_contract_fixture",
+            "live_runtime_verified": False,
             "readiness": payload.get("readiness"),
             "safe_to_schedule": payload.get("safe_to_schedule"),
             "reasons": payload.get("reasons"),
+            "inferred_sources": {
+                source: {
+                    "readiness": result.get("readiness"),
+                    "safe_to_schedule": result.get("safe_to_schedule"),
+                    "reasons": result.get("reasons"),
+                }
+                for source, result in inferred.items()
+            },
         },
     )
 
 
 def _check_hub_readiness_contract() -> AlphaBootCheck:
+    # Aetherra imports
     from aetherra_hub.app import create_app
     from aetherra_hub.config import Settings
     from aetherra_hub.services.readiness import assess_hub_readiness
@@ -174,7 +199,7 @@ def _check_hub_readiness_contract() -> AlphaBootCheck:
     payload = assess_hub_readiness(
         app=app,
         settings=settings,
-        kernel_status=_kernel_ready_status(),
+        kernel_status=_synthetic_kernel_ready_status(),
         registry_status=registry_status,
     )
     passed = bool(
@@ -196,6 +221,7 @@ def _check_hub_readiness_contract() -> AlphaBootCheck:
 
 
 def _check_self_incorporation_health(workspace_root: Path) -> AlphaBootCheck:
+    # Aetherra imports
     from aetherra_self_incorporation import (
         SelfIncorporationConfig,
         SelfIncorporationService,
@@ -210,6 +236,7 @@ def _check_self_incorporation_health(workspace_root: Path) -> AlphaBootCheck:
     async def _health() -> dict[str, Any]:
         return await service.health_check()
 
+    # Standard library imports
     import asyncio
 
     health = asyncio.run(_health())

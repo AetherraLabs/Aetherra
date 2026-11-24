@@ -60,6 +60,7 @@ if "AETHERRA_REGISTRY_URL" not in os.environ:
 
 # Aetherra imports
 # Import Aetherra components (must be before any runtime code per lint)
+from aetherra_hub.errors import HubRequestDrainTimeoutError
 from aetherra_kernel_loop import get_kernel
 from aetherra_service_registry import (
     ServiceStatus,
@@ -616,8 +617,47 @@ class AetherraOSLauncher:
         self, config: dict[str, Any] | None = None
     ) -> dict[str, Any]:
         """Gather a concise startup readiness report for system + self state."""
+        # Standard library imports
+        import inspect
+
+        # Aetherra imports
+        from Aetherra.aetherra_core.engine.readiness import assess_ai_readiness
+        from Aetherra.aetherra_core.os_kernel.readiness import assess_kernel_readiness
+
         global _LATEST_BOOT_READINESS
         cfg = config or {}
+        required_services = {
+            "memory_system",
+            "aetherra_engine",
+            "kernel_loop",
+            "aetherra_hub",
+        }
+
+        def _service_info(name):
+            try:
+                return self.service_registry.get_service_info(name)
+            except Exception:
+                return None
+
+        def _registration(name):
+            info = _service_info(name)
+            state = getattr(info, "status", "missing")
+            state = str(getattr(state, "value", state))
+            available = info is not None and getattr(info, "instance", None) is not None
+            return {
+                "status": state,
+                "instance_available": available,
+                "ready": state == "healthy" and available,
+            }
+
+        def _optional_state(name, state):
+            metadata = getattr(_service_info(name), "metadata", {})
+            if (
+                metadata.get("operating_mode") == "disabled"
+                and metadata.get("config_enabled") is False
+            ):
+                return "disabled"
+            return str(state)
 
         async def _registry_scan() -> dict[str, Any]:
             if not self.service_registry:
@@ -628,25 +668,49 @@ class AetherraOSLauncher:
                 healthy = sum(
                     1
                     for info in services.values()
-                    if str(info.get("status", "")).lower() in {"healthy", "starting"}
+                    if str(info.get("status", "")).lower() == "healthy"
                 )
                 return {
                     "available": True,
                     "total_services": reg.get("total_services", 0),
                     "healthy_services": healthy,
+                    "optional_services": {
+                        name: _optional_state(name, info.get("status", "unknown"))
+                        for name, info in services.items()
+                        if name not in required_services
+                    },
                 }
             except Exception as exc:
                 return {"available": False, "error": type(exc).__name__}
 
         async def _kernel_scan() -> dict[str, Any]:
             if not self.kernel_loop:
-                return {"available": False, "running": False, "cycle_count": 0}
+                return {
+                    "available": False,
+                    "running": False,
+                    "cycle_count": 0,
+                    "readiness": assess_kernel_readiness(None),
+                }
             try:
                 status = self.kernel_loop.get_status()
+                readiness = assess_kernel_readiness(status)
+                registration = _registration("kernel_loop")
+                registered = _service_info("kernel_loop")
+                matches_instance = (
+                    registered is not None and registered.instance is self.kernel_loop
+                )
+                if not registration["ready"] or not matches_instance:
+                    readiness.update(
+                        ok=False, readiness="blocked", safe_to_schedule=False
+                    )
+                    readiness["reasons"] = [
+                        reason for reason in readiness["reasons"] if reason != "ready"
+                    ] + ["kernel_registration_unavailable"]
                 return {
                     "available": True,
                     "running": bool(getattr(self.kernel_loop, "running", False)),
                     "cycle_count": int(status.get("cycle_count", 0)),
+                    "readiness": readiness,
                 }
             except Exception as exc:
                 return {
@@ -654,6 +718,7 @@ class AetherraOSLauncher:
                     "running": False,
                     "cycle_count": 0,
                     "error": type(exc).__name__,
+                    "readiness": assess_kernel_readiness(None),
                 }
 
         async def _hub_scan() -> dict[str, Any]:
@@ -684,18 +749,47 @@ class AetherraOSLauncher:
                 "gui_enabled": bool(cfg.get("gui_enabled", True)),
             }
             for key in ("memory_system", "plugin_manager", "aetherra_engine"):
-                service_state = "missing"
-                if self.service_registry:
-                    info = self.service_registry.get_service_info(key)
-                    if info is not None:
-                        status = getattr(info, "status", "unknown")
-                        service_state = getattr(status, "value", str(status))
-                report[key] = service_state
+                report[key] = _registration(key)["status"]
             return report
 
-        registry, kernel, hub, self_state = await asyncio.gather(
-            _registry_scan(), _kernel_scan(), _hub_scan(), _self_scan()
+        async def _engine_scan() -> dict[str, Any]:
+            info = _service_info("aetherra_engine")
+            engine_status = None
+            try:
+                engine = getattr(info, "instance", None)
+                if engine is not None:
+                    engine_status = engine.get_system_status()
+                    if inspect.isawaitable(engine_status):
+                        engine_status = await engine_status
+            except Exception:
+                engine_status = None
+            readiness = assess_ai_readiness(engine_status)
+            reasons = []
+            if not _registration("aetherra_engine")["ready"]:
+                reasons.append("engine_registration_unavailable")
+            # Legacy status callers remain supported by the shared assessor;
+            # the normal launcher requires explicit provider selection evidence.
+            generation = readiness["checks"]["generation"]
+            if generation["status"] != "configured" or not generation["model_selected"]:
+                reasons.append("generation_unavailable")
+            if reasons:
+                if readiness["readiness"] == "ready":
+                    readiness["readiness"] = "degraded"
+                readiness["safe_for_requests"] = False
+                readiness["reasons"] = sorted(
+                    {
+                        reason
+                        for reason in readiness["reasons"] + reasons
+                        if reason != "ready"
+                    }
+                )
+            return readiness
+
+        registry, kernel, hub, self_state, engine = await asyncio.gather(
+            _registry_scan(), _kernel_scan(), _hub_scan(), _self_scan(), _engine_scan()
         )
+        memory = _registration("memory_system")
+        hub_registration = _registration("aetherra_hub")
 
         issues: list[str] = []
         recommended_actions: list[str] = []
@@ -709,12 +803,26 @@ class AetherraOSLauncher:
         if not kernel.get("running"):
             issues.append("Kernel loop not running")
             recommended_actions.append("Inspect kernel startup and scheduler wiring")
+        elif not kernel["readiness"]["safe_to_schedule"]:
+            issues.append("Kernel readiness checks did not pass")
+
+        if not memory["ready"]:
+            issues.append("Memory service unavailable or not healthy")
+            recommended_actions.append("Inspect Memory initialization and registration")
+
+        if not engine["safe_for_requests"]:
+            issues.append("Engine readiness checks did not pass")
+            recommended_actions.append(
+                "Inspect Engine readiness and provider configuration"
+            )
 
         if not hub.get("ok"):
             issues.append("Hub unreachable")
             recommended_actions.append(
                 "Run with backend/headless mode or verify Hub startup"
             )
+        elif not hub_registration["ready"]:
+            issues.append("Hub service registration unavailable or not healthy")
 
         status = "ready"
         if issues:
@@ -726,9 +834,10 @@ class AetherraOSLauncher:
             "phase_detail": "readiness",
             "progress": 100,
             "message": (
-                "Diagnostics complete. Ready for commands and questions."
+                "Core diagnostics complete. Ready for commands and questions. "
+                "Provider configuration checked; live model response not verified."
                 if status == "ready"
-                else "Diagnostics complete with issues. Running in degraded mode."
+                else f"Diagnostics complete with core issues. Running in {status} mode."
             ),
             "system_scan": {
                 "registry": registry,
@@ -736,6 +845,14 @@ class AetherraOSLauncher:
                 "hub": hub,
             },
             "self_scan": self_state,
+            "core_readiness": {
+                "memory": memory,
+                "engine": engine,
+                "kernel": kernel["readiness"],
+                "hub": {**hub_registration, "reachable": hub.get("ok", False)},
+                "registry": {"available": registry.get("available", False)},
+            },
+            "optional_services": registry.pop("optional_services", {}),
             "issues": issues,
             "recommended_actions": recommended_actions,
             "phase_sequence": ["presence", "diagnostics", "ready"],
@@ -1400,22 +1517,17 @@ class AetherraOSLauncher:
 
         # Self-Incorporation Service - Autonomous codebase perception and integration
         try:
-            # Standard library imports
-            from pathlib import Path
-
             # Aetherra imports
             from aetherra_self_incorporation import (
                 SelfIncorporationConfig,
                 SelfIncorporationService,
             )
 
-            # Create configuration (class takes no kwargs; set attributes directly)
+            # The full runtime is opt-in. Preserve explicit service configuration,
+            # including reviewed roots and the profile's security policy.
             selfinc_config = SelfIncorporationConfig()
-            # Best-effort: if attributes differ, ignore and continue with defaults
-            with contextlib.suppress(Exception):
-                selfinc_config.enabled = True
-                selfinc_config.roots = [Path("."), Path("Aetherra")]
-                selfinc_config.trust_mode = "standard"
+            if "AETHERRA_SELFINC_ENABLED" not in os.environ:
+                selfinc_config.enabled = False
 
             # Create service
             selfinc = SelfIncorporationService(selfinc_config)
@@ -1430,6 +1542,10 @@ class AetherraOSLauncher:
                 metadata={
                     "type": "autonomous_evolution",
                     "version": "1.0.0",
+                    "config_enabled": selfinc_config.enabled,
+                    "operating_mode": (
+                        "enabled" if selfinc_config.enabled else "disabled"
+                    ),
                     "features": [
                         "discovery",
                         "classification",
@@ -3354,22 +3470,25 @@ class AetherraOSLauncher:
         if "self_incorporation" in self.systems:
             selfinc = self.systems["self_incorporation"]
             try:
-                logger.info(
-                    "[INIT] Starting Self-Incorporation autonomous discovery..."
-                )
-                await selfinc.start()
-
-                # Mark as healthy
-                if self.service_registry and CORE_AVAILABLE:
-                    await self.service_registry.update_service_status(
-                        "self_incorporation", ServiceStatus.HEALTHY
+                if not selfinc.config.enabled:
+                    logger.info("[SELFINC] Self-Incorporation remains disabled")
+                else:
+                    logger.info(
+                        "[INIT] Starting Self-Incorporation autonomous discovery..."
                     )
+                    await selfinc.start()
 
-                # Trigger initial boot scan in background (non-blocking)
-                logger.info("[SELFINC] Triggering initial code discovery scan...")
-                asyncio.create_task(selfinc.trigger_scan())
+                    # Mark as healthy only after enabled service startup.
+                    if self.service_registry and CORE_AVAILABLE:
+                        await self.service_registry.update_service_status(
+                            "self_incorporation", ServiceStatus.HEALTHY
+                        )
 
-                logger.info("[OK] Self-Incorporation service activated")
+                    # Trigger initial boot scan in background (non-blocking).
+                    logger.info("[SELFINC] Triggering initial code discovery scan...")
+                    asyncio.create_task(selfinc.trigger_scan())
+
+                    logger.info("[OK] Self-Incorporation service activated")
             except Exception as e:
                 logger.warning(f"[WARN] Self-Incorporation activation failed: {e}")
 
@@ -3454,31 +3573,32 @@ class AetherraOSLauncher:
             raise
 
     async def _announce_os_online(self):
-        """📢 Announce that Aetherra OS is fully online."""
+        """Announce startup using the observed readiness result."""
         start_t = self.startup_time if self.startup_time is not None else time.time()
         startup_duration = time.time() - start_t
 
         logger.info("=" * 60)
-        logger.info("[SUCCESS] AETHERRA AI OPERATING SYSTEM IS NOW ONLINE! [SUCCESS]")
+        logger.info("[AETHERRA] AETHERRA AI OPERATING SYSTEM STARTUP COMPLETE")
         logger.info("=" * 60)
         logger.info(f"[LAUNCH] Startup completed in {startup_duration:.2f} seconds")
         if self.service_registry:
             logger.info(
-                f"[NET] Services: {len(self.service_registry.list_services())} active"
+                f"[NET] Services: {len(self.service_registry.list_services())} registered"
             )
         if self.kernel_loop:
             logger.info(
                 f"[SYS] Kernel cycles: {self.kernel_loop.get_status()['cycle_count']}"
             )
-        logger.info("[BRAIN] Aetherra consciousness: Active")
-        logger.info("[PLUGIN] Plugin ecosystem: Ready")
-        logger.info("[MEM] Quantum memory: Operational")
-        logger.info("[SCHED] Task scheduler: Running")
         if self.readiness_report:
             logger.info(
                 "[AETHERRA] Startup state: %s",
                 str(self.readiness_report.get("status", "unknown")).upper(),
             )
+            for name, state in self.readiness_report.get(
+                "optional_services", {}
+            ).items():
+                if state != "healthy":
+                    logger.info("[AETHERRA] Optional service %s: %s", name, state)
         logger.info("=" * 60)
 
         # Display user-friendly access information
@@ -3491,7 +3611,10 @@ class AetherraOSLauncher:
         logger.info(f"   API:        {hub_url}/api/*")
         logger.info("")
         logger.info(
-            "[AETHERRA] Diagnostics complete. Ready for commands and questions."
+            "[AETHERRA] %s",
+            (self.readiness_report or {}).get(
+                "message", "Readiness diagnostics unavailable; inspect startup logs."
+            ),
         )
         logger.info("💡 TIP: Keep this window open to keep Aetherra OS running")
         logger.info("🛑 Press Ctrl+C to shutdown gracefully")
@@ -4484,6 +4607,23 @@ async def main():
 
         return 0
 
+    except HubRequestDrainTimeoutError:
+        # stop_server remains bounded for public callers. The normal CLI owns
+        # the process, so it must keep Memory alive and finish teardown after
+        # admitted work completes instead of abandoning daemon request workers.
+        logger.error(
+            "[ERROR] Hub shutdown budget expired; waiting for admitted work "
+            "before completing shutdown"
+        )
+        while True:
+            try:
+                await launcher._graceful_shutdown()
+                return 1  # Preserve the failed initial shutdown budget.
+            except HubRequestDrainTimeoutError:
+                logger.warning("[SHUTDOWN] Still waiting for admitted Hub work")
+            except Exception:
+                logger.exception("[ERROR] Shutdown retry failed")
+                return 1
     except KeyboardInterrupt:
         logger.info("🛑 Interrupted by user")
         return 0

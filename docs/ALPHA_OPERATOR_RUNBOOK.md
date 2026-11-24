@@ -1,10 +1,11 @@
 # Alpha Operator Runbook
 
-Updated: 2026-11-22
+Updated: 2026-11-23
 
 **Current decision: GO for supervised internal alpha on the documented Windows
-source-runtime profile.** PR #327 is merged; clean main and the signed
-`v0.5.0-beta.6` release pass acceptance. Unattended/production operation and
+source-runtime profile.** At the 2026-11-22 desktop checkpoint, PR #327 was
+merged and clean main and the signed `v0.5.0-beta.6` release passed acceptance.
+Unattended/production operation and
 unverified installation graphs remain NO-GO. See
 [the decision](ALPHA_READINESS_DECISION.md),
 [fresh evidence](evidence/desktop_alpha_2026-11-22.json) and
@@ -13,8 +14,10 @@ unverified installation graphs remain NO-GO. See
 Fresh installation: 167 locked packages plus pip, no inherited system packages,
 zero broken requirements, exact lock sync, and zero findings/skips across all
 168 audited distributions. Fresh GUI: 18 tests, build/lint and zero audit findings.
-Normal-launcher stop/restart, three gpt-4o turns without fallback, and browser
-reconnection pass. The final default suite passes: **3,136 passed / 40 skipped**, exit 0.
+At that desktop checkpoint, normal-launcher stop/restart, three gpt-4o turns
+without fallback, and browser reconnection passed. Its default suite passed:
+**3,136 passed / 40 skipped**, exit 0. Current candidate results and limits are
+recorded in [the Phase A addendum](ALPHA_READINESS_DECISION.md#phase-a-core-integration-candidate).
 
 ## Operating Boundary
 
@@ -144,10 +147,12 @@ python -m isort --version-number
 python -m pytest --junitxml .pytest_tmp_alpha_full.xml
 ```
 
-The fresh-install suite uses an immutable source copy and verifies pytest's
-`rootdir` against it. All 1,395 Python source/test files match the reviewed
-candidate byte-for-byte. The current result, log digest and skip reasons belong
-in the desktop evidence. Diagnostic attempts exposed metadata compatibility,
+The 2026-11-22 fresh-install suite used an immutable source copy and verified
+pytest's `rootdir` against it. All 1,395 Python source/test files matched that
+reviewed candidate byte-for-byte. Its result, log digest and skip reasons are
+in the desktop evidence. Phase A uses 1,412 matching Python files and records
+its results separately in [Phase A evidence](evidence/integration_phase_a_2026-11-23.json).
+Diagnostic desktop attempts exposed metadata compatibility,
 ancestor-path filtering and metrics listener isolation defects. A snapshot
 assertion also caught Git's line-ending normalization before tests started;
 the task harness now overlays exact source bytes. Superseded attempts do not
@@ -237,8 +242,11 @@ $alphaConfig = @{ hub_enabled = $true; gui_enabled = $false } | ConvertTo-Json
 
 Confirm ports 3000 and 3001 are free before starting. Do not stop another
 operator's listener. These are requested settings, not proof they all take
-effect: Homeostasis now enforces observation-only, but Self-Incorporation
-status still reports enabled. No policy grants are added here; optional
+effect: verify Homeostasis `observe_only` and Self-Incorporation
+`status=disabled`, `config_enabled=false`, `running=false`. Full launch now
+defaults Self-Incorporation off and honors explicit enablement/configuration.
+The generic registry's registration health is separate from effective mode.
+No policy grants are added here; optional
 operations may be denied. This is a verified bounded observation configuration,
 not acceptance of unattended operation or all optional services.
 
@@ -329,6 +337,114 @@ pass. Cold embedding startup exceeded 30 seconds in the earlier baseline run. A 
 timeout does not mean the turn was not saved. Avoid automatic retries of writes.
 Use the separate configured-model procedure in
 [PERSONAL_CONTINUITY.md](PERSONAL_CONTINUITY.md) when a live-model check is needed.
+
+## Integration Smoke (Phase A)
+
+The supported alpha entry remains
+`aetherra_os_launcher.py --mode full --no-gui --config PROFILE/launcher.json`.
+The source-runtime verifier below calls that same CLI parser/main with those
+arguments. It observes startup without replacing lifecycle work; offline mode
+replaces only text generation with a responder that reads supplied evidence.
+Memory, semantic retrieval, Guardian/Security, HTTP and process restart are real.
+The public embedding model must already be provisioned in `HF_HOME`; no model
+download is allowed during the offline check.
+
+Run from the source checkout in the provisioned, credential-free environment:
+
+```powershell
+$integrationOutput = Join-Path $env:TEMP ('aetherra-integration-' + [guid]::NewGuid().ToString('N'))
+python tools/alpha_integration_smoke.py --output $integrationOutput
+Get-Content (Join-Path $integrationOutput 'summary.json')
+```
+
+The output directory must not exist. It contains synthetic prompts/provider
+inputs, startup and final readiness/mode snapshots, SQLite records, Guardian
+audit, runtime logs, exit receipts and probe timings. This is disposable test
+data; do not adapt the recorder to private conversations. The verifier starts
+three separate processes: write several competing facts, restart the same local
+profile for paraphrased recall and an unknown attribute, then query a separate
+empty profile. It binds the original opaque receipt to the persisted content,
+retrieval IDs and actual generator input. It never retries chat writes.
+
+For a live check, intentionally supply the approved `OPENAI_API_KEY` in the
+current process through your secret mechanism, then use a **different new** output
+directory:
+
+```powershell
+$liveOutput = Join-Path $env:TEMP ('aetherra-integration-live-' + [guid]::NewGuid().ToString('N'))
+python tools/alpha_integration_smoke.py --live --output $liveOutput
+Get-Content (Join-Path $liveOutput 'summary.json')
+```
+
+This forwards only that provider credential, selects gpt-4o and grants the
+existing governed SDK caller access to `api.openai.com`. Other ambient credentials,
+endpoint overrides and authority flags are removed; dotenv loading is disabled.
+Guardian enforcement, strict capabilities/network policy and script/signing
+checks remain enabled. Missing credentials, provider failure or fallback fail the
+live gate. `generation.status=configured` proves selection only, not API success.
+
+For a manually running full launcher, the exact core observation checks are
+below. The ready Engine expectations assume a configured provider. The earlier
+manual no-provider procedure should instead report degraded Engine readiness
+and unavailable/not-selected generation; its fallback cannot pass a live gate.
+
+```powershell
+Read-AlphaJson '/health'                 # status=healthy: liveness only
+Read-AlphaJson '/api/hub/readiness'       # readiness.readiness=ready; readiness.safe_for_clients=true
+Read-AlphaJson '/api/kernel/readiness'    # readiness.readiness=ready; readiness.safe_to_schedule=true
+Read-AlphaJson '/api/ai/status'           # readiness.readiness=ready; readiness.safe_for_requests=true
+Read-AlphaJson '/api/guardian/status' $alphaHeaders # enabled/enforcing; audit.integrity_ok=true
+Read-AlphaJson '/api/selfinc/status'     # disabled; config_enabled=false; running=false
+Read-AlphaJson '/api/selfimprove/status' # autonomous_implementation_enabled=false
+Read-AlphaJson '/api/homeostasis/status' # controller.mode=observe_only; zero actuator counters
+```
+
+Repeat these after initialization and restart. The smoke additionally polls the
+four core routes **during** each chat, recording each response and latency.
+Its `*-boot.json` records the launcher's component-level `core_readiness` and
+separate `optional_services`; this is not a replacement authorization decision.
+An inferred daemon/metrics Kernel status cannot certify scheduling. Starting,
+missing or unselected core services cannot produce a ready startup announcement.
+Optional registry health does not prove that an experimental loop has completed
+useful work.
+
+The compatibility Hub has eight bounded request workers. Only GET/HEAD on the
+four exact core paths can overlap application work. Other routes, including
+additional chat, may return retryable `503 hub_busy` with `Retry-After: 1`;
+non-allowlisted read routes may therefore be temporarily unavailable. Transport
+saturation before HTTP parsing attempts a best-effort `hub_saturated` response,
+without a request trace; an ordinary client can instead see a connection reset
+on Windows before reading it. Parsed `hub_busy` replies retain the configured
+CORS policy and do not consume request IDs or read the prompt.
+Only a matched Flask automatic OPTIONS response can pass busy admission;
+custom OPTIONS handlers remain busy and are not dispatched.
+There is no queued replay. Socket input/output stalls have a five-second limit;
+this is not a five-second generation deadline. SSE disconnect/soft timeout does
+not release mutation ownership while its generation worker remains active.
+
+Shutdown stops admission and gives owned requests/workers five seconds to drain.
+A missed budget is a failure, with resources retained. The normal CLI continues
+waiting for admitted work, then completes teardown and exits **1** to report the
+missed budget; it does not label that a clean bounded stop. A second explicit
+force interruption can abandon work and is not a passing shutdown check.
+
+The automated stop uses a harness SIGINT and checks process exit, shutdown
+completion and persisted evidence. It does not claim interactive ConPTY
+keyboard or browser verification. Use the browser procedure below if exercising
+the Observatory. Local data directories provide storage isolation, not enforced
+accounts. A fresh local port excludes external/shared-Hub reuse; those setups
+remain unverified. Optional cognitive startup and experimental-module quarantine
+remain Phase C work; no autonomous authority is enabled by this smoke.
+
+Focused deterministic checks, in addition to the governance/continuity/signing
+selections above:
+
+```powershell
+python -m pytest -q -o addopts= tests/unit/test_launcher_readiness.py tests/unit/test_kernel_readiness_sources.py tests/unit/test_engine_generation_readiness.py tests/unit/test_launcher_selfinc_modes.py tests/unit/test_hub_request_responsiveness.py tests/tools/test_alpha_integration_smoke.py tests/acceptance/test_launcher_active_shutdown.py
+python tools/alpha_boot_validation.py
+python -m Aetherra.integration_validation
+python tools/verify_docs_consistency.py
+```
 
 ## Live-Model Recheck With Strict Signing
 

@@ -25,13 +25,14 @@ def _ensure_env(monkeypatch):
 
 
 def _start_hub():
-    start_hub_server(PORT)
+    server = start_hub_server(PORT)
+    _wait_for_chat_idle(server)
     # Wait for server
     for _ in range(50):
         try:
             r = requests.get(f"{BASE}/health", timeout=0.2)
             if r.status_code in (200, 404, 405):
-                return
+                return server
         except Exception:
             time.sleep(0.05)
     # No explicit health route; server should still be listening via index page
@@ -39,9 +40,16 @@ def _start_hub():
         try:
             r = requests.get(f"{BASE}/", timeout=0.2)
             if r.status_code == 200:
-                return
+                return server
         except Exception:
             time.sleep(0.05)
+    raise AssertionError("Hub did not become reachable")
+
+
+def _wait_for_chat_idle(server):
+    # Health is liveness, not an admission/stream-completion barrier. Closing
+    # an SSE client does not cancel the request's remaining owned work.
+    assert server._ownership.wait_for_idle(timeout=10), "Hub work did not finish"
 
 
 def _iter_sse(resp):
@@ -127,7 +135,7 @@ def test_stream_event_order_and_envelope_basic():
 
 @pytest.mark.integration
 def test_last_event_id_resume_monotonic():
-    _start_hub()
+    server = _start_hub()
     # first few events
     with requests.post(
         STREAM_URL,
@@ -146,6 +154,7 @@ def test_last_event_id_resume_monotonic():
             if etype in ("policy",):
                 break
     # resume with Last-Event-ID
+    _wait_for_chat_idle(server)
     headers = {"Last-Event-ID": str(last_id)}
     with requests.get(
         STREAM_URL,
@@ -172,7 +181,7 @@ def test_last_event_id_resume_monotonic():
 
 @pytest.mark.integration
 def test_last_event_id_gap_resume_skips_seen_and_remains_monotonic():
-    _start_hub()
+    server = _start_hub()
     # Consume a portion of the stream to get some ids, then drop connection early
     with requests.post(
         STREAM_URL,
@@ -191,6 +200,7 @@ def test_last_event_id_gap_resume_skips_seen_and_remains_monotonic():
             if len(seen) >= 3:
                 break
     assert last_id is not None
+    _wait_for_chat_idle(server)
     # Pretend client only persisted the first id and lost the next few; resume from stale earlier id
     headers = {"Last-Event-ID": str(seen[0])}
     with requests.get(
@@ -216,7 +226,7 @@ def test_last_event_id_gap_resume_skips_seen_and_remains_monotonic():
 
 @pytest.mark.integration
 def test_last_event_id_far_stale_starts_from_next():
-    _start_hub()
+    server = _start_hub()
     # Start a stream, record a high id, then resume from a much older id
     with requests.post(
         STREAM_URL,
@@ -233,6 +243,7 @@ def test_last_event_id_far_stale_starts_from_next():
             if etype in ("policy",):
                 break
     assert last_id is not None
+    _wait_for_chat_idle(server)
     # Provide a Last-Event-ID of 0 (very stale) to ensure server starts at 1
     headers = {"Last-Event-ID": "0"}
     with requests.get(

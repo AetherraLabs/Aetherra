@@ -44,6 +44,15 @@ This document describes the Aetherra Kernel: the core runtime loop, service regi
   CI-friendly readiness assembly check that does not start long-running
   services or depend on local runtime state.
 
+Phase A full-launch readiness requires actual healthy core registrations,
+configured Engine generation and live Kernel scheduling evidence. It exposes
+`core_readiness` separately from `optional_services`; a ready core does not
+certify optional cognitive loops or grant privileged authority. Cached metrics
+and daemon inference cannot certify scheduling and retain unknown guard values.
+The assembly validator uses labeled synthetic status and does not prove a live
+boot. Use the [integration smoke](ALPHA_OPERATOR_RUNBOOK.md#integration-smoke-phase-a)
+for real full-launch/restart evidence.
+
 ## Functional foundation completion
 
 The Kernel is functionally foundation complete for the current Aetherra

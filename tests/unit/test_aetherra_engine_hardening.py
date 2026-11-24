@@ -1,12 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import asyncio
 import sys
 import types
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 import Aetherra.aetherra_core.engine.aetherra_engine as engine_module
 from Aetherra.aetherra_core.agents.agent_orchestrator import TaskPriority
 from Aetherra.aetherra_core.engine.aetherra_engine import (
@@ -123,7 +126,9 @@ class _FailingMetricImprovement(_FailingImprovement):
 
 class _FailingResponseMetricImprovement(_FailingImprovement):
     def record_performance_metric(self, *args, **kwargs):
-        raise RuntimeError("sensitive path C:/Users/example/response-metric-secret.json")
+        raise RuntimeError(
+            "sensitive path C:/Users/example/response-metric-secret.json"
+        )
 
 
 class _RecordingImprovement(_FailingImprovement):
@@ -385,7 +390,9 @@ def test_sanitize_persisted_context_drops_runtime_keys_and_bounds_values(tmp_pat
 
     assert "_callbacks" not in sanitized
     assert "abc123" not in sanitized["note"]
-    assert len(sanitized["note"]) <= MAX_CONTEXT_VALUE_CHARS + len("api_key=[redacted] ")
+    assert len(sanitized["note"]) <= MAX_CONTEXT_VALUE_CHARS + len(
+        "api_key=[redacted] "
+    )
     assert len(sanitized["items"]) == MAX_CONTEXT_LIST_ITEMS
     assert sanitized["object"] == {"type": "function"}
     assert len(sanitized) == MAX_CONTEXT_KEYS
@@ -576,7 +583,9 @@ async def test_start_conversation_degrades_when_memory_store_fails(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_start_conversation_records_persistent_memory_failure_without_leak(tmp_path):
+async def test_start_conversation_records_persistent_memory_failure_without_leak(
+    tmp_path,
+):
     engine = _engine(tmp_path)
     engine.initialized = True
     memory = _RecordingMemory()
@@ -627,7 +636,9 @@ async def test_persistent_memory_setup_failure_is_visible_without_leak(
 
 
 @pytest.mark.asyncio
-async def test_process_message_returns_sanitized_error_without_exception_details(tmp_path):
+async def test_process_message_returns_sanitized_error_without_exception_details(
+    tmp_path,
+):
     engine = _engine(tmp_path)
     engine.session_id = "session-test"
     engine.conversation_context = {
@@ -728,7 +739,9 @@ async def test_process_message_records_ab_metric_failure_without_leak(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_process_message_sanitizes_llm_failure_and_falls_back(monkeypatch, tmp_path):
+async def test_process_message_sanitizes_llm_failure_and_falls_back(
+    monkeypatch, tmp_path
+):
     monkeypatch.delenv("AETHERRA_INTELLIGENCE_PROVIDER", raising=False)
     engine = _engine(tmp_path)
     engine.session_id = "session-test"
@@ -849,7 +862,9 @@ async def test_process_message_times_out_llm_generation_without_leak(
 
 
 @pytest.mark.asyncio
-async def test_process_message_records_user_persistent_memory_failure_without_leak(tmp_path):
+async def test_process_message_records_user_persistent_memory_failure_without_leak(
+    tmp_path,
+):
     engine = _message_ready_engine(tmp_path)
     engine._persistent_memory = _FailingUserPersistentMemory()
 
@@ -1078,14 +1093,15 @@ def test_add_scratch_failure_is_visible_without_leak(tmp_path):
     engine = _engine(tmp_path)
     engine._scratchpad = ()  # type: ignore[assignment]
 
-    assert engine.add_scratch(
-        {"note": "sensitive path C:/Users/example/scratch-secret.json"}
-    ) is False
+    assert (
+        engine.add_scratch(
+            {"note": "sensitive path C:/Users/example/scratch-secret.json"}
+        )
+        is False
+    )
 
     assert engine._last_scratchpad_info["status"] == "degraded"
-    assert (
-        engine._last_scratchpad_info["error"]["code"] == "scratchpad_update_failed"
-    )
+    assert engine._last_scratchpad_info["error"]["code"] == "scratchpad_update_failed"
     assert "scratch-secret.json" not in str(engine._last_scratchpad_info)
     assert "sensitive path" not in str(engine._last_scratchpad_info)
 
@@ -1106,8 +1122,12 @@ def test_estimate_coherence_records_metric_failure_without_leak(tmp_path):
     assert "sensitive path" not in str(engine._last_coherence_info)
 
 
-def test_estimate_coherence_records_env_parse_failure_without_leak(monkeypatch, tmp_path):
-    monkeypatch.setenv("AETHERRA_COHERENCE_EST", "private:C:/Users/example/coherence.env")
+def test_estimate_coherence_records_env_parse_failure_without_leak(
+    monkeypatch, tmp_path
+):
+    monkeypatch.setenv(
+        "AETHERRA_COHERENCE_EST", "private:C:/Users/example/coherence.env"
+    )
     engine = _engine(tmp_path)
 
     coherence = engine._estimate_coherence()
@@ -1152,6 +1172,11 @@ async def test_engine_alpha_readiness_reports_ready_contract(tmp_path):
     engine.improvement_engine = _ReadyImprovement()
     engine.agent_orchestrator = _ReadyOrchestrator()
     engine.introspection = _ReadyIntrospection()
+    engine._llm_manager = types.SimpleNamespace(
+        primary_provider=types.SimpleNamespace(value="openai"),
+        get_current_model_info=lambda: {"provider": "openai"},
+    )
+    engine._llm_selected = True
 
     payload = await engine.get_alpha_readiness()
 
@@ -1163,7 +1188,9 @@ async def test_engine_alpha_readiness_reports_ready_contract(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_initialize_records_lifecycle_failures_without_leak(monkeypatch, tmp_path):
+async def test_initialize_records_lifecycle_failures_without_leak(
+    monkeypatch, tmp_path
+):
     monkeypatch.delenv("AETHERRA_AB_RECALL_MODE", raising=False)
     engine = _engine(tmp_path)
     engine.improvement_engine = _FailingLifecycleComponent("improvement")
@@ -1351,9 +1378,9 @@ def test_feedback_validation_rejects_invalid_shapes(tmp_path):
     with pytest.raises(ValueError, match="interaction_id is required"):
         engine._normalize_interaction_id("   ")
 
-    assert engine._normalize_interaction_id("x" * (MAX_INTERACTION_ID_CHARS + 1)).startswith(
-        "interaction_"
-    )
+    assert engine._normalize_interaction_id(
+        "x" * (MAX_INTERACTION_ID_CHARS + 1)
+    ).startswith("interaction_")
 
     with pytest.raises(ValueError, match="feedback must be a dictionary"):
         engine._sanitize_feedback_payload(["not", "a", "dict"])
@@ -1425,7 +1452,9 @@ async def test_execute_task_bounds_capabilities_and_dependencies(monkeypatch, tm
     submitted = engine.agent_orchestrator.tasks[task_id]
     assert len(submitted.required_capabilities) == MAX_TASK_LIST_ITEMS
     assert len(submitted.dependencies) == MAX_TASK_LIST_ITEMS
-    assert submitted.required_capabilities[0] == long_capability[:MAX_TASK_LIST_ITEM_CHARS]
+    assert (
+        submitted.required_capabilities[0] == long_capability[:MAX_TASK_LIST_ITEM_CHARS]
+    )
     assert len(set(submitted.dependencies)) == MAX_TASK_LIST_ITEMS
 
 
@@ -1450,16 +1479,15 @@ async def test_execute_task_submission_failure_is_sanitized(monkeypatch, tmp_pat
     engine.agent_orchestrator = _FailingSubmitOrchestrator()
 
     with pytest.raises(RuntimeError) as exc_info:
-        await engine.execute_task("unit.submit", {"required_capabilities": ["analysis"]})
+        await engine.execute_task(
+            "unit.submit", {"required_capabilities": ["analysis"]}
+        )
 
     assert str(exc_info.value).startswith("task_submission_failed:")
     assert "task-submit.json" not in str(exc_info.value)
     assert "sensitive path" not in str(exc_info.value)
     assert engine._last_task_execution_info["status"] == "submission_failed"
-    assert (
-        engine._last_task_execution_info["error"]["code"]
-        == "task_submission_failed"
-    )
+    assert engine._last_task_execution_info["error"]["code"] == "task_submission_failed"
     assert "task-submit.json" not in str(engine._last_task_execution_info)
     assert "sensitive path" not in str(engine._last_task_execution_info)
 
@@ -1497,7 +1525,9 @@ async def test_real_session_context_commits_and_recalls(monkeypatch, tmp_path):
     engine.initialized = True
     try:
         await engine.start_conversation("synthetic_acceptance")
-        stored = await engine.memory_system.recall_memories("conversation_start", limit=5)
+        stored = await engine.memory_system.recall_memories(
+            "conversation_start", limit=5
+        )
         assert len(stored) == 1
         assert isinstance(stored[0].context["start_time"], str)
         assert engine._last_session_start_info["memory"]["status"] == "stored"
@@ -1506,9 +1536,7 @@ async def test_real_session_context_commits_and_recalls(monkeypatch, tmp_path):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "stage", ["session", "input", "assistant"]
-)
+@pytest.mark.parametrize("stage", ["session", "input", "assistant"])
 async def test_empty_receipt_never_reports_storage_success(tmp_path, stage):
     class EmptyReceiptMemory(_RecordingMemory):
         async def store_memory(self, *args, **kwargs):
@@ -1545,7 +1573,9 @@ async def test_empty_receipt_never_reports_storage_success(tmp_path, stage):
         await engine.reflect_on_day()
         assert engine._last_reflection_info["memory"]["status"] == "degraded"
     else:
-        result = await engine.learn_from_feedback("synthetic_interaction", {"rating": 5})
+        result = await engine.learn_from_feedback(
+            "synthetic_interaction", {"rating": 5}
+        )
         assert result["status"] == "error"
 
 
@@ -1555,14 +1585,15 @@ def test_memory_receipt_validation_rejects_malformed_acknowledgments(receipt):
         AetherraEngine._require_memory_receipt(receipt)
 
 
-
 @pytest.mark.asyncio
 @pytest.mark.parametrize("failure", ["unavailable", "request", "malformed"])
 async def test_legacy_override_stays_unavailable_with_adapter_injection(
     monkeypatch, tmp_path, failure
 ):
+    # Standard library imports
     from unittest.mock import Mock
 
+    # Aetherra imports
     from Aetherra.aetherra_core.cognitive import reasoning_providers as providers
 
     adapter = object.__new__(providers.OpenAIProvider)
@@ -1589,7 +1620,6 @@ async def test_legacy_override_stays_unavailable_with_adapter_injection(
     assert "synthetic private failure" not in str(result)
 
 
-
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "receipt", [True, False, "yes", RuntimeError("synthetic-private-drain")]
@@ -1597,6 +1627,7 @@ async def test_legacy_override_stays_unavailable_with_adapter_injection(
 async def test_engine_shutdown_drains_only_started_llm_cleanup(
     tmp_path, receipt, caplog
 ):
+    # Standard library imports
     from unittest.mock import AsyncMock
 
     engine = _engine(tmp_path)
@@ -1615,7 +1646,8 @@ async def test_engine_shutdown_drains_only_started_llm_cleanup(
     drain.assert_awaited_once()
     close.assert_not_awaited()
     failures = [
-        record for record in engine._lifecycle_diagnostics
+        record
+        for record in engine._lifecycle_diagnostics
         if record.get("component") == "llm_cleanup"
     ]
     if receipt is True:

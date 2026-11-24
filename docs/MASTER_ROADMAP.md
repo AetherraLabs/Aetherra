@@ -188,9 +188,13 @@ The first Stage 21 supervised exercise on PR #328 main (`ff359b02`) completed
 600 + 300 steady-state seconds across restart. Sixteen gpt-4o turns had no
 fallback; varied recall, unknown detail, identity and browser reconnection pass.
 It exposed incorrect acknowledgments of newly supplied facts; the prompt repair
-requires review/integration. Cold retrieval took 63.603 seconds and interrupted
-status polling before the second window. Preserve that limitation and investigate
-cold-start responsiveness before the next exercise. This does not advance Beta.
+integrated through PR #347. The cold recall took 63.603 seconds total and
+interrupted status polling before the second window. Preserve that historical
+limitation. The Phase A candidate now verifies concurrent observation, actual-core
+readiness and effective disabled/observation modes through a full-CLI restart smoke;
+see [current evidence and limits](ALPHA_READINESS_DECISION.md#phase-a-core-integration-candidate).
+After review/integration, Phase B addresses the bounded observation/maintenance
+loop. This does not advance Beta or enable autonomous authority.
 See [the exercise evidence](evidence/supervised_alpha_2026-11-22.json).
 
 | Gate | Status | Next expectation |

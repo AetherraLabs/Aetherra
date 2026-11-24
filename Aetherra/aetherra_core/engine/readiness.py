@@ -95,6 +95,11 @@ def _public_engine_status(status: Mapping[str, Any] | None) -> dict[str, Any] | 
         or status_map.get("status")
         or "unknown",
         "session_active": bool(status_map.get("session_active", False)),
+        **(
+            {"generation": _generation_status(status_map["generation"])}
+            if "generation" in status_map
+            else {}
+        ),
         "components": {
             "memory_system": _component_state(status_map.get("memory_system")),
             "improvement_system": _component_state(
@@ -113,6 +118,24 @@ def _public_engine_status(status: Mapping[str, Any] | None) -> dict[str, Any] | 
                 _mapping(status_map.get("lifecycle")).get("diagnostics", []) or []
             ),
         },
+    }
+
+
+def _generation_status(value: Any) -> dict[str, Any]:
+    """Expose only configuration evidence, never provider metadata or errors."""
+    data = _mapping(value)
+    state = data.get("status")
+    if not isinstance(state, str) or state not in {
+        "configured",
+        "not_selected",
+        "unavailable",
+        "unknown",
+    }:
+        state = "unknown"
+    return {
+        "status": state,
+        "model_selected": data.get("model_selected") is True,
+        "check_scope": "configuration_only",
     }
 
 
@@ -135,6 +158,15 @@ def assess_ai_readiness(status: Mapping[str, Any] | None) -> dict[str, Any]:
     engine_active = status_map.get("engine_status") == "active"
     if status_map and not engine_active:
         reasons.append("engine_not_active")
+
+    generation = _generation_status(status_map.get("generation"))
+    # Older Engine adapters did not expose selection evidence. Preserve their
+    # contract while enforcing explicit evidence from current implementations.
+    generation_unavailable = "generation" in status_map and not (
+        generation["status"] == "configured" and generation["model_selected"]
+    )
+    if generation_unavailable:
+        reasons.append("generation_unavailable")
 
     components = {
         "memory_system": _component_state(status_map.get("memory_system")),
@@ -218,6 +250,7 @@ def assess_ai_readiness(status: Mapping[str, Any] | None) -> dict[str, Any]:
         readiness = "blocked"
     elif (
         not engine_active
+        or generation_unavailable
         or degraded_components
         or safety_filters > 0
         or persistent_memory_state == "degraded"
@@ -240,6 +273,7 @@ def assess_ai_readiness(status: Mapping[str, Any] | None) -> dict[str, Any]:
             "status_contract_complete": not missing_keys,
             "missing_status_keys": missing_keys,
             "engine_active": engine_active,
+            "generation": generation,
             "components": components,
             "safety_filters_triggered": safety_filters,
             "session_active": bool(status_map.get("session_active", False)),
