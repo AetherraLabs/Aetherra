@@ -25,6 +25,10 @@ function reference(value: EvidenceValue): string {
     return typeof value === "string" && /^[a-f0-9]{16}$/.test(value) ? value : "Unknown";
 }
 
+function checkpointReference(value: EvidenceValue): string {
+    return typeof value === "string" && /^[a-f0-9]{32}$/.test(value) ? value : "Unknown";
+}
+
 function persistence(value: EvidenceValue): string {
     switch (value) {
         case "error": return "Error; durability unknown";
@@ -73,6 +77,18 @@ export default function SubsystemEvidence({ name, metrics, live }: Props) {
             rows.push(["Record updated", typeof updated === "string" && updated.length <= 64 && Number.isFinite(Date.parse(updated)) ? updated : "Unknown"]);
         }
         note = "Current in-process records only; store configuration does not verify durability. Guardian decides; Security enforces; Maintenance records. References identify related records without exposing their contents.";
+    } else if (name === "consciousness") {
+        rows = [
+            ["Current runtime", status(observed.runtime_state, ["starting", "running", "stopping", "stopped", "blocked", "failed", "stale"])],
+            ["Current session ticks", count(observed.ticks_completed)],
+            ["Checkpointing requested", flag(observed.continuity_enabled)],
+            ["Checkpoint state", status(observed.continuity_state, ["disabled", "fresh", "restoring", "restored", "saving", "saved", "blocked", "failed", "uncertain"])],
+            ["Checkpoint pending", flag(observed.continuity_outstanding)],
+            ["Restored record", checkpointReference(observed.continuity_restored_record_id)],
+            ["Saved record", checkpointReference(observed.continuity_saved_record_id)],
+            ["Action execution", flag(observed.action_execution_enabled, "Enabled", "Disabled")],
+        ];
+        note = "Restored state is historical. Current ticks describe this session. An uncertain save has no confirmed receipt; checkpointing grants no action authority.";
     } else if (name === "guardian") {
         rows = [
             ["Enabled", flag(observed.enabled)],

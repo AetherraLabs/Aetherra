@@ -176,3 +176,45 @@ test('persistence configuration does not claim verified durability and absent or
     assert.match(offline, /In-process cycles<\/dt><dd>Unknown<\/dd>/)
     assert.doesNotMatch(offline, /Error; durability unknown/)
 })
+
+test('Consciousness shows checkpoint restoration separately from current ticks and action authority', async () => {
+    const html = await renderEvidence('consciousness', {
+        runtime_state: 'running', ticks_completed: 3, continuity_enabled: true,
+        continuity_state: 'restored', continuity_outstanding: false,
+        continuity_restored_record_id: 'a'.repeat(32), action_execution_enabled: false,
+    })
+    assert.match(html, /Current session ticks<\/dt><dd>3<\/dd>/)
+    assert.match(html, /Checkpoint state<\/dt><dd>Restored<\/dd>/)
+    assert.match(html, new RegExp('Restored record</dt><dd>' + 'a'.repeat(32) + '</dd>'))
+    assert.match(html, /Action execution<\/dt><dd>Disabled<\/dd>/)
+    assert.doesNotMatch(html, /<button|<a\s|Durability verified|All services healthy/)
+})
+
+test('Consciousness uncertainty and missing restore do not look saved or healthy', async () => {
+    for (const state of ['blocked', 'failed', 'uncertain', 'disabled']) {
+        const html = await renderEvidence('consciousness', {
+            runtime_state: 'blocked', ticks_completed: 0,
+            continuity_state: state, continuity_outstanding: state === 'uncertain',
+        })
+        assert.match(html, new RegExp('Checkpoint state</dt><dd>' + state.charAt(0).toUpperCase() + state.slice(1)))
+        assert.match(html, /Current session ticks<\/dt><dd>0<\/dd>/)
+        assert.doesNotMatch(html, /Saved record<\/dt><dd>[0-9a-f]{32}|<button/)
+    }
+})
+
+test('Consciousness ignores stale evidence and never renders unvalidated payload text', async () => {
+    const metrics = {
+        runtime_state: 'running', ticks_completed: 90, continuity_state: 'saved',
+        continuity_saved_record_id: 'b'.repeat(32), continuity_enabled: true,
+    }
+    const offline = await renderEvidence('consciousness', metrics, false)
+    assert.match(offline, /Checkpoint state<\/dt><dd>Unknown<\/dd>/)
+    assert.match(offline, /Current session ticks<\/dt><dd>Unknown<\/dd>/)
+    assert.doesNotMatch(offline, /bbbbbbbb|>Saved<\/dd>|>90<\/dd>/)
+    const invalid = await renderEvidence('consciousness', {
+        continuity_state: 'private-path-error', continuity_saved_record_id: '<script>private</script>',
+        continuity_outstanding: 'true', ticks_completed: -1,
+    })
+    assert.doesNotMatch(invalid, /private|script|>Yes<\/dd>|>-1<\/dd>/)
+    assert.match(invalid, /Unknown/)
+})
