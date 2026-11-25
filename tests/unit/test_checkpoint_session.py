@@ -446,12 +446,24 @@ def test_session_preserves_current_selection_and_unknown_old_acceptance(
 
 
 @pytest.fixture
-def writing(database):
+def writing(database, request, monkeypatch):
+    # Standard library imports
+    from types import SimpleNamespace
+
     # Aetherra imports
     from Aetherra.consciousness.checkpoint import decode_checkpoint
     from Aetherra.consciousness.checkpoint_session import ObserverCheckpointSession
 
-    clock = [time.monotonic()]
+    initial = time.monotonic()
+    epoch = getattr(request, "param", initial)
+    clock = [epoch]
+    if epoch != initial:
+        # Retain Memory's advancing watchdog clock in the selected epoch.
+        monkeypatch.setattr(
+            stream.legacy.api(),
+            "time",
+            SimpleNamespace(monotonic=lambda: epoch + (time.monotonic() - initial)),
+        )
     session = ObserverCheckpointSession(
         database,
         dict(AUTO, start_mode="create", save_interval_seconds=30),
@@ -466,14 +478,31 @@ def writing(database):
 
     def tick(elapsed, wall=500):
         clock[0] = session.started_monotonic + elapsed
+        uptime = clock[0] - session.started_monotonic
         session.on_completed_tick(
             replace(state, captured_at=wall + 0.25),
             observation_wall=wall,
-            observation_uptime=elapsed,
-            capture_uptime=elapsed,
+            observation_uptime=uptime,
+            capture_uptime=uptime,
         )
 
     return session, clock, tick
+
+
+@pytest.mark.parametrize("writing", [482.857771153], indirect=True)
+def test_due_tick_crossing_clock_boundary_uses_measured_uptime(writing, database):
+    session, clock, tick = writing
+    tick(30)
+    assert clock[0] == 512.8577711529999
+    measured = clock[0] - session.started_monotonic
+    assert measured == 29.999999999999943
+    assert finish(session)["observed_generation"] == 1
+    row = database.conn.execute(
+        "SELECT metadata_bytes FROM checkpoint_stream_commits"
+    ).fetchone()
+    metadata = json.loads(row[0])
+    assert metadata["observation_uptime_s"] == measured
+    assert metadata["capture_uptime_s"] == measured
 
 
 def test_periodic_spacing_freezes_one_new_completed_tick(
@@ -484,6 +513,7 @@ def test_periodic_spacing_freezes_one_new_completed_tick(
     session.poll(local_owned=True)
     assert stream.legacy.rows(database) == []
     tick(30, wall=490)
+    first_uptime = clock[0] - session.started_monotonic
     entered, release = stream.legacy.blocked_audit(monkeypatch)
     session.poll(local_owned=True)
     try:
@@ -500,7 +530,7 @@ def test_periodic_spacing_freezes_one_new_completed_tick(
     ).fetchone()[0]
     assert json.loads(meta)["last_verified_observation_at_unix_s"] == 490
     assert json.loads(meta)["captured_at_unix_s"] == 490.25
-    assert json.loads(meta)["observation_uptime_s"] == 30
+    assert json.loads(meta)["observation_uptime_s"] == first_uptime
     clock[0] += 300
     session.poll(local_owned=True)
     assert len(stream.legacy.rows(database)) == 1
