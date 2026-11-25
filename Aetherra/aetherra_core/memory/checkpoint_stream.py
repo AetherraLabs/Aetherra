@@ -229,6 +229,21 @@ class AdvanceReceipt:
     attempt: AttemptDescriptor
     head: StreamHead
     audit_id: str
+    retention_needed: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class PruneResult:
+    head: StreamHead
+    deleted_count: int
+    pruned_through: int
+    retained_count: int
+
+    def __post_init__(self):
+        _require(type(self.head) is StreamHead)
+        _require(_number(self.deleted_count, 0, 128))
+        _require(_number(self.pruned_through, 0, max(0, self.head.generation - 2)))
+        _require(_number(self.retained_count, min(2, self.head.generation), 102))
 
 
 @dataclass(frozen=True, slots=True)
@@ -392,6 +407,39 @@ def _schema(db, *, create):
         _require(actual == _SCHEMA, "corrupt")
 
 
+_HEAD_INDEXES = {
+    "checkpoint_stream_heads_record_id": "CREATE INDEX checkpoint_stream_heads_record_id ON checkpoint_stream_heads(record_id)",
+    "checkpoint_stream_heads_checkpoint_id": "CREATE INDEX checkpoint_stream_heads_checkpoint_id ON checkpoint_stream_heads(checkpoint_id)",
+}
+
+
+def _head_indexes(db, *, acquisition_control=None):
+    actual = dict(
+        db.execute(
+            "SELECT name,sql FROM sqlite_master WHERE name IN (?,?)",
+            tuple(_HEAD_INDEXES),
+        )
+    )
+    if actual == _HEAD_INDEXES:
+        return
+    _require(acquisition_control is not None, "corrupt")
+    _require(all(sql == _HEAD_INDEXES[name] for name, sql in actual.items()), "corrupt")
+
+    def interrupted():
+        with acquisition_control._lock:
+            return not acquisition_control._open_locked()
+
+    # An upgraded database may already hold many streams. Bound index creation
+    # by the same local cancellation/deadline as the acquisition transaction.
+    db.set_progress_handler(interrupted, 1000)
+    try:
+        for name, sql in _HEAD_INDEXES.items():
+            if name not in actual:
+                db.execute(sql)
+    finally:
+        db.set_progress_handler(None, 0)
+
+
 def _catalog_head(db, key, generation, *, pruned_through=0):
     row = db.execute(
         "SELECT generation, checkpoint_id, record_id, payload_digest, metadata_digest "
@@ -404,7 +452,7 @@ def _catalog_head(db, key, generation, *, pruned_through=0):
     return StreamHead(*row)
 
 
-def _selected(db, key, head, epoch, *, pruned_through=0):
+def _selected(db, key, head, epoch, *, pruned_through=0, indexed_payload=False):
     if head.generation == 0:
         return None, None
     row = db.execute(
@@ -435,7 +483,9 @@ def _selected(db, key, head, epoch, *, pruned_through=0):
         _require(predecessor.digest() == prev_digest, "corrupt")
     meta = SnapshotMetadata.from_bytes(raw_meta)
     _require(_digest(raw_meta) == head.metadata_digest, "corrupt")
-    record, text = LifecycleCheckpointWorker._read_checkpoint(db, head.checkpoint_id)
+    record, text = LifecycleCheckpointWorker._read_checkpoint(
+        db, head.checkpoint_id, indexed=indexed_payload
+    )
     _require(
         record.record_id == head.record_id
         and json.loads(text)["captured_at"] == meta.captured_at_unix_s,
@@ -446,7 +496,7 @@ def _selected(db, key, head, epoch, *, pruned_through=0):
     return _SelectedCheckpoint(record.record_id, record.checkpoint_id, content), meta
 
 
-def _current(db, key, *, expected_epoch=None):
+def _current(db, key, *, expected_epoch=None, indexed_payload=False):
     params = astuple(key)
     row = db.execute(
         """SELECT generation, checkpoint_id, record_id, payload_digest, metadata_digest, schema,writer_epoch,restore_pin_generation,retain_checkpoints,pruned_through
@@ -457,16 +507,13 @@ def _current(db, key, *, expected_epoch=None):
         epoch = row[6]
         _require(_number(epoch, 1), "corrupt")
         _require(epoch == expected_epoch, "writer_fenced")
-    generations = [
-        r[0]
-        for r in db.execute(
-            "SELECT generation FROM checkpoint_stream_commits "
-            "WHERE owner=? AND scope=? AND stream_id=? ORDER BY generation LIMIT 103",
-            params,
-        )
-    ]
+    members = db.execute(
+        "SELECT generation,writer_epoch FROM checkpoint_stream_commits "
+        "WHERE owner=? AND scope=? AND stream_id=? ORDER BY generation LIMIT 103",
+        params,
+    ).fetchall()
     if row is None:
-        _require(not generations, "corrupt")
+        _require(not members, "corrupt")
         return None
     try:
         head = StreamHead(*row[:5])
@@ -478,21 +525,36 @@ def _current(db, key, *, expected_epoch=None):
             _number(pin, 0, head.generation)
             and _number(watermark, 0, max(0, head.generation - 2))
         )
+        generations = [generation for generation, _ in members]
         _require(len(generations) <= 102 and (not pin or pin in generations))
+        _require(
+            all(
+                _number(generation, 1, head.generation)
+                and _number(writer, 1, epoch)
+                and (generation > pin) == (writer == epoch)
+                for generation, writer in members
+            )
+        )
+        if head.generation > pin:
+            # The most recent advance could admit one transient member in
+            # addition to the previous head's recent window and older pin.
+            # A newly acquired smaller N may only exceed this before advancing.
+            previous_older_pin = 0 < pin <= head.generation - 1 - retain
+            _require(len(members) <= retain + int(previous_older_pin) + 1)
         # A protected entry from a previous acquisition may survive below the watermark.
         unpruned = [
             g for g in generations if _number(g, watermark + 1, head.generation)
         ]
-        _require(all(_number(g, 1, head.generation) for g in generations))
         _require(len(unpruned) == head.generation - watermark)
-        record, meta = _selected(db, key, head, epoch)
+        record, meta = _selected(db, key, head, epoch, indexed_payload=indexed_payload)
     except CheckpointError:
         raise CheckpointError("corrupt") from None
     return head, epoch, pin, retain, len(generations), record, meta
 
 
-def _acquire(db, key, start_mode, retain):
+def _acquire(db, key, start_mode, retain, control):
     _schema(db, create=start_mode == "create")
+    _head_indexes(db, acquisition_control=control)
     params = astuple(key)
     current = _current(db, key)
     if start_mode == "create":
@@ -505,7 +567,7 @@ def _acquire(db, key, start_mode, retain):
         _require(inserted.rowcount == 1, "conflict")
         return AcquiredStream(StreamToken(key, 1), _EMPTY, None, None, False)
     _require(current is not None, "missing")
-    head, epoch, _, _, count, record, meta = current
+    head, epoch, _, _, _, record, meta = current
     token = StreamToken(key, epoch + 1)
     changed = db.execute(
         """UPDATE checkpoint_stream_heads SET writer_epoch=?,restore_pin_generation=?,retain_checkpoints=?
@@ -513,7 +575,19 @@ def _acquire(db, key, start_mode, retain):
         (token.writer_epoch, head.generation, retain, *params, epoch),
     )
     _require(changed.rowcount == 1, "conflict")
-    return AcquiredStream(token, head, record, meta, count > retain)
+    # On takeover the old pin is released even if a larger N can fit all
+    # surviving members. A retained old pin may lie outside that new window.
+    obsolete = _has_prunable_member(db, key, head.generation, retain, head.generation)
+    return AcquiredStream(token, head, record, meta, obsolete)
+
+
+def _has_prunable_member(db, key, generation, retain, pin):
+    row = db.execute(
+        "SELECT 1 FROM checkpoint_stream_commits WHERE owner=? AND scope=? AND stream_id=? "
+        "AND generation<=? AND generation!=? LIMIT 1",
+        (*astuple(key), generation - retain, pin),
+    ).fetchone()
+    return row is not None
 
 
 def _advance(db, request, audit):
@@ -573,7 +647,8 @@ def _advance(db, request, audit):
         (*astuple(next_head), *params, epoch, *astuple(head)),
     )
     _require(changed.rowcount == 1, "conflict")
-    return AdvanceReceipt(attempt, next_head, audit)
+    obsolete = _has_prunable_member(db, key, next_head.generation, retain, pin)
+    return AdvanceReceipt(attempt, next_head, audit, obsolete)
 
 
 def _inspect(db, token, attempt):
@@ -626,3 +701,89 @@ def _inspect(db, token, attempt):
         "committed_current" if generation == head.generation else "committed_superseded"
     )
     return InspectionResult(outcome, head, member.record_id)
+
+
+def _prune(db, token, expected_head, retain):
+    _schema(db, create=False)
+    _head_indexes(db)
+    # INDEXED BY alone could still scan a damaged same-name index. Require a
+    # complete binary equality index with memory_type as its first key.
+    indexed = db.execute(
+        "SELECT 1 FROM pragma_index_list('memories') AS idx "
+        "JOIN pragma_index_xinfo('idx_memory_type') AS col "
+        "WHERE idx.name='idx_memory_type' AND idx.partial=0 AND col.seqno=0 "
+        "AND col.key=1 AND col.name='memory_type' AND col.coll='BINARY' LIMIT 1"
+    ).fetchone()
+    _require(indexed is not None, "corrupt")
+    key = token.key
+    params = astuple(key)
+    current = _current(db, key, expected_epoch=token.writer_epoch, indexed_payload=True)
+    _require(current is not None, "missing")
+    head, epoch, pin, stored_retain, count, _, _ = current
+    _require(head == expected_head and retain == stored_retain, "conflict")
+    watermark = db.execute(
+        "SELECT pruned_through FROM checkpoint_stream_heads WHERE owner=? AND scope=? AND stream_id=?",
+        params,
+    ).fetchone()[0]
+    # Check every retained link before erasing evidence of a predecessor.
+    # _current has already verified the stream holds at most 102 members.
+    rows = db.execute(
+        "SELECT generation,checkpoint_id,record_id,payload_digest,metadata_digest "
+        "FROM checkpoint_stream_commits WHERE owner=? AND scope=? AND stream_id=? "
+        "ORDER BY generation LIMIT 103",
+        params,
+    )
+    victims = []
+    try:
+        for row in rows:
+            member = StreamHead(*row)
+            if member != head:
+                _selected(
+                    db,
+                    key,
+                    member,
+                    epoch,
+                    pruned_through=watermark,
+                    indexed_payload=True,
+                )
+            if (
+                member.generation <= head.generation - stored_retain
+                and member.generation != pin
+            ):
+                victims.append(member)
+    except CheckpointError:
+        raise CheckpointError("corrupt") from None
+    _require(len(victims) <= 128, "corrupt")
+    for member in victims:
+        # An inconsistent foreign head can still reference this member without
+        # a matching catalog row. Neither lookup walks other streams' payloads.
+        reference = db.execute(
+            "SELECT 1 FROM checkpoint_stream_heads INDEXED BY checkpoint_stream_heads_record_id WHERE record_id=? "
+            "UNION ALL SELECT 1 FROM checkpoint_stream_heads INDEXED BY checkpoint_stream_heads_checkpoint_id "
+            "WHERE checkpoint_id=? LIMIT 1",
+            (member.record_id, member.checkpoint_id),
+        ).fetchone()
+        _require(reference is None, "corrupt")
+        payload = db.execute(
+            "DELETE FROM memories WHERE id=? AND memory_type=?",
+            (
+                member.record_id,
+                "consciousness_observer_checkpoint:" + member.checkpoint_id,
+            ),
+        )
+        entry = db.execute(
+            "DELETE FROM checkpoint_stream_commits WHERE owner=? AND scope=? AND stream_id=? "
+            "AND generation=? AND checkpoint_id=? AND record_id=? AND payload_digest=? AND metadata_digest=?",
+            (*params, *astuple(member)),
+        )
+        _require(payload.rowcount == entry.rowcount == 1, "corrupt")
+    if victims:
+        next_watermark = max(watermark, victims[-1].generation)
+        changed = db.execute(
+            "UPDATE checkpoint_stream_heads SET pruned_through=? WHERE owner=? AND scope=? AND stream_id=? "
+            "AND writer_epoch=? AND generation=? AND pruned_through=?",
+            (next_watermark, *params, epoch, head.generation, watermark),
+        )
+        _require(changed.rowcount == 1, "corrupt")
+        watermark = next_watermark
+    return PruneResult(head, len(victims), watermark, count - len(victims))
