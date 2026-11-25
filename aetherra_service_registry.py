@@ -800,8 +800,15 @@ class AetherraServiceRegistry:
             },
         )
 
-        for service_name, service_info in self._services.items():
-            if service_name in exclude or service_info.status != ServiceStatus.HEALTHY:
+        for service_name, service_info in list(self._services.items()):
+            # Immediate async handlers still need to yield between audited sends.
+            # Recheck the snapshot after yielding; never dispatch to a replacement.
+            await asyncio.sleep(0)
+            if (
+                self._services.get(service_name) is not service_info
+                or service_name in exclude
+                or service_info.status != ServiceStatus.HEALTHY
+            ):
                 continue
 
             try:
