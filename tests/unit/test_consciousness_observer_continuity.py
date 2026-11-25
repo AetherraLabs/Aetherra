@@ -103,7 +103,9 @@ async def until(observer, predicate):
         status = observer.get_runtime_status()
         if predicate(status):
             return status
-        await asyncio.sleep(0)
+        # A positive delay lets the observer thread progress through audit I/O;
+        # sleep(0) only yields to other tasks on this event loop.
+        await asyncio.sleep(0.01)
     raise AssertionError(observer.get_runtime_status())
 
 
