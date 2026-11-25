@@ -240,6 +240,8 @@ class ConsciousnessObserver:
             still_owned=self._checkpoint_owned,
         )
         with self._lock:
+            if self._checkpoint_failed or (save and not self._save_requested):
+                return None
             self._checkpoint_control = control
             self._continuity.update(
                 state="saving" if save else "restoring", outstanding=True
@@ -496,11 +498,28 @@ class ConsciousnessObserver:
                     if self._state not in {"blocked", "failed"}:
                         self._state, self._error = "stopped", None
 
+    def _abandon_checkpoint(self) -> None:
+        # Cancellation must be immediate even if policy/I/O is still blocked.
+        # Keep the actual worker and outstanding receipt owned until they drain.
+        with self._lock:
+            self._save_requested = False
+            self._checkpoint_failed = True
+            if self._checkpoint_control is not None:
+                self._checkpoint_control.cancelled.set()
+            if self._continuity_enabled:
+                self._continuity.update(state="uncertain", last_error_code="uncertain")
+
     async def stop(
         self, *, timeout: float = 2.0, save_checkpoint: bool = False
     ) -> None:
         deadline = time.monotonic() + max(0, min(float(timeout), 5))
         with self._lock:
+            abandon = (
+                self._stop_requested
+                and not save_checkpoint
+                and self._save_requested
+                and self._continuity["state"] != "saved"
+            )
             if not self._stop_requested:
                 self._stop_requested = True
                 self._save_requested = save_checkpoint is True
@@ -516,19 +535,18 @@ class ConsciousnessObserver:
                 self._state, self._error = "stopping", "stop_pending"
             elif self._state not in {"blocked", "failed"}:
                 self._state, self._error = "stopped", None
-        while thread is not None and thread.is_alive() and time.monotonic() < deadline:
-            await asyncio.sleep(0.01)
-        with self._lock:
-            control = self._checkpoint_control
-            outstanding = self._continuity["outstanding"]
-        if (
-            thread is not None
-            and thread.is_alive()
-            and control is not None
-            and outstanding
-        ):
-            control.cancelled.set()
-            self._checkpoint_failure("uncertain", uncertain=True)
+        if abandon:
+            self._abandon_checkpoint()
+        try:
+            while (
+                thread is not None and thread.is_alive() and time.monotonic() < deadline
+            ):
+                await asyncio.sleep(0.01)
+        except asyncio.CancelledError:
+            self._abandon_checkpoint()
+            raise
+        if thread is not None and thread.is_alive():
+            self._abandon_checkpoint()
 
     def get_runtime_status(self) -> dict[str, Any]:
         """Read only cached bounded evidence; never run core or Guardian status work."""

@@ -6,6 +6,7 @@ intentions and chat content are deliberately absent from its closed schema.
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import math
 import re
@@ -49,7 +50,11 @@ def _invalid() -> ValueError:
 
 
 def _keys(value, expected) -> None:
-    if type(value) is not dict or set(value) != set(expected):
+    if (
+        type(value) is not dict
+        or len(value) != len(expected)
+        or set(value) != set(expected)
+    ):
         raise _invalid()
 
 

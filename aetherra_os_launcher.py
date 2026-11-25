@@ -2617,11 +2617,13 @@ class AetherraOSLauncher:
         if interval is None:
             return
         memory = self.systems.get("memory") if continuity["enabled"] else None
+        checkpoint_store = None
         if continuity["enabled"]:
             try:
                 if type(memory) is not MemoryAdapter:
                     raise RuntimeError("checkpoint_unavailable")
                 memory._checkpoint_backend()
+                checkpoint_store = memory
             except Exception:
                 error = error or "core_not_ready"
 
@@ -2642,7 +2644,7 @@ class AetherraOSLauncher:
             readiness=owned_readiness,
             observations=self._consciousness_observations,
             tick_interval=interval,
-            checkpoint_store=memory,
+            checkpoint_store=checkpoint_store,
             continuity_enabled=continuity["enabled"],
             restore_checkpoint_id=continuity["restore_checkpoint_id"],
         )

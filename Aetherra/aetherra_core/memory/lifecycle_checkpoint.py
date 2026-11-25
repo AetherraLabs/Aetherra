@@ -76,26 +76,29 @@ class CheckpointJobControl:
                 deadline = min(deadline, self._bound_deadline)
             object.__setattr__(self, "_bound_deadline", deadline)
 
+    def _open_locked(self) -> bool:
+        deadline = self._bound_deadline
+        if deadline is None:
+            deadline = self.deadline
+        return (
+            not self._closed
+            and not self.cancelled.is_set()
+            and time.monotonic() < min(self.deadline, deadline)
+        )
+
     def active(self) -> bool:
         with self._lock:
-            if self._closed:
+            if not self._open_locked():
+                object.__setattr__(self, "_closed", True)
                 return False
-            try:
-                active = (
-                    not self.cancelled.is_set()
-                    and time.monotonic()
-                    < min(
-                        self.deadline,
-                        (
-                            self._bound_deadline
-                            if self._bound_deadline is not None
-                            else self.deadline
-                        ),
-                    )
-                    and self.still_owned() is True
-                )
-            except Exception:
-                active = False
+        # This callback can perform policy/ownership I/O. Never hold a lock
+        # needed by cancellation, admission, status or shutdown while calling it.
+        try:
+            owned = self.still_owned() is True
+        except Exception:
+            owned = False
+        with self._lock:
+            active = owned and self._open_locked()
             if not active:
                 object.__setattr__(self, "_closed", True)
             return active
@@ -129,8 +132,10 @@ class _CheckpointFuture(Future):
         except CheckpointError as exc:
             self.control.cancel()
             raise CheckpointError("uncertain" if self._writing else exc.code) from None
+        if not self.control.active():
+            raise CheckpointError("uncertain" if self._writing else "cancelled")
         with self.control._lock:
-            if not self.control.active():
+            if not self.control._open_locked():
                 raise CheckpointError("uncertain" if self._writing else "cancelled")
             return result
 
@@ -315,7 +320,11 @@ class LifecycleCheckpointWorker:
                     raise CheckpointError("unavailable")
                 if self._job is not None:
                     raise CheckpointError("busy")
-                control.check()
+                # Admission checks only internal cancellation/deadline state.
+                # External readiness and policy run on the owned worker.
+                with control._lock:
+                    if not control._open_locked():
+                        raise CheckpointError("cancelled")
                 future = _CheckpointFuture(control, writing=operation == "save")
                 self._job = _Job(operation, checkpoint_id, data, control, future)
                 if self._thread is None:
@@ -437,19 +446,23 @@ class LifecycleCheckpointWorker:
                         except Exception:
                             connection.close()
                             connection = None
-                # Publish only while acceptance is still owned. Clearing the slot and
-                # publishing occur under the same lock so a completed future is drained.
-                with self._condition, job.control._lock:
-                    if not job.control.active():
+                # Policy/ownership callbacks and Future callbacks may block.
+                # Keep them outside the admission condition and cancellation lock.
+                active = job.control.active()
+                with job.control._lock:
+                    if not active or not job.control._open_locked():
                         failure = CheckpointError(
                             "uncertain" if committing else "cancelled"
                         )
+                with self._condition:
                     self._job = None
-                    if failure is None:
-                        job.future.set_result(result)
-                    else:
-                        job.future.set_exception(failure)
                     self._condition.notify_all()
+                # I/O is complete and the slot is released; result() still rechecks
+                # policy/deadline/cancellation before a receipt can be accepted.
+                if failure is None:
+                    job.future.set_result(result)
+                else:
+                    job.future.set_exception(failure)
         finally:
             if connection is not None:
                 connection.close()

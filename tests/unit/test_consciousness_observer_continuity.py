@@ -716,3 +716,93 @@ async def test_monitor_reports_exception_class_without_private_details(caplog):
     assert stops == [False]
     assert "RuntimeError" in caplog.text
     assert "private" not in caplog.text
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("before_admission", [False, True])
+async def test_cancelled_stop_abandons_save_and_retains_worker(
+    observer_profile, monkeypatch, before_admission
+):
+    store = CheckpointStore(pending_save=True)
+    owned = observer(store)
+    entered, release = threading.Event(), threading.Event()
+    exchange = owned._checkpoint_exchange
+
+    def held_exchange(**kwargs):
+        if before_admission:
+            entered.set()
+            assert release.wait(5)
+        return exchange(**kwargs)
+
+    monkeypatch.setattr(owned, "_checkpoint_exchange", held_exchange)
+    owned.start()
+    await until(owned, lambda s: s["ticks_completed"] == 1)
+    stopping = asyncio.create_task(owned.stop(save_checkpoint=True))
+    try:
+        await until(
+            owned,
+            lambda s: entered.is_set() if before_admission else store.entered.is_set(),
+        )
+        stopping.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await stopping
+        assert owned.get_runtime_status()["thread_alive"] is True
+        assert owned._checkpoint_failed is True
+        if store.controls:
+            assert store.controls[0].cancelled.is_set()
+        release.set()
+        if store.rows:
+            store.save.set_result(
+                SimpleNamespace(
+                    record_id="late",
+                    checkpoint_id=store.rows[0]["checkpoint_id"],
+                    payload=store.rows[0],
+                )
+            )
+        await owned.stop()
+        status = owned.get_runtime_status()
+        assert status["continuity"]["saved_record_id"] is None
+        assert status["continuity"]["state"] == "uncertain"
+        assert not status["thread_alive"]
+        if before_admission:
+            assert not store.rows
+    finally:
+        release.set()
+        if not store.save.done():
+            store.save.set_result(
+                SimpleNamespace(
+                    record_id="late", checkpoint_id=HANDLE, payload=payload()
+                )
+            )
+        await owned.stop()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("wrapped", [False, True])
+@pytest.mark.parametrize("method", ["_graceful_shutdown", "_emergency_shutdown"])
+async def test_unsupported_checkpoint_backend_does_not_abort_shutdown(
+    observer_profile, wrapped, method
+):
+    # Aetherra imports
+    from aetherra_os_launcher import AetherraOSLauncher, MemoryAdapter
+
+    class Unsupported:
+        def drain_lifecycle_checkpoints(self, **kwargs):
+            raise AssertionError("foreign backend received checkpoint drain")
+
+        async def shutdown(self):
+            pass
+
+    launcher = AetherraOSLauncher()
+    backend = Unsupported()
+    launcher.systems["memory"] = MemoryAdapter(backend) if wrapped else backend
+    await launcher._start_consciousness_observer(
+        {
+            "consciousness_enabled": True,
+            "consciousness_continuity": {"enabled": True},
+        }
+    )
+    owned = launcher.systems["consciousness_core"]
+    assert owned.get_runtime_status()["runtime_state"] == "blocked"
+    await getattr(launcher, method)()
+    assert owned._checkpoint_store is None

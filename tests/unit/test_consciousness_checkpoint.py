@@ -1,5 +1,6 @@
 """Exact, bounded aggregate checkpoints; no replayed trust events or runtime health."""
 
+# Standard library imports
 import copy
 import importlib
 import json
@@ -7,8 +8,10 @@ import threading
 from dataclasses import FrozenInstanceError, replace
 from functools import partial
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.consciousness.core.consciousness_core import ConsciousnessCore
 from Aetherra.consciousness.self_trust import SelfTrust, SubsystemTrust
 from Aetherra.perception_bus.bus import PerceptionBus
@@ -299,6 +302,7 @@ def test_export_bounds_history_without_mutating_live_trust():
 
 @pytest.mark.parametrize("case", ["history", "subsystems", "live_map"])
 def test_typed_invalid_containers_reject_before_unbounded_allocation(case):
+    # Standard library imports
     import tracemalloc
 
     mod = codec()
@@ -356,3 +360,56 @@ def test_full_subsystem_boundary_and_serialized_size_are_enforced():
         mod.decode_checkpoint(data)
     with pytest.raises(ValueError, match="checkpoint_invalid"):
         mod.load_checkpoint_json('"' + "\u00e9" * 32768 + '"')
+
+
+@pytest.mark.parametrize("section", ["root", "qualia", "trust", "record"])
+def test_oversized_dictionary_rejected_before_key_copy(section):
+    # Standard library imports
+    import tracemalloc
+
+    # Aetherra imports
+    from Aetherra.consciousness.checkpoint import decode_checkpoint
+
+    value = {
+        "schema": 1,
+        "checkpoint_id": "a" * 32,
+        "owner": "consciousness:observer",
+        "scope": "observer_continuity:v1",
+        "captured_at": 123.0,
+        "qualia": {
+            "valence": -0.2,
+            "arousal": 0.2,
+            "certainty": 0.3,
+            "curiosity": 0.4,
+            "care": 0.5,
+            "fatigue": 0.6,
+        },
+        "trust": {
+            "half_life_s": 3600.0,
+            "subsystems": [
+                {
+                    "name": "memory",
+                    "score": 40.0,
+                    "last_event_ts": 120.0,
+                    "history": [40.0],
+                }
+            ],
+        },
+    }
+    oversized = {str(i): i for i in range(100000)}
+    if section == "root":
+        value = oversized
+    elif section == "qualia":
+        value["qualia"] = oversized
+    elif section == "trust":
+        value["trust"] = oversized
+    else:
+        value["trust"]["subsystems"][0] = oversized
+    tracemalloc.start()
+    try:
+        with pytest.raises(ValueError, match="checkpoint_invalid"):
+            decode_checkpoint(value)
+        _, peak = tracemalloc.get_traced_memory()
+    finally:
+        tracemalloc.stop()
+    assert peak < 200000

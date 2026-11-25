@@ -630,3 +630,169 @@ def test_submission_deadline_includes_validation_time(memory, monkeypatch):
     monkeypatch.setattr(module, "_freeze", delayed_validation)
     error(save(memory, job=control(deadline=now[0] + 100)), "cancelled")
     assert rows(memory) == []
+
+
+@pytest.mark.asyncio
+async def test_consolidation_preserves_reserved_checkpoint_rows(memory, policy):
+    # Standard library imports
+    from datetime import datetime, timedelta
+
+    saved = save(memory).result(timeout=2)
+    guardian = policy / "guardian.json"
+    rules = json.loads(guardian.read_text(encoding="utf-8"))
+    rules["allow"].append(
+        {"requester": "*", "subsystem": "memory", "action": "memory.consolidate"}
+    )
+    guardian.write_text(json.dumps(rules), encoding="utf-8")
+    caps_path = policy / "capabilities.json"
+    caps = json.loads(caps_path.read_text(encoding="utf-8"))
+    caps["allow"]["memory:core"] = ["memory:write"]
+    caps_path.write_text(json.dumps(caps), encoding="utf-8")
+    old = (datetime.now() - timedelta(days=45)).isoformat()
+    memory.conn.execute("UPDATE memories SET created_at=?", (old,))
+    memory.conn.execute(
+        "INSERT INTO memories SELECT 'ordinary-old', content, context, tags, importance, created_at, last_accessed, access_count, 'conversation' FROM memories WHERE id=?",
+        (saved.record_id,),
+    )
+    memory.conn.execute(
+        "INSERT INTO memories SELECT 'reserved-boost', content, context, tags, importance, created_at, last_accessed, 6, memory_type FROM memories WHERE id=?",
+        (saved.record_id,),
+    )
+    memory.conn.commit()
+    before = memory.conn.execute(
+        "SELECT * FROM memories WHERE id != 'ordinary-old' ORDER BY id"
+    ).fetchall()
+    assert await memory.consolidate_memories() is True
+    after = memory.conn.execute("SELECT * FROM memories ORDER BY id").fetchall()
+    assert after == before
+    # Standard library imports
+    from pathlib import Path
+
+    ledger = Path(memory.db_path).parent / ".aetherra/security/audit.jsonl"
+    entries = [
+        json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines()
+    ]
+    intent = next(
+        item["details"]["intent"]
+        for item in reversed(entries)
+        if item["details"].get("intent", {}).get("action") == "memory.consolidate"
+    )
+    assert intent["metadata"]["delete_candidate_count"] == 1
+    assert intent["metadata"]["importance_update_candidate_count"] == 0
+    assert (
+        memory.conn.execute(
+            "SELECT COUNT(*) FROM memories WHERE id='ordinary-old'"
+        ).fetchone()[0]
+        == 0
+    )
+
+
+@pytest.mark.parametrize("stage", ["admission", "publication", "callback"])
+def test_blocked_external_checkpoint_work_keeps_drain_and_status_bounded(
+    memory, monkeypatch, stage
+):
+    entered, release, submitted = (
+        threading.Event(),
+        threading.Event(),
+        threading.Event(),
+    )
+    result = []
+    module = api()
+    original_load = module.LifecycleCheckpointWorker._load
+    at_publication = threading.Event()
+    if stage != "admission":
+        save(memory).result(timeout=2)
+
+    def owned():
+        if stage == "admission" or (stage == "publication" and at_publication.is_set()):
+            entered.set()
+            assert release.wait(5)
+        return True
+
+    def load_and_mark(connection, checkpoint_id):
+        receipt = original_load(connection, checkpoint_id)
+        at_publication.set()
+        return receipt
+
+    if stage == "publication":
+        monkeypatch.setattr(
+            module.LifecycleCheckpointWorker, "_load", staticmethod(load_and_mark)
+        )
+    if stage == "callback":
+        audit_entered, audit_release = blocked_audit(monkeypatch)
+
+    def submit():
+        future = (
+            save(memory, job=control(owned=owned))
+            if stage == "admission"
+            else load(memory, job=control(owned=owned))
+        )
+        result.append(future)
+        if stage == "callback":
+
+            def callback(future):
+                entered.set()
+                assert release.wait(5)
+
+            future.add_done_callback(callback)
+        submitted.set()
+
+    submitter = threading.Thread(target=submit, daemon=True)
+    submitter.start()
+    probe_done = threading.Event()
+    probe_result = []
+
+    def probe():
+        probe_result.append(memory.lifecycle_checkpoint_pending())
+        probe_result.append(memory.drain_lifecycle_checkpoints(timeout=0))
+        probe_done.set()
+
+    probe_thread = threading.Thread(target=probe, daemon=True)
+    try:
+        if stage == "callback":
+            assert submitted.wait(1)
+            assert audit_entered.wait(1)
+            audit_release.set()
+        assert entered.wait(2)
+        probe_thread.start()
+        assert probe_done.wait(0.5), "external work held the admission/status lock"
+        assert submitted.wait(0.5), "submission performed external readiness work"
+        assert probe_result[-1] is False
+    finally:
+        release.set()
+        if stage == "callback":
+            audit_release.set()
+        submitter.join(2)
+        if probe_thread.ident is not None:
+            probe_thread.join(2)
+        assert memory.drain_lifecycle_checkpoints(timeout=2)
+
+
+def test_blocked_ownership_predicate_does_not_block_control_cancellation():
+    entered, release, cancelled = (
+        threading.Event(),
+        threading.Event(),
+        threading.Event(),
+    )
+
+    def owned():
+        entered.set()
+        assert release.wait(5)
+        return True
+
+    job = control(owned=owned)
+    active = []
+    checker = threading.Thread(target=lambda: active.append(job.active()), daemon=True)
+    checker.start()
+    canceller = threading.Thread(
+        target=lambda: (job.cancel(), cancelled.set()), daemon=True
+    )
+    try:
+        assert entered.wait(1)
+        canceller.start()
+        assert cancelled.wait(0.5), "policy callback held the cancellation lock"
+    finally:
+        release.set()
+        checker.join(2)
+        canceller.join(2)
+    assert active == [False]

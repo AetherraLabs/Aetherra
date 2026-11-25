@@ -12,11 +12,13 @@ Exposes STS to attention/intention to bias toward stabilizing shaky parts.
 
 from __future__ import annotations
 
+# Standard library imports
 import math
 import time
 from dataclasses import dataclass, field
 from typing import Callable, Dict, List
 
+# Aetherra imports
 from Aetherra.consciousness.checkpoint import (
     TrustCheckpoint,
     TrustRecord,

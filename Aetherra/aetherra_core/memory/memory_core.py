@@ -626,11 +626,15 @@ class LyrixaMemorySystem:
                 """
                 SELECT COUNT(*) FROM memories
                 WHERE importance < 0.3 AND created_at < ? AND access_count < 2
+                  AND memory_type NOT GLOB 'consciousness_observer_checkpoint:*'
             """,
                 (cutoff_date,),
             )
             delete_candidates = int(cursor.fetchone()[0] or 0)
-            cursor.execute("SELECT COUNT(*) FROM memories WHERE access_count > 5")
+            cursor.execute(
+                "SELECT COUNT(*) FROM memories WHERE access_count > 5 "
+                "AND memory_type NOT GLOB 'consciousness_observer_checkpoint:*'"
+            )
             boost_candidates = int(cursor.fetchone()[0] or 0)
             decision = _guardian_preflight_memory_operation(
                 action="memory.consolidate",
@@ -655,6 +659,7 @@ class LyrixaMemorySystem:
                 """
                 DELETE FROM memories
                 WHERE importance < 0.3 AND created_at < ? AND access_count < 2
+                  AND memory_type NOT GLOB 'consciousness_observer_checkpoint:*'
             """,
                 (cutoff_date,),
             )
@@ -664,6 +669,7 @@ class LyrixaMemorySystem:
                 UPDATE memories
                 SET importance = MIN(1.0, importance + (access_count * 0.1))
                 WHERE access_count > 5
+                  AND memory_type NOT GLOB 'consciousness_observer_checkpoint:*'
             """)
 
             self.ensure_connection().commit()
