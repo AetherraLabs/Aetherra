@@ -435,6 +435,8 @@ class AetherraOSLauncher:
         self._daemon_heartbeat_tasks: list[asyncio.Task] = []
         self._perception_adapters = []
         self._consciousness_task = None
+        # One-shot intent from main()'s Windows SIGINT handler, never task.cancel().
+        self._orderly_cli_sigint_task: asyncio.Task | None = None
 
     async def launch_full_os(self, config: dict[str, Any] | None = None):
         """[LAUNCH] Launch the complete Aetherra AI Operating System."""
@@ -4124,6 +4126,15 @@ class AetherraOSLauncher:
                         return False
             return True
         except asyncio.CancelledError:
+            interrupted_task = self._orderly_cli_sigint_task
+            self._orderly_cli_sigint_task = None
+            if (
+                interrupted_task is not None
+                and interrupted_task is asyncio.current_task()
+                and interrupted_task.cancelling() == 1
+            ):
+                logger.info("🛑 Interrupted by user; stopping orderly")
+                return True
             logger.debug("[LOOP] Operation loop cancelled (cleanup only)")
             return False
         except KeyboardInterrupt:
@@ -5050,10 +5061,47 @@ async def main():
         logger.info("🛑 Received shutdown signal")
         launcher.running = False
 
+    previous_sigint = None
+    windows_signal_handler = None
     if sys.platform != "win32":
         loop = asyncio.get_event_loop()
         for sig in [signal.SIGINT, signal.SIGTERM]:
             loop.add_signal_handler(sig, signal_handler)
+    else:
+        main_task = asyncio.current_task()
+        previous_sigint = signal.getsignal(signal.SIGINT)
+
+        def windows_signal_handler(signum, frame):
+            # Keep asyncio.run's first-cancel/second-interrupt semantics and any
+            # embedding caller's handler. A non-cancelling handler grants no
+            # save intent; an already-cancelling task remains cleanup only.
+            launcher._orderly_cli_sigint_task = None
+            was_cancelling = main_task.cancelling() if main_task else 0
+            if callable(previous_sigint):
+                try:
+                    previous_sigint(signum, frame)
+                except BaseException:
+                    # Runner.run restores its own handler before closing tasks;
+                    # main's finally can run too late after a second interrupt.
+                    if signal.getsignal(signal.SIGINT) is windows_signal_handler:
+                        signal.signal(signal.SIGINT, previous_sigint)
+                    raise
+                if (
+                    main_task is not None
+                    and was_cancelling == 0
+                    and main_task.cancelling() == 1
+                ):
+                    launcher._orderly_cli_sigint_task = main_task
+
+        if callable(previous_sigint):
+            try:
+                signal.signal(signal.SIGINT, windows_signal_handler)
+            except ValueError:
+                # Embedded callers can run off the interpreter's main thread.
+                previous_sigint = None
+        else:
+            # Preserve an embedding caller's SIG_DFL or SIG_IGN disposition.
+            previous_sigint = None
 
     try:
         if args.mode == "full":
@@ -5090,6 +5138,13 @@ async def main():
     except Exception as e:
         logger.error(f"[ERROR] Launch failed: {e}")
         return 1
+    finally:
+        launcher._orderly_cli_sigint_task = None
+        if (
+            previous_sigint is not None
+            and signal.getsignal(signal.SIGINT) is windows_signal_handler
+        ):
+            signal.signal(signal.SIGINT, previous_sigint)
 
 
 if __name__ == "__main__":

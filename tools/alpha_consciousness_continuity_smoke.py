@@ -149,6 +149,7 @@ def worker(profile, artifacts, phase):
     finished = threading.Event()
     launcher_seen = None
     command_task = None
+    running_loop = None
     original_init = ConsciousnessCore.__init__
     original_tick = ConsciousnessCore.tick
     original_restore = ConsciousnessCore.restore_observer_checkpoint
@@ -242,6 +243,9 @@ def worker(profile, artifacts, phase):
         while not finished.wait(0.1):
             if (artifacts / "stop-runtime").exists():
                 _thread.interrupt_main()
+                # Pending SIGINT alone need not wake the Windows IO poll.
+                if running_loop is not None:
+                    running_loop.call_soon_threadsafe(lambda: None)
                 return
 
     async def commands(launcher):
@@ -308,7 +312,8 @@ def worker(profile, artifacts, phase):
         original_announcement = launcher_module.AetherraOSLauncher._announce_os_online
 
         async def observed_announcement(launcher):
-            nonlocal launcher_seen, command_task
+            nonlocal launcher_seen, command_task, running_loop
+            running_loop = asyncio.get_running_loop()
             result = await original_announcement(launcher)
             launcher_seen = launcher
             engine = launcher.systems["aetherra"].impl

@@ -1,0 +1,168 @@
+"""Windows CLI signal intent must not turn unrelated cancellation into a save."""
+
+# Standard library imports
+import asyncio
+import signal
+import sys
+from concurrent.futures import ThreadPoolExecutor
+from types import SimpleNamespace
+
+# Third party imports
+import pytest
+
+# Aetherra imports
+import aetherra_os_launcher as launcher_module
+from tests.unit import test_consciousness_observer_continuity as continuity_tests
+
+observer_profile = continuity_tests.observer_profile
+
+
+@pytest.fixture
+def cli_operation(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["aetherra_os_launcher.py", "--no-gui"])
+    # Exercise the Windows branch with the real Runner on every CI platform.
+    # Keep the interpreter/event-loop platform untouched for embedded callers.
+    monkeypatch.setattr(launcher_module, "sys", SimpleNamespace(platform="win32"))
+
+    async def nothing(*args):
+        pass
+
+    for name in (
+        "_refresh_owned_engine_heartbeat",
+        "_refresh_observation_service_heartbeats",
+        "_write_os_status",
+        "_cleanup_os_status",
+    ):
+        monkeypatch.setattr(launcher_module.AetherraOSLauncher, name, nothing)
+    previous = signal.getsignal(signal.SIGINT)
+    signal.signal(signal.SIGINT, signal.default_int_handler)
+    try:
+        yield
+    finally:
+        signal.signal(signal.SIGINT, previous)
+
+
+@pytest.mark.parametrize(
+    ("trigger", "expected"),
+    [
+        ("sigint", True),
+        ("cancel", False),
+        ("custom_then_cancel", False),
+        ("cancel_then_sigint", False),
+        ("sigint_then_cancel", False),
+    ],
+)
+def test_only_first_cli_sigint_cancellation_is_orderly(
+    monkeypatch, cli_operation, trigger, expected
+):
+    exits = []
+    if trigger == "custom_then_cancel":
+        signal.signal(signal.SIGINT, lambda signum, frame: None)
+    previous = signal.getsignal(signal.SIGINT)
+
+    async def operation(launcher, config):
+        task = asyncio.current_task()
+        launcher.running = True
+
+        def interrupt():
+            if trigger in {"cancel", "cancel_then_sigint"}:
+                task.cancel()
+            if trigger != "cancel":
+                signal.raise_signal(signal.SIGINT)
+            if trigger in {"custom_then_cancel", "sigint_then_cancel"}:
+                task.cancel()
+
+        asyncio.get_running_loop().call_soon(interrupt)
+        exits.append(await launcher._main_operation_loop())
+
+    monkeypatch.setattr(launcher_module.AetherraOSLauncher, "launch_full_os", operation)
+    assert asyncio.run(launcher_module.main()) == 0
+    assert exits == [expected]
+    assert signal.getsignal(signal.SIGINT) is previous
+
+
+def test_second_sigint_abandons_inflight_checkpoint(
+    monkeypatch, cli_operation, observer_profile
+):
+    store = continuity_tests.CheckpointStore(pending_save=True)
+    owned = continuity_tests.observer(store)
+    statuses = []
+    loop_exits = []
+
+    async def operation(launcher, config):
+        owned.start()
+        await continuity_tests.until(owned, lambda s: s["ticks_completed"] == 1)
+        launcher.running = True
+        asyncio.get_running_loop().call_soon(signal.raise_signal, signal.SIGINT)
+        orderly = await launcher._main_operation_loop()
+        loop_exits.append(orderly)
+        if not orderly:
+            await owned.stop()
+            return
+
+        async def second_interrupt():
+            await continuity_tests.until(owned, lambda s: store.entered.is_set())
+            signal.raise_signal(signal.SIGINT)
+
+        interrupter = asyncio.create_task(second_interrupt())
+        try:
+            await owned.stop(save_checkpoint=True)
+        finally:
+            # A late successful I/O result must never become an acknowledged save.
+            if store.rows and not store.save.done():
+                store.save.set_result(
+                    SimpleNamespace(
+                        record_id="late",
+                        checkpoint_id=store.rows[0]["checkpoint_id"],
+                        payload=store.rows[0],
+                    )
+                )
+            await owned.stop()
+            statuses.append(owned.get_runtime_status())
+            if interrupter.done():
+                interrupter.exception()
+
+    monkeypatch.setattr(launcher_module.AetherraOSLauncher, "launch_full_os", operation)
+    with pytest.raises(KeyboardInterrupt):
+        asyncio.run(launcher_module.main())
+    assert loop_exits == [True]
+    assert statuses[0]["continuity"]["saved_record_id"] is None
+    assert statuses[0]["continuity"]["state"] == "uncertain"
+    assert statuses[0]["thread_alive"] is False
+    assert store.controls[0].cancelled.is_set()
+    assert signal.getsignal(signal.SIGINT) is signal.default_int_handler
+
+
+def test_embedded_main_in_worker_thread_preserves_signal_owner(
+    monkeypatch, cli_operation
+):
+    exits = []
+    previous = signal.getsignal(signal.SIGINT)
+
+    async def operation(launcher, config):
+        exits.append(await launcher._main_operation_loop())
+
+    monkeypatch.setattr(launcher_module.AetherraOSLauncher, "launch_full_os", operation)
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        result = executor.submit(lambda: asyncio.run(launcher_module.main())).result(5)
+    assert result == 0
+    assert exits == [True]
+    assert signal.getsignal(signal.SIGINT) is previous
+
+
+@pytest.mark.parametrize("disposition", [signal.SIG_DFL, signal.SIG_IGN])
+def test_embedded_noncallable_signal_disposition_is_preserved(
+    monkeypatch, cli_operation, disposition
+):
+    signal.signal(signal.SIGINT, disposition)
+    active_handlers = []
+
+    async def operation(launcher, config):
+        active_handlers.append(signal.getsignal(signal.SIGINT))
+        assert await launcher._main_operation_loop() is True
+
+    monkeypatch.setattr(launcher_module.AetherraOSLauncher, "launch_full_os", operation)
+    assert asyncio.run(launcher_module.main()) == 0
+    # Do not deliver SIG_DFL: its process-termination policy must stay intact.
+    assert active_handlers == [disposition]
+    assert signal.getsignal(signal.SIGINT) is disposition
