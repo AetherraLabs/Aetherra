@@ -89,44 +89,39 @@ Internal alpha requires:
 
 ## Current Next Work
 
-PR #327 is merged and its desktop blockers are resolved for the documented
-Windows/Python 3.13 source-runtime profile. Fresh installation/audits, 3,136
-passing default-suite tests (40 skips, 5 passing subtests), 87 clean-main
-regressions, normal CLI/live-model checks and browser verification pass.
-All 12 main validation workflows pass. Signed `v0.5.0-beta.6` completed, with
-its approved-key signature and artifact hashes independently verified.
+Phases A and B, C1 and C2a are merged. Released main is `949312c3`
+(`v0.5.0-beta.13`); its hosted CI and required production/release signing passed.
+The checkpoint-stop diagnostic follow-up is pushed as `007e6510` with local
+regressions and the full suite passing; PR review, hosted follow-up CI and merge
+remain pending. See the [phase status table](MASTER_ROADMAP.md#current-priority-internal-alpha),
+[current decision](ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up) and
+[source-bound receipt](evidence/checkpoint_stop_followup_2026-11-24.json).
 
-**GO for supervised internal alpha on this profile.** Stage 21 remains active
-for bounded internal-alpha operation; Beta Hardening and Production Readiness
-remain Planned. Optional graphs, other platforms, wheel-only installs and
-unattended/production use require separate evidence before extending the decision.
-See `docs/ALPHA_READINESS_DECISION.md` and the operator runbook.
+**Stage 21 remains active, with the existing supervised internal-alpha GO
+unchanged.** Stage 22 Beta Hardening and Stage 23 Production Readiness remain
+Planned; a beta package version is not acceptance into either stage. C2b is not
+implemented, and Phase D optional agency remains deferred.
 
 | Priority | Work | Required Outcome |
 | --- | --- | --- |
-| 1 | Supervised internal alpha | Review/integrate Phase A core readiness, responsiveness and effective-mode verification; then Phase B observation/maintenance |
-| 2 | Regression preservation | Retain the default suite, continuity, browser and truthful readiness checks |
-| 3 | Signing and governance | Keep approved-key signing, Guardian/Security and observation boundaries enforced |
-| 4 | Broader acceptance | Verify additional installation graphs and operating modes before extending GO |
+| 1 | Publish the checkpoint-stop follow-up | Focused PR, passing hosted CI, final review, merge if clear and clean-checkout main verification |
+| 2 | Complete current C2a verification | Fresh Python installation, browser, live model and physical keyboard shutdown; preserve source-bound evidence and the original failure |
+| 3 | Design C2b continuity | Define atomic head advancement and uncertain-write recovery before automatic checkpoint selection, periodic saves or retention |
+| Separate pending work | Temporal runtime observer | Preserve the pending integration; do not conflate it with the merged Consciousness sidecar/checkpoints |
 
-The first exercise on merged PR #328 (`ff359b02`) completed ten minutes plus
-five minutes after restart, with 16 gpt-4o turns and no fallback. Correct recall,
-truthful unknown detail, browser stop/reconnect and governance observations pass.
-Initial disclosure acknowledgments exposed a prompt defect; its focused repair
-integrated through PR #347. A 63.603-second total cold recall interrupted
-status polling before the second steady window. Retain that limitation and the
-failed observations; this is not a continuous-responsiveness or soak-test pass.
-See [the decision](ALPHA_READINESS_DECISION.md) and
-[exercise evidence](evidence/supervised_alpha_2026-11-22.json).
+The follow-up corrects missing background command-error reporting. Its 3,840
+passing tests, 38 skips and five passing subtests do not identify the original
+slow operation. Keep signing, Guardian/Security, checkpoint ownership and
+observe/propose-only authority limits enforced. Broader installation graphs,
+unattended/production use and autonomous actions require separate acceptance.
 
-The 2026-11-23 Phase A candidate adds actual-core readiness, bounded concurrent
-Hub observation, disabled Self-Incorporation enforcement and a disposable full-CLI
-restart smoke. Its offline and seven-turn gpt-4o checks preserve evidence IDs,
-honest unknowns and storage separation. The
-[decision addendum](ALPHA_READINESS_DECISION.md#phase-a-core-integration-candidate)
-records final verification and unmerged-candidate boundaries. Phase B is the
-bounded observation/maintenance loop; Phase C owns optional cognitive activation
-and experimental-module quarantine. Stage 21 remains active.
+Historical reference: the [2026-11-22 desktop verification](ALPHA_READINESS_DECISION.md#historical-desktop-verification-2026-11-22)
+and [first supervised exercise](evidence/supervised_alpha_2026-11-22.json)
+remain tied to their recorded revisions. The latter ran 600 + 300 steady-state
+seconds with 16 gpt-4o turns and no fallback, but its 63.603-second cold recall
+interrupted status polling. PR #347 later repaired disclosure acknowledgments.
+Those passes do not replace current installation, browser or live-model checks
+and do not establish continuous responsiveness or a soak-test pass.
 
 ## Change Rule
 

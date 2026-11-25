@@ -5,7 +5,7 @@ Date: 2026-11-24 (America/Denver)
 **The existing supervised internal-alpha boundary remains unchanged.** C1 and
 C2a are merged. The checkpoint command-error correction passes local verification;
 the original runtime delay remains unexplained. This follow-up does not expand
-the earlier scoped GO or claim hosted CI for its uncommitted candidate.
+the earlier scoped GO or claim hosted CI for the pushed follow-up.
 **NO-GO for unattended or production operation and unverified installation graphs.**
 
 - Decision owner: Aetherra Labs.
@@ -15,9 +15,11 @@ the earlier scoped GO or claim hosted CI for its uncommitted candidate.
   `4116f5c62f72f14275953a2015b05ad71beb2bee` after retargeting to main.
 - Released main: `949312c3f842283b8b25a8da6babff4e66b0c764`, `v0.5.0-beta.13`.
   Only release metadata differs from the C2a merge.
-- Current checkpoint-stop follow-up: local regressions and the full suite pass
-  on `949312c3` plus the uncommitted harness/test changes. Publication and hosted
-  follow-up CI remain pending; see [the follow-up](#checkpoint-stop-follow-up).
+- Current checkpoint-stop follow-up:
+  [commit `007e6510`](https://github.com/AetherraLabs/Aetherra/commit/007e651039799f201d3b1179303b61aa8498c456)
+  is pushed on `codex/checkpoint-stop-receipt`, based on `949312c3`. Local
+  regressions and the full suite pass; PR review, hosted CI and merge remain
+  pending. See [the follow-up](#checkpoint-stop-follow-up).
 - Historical desktop, Phase A/B and C1/C2a candidate checkpoints retain their own
   revisions and verification boundaries; they are not current-main substitutes.
 - Supported profile: Windows x64, Python 3.13.7 source checkout, Node 22.18.0,
@@ -77,8 +79,9 @@ unchanged 22% requirement. Separate instrumented normal-launch
 acceptance passed both tests across five processes in 160.77 seconds pytest time
 (161.79 seconds through process exit). The source-bound
 [follow-up receipt](evidence/checkpoint_stop_followup_2026-11-24.json) records the
-`949312c3` base, uncommitted harness/test changes, exact commands, results and
-limits. All 1,552 hashes in the verification manifest match after the run. In the
+pre-commit verification snapshot: `949312c3` base, harness/test changes, exact
+commands, results and limits. All 1,552 hashes in the verification manifest match
+after the run. In the
 uninstrumented full-suite trace, handle `bc1dfbc011b7410d80589d91493aa50d` saved
 Memory row `cd1d84e53983413eb3292cc8edfe10c6`; a new process restored that same row
 before tick zero with an exact aggregate match. All three processes exited zero,
@@ -88,10 +91,11 @@ The original full-suite failure remains recorded and its slow operation remains
 unproven. Passing reruns do not retroactively assign
 that failure a cause.
 
-**Local diagnostic-fix verification passes; review/publication and hosted
-follow-up CI remain pending.** The earlier main CI/signing passes apply to the
-merged baseline, not this uncommitted candidate. The existing scoped GO is not
-expanded. Fresh Python installation, current browser/live-model operation and
+**Local diagnostic-fix verification passes.** The implementation is committed
+and pushed as `007e6510`; PR review, hosted follow-up CI and merge remain pending.
+The dated receipt retains its pre-commit snapshot. Earlier main CI/signing
+passes apply to the merged baseline, not this unmerged follow-up. The scoped GO
+is not expanded. Fresh Python installation, current browser/live-model operation and
 physical keyboard shutdown remain unverified.
 Python verification reused the pinned environment. Signing, Guardian/Security
 and pending Temporal work remain preserved. C2b selection, periodic saves and
