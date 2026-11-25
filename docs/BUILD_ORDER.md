@@ -89,13 +89,13 @@ Internal alpha requires:
 
 ## Current Next Work
 
-Phases A and B, C1 and C2a are merged. Released main is `949312c3`
-(`v0.5.0-beta.13`); its hosted CI and required production/release signing passed.
-The checkpoint-stop diagnostic follow-up is pushed as `007e6510` with local
-regressions and the full suite passing; PR review, hosted follow-up CI and merge
-remain pending. See the [phase status table](MASTER_ROADMAP.md#current-priority-internal-alpha),
-[current decision](ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up) and
-[source-bound receipt](evidence/checkpoint_stop_followup_2026-11-24.json).
+Phases A and B, C1, C2a and the checkpoint-stop follow-up are merged.
+PR #355 passed hosted CI and clean-merge verification at `e8975d38`. Released
+main is `a30277e3` (`v0.5.0-beta.14`), with verified signing. The
+[phase status table](MASTER_ROADMAP.md#current-priority-internal-alpha),
+[current decision](ALPHA_READINESS_DECISION.md#c2b-prerequisite-checkpoint-2026-11-25)
+and [prerequisite receipt](evidence/c2b_prerequisites_2026-11-25.json) record the
+supported-profile checks and limits.
 
 **Stage 21 remains active, with the existing supervised internal-alpha GO
 unchanged.** Stage 22 Beta Hardening and Stage 23 Production Readiness remain
@@ -104,14 +104,12 @@ implemented, and Phase D optional agency remains deferred.
 
 | Priority | Work | Required Outcome |
 | --- | --- | --- |
-| 1 | Publish the checkpoint-stop follow-up | Focused PR, passing hosted CI, final review, merge if clear and clean-checkout main verification |
-| 2 | Complete current C2a verification | Fresh Python installation, browser, live model and physical keyboard shutdown; preserve source-bound evidence and the original failure |
-| 3 | Design C2b continuity | Define atomic head advancement and uncertain-write recovery before automatic checkpoint selection, periodic saves or retention |
+| 1 | Start Task 1 of the approved C2b contract | Follow the [gated plan](superpowers/plans/2026-11-25-phase-c2b-checkpoints.md) for atomic head/recovery, periodic saving and retention. History and temporal reasoning remain separate. |
 | Separate pending work | Temporal runtime observer | Preserve the pending integration; do not conflate it with the merged Consciousness sidecar/checkpoints |
 
-The follow-up corrects missing background command-error reporting. Its 3,840
-passing tests, 38 skips and five passing subtests do not identify the original
-slow operation. Keep signing, Guardian/Security, checkpoint ownership and
+The follow-up corrects missing background command-error reporting. The clean
+merge passed 3,840 tests and skipped 38. The original slow operation remains
+unidentified. Keep signing, Guardian/Security, checkpoint ownership and
 observe/propose-only authority limits enforced. Broader installation graphs,
 unattended/production use and autonomous actions require separate acceptance.
 

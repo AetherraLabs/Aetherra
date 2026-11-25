@@ -1,14 +1,32 @@
 # Alpha Readiness Checklist
 
-Updated: 2026-11-24
+Updated: 2026-11-25
 
-Current released baseline: `949312c3` (`v0.5.0-beta.13`), incorporating C1
-[PR #354](https://github.com/AetherraLabs/Aetherra/pull/354) and C2a
-[PR #353](https://github.com/AetherraLabs/Aetherra/pull/353). Hosted main CI and
-required production/release signing passed. The command-error correction passes
-local regressions and the full suite; review/publication and hosted follow-up CI
-remain pending. The original runtime delay is unproven. See the
-[current decision](ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up).
+## C2b Prerequisite Checkpoint (2026-11-25)
+
+- [x] [PR #355](https://github.com/AetherraLabs/Aetherra/pull/355) merged and
+  verified on clean main at `e8975d38`. Fresh-runtime pytest exited zero with
+  3,840 passed, 38 skipped and 45.29% configured coverage. Boot, integration,
+  docs and Python quality checks passed.
+- [x] Fresh Windows x64 Python 3.13.7 install, lock sync and strict audit passed
+  with zero findings across 168 distributions. The unchanged GUI tree passed
+  fresh install, audit, 32 tests, build and lint on Node 22.18.0.
+- [x] Hosted main CI and production signing enforcement passed. The published
+  `v0.5.0-beta.14` Ed25519 signature and both distribution hashes verified
+  independently. The release commit `a30277e3` changes only release metadata.
+- [x] The live gpt-4o helper verified provider input and restart recall with
+  fallback disabled. The normal-CLI exercise independently correlated public
+  evidence IDs with live replies. Its private history and provider input were
+  unobserved.
+- [x] Two operator Ctrl+C shutdowns exited zero and closed the Hub. Durable
+  checkpoint rows and exact selected-row restoration were verified. The actual
+  browser showed fresh status, automatic offline and reconnection, and the
+  restored row. Physical stop receipt acceptance remains unknown for both runs.
+
+The [source-bound receipt](evidence/c2b_prerequisites_2026-11-25.json) records
+commands, hashes and scope. The [current decision](ALPHA_READINESS_DECISION.md#c2b-prerequisite-checkpoint-2026-11-25)
+retains the supervised internal-alpha boundary. ALPHA-CKPT-001 remains open
+with the original delay cause unknown.
 
 **Historical Phase C1 candidate acceptance:** GO for supervised operation of the
 frozen Windows source-runtime candidate published as `b8719fa2`. The local
@@ -422,10 +440,10 @@ Primary file:
 ## Gate 10: Alpha Decision
 
 Status: the existing supervised Windows source-runtime boundary remains unchanged.
-C1/C2a are merged and hosted signing passed. Local diagnostic-fix verification
-passes; follow-up publication/CI remain pending and the original delay remains
-unexplained. See the
-[current decision](ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up).
+C1/C2a and the reporting follow-up are merged. Hosted signing and supported
+profile checks passed within the scope recorded in the
+[current decision](ALPHA_READINESS_DECISION.md#c2b-prerequisite-checkpoint-2026-11-25).
+The original delay remains unexplained.
 Unattended/production operation and unverified installation graphs remain NO-GO;
 no broader authority is inferred.
 
@@ -444,13 +462,11 @@ Decision record:
 
 ## Current Next Actions
 
-1. Review and publish the focused checkpoint-stop follow-up with its source-bound
-   evidence, then run hosted CI. Preserve the original failure and the distinction
-   between corrected diagnostics and an unproven runtime delay.
-2. Complete fresh Python, current browser/live-model and physical-keyboard checks
-   separately before extending the verified scope.
-3. Resume C2b automatic selection, periodic saves and retention, then the separate
-   Temporal milestone. Keep strict signing/governance and unrelated work preserved.
+1. Continue with Task 1 in the [C2b implementation plan](superpowers/plans/2026-11-25-phase-c2b-checkpoints.md)
+   from the verified released baseline.
+2. Keep [ALPHA-CKPT-001](DEVELOPMENT_ISSUES.md#alpha-ckpt-001--checkpoint-stop-delay)
+   open, preserve the original failure and keep strict signing and governance
+   enforced. Temporal integration remains separate.
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

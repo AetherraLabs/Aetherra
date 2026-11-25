@@ -1,25 +1,16 @@
 # Internal Alpha Readiness Decision
 
-Date: 2026-11-24 (America/Denver)
+Date: 2026-11-25 (America/Denver)
 
-**The existing supervised internal-alpha boundary remains unchanged.** C1 and
-C2a are merged. The checkpoint command-error correction passes local verification;
-the original runtime delay remains unexplained. This follow-up does not expand
-the earlier scoped GO or claim hosted CI for the pushed follow-up.
+**The existing supervised internal-alpha boundary remains unchanged.**
 **NO-GO for unattended or production operation and unverified installation graphs.**
 
 - Decision owner: Aetherra Labs.
-- Current integrated baseline: C1 [PR #354](https://github.com/AetherraLabs/Aetherra/pull/354)
-  merged as `5a900016912f44b84bf8adfc361c80d56620507b`; C2a
-  [PR #353](https://github.com/AetherraLabs/Aetherra/pull/353) merged as
-  `4116f5c62f72f14275953a2015b05ad71beb2bee` after retargeting to main.
-- Released main: `949312c3f842283b8b25a8da6babff4e66b0c764`, `v0.5.0-beta.13`.
-  Only release metadata differs from the C2a merge.
-- Current checkpoint-stop follow-up:
-  [commit `007e6510`](https://github.com/AetherraLabs/Aetherra/commit/007e651039799f201d3b1179303b61aa8498c456)
-  is pushed on `codex/checkpoint-stop-receipt`, based on `949312c3`. Local
-  regressions and the full suite pass; PR review, hosted CI and merge remain
-  pending. See [the follow-up](#checkpoint-stop-follow-up).
+- Clean verified merge: [PR #355](https://github.com/AetherraLabs/Aetherra/pull/355)
+  at `e8975d38f1a3d1acb78bfb8ad85cb4b56ee9c331`. It incorporates C1 and C2a
+  and corrects checkpoint-stop command-error reporting.
+- Released main: `a30277e3cfeb9e80f0605436e366721a548ead6d`,
+  `v0.5.0-beta.14`. Only release metadata differs from the verified merge.
 - Historical desktop, Phase A/B and C1/C2a candidate checkpoints retain their own
   revisions and verification boundaries; they are not current-main substitutes.
 - Supported profile: Windows x64, Python 3.13.7 source checkout, Node 22.18.0,
@@ -34,7 +25,41 @@ See [the checklist](ALPHA_READINESS_CHECKLIST.md),
 [fresh-install evidence](evidence/desktop_alpha_2026-11-22.json) and
 [clean-main acceptance](evidence/desktop_alpha_main_2026-11-22.json).
 
+## C2b Prerequisite Checkpoint (2026-11-25)
+
+Independent review found no merge blockers. The PR had 33 successful workflow
+jobs and one expected skip. All 11 main-push workflows passed, including actual
+production signing and signed-manifest enforcement. Automatic Release published
+beta.14. An independent Ed25519 check verified its manifest and both named
+distribution hashes. See [CI Quality Gates](https://github.com/AetherraLabs/Aetherra/actions/runs/45571159696)
+and [Automatic Release](https://github.com/AetherraLabs/Aetherra/actions/runs/45572771086).
+
+The clean merge passed 3,840 tests, skipped 38, and exited zero with 45.29%
+configured coverage. Boot, integration, docs and Python quality also passed.
+The verified Python inputs and GUI tree matched the clean merge. A fresh
+Python 3.13.7 install passed dependency and lock checks and strict audits of
+168 distributions with zero findings. The fresh GUI passed 32 tests, build,
+lint and audit.
+
+Live gpt-4o on released main exercised actual provider input, restart recall,
+missing information and a separate profile with no fallback. Two actual
+operator Ctrl+C shutdowns separately verified exit zero, closed Hub ports,
+durable rows and exact selected-row restoration on restart. The live browser
+observed fresh read-only status, automatic offline and reconnection, and the
+restored row. Final stop receipt acceptance remains **unknown** for both
+physical shutdowns. The normal-CLI live exercise correlated public evidence
+IDs. Its actual prompt and private history were unobserved.
+
+The [prerequisite receipt](evidence/c2b_prerequisites_2026-11-25.json) binds
+these results to their source revisions and scoped checks. This checkpoint
+closes the prerequisite verification for starting C2b implementation. It
+grants no additional operational authority. [ALPHA-CKPT-001](DEVELOPMENT_ISSUES.md#alpha-ckpt-001--checkpoint-stop-delay)
+remains **OPEN, cause unknown**.
+
 ## Checkpoint-Stop Follow-Up
+
+Historical baseline and local pre-merge verification (2026-11-24). The current
+merged disposition appears in the checkpoint above.
 
 C1 and C2a merged after review and current CI. C2a's final main-target checks
 passed 37 entries with one expected skip. All 11 main-push workflows passed.
@@ -88,15 +113,15 @@ before tick zero with an exact aggregate match. All three processes exited zero,
 closed their ports and verified signed audits; checkpoint data stayed outside
 chat evidence. No runtime deadline, policy or late-save acceptance rule changed.
 The original full-suite failure remains recorded and its slow operation remains
-unproven. Passing reruns do not retroactively assign
-that failure a cause.
+unproven. [ALPHA-CKPT-001](DEVELOPMENT_ISSUES.md#alpha-ckpt-001--checkpoint-stop-delay)
+tracks the open investigation and closure criteria. Passing reruns do not
+retroactively assign that failure a cause.
 
-**Local diagnostic-fix verification passes.** The implementation is committed
-and pushed as `007e6510`; PR review, hosted follow-up CI and merge remain pending.
-The dated receipt retains its pre-commit snapshot. Earlier main CI/signing
-passes apply to the merged baseline, not this unmerged follow-up. The scoped GO
-is not expanded. Fresh Python installation, current browser/live-model operation and
-physical keyboard shutdown remain unverified.
+**At this historical checkpoint, local diagnostic-fix verification passed.**
+The fix had been pushed as `007e6510`. PR review, hosted follow-up CI, merge,
+fresh Python installation, current browser and live-model operation, and
+physical keyboard shutdown were still pending. The dated receipt retains its
+pre-commit snapshot.
 Python verification reused the pinned environment. Signing, Guardian/Security
 and pending Temporal work remain preserved. C2b selection, periodic saves and
 retention remain separate work.

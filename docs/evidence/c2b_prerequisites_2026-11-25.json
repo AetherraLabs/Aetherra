@@ -1,0 +1,202 @@
+{
+  "date": "2026-11-25",
+  "scope": "C2b Task 0 prerequisites for implementation on the supported Windows x64 source profile",
+  "source": {
+    "reviewed_head": "2767230f851a5c8fe646b21d91ea84cd113fbc0e",
+    "clean_merge": "e8975d38f1a3d1acb78bfb8ad85cb4b56ee9c331",
+    "reviewed_and_merged_tree": "5e4cc4432673dba8718936055306b5c05fa33170",
+    "tracked_merge_files_verified": 2024,
+    "released_head": "a30277e3cfeb9e80f0605436e366721a548ead6d",
+    "unchanged_release_files": 2021,
+    "release_only_changes": ["CHANGELOG.md", "README.md", "pyproject.toml"],
+    "implementation_branch": "codex/c2b-checkpoint-contract",
+    "source_manifest": {"artifact": "clean-main-source.json", "sha256": "21b2eb3916673e591e7c09f1f86e2eb90efc90d9122fe8dafc724cdfc70d2ed6"},
+    "release_binding": {"artifact": "released-main-source-binding.json", "sha256": "ce4fc043c964cbc68231546223be9f1ac84ad237236a055ec498740f40fcc0b5"},
+    "candidate_snapshot": {"artifact": "c2b-branch-baseline.json", "sha256": "e33ccc06782e41b10ada2d56b2248cd1fcce78257eee86edd8d740805b0cccc3"}
+  },
+  "preflight": {
+    "traced_source_files": 7,
+    "interface_divergences": [],
+    "protected_original_and_temporal_workspaces": "HEAD, index, status, files and controls matched preserved snapshots",
+    "isolated_execution": "Fresh Python 3.13.7 profile and credential-filtered runner recorded in the external preflight archive",
+    "receipt": {"artifact": "task0-preflight-r1.json", "sha256": "875cca2f989d7a80e9977c682cde53aec57e9b025b1855d9c42c199e82ff7a77"}
+  },
+  "pr": {
+    "number": 355,
+    "base": "949312c3f842283b8b25a8da6babff4e66b0c764",
+    "head": "2767230f851a5c8fe646b21d91ea84cd113fbc0e",
+    "merge": "e8975d38f1a3d1acb78bfb8ad85cb4b56ee9c331",
+    "independent_review": "No merge blockers; reporting defect fixed, original runtime delay remains unknown.",
+    "premerge_workflow_jobs": {"skipped": 1, "success": 33},
+    "url": "https://github.com/AetherraLabs/Aetherra/pull/355",
+    "receipt": {"artifact": "pr355-merge-verification.json", "sha256": "87e8ef7ec815ad0c02f2000f314b5aa877bc928fce5d36bef2444cdf7ca09c4e"}
+  },
+  "clean_merge_suite": {
+    "source": "e8975d38f1a3d1acb78bfb8ad85cb4b56ee9c331",
+    "argv": ["python", "-m", "pytest", "-q", "--junitxml=<junit-report>", "-o", "cache_dir=<isolated-cache>", "--basetemp", "<isolated-temp>"],
+    "passed": 3840,
+    "skipped": 38,
+    "coverage_percent": 45.29,
+    "coverage_minimum_percent": 22,
+    "pytest_seconds": 1451.72,
+    "process_seconds": 1471.44,
+    "exit": 0,
+    "receipt": {"artifact": "main-full-suite.json", "sha256": "c92adc1c52be2c7bd01e45697911227d5abd2b1ba761ee422d4d79968b33cef5"},
+    "log": {"artifact": "main-full-suite.log", "sha256": "1b0695a3dad5d05ad9f7ce5725d563bf05381eeac795ce70b5f2b2575c135848"},
+    "junit": {"artifact": "main-full-suite.xml", "sha256": "1cab09cc3a417cfdebb7874ba80a0b016c1104c5eae2e66774803090b2918408"}
+  },
+  "clean_merge_checks": {
+    "boot": {
+      "argv": ["python", "tools/alpha_boot_validation.py"],
+      "exit": 0,
+      "source": "e8975d38f1a3d1acb78bfb8ad85cb4b56ee9c331",
+      "receipt": {"artifact": "main-boot.json", "sha256": "36fffdab85351b4f6c9e95a1e311124b6302de9ccb27adf342f63f094ce5d562"}
+    },
+    "integration": {
+      "argv": ["python", "-m", "Aetherra.integration_validation"],
+      "exit": 0,
+      "source": "e8975d38f1a3d1acb78bfb8ad85cb4b56ee9c331",
+      "receipt": {"artifact": "main-integration.json", "sha256": "b465eaa853d9b85de588bcce368c11df46a14384de1452033e622aa39bc39bf4"}
+    },
+    "docs": {
+      "argv": ["python", "tools/verify_docs_consistency.py"],
+      "exit": 0,
+      "source": "e8975d38f1a3d1acb78bfb8ad85cb4b56ee9c331",
+      "receipt": {"artifact": "main-docs.json", "sha256": "0c1e89f5615ed4a2b36918afedfe0b8f07d820db6ab19b5204a33d504a76321a"}
+    },
+    "python-quality": {
+      "argv": ["python", "tools/python_quality.py"],
+      "exit": 0,
+      "source": "e8975d38f1a3d1acb78bfb8ad85cb4b56ee9c331",
+      "receipt": {"artifact": "main-python-quality.json", "sha256": "4da4fee65c0b661a37a8472d54135de82913e11cb63ad8d8d48edca36497c908"}
+    }
+  },
+  "fresh_python": {
+    "source": "2767230f851a5c8fe646b21d91ea84cd113fbc0e",
+    "merged_input_hashes_match": true,
+    "input_sha256": {
+      "requirements.lock": "20897ea0eed08ac26888bd701fd9fdddcda6a1539a7c9dc080e9a51190228902",
+      "requirements-ci.lock": "1c8b2090334f67c104d9ecc4c2bcd1471548478a511cf389efafe91a27b0926c",
+      "requirements.txt": "a12991a02c720cc728065e1ea133146253bafe2ddc98ae6c28f602d81f57388c",
+      "requirements/quality.txt": "528891ab43073a5ab4f3d65ce433c0fca56ee9d4d0900e36d193ddf936ed6276"
+    },
+    "system_site_packages": false,
+    "pip": "26.3",
+    "lock_install_count": 167,
+    "strict_audited_distributions": 168,
+    "vulnerability_findings": 0,
+    "pip_audit": "2.10.1",
+    "version": "3.13.7",
+    "commands": {
+      "runtime-create": {"argv": ["<python.exe>", "-m", "venv", "<runtime>"], "exit": 0},
+      "runtime-pip": {"argv": ["<python.exe>", "-m", "pip", "install", "pip==26.3"], "exit": 0},
+      "runtime-install-lock": {"argv": ["<python.exe>", "-m", "pip", "install", "-r", "requirements.lock", "--report", "<desktop-install.json>"], "exit": 0},
+      "runtime-pip-check": {"argv": ["<python.exe>", "-m", "pip", "check"], "exit": 0},
+      "runtime-lock-sync": {"argv": ["<python.exe>", "tools/enforce_lock_sync.py", "--lock", "requirements.lock"], "exit": 0},
+      "audit-create": {"argv": ["<python.exe>", "-m", "venv", "<audit-env>"], "exit": 0},
+      "audit-install": {"argv": ["<python.exe>", "-m", "pip", "install", "pip-audit==2.10.1"], "exit": 0},
+      "strict-audit": {"argv": ["<python.exe>", "-m", "pip_audit", "--path", "<site-packages>", "--strict", "--format", "json", "--output", "<desktop-audit.json>", "--progress-spinner", "off"], "exit": 0}
+    },
+    "receipts": [
+      {"artifact": "fresh-python-profile.json", "sha256": "06a92cd6578bd2e4f034b6fd6cb0d371721e1091083998031384494021f59437"},
+      {"artifact": "desktop-install.json", "sha256": "3861c624c16f4c3cb5bc30d4bde19c71bf950757eebc17df629a4d509ea272b0"},
+      {"artifact": "desktop-audit.json", "sha256": "5e8a39a1fc592674b66a31e8394564eb95abbe43bf5f86c66a151fe2a4039d40"}
+    ]
+  },
+  "fresh_gui": {
+    "source": "949312c3f842283b8b25a8da6babff4e66b0c764",
+    "subtree": "b9eade51820322051659e2ce9d568cd15604f968",
+    "merged_subtree": "b9eade51820322051659e2ce9d568cd15604f968",
+    "node": "v22.18.0",
+    "npm": "11.5.2",
+    "package_sha256": "57e8815280d7fab8ad0802fb5188945c7c442cd80487566f4ddd823d3b6f5d05",
+    "lock_sha256": "b2ed55bda12306a22d718661976fa7d4bb56a3c8a10008a73f1ea9af5e13f25b",
+    "installed_packages": 358,
+    "vulnerability_findings": 0,
+    "tests_passed": 32,
+    "commands": {"npm.cmd ci --ignore-scripts --no-audit": 0, "npm.cmd audit --audit-level=low": 0, "npm.cmd test": 0, "npm.cmd run build": 0, "npm.cmd run lint": 0},
+    "receipt": {"artifact": "fresh-gui-20261125T073705578Z-summary.json", "sha256": "d1a3d27477f779935b1a7c6a28c33a9a6bb7c31ae6fcd2255b6d1068ee11b918"}
+  },
+  "hosted_and_release": {
+    "main_push_workflows_succeeded": 11,
+    "source": "e8975d38f1a3d1acb78bfb8ad85cb4b56ee9c331",
+    "ci_quality_run": "https://github.com/AetherraLabs/Aetherra/actions/runs/45571159696",
+    "production_signing_job": "https://github.com/AetherraLabs/Aetherra/actions/runs/45571159696/job/139057861559",
+    "production_signed_bundle": "success",
+    "signed_manifest_policy": "success",
+    "release_workflow": "https://github.com/AetherraLabs/Aetherra/actions/runs/45572771086",
+    "release_tag": "v0.5.0-beta.14",
+    "release_url": "https://github.com/AetherraLabs/Aetherra/releases/tag/v0.5.0-beta.14",
+    "tag_commit": "a30277e3cfeb9e80f0605436e366721a548ead6d",
+    "signature": "Ed25519 verified",
+    "downloaded_sha256": {
+      "aetherra-0.5.0b14-py3-none-any.whl": "5e459375806945c54e06e83ab3f5c4e205352316638009f231473d365ccb5b85",
+      "aetherra-0.5.0b14.tar.gz": "d90dec0e51692487f1673e74deb93076537dbd52d13519772a212e3cb5fedeaa",
+      "release-manifest.json": "dfd64b56239e96c82b61b32b070f64f395bb6e13f9e69bfcc293ab68bb22f409",
+      "release-manifest.json.sig": "f6d162322afdd2109e7897ca472445307fae4d1122219e05368920d947a7ff0e"
+    },
+    "verification_exit": 0,
+    "verification_commands": [
+      "gh run view 45572771086 -R AetherraLabs/Aetherra --json status,conclusion,url,headSha,workflowName",
+      "gh release view v0.5.0-beta.14 -R AetherraLabs/Aetherra --json tagName,targetCommitish,publishedAt,assets,url,isPrerelease",
+      "gh api repos/AetherraLabs/Aetherra/commits/v0.5.0-beta.14",
+      "gh release download v0.5.0-beta.14 -R AetherraLabs/Aetherra --dir <release-verification> --pattern release-manifest.json --pattern release-manifest.json.sig --pattern aetherra-0.5.0b14-py3-none-any.whl --pattern aetherra-0.5.0b14.tar.gz",
+      "runtime/Scripts/python.exe -B tools/verify_release_manifest.py --manifest <release-verification>/release-manifest.json --dist <release-verification> --pubkey <trusted-public-key-hex>",
+      "gh run list -R AetherraLabs/Aetherra --commit a30277e3cfeb9e80f0605436e366721a548ead6d"
+    ],
+    "scope": "Signed manifest and named Python distributions. The manifest does not include a source commit ID. The workflow and GitHub tag metadata establish commit lineage. Full-suite scope belongs to the tested merge.",
+    "receipt": {"artifact": "main-release-verification.json", "sha256": "60762d22f8c29acd5b4313297ad78220b70bf36528c87ef0a7d32ccdd7dceee3"}
+  },
+  "released_profile": {
+    "source": "a30277e3cfeb9e80f0605436e366721a548ead6d",
+    "headless_live": {
+      "argv": ["python", "live_smoke.py", "<artifact-directory>"],
+      "launcher": "aetherra_os_launcher.py --mode full --no-gui --config PROFILE/launcher.json",
+      "model": "gpt-4o",
+      "fallback": false,
+      "source_record": "d2370de2ba69eb4b02c47a8a51d713c4",
+      "write_pid": 17052,
+      "recall_pid": 38044,
+      "retrieved_ids": ["d2370de2ba69eb4b02c47a8a51d713c4"],
+      "provider_evidence_ids": ["d2370de2ba69eb4b02c47a8a51d713c4"],
+      "missing_attribute_and_separate_profile_verified": true,
+      "process_exits": [0, 0, 0],
+      "helper_exit": 0,
+      "stop": "Harness SIGINT",
+      "receipts": [{"artifact": "main-live.json", "sha256": "256ab27b09cd425a8a15f7f1f805d29d5d5308f9fb8f02f44431b5f4c93e8843"}, {"artifact": "main-live-artifacts/summary.json", "sha256": "eef4ee8fbe99ed4c4400e466b0f2f8c208e4ec0702cfb3170b1d3c89c2626120"}]
+    },
+    "normal_cli_live": {
+      "model": "gpt-4o",
+      "fallback": false,
+      "matching_record": "48fbea8cc7582e6feb5cd4e4ac74e429",
+      "competing_record": "73df049bf6646cd633f3b6f0fe16598c",
+      "recall_public_ids": {"response_evidence_ids": ["48fbea8cc7582e6feb5cd4e4ac74e429"], "recall_record_ids": ["48fbea8cc7582e6feb5cd4e4ac74e429"], "llm_evidence_ids": ["48fbea8cc7582e6feb5cd4e4ac74e429"]},
+      "missing_attribute_uncertainty_verified": true,
+      "actual_provider_input_observed": false,
+      "private_chat_history_observed": false,
+      "receipts": [{"artifact": "manual-probe-first.json", "sha256": "9cd4eec321c99d6e97931fcc3f0f2e945bc18935992b4f4b3d974e09da1cc207"}, {"artifact": "manual-probe-second.json", "sha256": "3209d78ae4ef495f0f18f55caeb01153dcb9f67cb03e052d4cdacc598e686e0b"}]
+    },
+    "physical_shutdown": {
+      "argv": ["python", "aetherra_os_launcher.py", "--mode", "full", "--no-gui", "--config", "<profile>/launcher.json"],
+      "runs": [{"pid": 15320, "exit_code": 0, "hub_port_closed": true, "checkpoints": [{"record_id": "923047776ada49699db5ce8c47683bfc", "checkpoint_id": "251acef5f4854cba93099232801fe133"}], "checkpoint_count": 1, "requested_restore_checkpoint_id": null, "settings_sha256": {"launcher.json": "72f768ecd1b9f7645d25836e9a08fe43de1f01753dbd055452e8e802d688de7b", "policy/guardian.json": "f06828c72d854dd9fb5ac93e65f140d7f554b2f9ad76783cc6452cbbdfe1587a", "policy/capabilities.json": "3ecf6c51dd5630bd582627edac556f11900d934ffcff6bfc0449956d4c8f4aec", "policy/net_policy.json": "cf3e367663defc9b035e7687db2ba80949593abb41e0beccde87e987f9ffbe14"}, "operator_action": "actual Ctrl+C, confirmed by operator", "receipt_acceptance": "UNKNOWN", "receipt": {"artifact": "physical-first.json", "sha256": "23092edbcf0e4319c9da0d6b8d8fa749a4cf1961ce97bda199f5fd937615dd09"}, "sampler": {"artifact": "physical-observation-first.json", "sha256": "e33eccca5009187301de41eecd3980950f2ac6e75bf0bf0a7a38fba1014fbbbb"}}, {"pid": 54128, "exit_code": 0, "hub_port_closed": true, "checkpoints": [{"record_id": "923047776ada49699db5ce8c47683bfc", "checkpoint_id": "251acef5f4854cba93099232801fe133"}, {"record_id": "94ffa81887b64768bd442d07e6b8b27b", "checkpoint_id": "a9fd2aae11674544985d4dfa88f525dd"}], "checkpoint_count": 2, "requested_restore_checkpoint_id": "251acef5f4854cba93099232801fe133", "settings_sha256": {"launcher.json": "8c52a03bad6bea0d89922eaa95ce35f00027f5a56b7cfd4ad41439825297bfe3", "policy/guardian.json": "f06828c72d854dd9fb5ac93e65f140d7f554b2f9ad76783cc6452cbbdfe1587a", "policy/capabilities.json": "3ecf6c51dd5630bd582627edac556f11900d934ffcff6bfc0449956d4c8f4aec", "policy/net_policy.json": "cf3e367663defc9b035e7687db2ba80949593abb41e0beccde87e987f9ffbe14"}, "operator_action": "actual Ctrl+C, confirmed by operator", "receipt_acceptance": "UNKNOWN", "receipt": {"artifact": "physical-second.json", "sha256": "551725cd016d8ca2551ca1f2e0a05f75171573fe17a58c8975762ca7b9c109b8"}, "sampler": {"artifact": "physical-observation-second.json", "sha256": "7829bbd42329af3858415cf8ba811e1740d91313f238658820f33f8a64973a7b"}}],
+      "restored_checkpoint": "251acef5f4854cba93099232801fe133",
+      "restored_row": "923047776ada49699db5ce8c47683bfc",
+      "scope": "Actual operator action, process exit, port closure, durable rows and exact selected-row restoration. Neither sampler observed final receipt acceptance."
+    },
+    "actual_browser": {
+      "checks": {"initial_unavailable": true, "first_live_fresh_observer": true, "read_only_and_actions_disabled": true, "first_stop_automatically_unavailable": true, "restart_automatically_connected": true, "restored_exact_row": "923047776ada49699db5ce8c47683bfc", "restart_fresh_ticks_observed": [12, 41], "second_stop_automatically_unavailable": true, "unavailable_subsystems_unknown_activity_unmeasured_events_empty": true},
+      "console_errors": 0,
+      "console_warnings": ["THREE.Clock deprecated; use THREE.Timer"],
+      "receipt": {"artifact": "browser-physical-verification.json", "sha256": "81b3ce9aae7b3c99e14be40f0e0f2f905d09895b94836c476805b470c0d014ea"}
+    }
+  },
+  "readiness": {
+    "supervised_internal_alpha_go_scope": "unchanged",
+    "unattended_production_and_unverified_installation_graphs": "NO-GO",
+    "issue": "ALPHA-CKPT-001",
+    "issue_status": "OPEN",
+    "original_delay_cause": "UNKNOWN",
+    "c2b_product_implementation": "pending"
+  },
+  "evidence_storage": "Artifact names and SHA-256 digests identify receipts retained in the isolated execution evidence archive."
+}

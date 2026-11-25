@@ -1,10 +1,10 @@
 # Alpha Operator Runbook
 
-Updated: 2026-11-24
+Updated: 2026-11-25
 
-**The existing supervised internal-alpha boundary remains unchanged.** Local
-command-error verification passes; publication/CI and other limits are recorded
-in the [stop-receipt follow-up](ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up).
+**The existing supervised internal-alpha boundary remains unchanged.** See the
+[current checkpoint](ALPHA_READINESS_DECISION.md#c2b-prerequisite-checkpoint-2026-11-25).
+
 At the 2026-11-22 desktop checkpoint, PR #327 was
 merged and clean main and the signed `v0.5.0-beta.6` release passed acceptance.
 Unattended/production operation and
@@ -21,14 +21,30 @@ without fallback, and browser reconnection passed. Its default suite passed:
 **3,136 passed / 40 skipped**, exit 0. Those desktop counts remain historical;
 later Phase A/B and C1/C2a records retain their own revisions.
 
-The current integrated baseline includes PRs #354/#353 and signed
-`v0.5.0-beta.13` (`949312c3`); see the
-[current decision](ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up).
-Hosted main CI/signing passed. Local diagnostic-fix verification passes;
-follow-up publication/CI remain pending. Fresh Python installation, current
-browser/live-model checks and physical keyboard shutdown remain unverified.
-Historical [C1 evidence](evidence/integration_phase_c1_2026-11-24.json) does not
-replace these gates.
+## C2b Prerequisite Checkpoint (2026-11-25)
+
+Use the [source-bound receipt](evidence/c2b_prerequisites_2026-11-25.json) for
+the clean merge `e8975d38` and signed release `a30277e3` (beta.14). The
+fresh Python and GUI checks, clean merge suite, hosted signing, downloaded
+release signature and distribution hashes, live gpt-4o, and actual browser
+stop/restart were verified at their recorded revisions.
+
+For a physical shutdown check, use an isolated disposable profile and the
+[normal launcher](#start-the-full-runtime-in-a-disposable-profile). Apply one
+actual Ctrl+C in the launcher terminal and record the process exit and Hub port
+closure. Confirm the durable row and use the explicit selected handle on the
+next launch. Record exact-row restoration and the browser transition through
+unavailable, automatic reconnection and fresh restored status. Record final
+receipt acceptance separately. If no sampler observes the final acknowledgment,
+mark acceptance unknown even when exit, durability and restoration succeed. That
+was the result of both physical shutdowns in this checkpoint.
+
+For a live-model check, retain public response, recall and LLM evidence IDs
+and the fallback result. The normal CLI run recorded those fields and scored
+the synthetic replies. Its actual provider input and private history were
+unobserved. The separate headless live helper observed generation input and
+correlated it with the persisted and retrieved ID. Its harness sent SIGINT.
+The physical shutdown evidence comes from the two normal-CLI launches.
 
 ## Operating Boundary
 
@@ -1005,16 +1021,11 @@ separate opt-in follows; pending temporal work stays inactive and signing strict
 
 ## Consciousness Checkpoints (Phase C2a)
 
-The checkpoint path is merged in released main `949312c3` (`v0.5.0-beta.13`).
-Hosted main CI and production/release signing passed. The command-error
-correction passes the local full suite; follow-up publication/CI remain pending
-and the original runtime delay is unproven. See the
-[current decision](ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up) and
-historical [review receipt](evidence/integration_phase_c2a_pr_review_2026-11-24.json).
-The Windows normal CLI-only shutdown path passed programmatic SIGINT save/restart
-acceptance; physical keyboard delivery is unverified. The earlier 761.75-second
-extended run and browser checks are historical evidence at `a10b734e`, not reruns
-of the changed launcher. Use the same isolated regression environment, synthetic
+See the [current prerequisite checkpoint](#c2b-prerequisite-checkpoint-2026-11-25)
+for released main and physical shutdown. The historical
+[C2a review receipt](evidence/integration_phase_c2a_pr_review_2026-11-24.json)
+records the Windows normal CLI-only programmatic SIGINT save/restart acceptance. The earlier 761.75-second extended run and browser checks apply
+to `a10b734e`. Use the same isolated regression environment, synthetic
 data and cached embedding model as C1. The output directory must be new; use
 5-300 observation seconds.
 
