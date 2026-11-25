@@ -29,6 +29,10 @@ logger = logging.getLogger(__name__)
 _UNSPECIFIED_INSTANCE = object()
 
 
+class ServiceStatusPreflightTimeoutError(TimeoutError):
+    """The registry deadline expired before status authorization could be applied."""
+
+
 class ServiceStatus(Enum):
     """Service health status enumeration."""
 
@@ -507,7 +511,9 @@ class AetherraServiceRegistry:
         while True:
             with self._status_preflight_lock:
                 if loop.time() >= deadline:
-                    raise TimeoutError("Service registry status preflight timed out")
+                    raise ServiceStatusPreflightTimeoutError(
+                        "Service registry status preflight timed out"
+                    )
                 if (
                     self._status_preflight_worker is None
                     or not self._status_preflight_worker.is_alive()
@@ -521,7 +527,16 @@ class AetherraServiceRegistry:
             # Slot acquisition shares the authorization deadline. Waiting or
             # cancellation here creates no extra worker and never holds the lock.
             await asyncio.sleep(min(0.01, max(0.0, deadline - loop.time())))
-        await asyncio.wait_for(result, timeout=max(0.0, deadline - loop.time()))
+        window = asyncio.timeout_at(deadline)
+        try:
+            async with window:
+                await result
+        except TimeoutError:
+            if not window.expired():
+                raise
+            raise ServiceStatusPreflightTimeoutError(
+                "Service registry status preflight timed out"
+            ) from None
 
     async def update_service_status(
         self,

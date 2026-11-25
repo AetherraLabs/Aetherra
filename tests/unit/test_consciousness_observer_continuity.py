@@ -1167,7 +1167,14 @@ async def test_core_import_preparation_never_blocks_status_or_publishes_after_cu
 
 
 def due_on_first_tick(
-    database, monkeypatch, policy, *, interval=10, start_mode="create", retain=10
+    database,
+    monkeypatch,
+    policy,
+    *,
+    interval=10,
+    start_mode="create",
+    retain=10,
+    save_interval=30,
 ):
     # Standard library imports
     import json
@@ -1202,7 +1209,7 @@ def due_on_first_tick(
 
     def advance_clock(session):
         selection = take(session)
-        offset[0] = 30
+        offset[0] = save_interval
         return selection
 
     monkeypatch.setattr(ObserverCheckpointSession, "take_restore", advance_clock)
@@ -1215,7 +1222,7 @@ def due_on_first_tick(
         automatic=dict(
             recovery.AUTO,
             start_mode=start_mode,
-            save_interval_seconds=30,
+            save_interval_seconds=save_interval,
             retain_checkpoints=retain,
         ),
     )
@@ -1345,6 +1352,155 @@ async def heartbeat_launcher(policy):
     assert await registry.register_service("kernel_loop", kernel)
     assert await registry.register_service("aetherra_engine", engine.impl)
     return launcher
+
+
+@pytest.mark.asyncio
+async def test_status_publication_timeout_preserves_observer_and_periodic_saves(
+    database, monkeypatch, policy, tmp_path
+):
+    # Aetherra imports
+    import aetherra_os_launcher as launcher_module
+    from Aetherra.security.audit_ledger import SecurityAuditLedger
+    from aetherra_service_registry import ServiceStatus
+
+    launcher = await heartbeat_launcher(policy)
+    registry = launcher.service_registry
+    owned = due_on_first_tick(
+        database, monkeypatch, policy, interval=0.2, save_interval=300
+    )
+    launcher.systems["consciousness_core"] = owned
+    assert await registry.register_service("consciousness_core", owned)
+    info = registry.get_service_info("consciousness_core")
+    before = info.last_heartbeat
+
+    loop = asyncio.get_running_loop()
+    entered, expired, polled_degraded, published = (asyncio.Event() for _ in range(4))
+    release = threading.Event()
+    worker = None
+    append = SecurityAuditLedger.append
+    update = registry.update_service_status
+    get_service_info = registry.get_service_info
+    refresh_attempts = 0
+    next_refresh = False
+    next_checkpoint = False
+    observer_clock = runtime.time.monotonic
+
+    monkeypatch.setattr(
+        launcher_module,
+        "time",
+        SimpleNamespace(
+            monotonic=lambda: time.monotonic() + (30 if next_refresh else 0)
+        ),
+    )
+    monkeypatch.setattr(
+        runtime.time,
+        "monotonic",
+        lambda: observer_clock() + (300 if next_checkpoint else 0),
+    )
+
+    def hold_signed_status_receipt(ledger, **kwargs):
+        nonlocal worker
+        record = append(ledger, **kwargs)
+        if (
+            threading.current_thread().name == "registry-status-preflight"
+            and worker is None
+        ):
+            worker = threading.current_thread()
+            loop.call_soon_threadsafe(entered.set)
+            assert release.wait(3)
+        return record
+
+    async def observe_publication(*args, **kwargs):
+        nonlocal refresh_attempts
+        if kwargs.get("nonblocking_preflight"):
+            refresh_attempts += 1
+        try:
+            applied = await update(*args, **kwargs)
+        except TimeoutError:
+            expired.set()
+            raise
+        if applied:
+            published.set()
+        return applied
+
+    def observe_registry_poll(name):
+        value = get_service_info(name)
+        if name == "consciousness_core" and value.status is ServiceStatus.DEGRADED:
+            polled_degraded.set()
+        return value
+
+    def reached_generation_or_stopped(status, generation):
+        return (
+            status["continuity"].get("saved_generation") == generation
+            or not status["thread_alive"]
+        )
+
+    monkeypatch.setattr(SecurityAuditLedger, "append", hold_signed_status_receipt)
+    monkeypatch.setattr(registry, "update_service_status", observe_publication)
+    monkeypatch.setattr(registry, "get_service_info", observe_registry_poll)
+    monitor = None
+    assert owned.start()
+    try:
+        first = await until(
+            owned, lambda status: reached_generation_or_stopped(status, 1)
+        )
+        assert first["continuity"].get("saved_generation") == 1, first
+        assert first["continuity"]["last_save_acceptance"] == "acknowledged"
+        monitor = asyncio.create_task(launcher._monitor_consciousness_observer(owned))
+        await asyncio.wait_for(entered.wait(), 1)
+        await asyncio.wait_for(expired.wait(), 1.5)
+        after_expiry = owned.get_runtime_status()
+        assert after_expiry["runtime_state"] == "running", after_expiry
+        assert info.last_heartbeat == before
+        assert worker is not None
+        assert worker.is_alive()
+
+        release.set()
+        await asyncio.to_thread(worker.join, 1)
+        assert not worker.is_alive()
+        await registry.update_heartbeat("kernel_loop")
+        assert info.last_heartbeat == before
+
+        # The registry can independently mark a service degraded after a missed
+        # heartbeat. Repeating the same desired status still waits its interval.
+        await registry.update_service_status(
+            "consciousness_core", ServiceStatus.DEGRADED
+        )
+        degraded_at = info.last_heartbeat
+        await asyncio.wait_for(polled_degraded.wait(), 2)
+        assert refresh_attempts == 1
+        assert info.last_heartbeat == degraded_at
+
+        next_checkpoint = True
+        owned._wake.set()
+        second = await until(
+            owned, lambda status: reached_generation_or_stopped(status, 2)
+        )
+        continuity = second["continuity"]
+        assert second["ticks_completed"] > after_expiry["ticks_completed"]
+        assert continuity["saved_generation"] == 2
+        assert continuity["last_save_acceptance"] == "acknowledged"
+        assert continuity["saved_trigger"] == "periodic"
+        assert database.conn.execute(
+            "SELECT generation, record_id FROM checkpoint_stream_heads"
+        ).fetchone() == (2, continuity["saved_record_id"])
+
+        next_refresh = True
+        await asyncio.wait_for(published.wait(), 2)
+        assert refresh_attempts == 2
+        assert info.status is ServiceStatus.HEALTHY
+        assert info.last_heartbeat > degraded_at
+        assert SecurityAuditLedger(
+            tmp_path / ".aetherra/security/audit.jsonl"
+        ).verify_integrity(require_signed_records=True)
+    finally:
+        release.set()
+        if monitor is not None:
+            monitor.cancel()
+            await asyncio.gather(monitor, return_exceptions=True)
+        await owned.stop()
+        if worker is not None and worker.is_alive():
+            await asyncio.to_thread(worker.join, 1)
 
 
 @pytest.mark.asyncio
