@@ -141,7 +141,7 @@ def _observe_service(name, service_names, registry, observation, now) -> None:
         metrics.update(projected)
         state = projected["runtime_state"]
         observation["status"] = (
-            "active"
+            ("degraded" if projected["continuity_health"] == "degraded" else "active")
             if projected["available"]
             else {
                 "blocked": "degraded",
@@ -287,67 +287,214 @@ def _observe_service(name, service_names, registry, observation, now) -> None:
     )
 
 
+_CONTINUITY_OBSERVING_STATES = {"fresh", "restored", "saving", "saved"}
+_CONTINUITY_FAULT_STATES = {"blocked", "failed", "uncertain", "retention_blocked"}
+_CONTINUITY_STARTING_STATES = {"restoring", "selected"}
+_JS_SAFE_INTEGER = 2**53 - 1
+
+
+def _bounded_status_number(value: Any) -> bool:
+    return type(value) in (int, float) and 0 <= value <= _JS_SAFE_INTEGER
+
+
 def _continuity_metrics(raw: Any) -> dict[str, Any]:
-    """Project cached receipts only, never checkpoint contents or historical health."""
+    """Project cached scalars without exposing checkpoint contents or digests."""
     raw = raw if isinstance(raw, dict) else {}
-    states = {
+
+    def choice(key, allowed, default=None):
+        value = raw.get(key)
+        return value if isinstance(value, str) and value in allowed else default
+
+    def flag(key, default=None):
+        value = raw.get(key)
+        return value if type(value) is bool else default
+
+    def reference(value, pattern=r"[0-9a-f]{32}"):
+        return (
+            value if isinstance(value, str) and re.fullmatch(pattern, value) else None
+        )
+
+    enabled = flag("enabled", False)
+    state = choice(
+        "state",
+        {"disabled"}
+        | _CONTINUITY_OBSERVING_STATES
+        | _CONTINUITY_FAULT_STATES
+        | _CONTINUITY_STARTING_STATES,
         "disabled",
-        "fresh",
-        "restoring",
-        "restored",
-        "saving",
-        "saved",
-        "blocked",
-        "failed",
-        "uncertain",
-    }
-    errors = {
-        "busy",
-        "denied",
-        "audit_failed",
-        "missing",
-        "ambiguous",
-        "invalid",
-        "unavailable",
-        "cancelled",
-        "uncertain",
-        "policy_not_ready",
-        "core_not_ready",
-        "tick_failed",
-        "reflection_denied",
-        "config_invalid",
-        "stale",
-    }
-    state = raw.get("state")
-    error = raw.get("last_error_code")
+    )
+    error = choice(
+        "last_error_code",
+        {
+            "busy",
+            "denied",
+            "audit_failed",
+            "missing",
+            "ambiguous",
+            "invalid",
+            "unavailable",
+            "cancelled",
+            "uncertain",
+            "policy_not_ready",
+            "core_not_ready",
+            "tick_failed",
+            "reflection_denied",
+            "config_invalid",
+            "stale",
+            "corrupt",
+            "conflict",
+            "capacity",
+            "writer_fenced",
+        },
+    )
+    ownership = choice(
+        "ownership_state",
+        {"disabled", "not_acquired", "last_observed_owned", "lost", "uncertain"},
+        None if enabled else "disabled",
+    )
+    method = choice(
+        "recovery_method",
+        {
+            "none",
+            "new_stream",
+            "explicit_checkpoint",
+            "durable_head",
+            "exact_inspection",
+        },
+        "none",
+    )
+    outcome = choice(
+        "recovery_outcome",
+        {
+            "not_attempted",
+            "fresh",
+            "restored",
+            "blocked",
+            "corrupt",
+            "committed_current",
+            "committed_superseded",
+            "conflict",
+            "not_committed",
+            "history_expired",
+        },
+        "not_attempted",
+    )
+    triggers = {"periodic", "orderly_stop"}
     result = {
-        "enabled": raw.get("enabled") if type(raw.get("enabled")) is bool else False,
-        "state": state if isinstance(state, str) and state in states else "disabled",
-        "outstanding": (
-            raw.get("outstanding") if type(raw.get("outstanding")) is bool else False
+        "enabled": enabled,
+        "state": state,
+        "outstanding": flag("outstanding", False),
+        "error_code": error,
+        "start_mode": choice("start_mode", {"create", "resume"}),
+        "ownership_state": ownership,
+        "recovery_method": method,
+        "recovery_outcome": outcome,
+        "last_save_trigger": choice("last_save_trigger", triggers),
+        "last_save_acceptance": choice(
+            "last_save_acceptance",
+            {"none", "pending", "acknowledged", "unacknowledged", "unknown"},
+            "unknown",
         ),
-        "last_error_code": (
-            error if isinstance(error, str) and error in errors else None
-        ),
+        "saved_trigger": choice("saved_trigger", triggers),
+        "retention_needed": flag("retention_needed"),
+        "restored_save_trigger": choice("restored_save_trigger", triggers),
+        # C2b has no independent lifecycle evidence for a previous session.
+        "previous_shutdown_evidence": "unknown",
+        "previous_save_acceptance": "unknown",
+        "offline_duration_seconds": None,
+        "offline_duration_state": "unknown",
     }
-    for key in ("selected_checkpoint_id", "saved_checkpoint_id"):
+    for key in (
+        "selected_checkpoint_id",
+        "saved_checkpoint_id",
+        "saved_operation_id",
+        "stream_id",
+        "session_id",
+        "restored_session_id",
+    ):
+        result[key] = reference(raw.get(key))
+    for key in ("restored_record_id", "saved_record_id", "matched_record_id"):
+        result[key] = reference(raw.get(key), r"[A-Za-z0-9_-]{1,128}")
+    attempt = raw.get("current_attempt")
+    attempt = attempt if isinstance(attempt, dict) else {}
+    for key in ("operation_id", "checkpoint_id"):
+        result["current_attempt_" + key] = reference(attempt.get(key))
+    for key in ("observed_writer_epoch", "observed_generation", "saved_generation"):
         value = raw.get(key)
         result[key] = (
-            value
-            if isinstance(value, str) and re.fullmatch(r"[0-9a-f]{32}", value)
-            else None
+            value if type(value) is int and 0 <= value <= _JS_SAFE_INTEGER else None
         )
-    for key in ("restored_record_id", "saved_record_id"):
+    for key in (
+        "ownership_checked_at_unix_s",
+        "ownership_lost_at_unix_s",
+        "session_started_at_unix_s",
+        "session_uptime_seconds",
+        "last_verified_observation_at_unix_s",
+        "captured_at_unix_s",
+        "restored_session_started_at_unix_s",
+        "restored_observation_uptime_s",
+        "restored_capture_uptime_s",
+        "observation_gap_seconds",
+    ):
         value = raw.get(key)
-        result[key] = (
-            value
-            if isinstance(value, str) and re.fullmatch(r"[A-Za-z0-9_-]{1,128}", value)
-            else None
+        result[key] = value if _bounded_status_number(value) else None
+    observed_uptime = result["restored_observation_uptime_s"]
+    captured_uptime = result["restored_capture_uptime_s"]
+    if (
+        observed_uptime is not None
+        and captured_uptime is not None
+        and observed_uptime > captured_uptime
+    ):
+        result.update(
+            restored_observation_uptime_s=None, restored_capture_uptime_s=None
         )
-    return {
-        "continuity_" + ("error_code" if key == "last_error_code" else key): value
-        for key, value in result.items()
-    }
+    start = result["session_started_at_unix_s"]
+    last_observation = result["last_verified_observation_at_unix_s"]
+    gap_state = "unknown"
+    if start is not None and last_observation is not None:
+        if (
+            raw.get("observation_gap_state") == "clock_inconsistent"
+            and start < last_observation
+        ):
+            gap_state = "clock_inconsistent"
+        elif (
+            raw.get("observation_gap_state") == "host_wall_clock_estimate"
+            and start >= last_observation
+            and result["observation_gap_seconds"] == start - last_observation
+        ):
+            gap_state = "host_wall_clock_estimate"
+    result["observation_gap_state"] = gap_state
+    if gap_state != "host_wall_clock_estimate":
+        result["observation_gap_seconds"] = None
+
+    automatic = "start_mode" in raw or "stream_id" in raw
+    # C2a publishes the selected handle and the applied row, without C2b metadata.
+    if not automatic and enabled and result["selected_checkpoint_id"]:
+        result["recovery_method"] = "explicit_checkpoint"
+        if result["restored_record_id"]:
+            result["recovery_outcome"] = "restored"
+        elif state in _CONTINUITY_FAULT_STATES:
+            result["recovery_outcome"] = "blocked"
+
+    if not enabled:
+        health = "disabled"
+    elif (
+        state in _CONTINUITY_FAULT_STATES
+        or ownership in {"lost", "uncertain"}
+        or outcome in {"blocked", "corrupt"}
+        or error is not None
+    ):
+        health = "degraded"
+    elif (
+        state not in _CONTINUITY_OBSERVING_STATES
+        or ownership == "not_acquired"
+        or (automatic and ownership != "last_observed_owned")
+    ):
+        health = "pending"
+    else:
+        health = "ok"
+    result["health"] = health
+    return {"continuity_" + key: value for key, value in result.items()}
 
 
 def consciousness_runtime_metrics(raw: dict[str, Any]) -> dict[str, Any]:
@@ -383,15 +530,20 @@ def consciousness_runtime_metrics(raw: dict[str, Any]) -> dict[str, Any]:
         result[key] = value if isinstance(value, bool) else None
     for key in ("ticks_attempted", "ticks_completed", "events_processed"):
         value = raw.get(key)
-        result[key] = value if type(value) is int and 0 <= value <= 2**53 - 1 else None
-
-    def finite(value):
-        return type(value) in (int, float) and math.isfinite(value)
+        result[key] = (
+            value if type(value) is int and 0 <= value <= _JS_SAFE_INTEGER else None
+        )
 
     interval = raw.get("tick_interval_seconds")
-    interval = interval if finite(interval) and 0 < interval <= 86400 else None
+    interval = (
+        interval if _bounded_status_number(interval) and 0 < interval <= 86400 else None
+    )
     last_tick = raw.get("last_tick_at")
-    age = time.time() - last_tick if finite(last_tick) and last_tick > 0 else None
+    age = (
+        time.time() - last_tick
+        if _bounded_status_number(last_tick) and last_tick > 0
+        else None
+    )
     age = age if age is not None and math.isfinite(age) and age >= 0 else None
     threshold = max(3 * interval, 3.0) if interval is not None else None
     fresh = age is not None and threshold is not None and age <= threshold
@@ -424,7 +576,8 @@ def consciousness_runtime_metrics(raw: dict[str, Any]) -> dict[str, Any]:
                 result["persistence_enabled"] is True
                 and result["legacy_file_persistence_enabled"] is False
                 and result["continuity_enabled"] is True
-                and result["continuity_state"] in {"fresh", "restored"}
+                and result["continuity_state"]
+                in (_CONTINUITY_OBSERVING_STATES | _CONTINUITY_FAULT_STATES)
             )
         )
     )

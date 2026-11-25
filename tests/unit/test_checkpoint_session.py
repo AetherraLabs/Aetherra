@@ -379,6 +379,12 @@ def test_monday_friday_gap_is_not_offline_experience(database, wall, gap, state)
     assert status["previous_save_acceptance"] == "unknown"
     assert status["last_verified_observation_at_unix_s"] == 126
     assert status["captured_at_unix_s"] == 123
+    assert status["restored_session_id"] == "c" * 32
+    assert status["session_id"] != status["restored_session_id"]
+    assert status["restored_session_started_at_unix_s"] == 140
+    assert status["restored_observation_uptime_s"] == 1.0
+    assert status["restored_capture_uptime_s"] == 2.0
+    assert status["restored_save_trigger"] == "periodic"
     assert status["session_started_at_unix_s"] == wall
     assert status["observation_gap_seconds"] == gap
     assert status["observation_gap_state"] == state
@@ -1092,3 +1098,30 @@ def test_malformed_advance_retention_flag_refuses_receipt(writing, monkeypatch):
     assert status["last_error_code"] == "corrupt"
     assert status["saved_generation"] is None
     assert status["last_save_acceptance"] == "unacknowledged"
+
+
+def test_startup_inspection_records_time_of_fencing_and_keeps_it(database, monkeypatch):
+    _, commits = seed(database, 1)
+    clock = [1000]
+    session = make_session(database, attempt=commits[0].attempt, wall=lambda: clock[0])
+    original = database.submit_inspect_checkpoint_stream
+
+    def take_over_then_inspect(**kwargs):
+        done(stream.acquire(database, "resume"))
+        clock[0] = 1100
+        return original(**kwargs)
+
+    monkeypatch.setattr(
+        database, "submit_inspect_checkpoint_stream", take_over_then_inspect
+    )
+    session.begin_start()
+    status = finish(session)
+    assert status["ownership_state"] == "lost"
+    assert status["last_error_code"] == "writer_fenced"
+    assert status["ownership_checked_at_unix_s"] == 1000
+    assert status["ownership_lost_at_unix_s"] == 1100
+    assert session.take_restore() is None
+
+    clock[0] = 1200
+    session.poll(local_owned=True)
+    assert session.get_cached_status()["ownership_lost_at_unix_s"] == 1100
