@@ -20,11 +20,22 @@ from contextlib import suppress
 from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Callable, Optional
+from typing import TYPE_CHECKING, Any, Callable, Optional
 
 # Aetherra imports
 from Aetherra.aetherra_core.kernel.narrator import MemoryNarrative, MemoryNarrator
 from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+if TYPE_CHECKING:
+    from .checkpoint_stream import (
+        AcquiredStream,
+        AdvanceReceipt,
+        AdvanceRequest,
+        StreamJob,
+        StreamKey,
+    )
+    from .lifecycle_checkpoint import CheckpointJobControl
+
 
 # Local imports
 from .fractal_mesh import (
@@ -325,6 +336,7 @@ class AetherraMemoryEngineAdvanced:
 
         # Initialize core components
         self.core_memory = LyrixaMemorySystem(self.config.core_db_path)
+        self._checkpoint_core = self.core_memory
         self.fractal_mesh = FractalMeshCore(self.config.fractal_db_path)
         self.concept_manager = ConceptClusterManager(self.config.concepts_db_path)
         self.timeline_manager = EpisodicTimeline(self.config.timeline_db_path)
@@ -361,6 +373,50 @@ class AetherraMemoryEngineAdvanced:
         except Exception:
             # Never fail constructor due to STORM wiring
             self._storm_engine = None
+
+    def submit_acquire_checkpoint_stream(
+        self,
+        *,
+        key: "StreamKey",
+        start_mode: str,
+        retain_checkpoints: int,
+        control: "CheckpointJobControl",
+    ) -> "StreamJob[AcquiredStream]":
+        return self._submit_checkpoint_stream(
+            operation="acquire",
+            key=key,
+            start_mode=start_mode,
+            retain_checkpoints=retain_checkpoints,
+            control=control,
+        )
+
+    def submit_advance_checkpoint_stream(
+        self, *, request: "AdvanceRequest", control: "CheckpointJobControl"
+    ) -> "StreamJob[AdvanceReceipt]":
+        return self._submit_checkpoint_stream(
+            operation="advance", request=request, control=control
+        )
+
+    def _submit_checkpoint_stream(self, *, adapter_owned=None, **job):
+        from .checkpoint_stream import StreamJob
+
+        core = self.core_memory
+
+        def owned():
+            return (
+                self.core_memory is core
+                and self._checkpoint_core is core
+                and core.conn is not None
+                and (adapter_owned is None or adapter_owned())
+            )
+
+        if (
+            type(core) is not LyrixaMemorySystem
+            or self._checkpoint_core is not core
+            or core.conn is None
+        ):
+            return StreamJob.refused("unavailable")
+        return core._submit_checkpoint_stream(backend_owned=owned, **job)
 
     def submit_load_lifecycle_checkpoint(self, *, owner, scope, checkpoint_id, control):
         # Local imports

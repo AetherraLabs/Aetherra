@@ -27,7 +27,18 @@ from concurrent.futures import Future
 from datetime import datetime
 from pathlib import Path
 from threading import Thread
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from Aetherra.aetherra_core.memory.checkpoint_stream import (
+        AcquiredStream,
+        AdvanceReceipt,
+        AdvanceRequest,
+        StreamJob,
+        StreamKey,
+    )
+    from Aetherra.aetherra_core.memory.lifecycle_checkpoint import CheckpointJobControl
+
 
 # Early .env loader: ensure API keys and config from .env are available at startup
 with contextlib.suppress(Exception):
@@ -155,6 +166,40 @@ class MemoryAdapter:
         ):
             raise RuntimeError("checkpoint_unavailable")
         return self.impl
+
+    def submit_acquire_checkpoint_stream(
+        self,
+        *,
+        key: "StreamKey",
+        start_mode: str,
+        retain_checkpoints: int,
+        control: "CheckpointJobControl",
+    ) -> "StreamJob[AcquiredStream]":
+        return self._submit_checkpoint_stream(
+            operation="acquire",
+            key=key,
+            start_mode=start_mode,
+            retain_checkpoints=retain_checkpoints,
+            control=control,
+        )
+
+    def submit_advance_checkpoint_stream(
+        self, *, request: "AdvanceRequest", control: "CheckpointJobControl"
+    ) -> "StreamJob[AdvanceReceipt]":
+        return self._submit_checkpoint_stream(
+            operation="advance", request=request, control=control
+        )
+
+    def _submit_checkpoint_stream(self, **job):
+        from Aetherra.aetherra_core.memory.checkpoint_stream import StreamJob
+
+        try:
+            backend = self._checkpoint_backend()
+        except RuntimeError:
+            return StreamJob.refused("unavailable")
+        return backend._submit_checkpoint_stream(
+            adapter_owned=lambda: self._checkpoint_backend() is backend, **job
+        )
 
     def submit_load_lifecycle_checkpoint(self, **kwargs):
         return self._checkpoint_backend().submit_load_lifecycle_checkpoint(**kwargs)
