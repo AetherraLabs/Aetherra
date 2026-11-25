@@ -738,3 +738,77 @@ def test_before_admission_failure_preserves_all_admitted_evidence(
     session.poll(local_owned=True)
     assert calls == [fault]
     assert len(stream.legacy.rows(database)) == int(prior_acknowledged)
+
+
+@pytest.mark.parametrize(
+    ("prior_acknowledged", "after_cutoff"),
+    [(False, 0.1), (True, 0.1), (False, 0.0), (True, -0.1)],
+)
+def test_tightened_stop_during_final_encoding(
+    writing, database, monkeypatch, prior_acknowledged, after_cutoff
+):
+    # Standard library imports
+    from concurrent.futures import ThreadPoolExecutor
+    from types import SimpleNamespace
+
+    # Aetherra imports
+    from Aetherra.aetherra_core.memory import lifecycle_checkpoint
+    from Aetherra.consciousness import checkpoint_session
+
+    session, clock, tick = writing
+    monkeypatch.setattr(
+        lifecycle_checkpoint, "time", SimpleNamespace(monotonic=lambda: clock[0])
+    )
+    if prior_acknowledged:
+        tick(30)
+        assert finish(session)["last_save_acceptance"] == "acknowledged"
+    tick(60)
+    before = stream.legacy.rows(database)
+    historical = session.get_cached_status()
+    session.begin_stop(deadline=clock[0] + 2, save_checkpoint=True)
+    cutoff = clock[0] + 0.2
+    encoding, tightened = threading.Event(), threading.Event()
+    encode = checkpoint_session.dump_checkpoint_json
+    submit = database.submit_advance_checkpoint_stream
+    deadlines = []
+    jobs = []
+
+    def hold_encoding(state):
+        encoding.set()
+        assert tightened.wait(2)
+        return encode(state)
+
+    def second_stop():
+        assert encoding.wait(2)
+        session.begin_stop(deadline=cutoff, save_checkpoint=True)
+        clock[0] = cutoff + after_cutoff
+        tightened.set()
+
+    def observe_submission(*, request, control):
+        deadlines.append(control.deadline)
+        job = submit(request=request, control=control)
+        jobs.append(job)
+        return job
+
+    monkeypatch.setattr(checkpoint_session, "dump_checkpoint_json", hold_encoding)
+    monkeypatch.setattr(
+        database, "submit_advance_checkpoint_stream", observe_submission
+    )
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        update = executor.submit(second_stop)
+        session.poll(local_owned=True)
+        update.result(timeout=3)
+    for job in jobs:
+        stream.wait_for_worker(job)
+    status = finish(session)
+    rows = stream.legacy.rows(database)
+    if after_cutoff >= 0:
+        assert (deadlines, len(rows)) == ([], len(before))
+        assert rows == before
+        assert status == historical
+    else:
+        assert deadlines == [cutoff]
+        assert len(rows) == len(before) + 1
+        assert status["last_save_acceptance"] == "acknowledged"
+        assert status["saved_trigger"] == "orderly_stop"
+        assert status["saved_generation"] == historical["observed_generation"] + 1

@@ -467,9 +467,6 @@ class ObserverCheckpointSession:
         if not 0 <= now - self.started_monotonic - observed <= self._freshness:
             return
         trigger = "orderly_stop" if stopping else "periodic"
-        deadline = now + 1.0
-        if stopping:
-            deadline = min(deadline, self._stop_deadline)
         try:
             handle = uuid.uuid4().hex
             payload = dump_checkpoint_json(replace(state, checkpoint_id=handle))
@@ -498,10 +495,15 @@ class ObserverCheckpointSession:
                     self._stop_deadline is not None
                 ):
                     return
+                deadline = now + 1.0
+                if stopping:
+                    self._final_attempted = True
+                    deadline = min(deadline, self._stop_deadline)
+                    if self._monotonic_clock() >= deadline:
+                        return
                 self._write_control = CheckpointJobControl(
                     self._cancelled, deadline, self._still_owned, self.wake_event
                 )
-                self._final_attempted = stopping
             self._attempted_tick = self._completed
             self._write_attempt = attempt
             self._write_job = self._memory.submit_advance_checkpoint_stream(
