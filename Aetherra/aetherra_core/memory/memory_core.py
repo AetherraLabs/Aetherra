@@ -16,7 +16,18 @@ import sqlite3
 from contextlib import contextmanager, suppress
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+
+if TYPE_CHECKING:
+    from .checkpoint_stream import (
+        AcquiredStream,
+        AdvanceReceipt,
+        AdvanceRequest,
+        StreamJob,
+        StreamKey,
+    )
+    from .lifecycle_checkpoint import CheckpointJobControl
+
 
 # Local imports
 # Import the canonical engine from the package (exported via __init__)
@@ -182,6 +193,32 @@ class LyrixaMemorySystem:
         else:
             # Fallback to basic quantum engine if advanced not available
             self.engine = QuantumEnhancedMemoryEngine()
+
+    def submit_acquire_checkpoint_stream(
+        self,
+        *,
+        key: "StreamKey",
+        start_mode: str,
+        retain_checkpoints: int,
+        control: "CheckpointJobControl",
+    ) -> "StreamJob[AcquiredStream]":
+        return self._submit_checkpoint_stream(
+            operation="acquire",
+            key=key,
+            start_mode=start_mode,
+            retain_checkpoints=retain_checkpoints,
+            control=control,
+        )
+
+    def submit_advance_checkpoint_stream(
+        self, *, request: "AdvanceRequest", control: "CheckpointJobControl"
+    ) -> "StreamJob[AdvanceReceipt]":
+        return self._submit_checkpoint_stream(
+            operation="advance", request=request, control=control
+        )
+
+    def _submit_checkpoint_stream(self, **job):
+        return self._lifecycle_checkpoints.submit_stream(**job)
 
     def submit_load_lifecycle_checkpoint(self, *, owner, scope, checkpoint_id, control):
         return self._lifecycle_checkpoints.submit(
