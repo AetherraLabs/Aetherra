@@ -193,6 +193,35 @@ async def _run_commands(launcher, profile, artifacts):
         raise
 
 
+def _observe_restore(restore_checkpoint, artifacts):
+    """Record live state after restore arbitration returns and before the tick loop."""
+    # Aetherra imports
+    from Aetherra.consciousness.checkpoint import encode_checkpoint
+
+    def observed_restore(observer, core):
+        ready = restore_checkpoint(observer, core)
+        if ready:
+            continuity = observer.get_runtime_status()["continuity"]
+            if continuity["state"] == "restored":
+                handle = continuity["selected_checkpoint_id"]
+                write_json(
+                    artifacts / "private-restored.json",
+                    {
+                        "thread": threading.current_thread().name,
+                        "checkpoint_id": handle,
+                        "record_id": continuity["restored_record_id"],
+                        "tick_count": core.tick_count,
+                        "events_processed": core.total_events_perceived,
+                        "aggregate": aggregate(
+                            encode_checkpoint(core.export_observer_checkpoint(handle))
+                        ),
+                    },
+                )
+        return ready
+
+    return observed_restore
+
+
 def worker(profile, artifacts, phase):
     """Observe actual owner-thread work without providing a restore oracle."""
     # Standard library imports
@@ -231,6 +260,7 @@ def worker(profile, artifacts, phase):
     # Aetherra imports
     from Aetherra.consciousness.checkpoint import encode_checkpoint
     from Aetherra.consciousness.core.consciousness_core import ConsciousnessCore
+    from Aetherra.consciousness.runtime_observer import ConsciousnessObserver
     from Aetherra.security.audit_ledger import SecurityAuditLedger
     from aetherra_service_registry import AetherraServiceRegistry
     from tests.acceptance.continuity_runtime import ContextResponder
@@ -242,7 +272,6 @@ def worker(profile, artifacts, phase):
     running_loop = None
     original_init = ConsciousnessCore.__init__
     original_tick = ConsciousnessCore.tick
-    original_restore = ConsciousnessCore.restore_observer_checkpoint
     original_status = AetherraServiceRegistry.update_service_status
     status_errors = []
 
@@ -296,24 +325,6 @@ def worker(profile, artifacts, phase):
                 },
             )
 
-    def observed_restore(core, state):
-        original_restore(core, state)
-        # This runs inside the real observer restore, before its first tick.
-        write_json(
-            artifacts / "private-restored.json",
-            {
-                "thread": threading.current_thread().name,
-                "checkpoint_id": state.checkpoint_id,
-                "tick_count": core.tick_count,
-                "events_processed": core.total_events_perceived,
-                "aggregate": aggregate(
-                    encode_checkpoint(
-                        core.export_observer_checkpoint(state.checkpoint_id)
-                    )
-                ),
-            },
-        )
-
     def observed_tick(core):
         if core.observer_only and core.tick_count == 0:
             write_json(
@@ -354,7 +365,9 @@ def worker(profile, artifacts, phase):
         stack.enter_context(patch.object(ConsciousnessCore, "tick", observed_tick))
         stack.enter_context(
             patch.object(
-                ConsciousnessCore, "restore_observer_checkpoint", observed_restore
+                ConsciousnessObserver,
+                "_restore_checkpoint",
+                _observe_restore(ConsciousnessObserver._restore_checkpoint, artifacts),
             )
         )
         # Aetherra imports
@@ -752,6 +765,7 @@ def run(output, observe_seconds):
         assert restored["tick_count"] == first_tick["tick_count"] == 0
         assert restored["events_processed"] == first_tick["events_processed"] == 0
         assert restored["checkpoint_id"] == payload["checkpoint_id"]
+        assert restored["record_id"] == row_a["record_id"]
         assert restored["aggregate"] == first_tick["aggregate"] == aggregate(payload)
         selected = b["stopped"]["observer"]["continuity"]
         assert selected["selected_checkpoint_id"] == payload["checkpoint_id"]
