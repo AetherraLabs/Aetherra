@@ -17,10 +17,12 @@ Keep chat, telemetry, policy and checkpoint lifecycle independent.
 pytest, normal full launcher, Hub and Runtime Observatory; no new dependency.
 
 **Spec:** [C2 observer continuity design](../specs/2026-11-24-phase-c2-observer-continuity-design.md).
-Read it first. C2a has scoped publication-review GO at `5d8ccecb`, based on
-current targeted checks and historical `a10b734e` broader verification. The
-changed launcher has not had a full-suite or browser rerun. See the current
-decision and review receipt below. C2b selection/interval/retention is deferred.
+Read it first. C1/C2a are merged and released in beta.13; hosted CI and signing
+passed. The command-error correction passes local regressions and the full suite;
+follow-up publication/hosted CI remain pending. The original runtime delay is
+unproven; see
+the [current decision](../../ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up).
+Historical checks below retain their scope. C2b selection/interval/retention is deferred.
 
 ## Global Constraints
 
@@ -263,14 +265,19 @@ Add a dated compact receipt in `docs/evidence/`.
   Programmatic SIGINT is verified; physical keyboard delivery remains unverified.
 - [x] Verify current boot, Integration Validation, quality, CI controls and the
   1,733-file committed freeze. Record the publication-review receipt and scoped GO.
-- [ ] Repeat full-suite/browser verification of the changed launcher when required;
-  this publication-review decision does not claim those reruns or hosted CI.
+- [x] Merge C1/C2a and verify hosted main CI plus required production/release signing.
+- [x] Complete the local checkpoint-stop diagnostic regressions/full-suite rerun.
+  Preserve the original clean-main failure and distinguish the diagnostic fix
+  from its unproven runtime delay.
+- [ ] Review/publish the focused follow-up and run hosted CI for that candidate.
+- [ ] Repeat browser verification for the current revision; earlier browser
+  evidence remains historical.
 
 ## Implementation Outcome
 
 The original four tasks reached local verification at `a10b734e`; publication
 review then found and corrected Windows first-Ctrl+C no-save behavior and an
-omitted CI acceptance file. Current scoped review GO is at `5d8ccecb` with
+omitted CI acceptance file. Historical scoped review GO was at `5d8ccecb` with
 129 passing unit/lifecycle tests and 4 passing acceptance tests, current
 boot/integration/quality/CI-control checks and 1,733 frozen source/control hashes.
 The normal Windows CLI saved and restored exact state without an independent
@@ -285,14 +292,14 @@ scalar metrics. No legacy continuity file or pending temporal work was activated
 The original 3,821-pass/38-skip full suite, 45.29% coverage, 761.75-second extended
 run, C1 compatibility and six browser checks remain historical at `a10b734e`.
 GUI 32 tests/build/lint also belong to that evidence; its tree is unchanged.
-The changed launcher has not had a full-suite, extended-window or browser rerun.
-The [current decision](../../ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints)
-and [review receipt](../../evidence/integration_phase_c2a_pr_review_2026-11-24.json)
-distinguish those scopes and retain failure history. Signing, policy and the
-one-second deadline remain unchanged; CI adds acceptance without weakening gates.
+The later merged-main full suite had one stop-receipt failure, followed by
+passing isolated acceptance. The [current decision](../../ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up)
+records the local diagnostic-fix full-suite pass and completed baseline hosted
+CI/signing gates. Follow-up publication/hosted CI remain pending; original failure
+history and its unproven slow operation are retained. Signing, policy and the
+one-second deadline remain unchanged.
 
-Hosted CI awaits publication. Fresh Python installation, live-model operation
-and physical keyboard shutdown remain unverified. Directory isolation is not
-account isolation; no unattended or autonomous-action readiness is claimed.
-C2b selection/interval/retention, merged-main and release verification remain
-separate gates, and pending temporal runtime work stays preserved.
+Fresh Python installation, current browser/live-model operation and physical
+keyboard shutdown remain unverified. Directory isolation is not account isolation;
+no unattended or autonomous-action readiness is claimed. C2b selection, periodic
+saves and retention, and pending Temporal runtime work, remain separate.

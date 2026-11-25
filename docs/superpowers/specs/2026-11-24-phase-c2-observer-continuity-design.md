@@ -1,18 +1,14 @@
 # Phase C2: Observer Continuity Design
 
-Prepared and implemented: 2026-11-24. C2a has scoped publication-review GO at
-`5d8ccecb`, based on current targeted checks and historical `a10b734e` broader
-verification. The changed launcher has not had a full-suite or browser rerun.
-The [current decision](../../ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints)
-and [review receipt](../../evidence/integration_phase_c2a_pr_review_2026-11-24.json)
-record exact scope and remaining verification boundaries.
-
-C1 implementation is committed and pushed as
-[b8719fa2](https://github.com/AetherraLabs/Aetherra/commit/b8719fa22b8bd21ea77b3c4aa721522e312e86ea)
-on `codex/phase-c-observer`; it is not merged. Its
-[source-bound evidence](../../evidence/integration_phase_c1_2026-11-24.json)
-is the precommit verification checkpoint. Publishing does not establish hosted
-CI, fresh-install, browser or live-model acceptance.
+Prepared and implemented: 2026-11-24. C1 and C2a merged through PRs #354 and
+#353; released main is `949312c3` (`v0.5.0-beta.13`). Hosted CI and required
+production/release signing passed. The command-error correction passes local
+regressions and the full suite; follow-up publication/hosted CI remain pending.
+The original stop-receipt failure is retained and its slow operation is unproven. See the
+[current decision](../../ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up).
+Earlier [C1 evidence](../../evidence/integration_phase_c1_2026-11-24.json) and the
+[C2a review receipt](../../evidence/integration_phase_c2a_pr_review_2026-11-24.json)
+retain their historical revisions and acceptance scope.
 
 ## Goal and boundary
 
@@ -223,15 +219,15 @@ one-second deadline remain unchanged.
 
 Historical `a10b734e` evidence includes 3,821 passes, 38 skips, 45.29% coverage,
 the 761.75-second extended run, six browser checks and GUI 32 tests/build/lint.
-The GUI tree is unchanged. The changed launcher has not had a full-suite,
-extended-window or browser rerun. The
-[current decision](../../ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints)
-and [review receipt](../../evidence/integration_phase_c2a_pr_review_2026-11-24.json)
-retain the original GO's missed shutdown path, corrections and verification scopes.
+Those results retain their original scope. The later merged-main full suite had
+one stop-receipt failure, followed by passing isolated acceptance. The
+[current decision](../../ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up)
+records the local diagnostic-fix full-suite pass and completed baseline hosted
+CI/signing gates. Follow-up publication/hosted CI remain pending; original failure
+history and its unproven slow operation are preserved.
 
-Hosted CI awaits publication; fresh Python installation, intentional live-provider
-operation and physical keyboard shutdown remain unverified. Deterministic
-generation is not a live-model pass. This scoped supervised GO establishes no
-account isolation, unattended readiness or action authority. Merged-main and
-release verification are separate. C2b is deferred and pending temporal runtime
-work stays preserved.
+Fresh Python installation, current browser/live-provider operation and physical
+keyboard shutdown remain unverified. Deterministic generation is not a live-model
+pass. The earlier scoped supervised GO is not expanded and establishes no account
+isolation, unattended readiness or action authority. C2b is deferred and pending
+Temporal runtime work stays preserved.

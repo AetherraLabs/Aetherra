@@ -1,0 +1,275 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-24",
+  "timezone": "America/Denver",
+  "recorded_at_utc": "2026-11-25T06:16:14.771374+00:00",
+  "scope": "Checkpoint smoke command failure reporting; runtime timing policy is unchanged.",
+  "decision": "Local diagnostic-fix verification passes. Existing scoped supervised internal-alpha GO is not expanded. Original runtime delay remains unproven.",
+  "base_commit": "949312c3f842283b8b25a8da6babff4e66b0c764",
+  "candidate_branch": "codex/checkpoint-stop-receipt",
+  "candidate_state": "uncommitted; follow-up publication and hosted CI pending",
+  "changed_executable_files": {
+    "tools/alpha_consciousness_continuity_smoke.py": "ef318cc50c6c8e24bb9d5ec9fd9794066da631d1fa68db1fbbf030aab8fe4df2",
+    "tests/unit/test_consciousness_continuity_smoke.py": "45e21941519b78ebbef805edb7951b14f9725db97553e52fae046820dccf7596"
+  },
+  "source_binding": {
+    "watched_files": 1552,
+    "all_hashes_match_after_full_suite": true,
+    "snapshot_sha256": "5b08e0b2a97c2d5ce07dfa55e70843e1f088afe69d7a245a5d4f32d51a6e9244",
+    "unchanged_runtime_and_signing_controls": {
+      ".ci/python-quality-baseline.json": "958fd955e7fc20b73eae4a7bfc4133fa85c242374717614dfd73dabd6df178be",
+      "pyproject.toml": "6924b1ef1e8e1c4b7f090e16274107428bf92a6219c1c09cd73f507f2a6696a7",
+      "aetherra_os_launcher.py": "a9a430c916561bf1ab7e27e9b60b6fda82bc5c735c7b547ef5d62ffc94880085",
+      "aetherra_service_registry.py": "c18729ca311a9428bab139886c4bfef97c2537381b85b357a2c3011f46be5feb",
+      "Aetherra/consciousness/runtime_observer.py": "44e76ec418b142a1f0e701580da286acd46b7d92f6977e0446794c22bed353be",
+      "Aetherra/aetherra_core/memory/lifecycle_checkpoint.py": "9357d71c47c8e569c9c39d15faec4113908ba106d704d8e01e37b59afecc076a"
+    },
+    "all_workflows_unchanged": true
+  },
+  "historical_main": {
+    "c1_merge": "5a900016912f44b84bf8adfc361c80d56620507b",
+    "c2a_merge": "4116f5c62f72f14275953a2015b05ad71beb2bee",
+    "release": "0.5.0-beta.13",
+    "main_workflows_passed": 11,
+    "signed_quality_gates_run": "https://github.com/AetherraLabs/Aetherra/actions/runs/45546947307",
+    "release_run": "https://github.com/AetherraLabs/Aetherra/actions/runs/45548258107",
+    "original_full_suite": {
+      "passed": 3830,
+      "skipped": 38,
+      "failed": 1,
+      "subtests_passed": 5,
+      "test": "test_selected_checkpoint_restores_before_ticks_and_stays_out_of_chat",
+      "error": "Timed out waiting for observer-stopped.json",
+      "cause_of_slow_operation": "unknown; not retroactively assigned by later passes"
+    }
+  },
+  "diagnosis": {
+    "confirmed_defect": "Background stop/session task exceptions were not collected, so the parent reported a missing-file timeout.",
+    "fix": "Atomic sanitized stage/code receipt; fail-fast parent; consume completed task exceptions.",
+    "runtime_fix_claimed": false,
+    "deadlines_or_late_receipt_acceptance_relaxed": false
+  },
+  "regressions": {
+    "first_red_failed": 3,
+    "malformed_receipt_red_failed": 3,
+    "final_passed": 9,
+    "baseline_existing_controls_passed": 99,
+    "command": "python -m pytest tests/unit/test_consciousness_continuity_smoke.py -q --no-cov"
+  },
+  "controlled_real_commit": {
+    "injected_post_commit_delay_seconds": 3,
+    "original_error": "Timed out waiting for observer-stopped.json",
+    "original_parent_cleanup_seconds": 15.016,
+    "fixed_error": "Continuity command failed (stop_observer/consciousness_shutdown_pending)",
+    "fixed_error_receipt_seconds": 2.035,
+    "fixed_parent_cleanup_seconds": 2.119,
+    "both_cases": {
+      "stored_rows": 1,
+      "save_authorizations": 1,
+      "actual_commits": 1,
+      "accepted_receipts": 0,
+      "retries": 0,
+      "final_continuity": "uncertain",
+      "worker_drained": true,
+      "runtime_exit_code": 0,
+      "signed_audit_verified": true
+    },
+    "expected_failure_exits": true,
+    "limit": "Reproduces the masking chain, not proof of which operation was slow in the historical run."
+  },
+  "normal_instrumented_acceptance": {
+    "passed": 2,
+    "runtime_processes": 5,
+    "pytest_seconds": 160.77,
+    "actual_seconds": 161.79,
+    "exit_code": 0,
+    "injected_delay": false,
+    "save_exchange_ms_range": [
+      39.674,
+      105.722
+    ],
+    "max_observer_stop_ms": 150.111,
+    "limit": "External instrumentation adds scheduling overhead; plain full-suite acceptance below is separate."
+  },
+  "full_suite": {
+    "passed": 3840,
+    "skipped": 38,
+    "failed": 0,
+    "subtests_passed": 5,
+    "pytest_seconds": 1538.7,
+    "actual_seconds": 1558.66,
+    "exit_code": 0,
+    "coverage_percent": 45.29,
+    "coverage_required_percent": 22,
+    "skip_locations_and_counts_unchanged": true,
+    "external_diagnostic_instrumentation": false,
+    "actual_command": [
+      "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+      "-m",
+      "pytest",
+      "--junitxml",
+      "D:\\Aetherra Labs\\.codex-checkpoint-stop-20261124\\evidence\\checkpoint-full-suite.xml",
+      "--cov-report",
+      "html:D:\\Aetherra Labs\\.codex-checkpoint-stop-20261124\\evidence\\coverage-html",
+      "--cov-report",
+      "xml:D:\\Aetherra Labs\\.codex-checkpoint-stop-20261124\\evidence\\coverage.xml",
+      "-o",
+      "cache_dir=D:\\Aetherra Labs\\.codex-checkpoint-stop-20261124\\evidence\\pytest-cache",
+      "--basetemp",
+      "D:\\Aetherra Labs\\.codex-checkpoint-stop-20261124\\evidence\\pytest-checkpoint-full-suite"
+    ],
+    "both_continuity_acceptance_tests_passed": true,
+    "all_nine_new_regressions_passed": true
+  },
+  "restart_trace": {
+    "checkpoint_id": "bc1dfbc011b7410d80589d91493aa50d",
+    "saved_record_id": "cd1d84e53983413eb3292cc8edfe10c6",
+    "restored_record_id": "cd1d84e53983413eb3292cc8edfe10c6",
+    "persisted_payload_sha256": "68f607f94b04981d30a3573c1f7c2026477b5e9118898b8cc9b303ef2e6d6825",
+    "restored_aggregate_sha256": "4e0577afe307c6d35386d43344fe77d9011b6523173348b7651bd09fb6bae3f3",
+    "persisted_aggregate_sha256": "4e0577afe307c6d35386d43344fe77d9011b6523173348b7651bd09fb6bae3f3",
+    "exact_state_match": true,
+    "pre_first_tick_count": 0,
+    "nontrivial_trust_observations": 5,
+    "nontrivial_trust_score": 40.0,
+    "nontrivial_qualia_dimensions": 6,
+    "negative_valence_restored": true,
+    "runtime_exits": [
+      0,
+      0,
+      0
+    ],
+    "ports_closed": [
+      true,
+      true,
+      true
+    ],
+    "signed_audits_verified": [
+      true,
+      true,
+      true
+    ],
+    "checkpoint_excluded_from_chat": true,
+    "responder": "deterministic-context-responder",
+    "fallback_ran": false
+  },
+  "quality": {
+    "fixed_baseline_exit_code": 0,
+    "new_or_edited_violations": 0,
+    "ruff_lint_format_black_isort_exit_codes": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "docs_consistency_exit_code": 0
+  },
+  "preservation": {
+    "original_workspace_and_pending_temporal_head_index_status_files_controls": "snapshot check passed after full suite",
+    "isolated_clone": true,
+    "no_commit_or_push_performed": true
+  },
+  "limitations": [
+    "Original slow runtime operation remains unknown; no claim of a production timing fix.",
+    "Fresh Python installation, new browser/live-model and physical keyboard checks not performed.",
+    "Pinned Python environment reused; deterministic responder is not a live-model pass.",
+    "Earlier hosted main signing passed; this follow-up has no hosted CI run yet.",
+    "Published release assets not independently downloaded in this follow-up.",
+    "Pre-existing: foreign profile is blocked/missing at explicit stop; repeated final cleanup can change status to uncertain with no stored row or outstanding/live worker.",
+    "Local profile directories establish storage isolation, not account isolation."
+  ],
+  "raw_artifacts": [
+    {
+      "name": "executable-source-snapshot.json",
+      "sha256": "5b08e0b2a97c2d5ce07dfa55e70843e1f088afe69d7a245a5d4f32d51a6e9244"
+    },
+    {
+      "name": "harness-receipt-red.json",
+      "sha256": "3fe04b90c73adc70c166f58178d3aeaf1228c3e49bc89547694ca0afb33bce91"
+    },
+    {
+      "name": "harness-receipt-red.log",
+      "sha256": "3e4de8266c7ab21f7abf76714c1500db86cb7792d263a40602810189f7dfce0d"
+    },
+    {
+      "name": "harness-validation-red.json",
+      "sha256": "bd3f3b24305b2bf5f78a53af4cf1428d4cec8d3b7d98fbdec656958c5ed94230"
+    },
+    {
+      "name": "harness-receipt-final.json",
+      "sha256": "ccece082641e3fbd17504b29dcf233c2a8dbd1c9cc06d551831cde448b2e0e0a"
+    },
+    {
+      "name": "harness-receipt-final.log",
+      "sha256": "a52306c96fe5eb5aec8846cd361535b9b5fbbf2aed68e1eee397a8049bc7e3df"
+    },
+    {
+      "name": "checkpoint-controls-baseline.json",
+      "sha256": "9dafa8655f2dd006b367f72079878c24e6c2c7d401cec6e37f03340b0ec18c99"
+    },
+    {
+      "name": "fault-comparison.json",
+      "sha256": "8e08810ae307c077b00c5797f7cf4162818fd157e041ed719f8ed341e3380867"
+    },
+    {
+      "name": "stage-summary.json",
+      "sha256": "1db81e9178cb1b8c95abe118b13a03693bf7770f807e0eb4428f6673a1fc63dc"
+    },
+    {
+      "name": "checkpoint_stage_diagnostic.py",
+      "sha256": "f88b4f557cc0442dea1b17977f53bef7119609a5916d768ed7352abdae7fcfe1"
+    },
+    {
+      "name": "checkpoint-stage-acceptance.json",
+      "sha256": "9fe0bf556f3b3171a2687a962c41fe47bffb583f09e12de02b03ebc0361181e3"
+    },
+    {
+      "name": "checkpoint-full-suite.json",
+      "sha256": "1995c88f37ed0d0dc7f661182fd5be1c82e31ccd9f9b053574361e02c7b86fcf"
+    },
+    {
+      "name": "checkpoint-full-suite.log",
+      "sha256": "1b89c2b1cfaa5201d081772e13ff953d87479483e0620c0f815989d8297aca79"
+    },
+    {
+      "name": "checkpoint-full-suite.xml",
+      "sha256": "0dd5b79735b165eff17d9b9c854e9219395a06cb14c1329dab94f5056c567d99"
+    },
+    {
+      "name": "coverage.xml",
+      "sha256": "de9aa690c9c0dc1a1f8626532611568904493c2b612e31d162e681e58bd82d1d"
+    },
+    {
+      "name": "checkpoint-python-quality.json",
+      "sha256": "c171b188cf346e2a1b920d3c84ad19cdd908c743dab49b35d18382e30a116d83"
+    },
+    {
+      "name": "checkpoint-python-quality.log",
+      "sha256": "8c93ce6f8a56f2003c301c6211a8af200511d456cb985b7e63a0b7ca8642276e"
+    },
+    {
+      "name": "checkpoint-ruff.json",
+      "sha256": "ed72154541860ee9891e35c0b27d874de848b3305ac14b9a064079ad8be7c4c4"
+    },
+    {
+      "name": "checkpoint-ruff-format.json",
+      "sha256": "b1b348e091ef0d264eef978824d74b66bf99a2c2c55fd4cc4a7773625c350774"
+    },
+    {
+      "name": "checkpoint-black.json",
+      "sha256": "d43a7bca50054e7210cadefeb1077b5c1c43fa31010846a0dc387b06d1a5a03d"
+    },
+    {
+      "name": "checkpoint-isort.json",
+      "sha256": "7a867d2be1b96bd27cf4fb89676ce6d055ae238672e4909b91ad28c696dc21d9"
+    },
+    {
+      "name": "checkpoint-docs.json",
+      "sha256": "ff2c80a5ec8ca0482fbb4461db8ab53f99fa4659bfe262e7dbbbcfc54a28dde0"
+    },
+    {
+      "name": "checkpoint-docs.log",
+      "sha256": "81c73223560c3775af5273c7aff953bf0772527985142c6761f0ce2901c521a5"
+    }
+  ]
+}

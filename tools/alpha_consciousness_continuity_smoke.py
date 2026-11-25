@@ -31,7 +31,6 @@ from alpha_consciousness_smoke import (
     prepare_observer_profile,
     side_effect_snapshot,
     snapshot,
-    wait_file,
 )
 from alpha_integration_smoke import (
     CHAT_TOKEN,
@@ -101,6 +100,97 @@ def configure(profile, handle=None, *, fresh=False):
         "restore_checkpoint_id": handle,
     }
     write_json(path, config)
+
+
+def wait_file(path, process, seconds=180):
+    """Fail promptly when a child command failed, without replaying its exception."""
+    deadline = time.monotonic() + seconds
+    while True:
+        failure = path.parent / "command-error.json"
+        if failure.exists():
+            try:
+                receipt = json.loads(failure.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError):
+                receipt = {}
+            if not isinstance(receipt, dict):
+                receipt = {}
+            stage = receipt.get("stage")
+            if not isinstance(stage, str) or stage not in {
+                "settle",
+                "stop_observer",
+                "start_conversation",
+                "stop_receipt",
+            }:
+                stage = "unknown"
+            code = receipt.get("code")
+            if not isinstance(code, str) or code not in {
+                "consciousness_shutdown_pending",
+                "command_failed",
+            }:
+                code = "command_failed"
+            raise RuntimeError(f"Continuity command failed ({stage}/{code})")
+        if path.exists():
+            return json.loads(path.read_text(encoding="utf-8"))
+        if process.poll() is not None or time.monotonic() >= deadline:
+            raise RuntimeError(
+                f"Timed out waiting for {path.name}; inspect runtime.log"
+            )
+        time.sleep(0.1)
+
+
+async def _run_commands(launcher, profile, artifacts):
+    """Keep each harness failure distinguishable from a missing stop receipt."""
+    stage = "settle"
+    try:
+        first_cycle = launcher.kernel_loop.get_status()["cycle_count"]
+        deadline = time.monotonic() + 120
+        while True:
+            kernel = launcher.kernel_loop.get_status()
+            if (
+                kernel["cycle_count"] > first_cycle
+                and kernel["queue_sizes"]["high_priority"] == 0
+                and kernel["inflight"].get("engine", 0) == 0
+            ):
+                write_json(
+                    artifacts / "settled.json",
+                    {
+                        "kernel_cycle_count": kernel["cycle_count"],
+                        "side_effects": side_effect_snapshot(profile),
+                    },
+                )
+                break
+            if time.monotonic() >= deadline:
+                return
+            await asyncio.sleep(0.05)
+        while True:
+            if (artifacts / "stop-observer").exists() and not (
+                artifacts / "observer-stopped.json"
+            ).exists():
+                stage = "stop_observer"
+                await launcher._stop_consciousness_observer(save_checkpoint=True)
+                stage = "start_conversation"
+                engine = launcher.systems["aetherra"].impl
+                await engine.start_conversation()
+                stage = "stop_receipt"
+                write_json(
+                    artifacts / "observer-stopped.json",
+                    {
+                        "observer": launcher.systems[
+                            "consciousness_core"
+                        ].get_runtime_status(),
+                        "new_context": engine._public_conversation_context(),
+                    },
+                )
+            await asyncio.sleep(0.05)
+    except Exception as exc:
+        code = (
+            "consciousness_shutdown_pending"
+            if type(exc) is RuntimeError
+            and exc.args == ("consciousness_shutdown_pending",)
+            else "command_failed"
+        )
+        write_json(artifacts / "command-error.json", {"stage": stage, "code": code})
+        raise
 
 
 def worker(profile, artifacts, phase):
@@ -248,45 +338,6 @@ def worker(profile, artifacts, phase):
                     running_loop.call_soon_threadsafe(lambda: None)
                 return
 
-    async def commands(launcher):
-        first_cycle = launcher.kernel_loop.get_status()["cycle_count"]
-        deadline = time.monotonic() + 120
-        while True:
-            kernel = launcher.kernel_loop.get_status()
-            if (
-                kernel["cycle_count"] > first_cycle
-                and kernel["queue_sizes"]["high_priority"] == 0
-                and kernel["inflight"].get("engine", 0) == 0
-            ):
-                write_json(
-                    artifacts / "settled.json",
-                    {
-                        "kernel_cycle_count": kernel["cycle_count"],
-                        "side_effects": side_effect_snapshot(profile),
-                    },
-                )
-                break
-            if time.monotonic() >= deadline:
-                return
-            await asyncio.sleep(0.05)
-        while True:
-            if (artifacts / "stop-observer").exists() and not (
-                artifacts / "observer-stopped.json"
-            ).exists():
-                await launcher._stop_consciousness_observer(save_checkpoint=True)
-                engine = launcher.systems["aetherra"].impl
-                await engine.start_conversation()
-                write_json(
-                    artifacts / "observer-stopped.json",
-                    {
-                        "observer": launcher.systems[
-                            "consciousness_core"
-                        ].get_runtime_status(),
-                        "new_context": engine._public_conversation_context(),
-                    },
-                )
-            await asyncio.sleep(0.05)
-
     with ExitStack() as stack:
         stack.enter_context(
             patch(
@@ -317,7 +368,14 @@ def worker(profile, artifacts, phase):
             result = await original_announcement(launcher)
             launcher_seen = launcher
             engine = launcher.systems["aetherra"].impl
-            command_task = asyncio.create_task(commands(launcher))
+            command_task = asyncio.create_task(
+                _run_commands(launcher, profile, artifacts)
+            )
+            # The sanitized receipt carries the failure to the parent; consume
+            # the task exception so asyncio never logs its private payload.
+            command_task.add_done_callback(
+                lambda task: None if task.cancelled() else task.exception()
+            )
             write_json(
                 artifacts / "boot.json",
                 {

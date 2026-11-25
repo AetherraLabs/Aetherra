@@ -2,8 +2,10 @@
 
 Updated: 2026-11-24
 
-**Current decision: GO for supervised internal alpha on the documented Windows
-source-runtime profile.** At the 2026-11-22 desktop checkpoint, PR #327 was
+**The existing supervised internal-alpha boundary remains unchanged.** Local
+command-error verification passes; publication/CI and other limits are recorded
+in the [stop-receipt follow-up](ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up).
+At the 2026-11-22 desktop checkpoint, PR #327 was
 merged and clean main and the signed `v0.5.0-beta.6` release passed acceptance.
 Unattended/production operation and
 unverified installation graphs remain NO-GO. See
@@ -16,16 +18,17 @@ zero broken requirements, exact lock sync, and zero findings/skips across all
 168 audited distributions. Fresh GUI: 18 tests, build/lint and zero audit findings.
 At that desktop checkpoint, normal-launcher stop/restart, three gpt-4o turns
 without fallback, and browser reconnection passed. Its default suite passed:
-**3,136 passed / 40 skipped**, exit 0. Current candidate results and limits are
-recorded in [the Phase A addendum](ALPHA_READINESS_DECISION.md#phase-a-core-integration-candidate).
+**3,136 passed / 40 skipped**, exit 0. Those desktop counts remain historical;
+later Phase A/B and C1/C2a records retain their own revisions.
 
-The current integrated baseline is PR #352 and signed `v0.5.0-beta.11`; see the
-[clean-main checkpoint](ALPHA_READINESS_DECISION.md#phase-b-merged-main-checkpoint).
-Phase C1 has local GO for supervised operation of the frozen Windows candidate;
-it is committed and pushed as `b8719fa2`, still unmerged. Hosted CI,
-fresh installation, browser and live-model checks are unverified for C1. See the
-[C1 evidence](evidence/integration_phase_c1_2026-11-24.json). The desktop counts
-above remain a historical installation checkpoint.
+The current integrated baseline includes PRs #354/#353 and signed
+`v0.5.0-beta.13` (`949312c3`); see the
+[current decision](ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up).
+Hosted main CI/signing passed. Local diagnostic-fix verification passes;
+follow-up publication/CI remain pending. Fresh Python installation, current
+browser/live-model checks and physical keyboard shutdown remain unverified.
+Historical [C1 evidence](evidence/integration_phase_c1_2026-11-24.json) does not
+replace these gates.
 
 ## Operating Boundary
 
@@ -829,8 +832,7 @@ separate regression gate; a no-provider fallback cannot pass a live-model check.
 
 ## Consciousness Observer Smoke (Phase C1)
 
-C1 has local GO for supervised operation on the frozen Windows candidate,
-committed and pushed as `b8719fa2`, still unmerged. The
+C1 is merged through PR #354. Its historical frozen-candidate
 [acceptance evidence](evidence/integration_phase_c1_2026-11-24.json) records the
 full suite (3,651 passed, 38 skipped, 5 passing subtests), boot/integration and
 quality gates, two 215-second observer profiles and a three-process default
@@ -1003,10 +1005,12 @@ separate opt-in follows; pending temporal work stays inactive and signing strict
 
 ## Consciousness Checkpoints (Phase C2a)
 
-The checkpoint path has scoped publication-review GO for supervised Windows
-source-runtime operation at `5d8ccecb`. See the
-[current decision](ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints) and
-[review receipt](evidence/integration_phase_c2a_pr_review_2026-11-24.json).
+The checkpoint path is merged in released main `949312c3` (`v0.5.0-beta.13`).
+Hosted main CI and production/release signing passed. The command-error
+correction passes the local full suite; follow-up publication/CI remain pending
+and the original runtime delay is unproven. See the
+[current decision](ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up) and
+historical [review receipt](evidence/integration_phase_c2a_pr_review_2026-11-24.json).
 The Windows normal CLI-only shutdown path passed programmatic SIGINT save/restart
 acceptance; physical keyboard delivery is unverified. The earlier 761.75-second
 extended run and browser checks are historical evidence at `a10b734e`, not reruns
@@ -1113,13 +1117,15 @@ At historical source `a10b734e`, six Observatory browser checks passed: running
 status, continuity fields, stopped/unavailable status, exact restored row,
 isolated missing-checkpoint state and absence of console errors. GUI tests
 passed 32 cases, build and lint; the GUI tree is unchanged. Those browser checks
-and the 3,821-pass/38-skip full suite were not repeated for the changed launcher.
-Repeat the browser procedure below when a new browser acceptance is required.
+retain their original revision. The later merged-main full suite had one
+stop-receipt failure; isolated acceptance then passed. The diagnostic-fix
+candidate now passes the full suite without establishing the original slow
+operation. Repeat the browser procedure below for current browser evidence.
 
 The CI workflow includes C2 acceptance in the existing offline pinned-model
 step. Nine platform-portable signal cases are included in the Linux unit-test
 selection; the Windows-specific normal-CLI acceptance is verified locally and skips
-on other platforms. Hosted CI results remain pending publication.
+on other platforms. Hosted CI and main/release signing have since passed.
 Live-model C2a operation is unverified because credentials were unavailable;
 use [the strict-signing live procedure](#live-model-recheck-with-strict-signing)
 when that gate is required. Deterministic generation is not a live-model pass.
@@ -1128,6 +1134,25 @@ Signing, policy and the one-second registry deadline remain unchanged. Profile
 directories provide storage isolation, not account isolation. C2b automatic
 latest selection, periodic saves and retention, unattended operation and
 autonomous action remain outside this scope.
+
+For the checkpoint-stop follow-up, run the unchanged normal-entry acceptance
+and the complete suite in the isolated regression environment:
+
+```powershell
+python -m pytest tests/unit/test_consciousness_continuity_smoke.py -q --no-cov
+python -m pytest tests/acceptance/test_consciousness_continuity.py -q --no-cov
+python -m pytest
+```
+
+Retain exit codes and source hashes with the artifacts. A passing isolated test
+does not erase a failed full-suite result. The follow-up surfaces background
+command failures with sanitized stage/code diagnostics; do not put private
+prompts, exception text, credentials or checkpoint payloads in ordinary logs.
+An uncertain save remains uncertain; do not retry it or infer rollback from a
+missing stop receipt. The local diagnostic-fix candidate passes all nine focused
+regressions and the uninstrumented full suite; its publication/hosted CI remain
+pending. The original slow operation is unproven. See the
+[source-bound follow-up receipt](evidence/checkpoint_stop_followup_2026-11-24.json).
 
 ## Browser Observation And Stop/Restart
 

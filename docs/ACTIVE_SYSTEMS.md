@@ -28,35 +28,24 @@ Offline and live competing-fact/profile checks and core recall are recorded
 in [PERSONAL_CONTINUITY.md](PERSONAL_CONTINUITY.md). This establishes local storage
 isolation, not account isolation or full-runtime readiness.
 
-Integrated alpha baseline (2026-11-24): Phase A core readiness and Phase B
-observe/propose-only Homeostasis and Maintenance are merged through
-[PR #352](https://github.com/AetherraLabs/Aetherra/pull/352), released as
-`v0.5.0-beta.11` at `17a833cd0653556b50d869be1f22b989d5633cb4`.
-See the [clean-main checkpoint](ALPHA_READINESS_DECISION.md#phase-b-merged-main-checkpoint).
+Integrated alpha baseline (2026-11-24): Phase A/B, C1
+[PR #354](https://github.com/AetherraLabs/Aetherra/pull/354) and C2a
+[PR #353](https://github.com/AetherraLabs/Aetherra/pull/353) are merged, released
+as `v0.5.0-beta.13` at `949312c3f842283b8b25a8da6babff4e66b0c764`.
+Hosted main CI and production/release signing passed. The command-error
+correction passes local regressions and the full suite; review/publication and
+hosted follow-up CI remain pending. The original clean-main stop-receipt failure
+is retained, and its slow operation remains unproven.
 
-Phase C1 local acceptance (2026-11-24): **GO for supervised Windows operation of
-the frozen opt-in ConsciousnessCore observer candidate.** The full suite passed
-3,651 tests, 38 skips and 5 passing subtests. Allowed and denied normal-launch
-profiles each crossed 215 seconds; real Observatory HTTP status, signed audit
-chains, independent observer stop and continued chat passed. C1 is committed and
-pushed as `b8719fa2`, still unmerged; hosted CI, browser and live-model
-checks are unverified.
-See [source-bound evidence](evidence/integration_phase_c1_2026-11-24.json), the
+See the [current decision](ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up),
 [C1 contract](AETHERRA_CONSCIOUSNESS_SYSTEM.md#phase-c1-normal-runtime-contract)
-and [operator procedure](ALPHA_OPERATOR_RUNBOOK.md#consciousness-observer-smoke-phase-c1).
-Phase C2a publication-review checkpoint (2026-11-24): **scoped GO for supervised
-Windows source-runtime observer checkpoints at `5d8ccecb`.** Review corrected
-the normal Windows CLI first-SIGINT save path and added C2 acceptance to CI.
-Current targeted checks passed 129 unit/lifecycle tests and 4 acceptance tests,
-including CLI-only shutdown and exact pre-tick restore. The full suite,
-extended run and browser results at `a10b734e` are historical; the changed launcher
-has not had a full-suite or browser rerun. See the
-[current decision](ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints) and
-[review receipt](evidence/integration_phase_c2a_pr_review_2026-11-24.json).
-Hosted CI awaits publication; fresh Python installation, live-model operation
-and physical keyboard shutdown remain unverified. C2b automatic selection,
-periodic saves and retention are deferred. Pending temporal work is preserved;
-no unattended readiness, account isolation or action authority is claimed.
+and [checkpoint operator procedure](ALPHA_OPERATOR_RUNBOOK.md#consciousness-checkpoints-phase-c2a).
+Historical local, browser and live-model evidence retains its source revision.
+Fresh Python installation, current browser/live-model checks and physical keyboard
+shutdown remain unverified. The earlier scoped supervised GO is not expanded.
+C2b automatic selection, periodic saves and retention remain deferred; pending
+Temporal work is preserved. No unattended readiness, account isolation or action
+authority is claimed.
 
 | System | Status | Primary Reference |
 | --- | --- | --- |
