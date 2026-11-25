@@ -2817,7 +2817,9 @@ class AetherraOSLauncher:
             task.cancel()
         try:
             async with asyncio.timeout(max(0.0, stop_deadline - time.monotonic())):
-                await observer.stop(save_checkpoint=save_checkpoint)
+                await observer.stop(
+                    save_checkpoint=save_checkpoint, deadline=stop_deadline
+                )
                 if task is not None:
                     if not task.done():
                         await asyncio.gather(task, return_exceptions=True)

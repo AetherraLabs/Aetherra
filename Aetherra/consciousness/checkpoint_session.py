@@ -7,6 +7,7 @@ import copy
 import hashlib
 import threading
 import uuid
+from collections.abc import Callable
 from dataclasses import asdict, replace
 
 # Aetherra imports
@@ -393,7 +394,7 @@ class ObserverCheckpointSession:
     def begin_stop(self, *, deadline: float, save_checkpoint: bool) -> None:
         # This may run off-owner. Only short local control operations belong here.
         with self._stop_lock:
-            if self._stop_deadline is None:
+            if self._stop_deadline is None or deadline < self._stop_deadline:
                 self._stop_deadline = deadline
             self.startup_cancelled.set()
             if self._write_control is not None:
@@ -431,12 +432,17 @@ class ObserverCheckpointSession:
             deadline = min(deadline, self._stop_deadline)
         return max(0.0, deadline - self._monotonic_clock())
 
-    def poll(self, *, local_owned: bool) -> None:
+    def poll(self, *, local_owned: bool | Callable[[], bool]) -> None:
+        # A positive receipt is immutable once the worker releases the slot.
+        # Observe that boundary before sampling the observer's local identities.
+        write_pending = self._write_job is not None and self._write_job.outstanding
+        if callable(local_owned):
+            local_owned = local_owned()
         if self._job is not None:
             self._poll_start(local_owned=local_owned)
             return
         if self._write_job is not None:
-            self._consume_write(local_owned)
+            self._consume_write(local_owned, was_pending=write_pending)
         if (
             self._write_job is None
             and self._taken
@@ -543,19 +549,25 @@ class ObserverCheckpointSession:
             state="uncertain" if code == "uncertain" else "blocked",
             last_error_code=code,
             ownership_state="lost" if lost else "uncertain",
-            last_save_acceptance="unacknowledged",
         )
+        # Only admission publishes pending. A refusal before admission belongs
+        # to no new attempt and leaves the previous receipt history intact.
+        if self._status["last_save_acceptance"] == "pending":
+            self._status["last_save_acceptance"] = "unacknowledged"
         if lost:
             self._status["ownership_lost_at_unix_s"] = self._wall_clock()
 
-    def _consume_write(self, local_owned):
+    def _consume_write(self, local_owned, *, was_pending):
         job = self._write_job
         deadline = self._write_control.deadline
         if self._stop_deadline is not None:
             deadline = min(deadline, self._stop_deadline)
-        result = job.poll(
-            local_owned=local_owned and self._monotonic_clock() < deadline
-        )
+        eligible = local_owned is True and self._monotonic_clock() < deadline
+        if was_pending and eligible and not job.acceptance_closed:
+            # The worker may have sealed during the identity check. Its wake
+            # causes a fresh post-seal check. Local refusal/expiry needs no wait.
+            return
+        result = job.poll(local_owned=eligible)
         if result is None:
             return
         outstanding = job.outstanding

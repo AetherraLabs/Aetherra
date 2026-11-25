@@ -366,7 +366,7 @@ async def test_launcher_requests_save_only_for_explicit_orderly_stop(method, exp
     requests = []
 
     class Owned:
-        async def stop(self, *, save_checkpoint=False):
+        async def stop(self, *, save_checkpoint=False, deadline):
             requests.append(save_checkpoint)
 
         def get_runtime_status(self):
@@ -385,7 +385,7 @@ async def test_pending_checkpoint_prevents_launcher_memory_teardown():
     launcher = AetherraOSLauncher()
 
     class Owned:
-        async def stop(self, *, save_checkpoint=False):
+        async def stop(self, *, save_checkpoint=False, deadline):
             pass
 
         def get_runtime_status(self):
@@ -457,7 +457,7 @@ async def test_launcher_drains_owned_checkpoint_worker_before_memory_shutdown():
     class Owned:
         _checkpoint_store = Store()
 
-        async def stop(self, *, save_checkpoint=False):
+        async def stop(self, *, save_checkpoint=False, deadline):
             pass
 
         def get_runtime_status(self):
@@ -1384,7 +1384,8 @@ async def test_repeated_launcher_checkpoint_drain_uses_original_deadline(monkeyp
     class Owned:
         _checkpoint_store = SimpleNamespace(drain_lifecycle_checkpoints=drain)
 
-        async def stop(self, *, save_checkpoint):
+        async def stop(self, *, save_checkpoint, deadline):
+            assert deadline == 102.0
             elapsed[0] += 1.25
 
         def get_runtime_status(self):
@@ -1440,11 +1441,14 @@ async def test_launcher_two_seconds_then_zero_budget_until_actual_periodic_drain
     database, monkeypatch, policy
 ):
     # Aetherra imports
-    from aetherra_os_launcher import AetherraOSLauncher
+    import aetherra_os_launcher as launcher_module
 
     owned = due_on_first_tick(database, monkeypatch, policy)
+    # The launcher and observer share a monotonic domain, including the
+    # scheduler pause injected by due_on_first_tick.
+    monkeypatch.setattr(launcher_module, "time", runtime.time)
     entered, release = hold_periodic_boundary(monkeypatch, "after_policy")
-    launcher = AetherraOSLauncher()
+    launcher = launcher_module.AetherraOSLauncher()
     launcher.systems["consciousness_core"] = owned
     launcher._consciousness_task = asyncio.create_task(asyncio.sleep(60))
     owned.start()
@@ -1481,7 +1485,7 @@ async def test_launcher_budget_includes_executor_wait_and_allows_drained_probe(
             drain_lifecycle_checkpoints=lambda *, timeout: timeout == 0
         )
 
-        async def stop(self, *, save_checkpoint):
+        async def stop(self, *, save_checkpoint, deadline):
             pass
 
         def get_runtime_status(self):
@@ -1500,3 +1504,62 @@ async def test_launcher_budget_includes_executor_wait_and_allows_drained_probe(
     await finished_monitor
     launcher._consciousness_task = finished_monitor
     await asyncio.wait_for(launcher._stop_consciousness_observer(), 0.2)
+
+
+@pytest.mark.asyncio
+async def test_ownership_lost_between_positive_sample_and_worker_seal(
+    database, monkeypatch, policy
+):
+    # Aetherra imports
+    from Aetherra.aetherra_core.memory.checkpoint_stream import (
+        AdvanceReceipt,
+        StreamJob,
+    )
+
+    owned = due_on_first_tick(database, monkeypatch, policy)
+    sealing, sampled, release, sealed = (threading.Event() for _ in range(4))
+    local_owner = threading.Event()
+    local_owner.set()
+    original = StreamJob._seal
+
+    def gate_seal(job, value, error, **kwargs):
+        if type(value) is AdvanceReceipt:
+            sealing.set()
+            assert release.wait(3)
+            original(job, value, error, **kwargs)
+            sealed.set()
+        else:
+            original(job, value, error, **kwargs)
+
+    def identity():
+        answer = local_owner.is_set()
+        if (
+            threading.current_thread() is owned._thread
+            and sealing.is_set()
+            and not sampled.is_set()
+        ):
+            sampled.set()
+            assert sealed.wait(3)
+        return answer
+
+    monkeypatch.setattr(StreamJob, "_seal", gate_seal)
+    monkeypatch.setattr(owned, "_local_owned", identity)
+    owned.start()
+    try:
+        assert await asyncio.to_thread(sealing.wait, 2)
+        owned._wake.set()
+        assert await asyncio.to_thread(sampled.wait, 0.5)
+        local_owner.clear()
+        release.set()
+        terminal = {"unacknowledged", "acknowledged"}
+        status = await until(
+            owned, lambda s: s["continuity"]["last_save_acceptance"] in terminal
+        )
+        assert status["continuity"]["last_save_acceptance"] == "unacknowledged"
+        assert status["continuity"]["saved_record_id"] is None
+        assert status["continuity"]["observed_generation"] == 0
+    finally:
+        release.set()
+        local_owner.set()
+        await owned.stop(save_checkpoint=True)
+    assert len(recovery.stream.legacy.rows(database)) == 1

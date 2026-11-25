@@ -564,7 +564,7 @@ class ConsciousnessObserver:
                     accepted
                     and not self._checkpoint_failed
                     and not control.cancelled.is_set()
-                    and time.monotonic() < control.deadline
+                    and time.monotonic() < min(control.deadline, self._save_deadline)
                 )
                 if accepted:
                     self._continuity.update(
@@ -583,7 +583,7 @@ class ConsciousnessObserver:
 
     def _poll_stream(self):
         session = self._session
-        session.poll(local_owned=self._locally_owned())
+        session.poll(local_owned=self._locally_owned)
         status = session.get_cached_status()
         with self._lock:
             # A stop may cancel a later attempt, but cannot retract a receipt
@@ -730,10 +730,16 @@ class ConsciousnessObserver:
                 self._continuity.update(state="uncertain", last_error_code="uncertain")
 
     async def stop(
-        self, *, timeout: float = 2.0, save_checkpoint: bool = False
+        self,
+        *,
+        timeout: float = 2.0,
+        save_checkpoint: bool = False,
+        deadline: float | None = None,
     ) -> None:
         cap = 2.0 if self._automatic is not None else 5.0
-        deadline = time.monotonic() + max(0, min(float(timeout), cap))
+        wait_until = time.monotonic() + max(0, min(float(timeout), cap))
+        if deadline is not None:
+            wait_until = min(wait_until, deadline)
         with self._lock:
             abandon = (
                 self._stop_requested
@@ -744,12 +750,16 @@ class ConsciousnessObserver:
             if not self._stop_requested:
                 self._stop_requested = True
                 self._save_requested = save_checkpoint is True
-                self._save_deadline = deadline
+                self._save_deadline = wait_until
+            elif deadline is not None:
+                self._save_deadline = min(self._save_deadline, wait_until)
+                if self._checkpoint_control is not None:
+                    self._checkpoint_control.limit_deadline(self._save_deadline)
             if self._automatic is not None:
-                deadline = min(deadline, self._save_deadline)
+                wait_until = min(wait_until, self._save_deadline)
                 if self._session is not None:
                     self._session.begin_stop(
-                        deadline=deadline, save_checkpoint=save_checkpoint is True
+                        deadline=wait_until, save_checkpoint=save_checkpoint is True
                     )
             self._stop.set()
             self._wake.set()
@@ -767,7 +777,9 @@ class ConsciousnessObserver:
             self._abandon_checkpoint()
         try:
             while (
-                thread is not None and thread.is_alive() and time.monotonic() < deadline
+                thread is not None
+                and thread.is_alive()
+                and time.monotonic() < wait_until
             ):
                 await asyncio.sleep(0.01)
         except asyncio.CancelledError:

@@ -684,3 +684,57 @@ def test_real_drain_racing_expiry_poll_releases_outstanding_status(
         assert not status["outstanding"]
     finally:
         release.set()
+
+
+@pytest.mark.parametrize("prior_acknowledged", [False, True])
+@pytest.mark.parametrize("fault", ["refused", "encoding", "submission"])
+def test_before_admission_failure_preserves_all_admitted_evidence(
+    writing, database, monkeypatch, prior_acknowledged, fault
+):
+    # Aetherra imports
+    from Aetherra.consciousness import checkpoint_session
+
+    session, clock, tick = writing
+    if prior_acknowledged:
+        tick(30)
+        assert finish(session)["last_save_acceptance"] == "acknowledged"
+    historical = session.get_cached_status()
+    calls = []
+
+    def fail(*args, **kwargs):
+        calls.append(fault)
+        if fault == "refused":
+            return stream.api().StreamJob.refused("unavailable")
+        if fault == "encoding":
+            raise ValueError("invalid checkpoint")
+        raise RuntimeError("adapter unavailable")
+
+    if fault == "encoding":
+        monkeypatch.setattr(checkpoint_session, "dump_checkpoint_json", fail)
+    else:
+        monkeypatch.setattr(database, "submit_advance_checkpoint_stream", fail)
+    tick(60)
+    session.begin_stop(deadline=clock[0] + 2, save_checkpoint=True)
+    blocked = finish(session)
+    assert blocked["state"] == "blocked"
+    assert blocked["last_error_code"] == (
+        "invalid" if fault == "encoding" else "unavailable"
+    )
+    for field in (
+        "last_save_acceptance",
+        "last_save_trigger",
+        "current_attempt",
+        "saved_operation_id",
+        "saved_record_id",
+        "saved_checkpoint_id",
+        "saved_generation",
+        "saved_trigger",
+        "stop_save_submitted",
+        "observed_generation",
+    ):
+        assert blocked[field] == historical[field], field
+    tick(120)
+    session.begin_stop(deadline=clock[0] + 2, save_checkpoint=True)
+    session.poll(local_owned=True)
+    assert calls == [fault]
+    assert len(stream.legacy.rows(database)) == int(prior_acknowledged)
