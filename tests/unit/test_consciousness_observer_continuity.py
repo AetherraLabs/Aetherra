@@ -1246,11 +1246,13 @@ async def test_repeated_stop_preserves_concluded_retention_denial(
         )
         denied = status["continuity"]
         assert denied["last_error_code"] == "denied"
-        assert denied["retention_needed"] and not denied["outstanding"]
+        assert denied["retention_needed"]
+        assert not denied["outstanding"]
         assert denied["saved_generation"] == 3
         assert denied["saved_trigger"] == "periodic"
         assert denied["last_save_acceptance"] == "acknowledged"
-        assert denied["saved_record_id"] and denied["saved_operation_id"]
+        assert denied["saved_record_id"]
+        assert denied["saved_operation_id"]
         assert submitted == ["acquire", "advance", "prune"]
         await owned.stop(save_checkpoint=True)
         assert not owned.get_runtime_status()["thread_alive"]
