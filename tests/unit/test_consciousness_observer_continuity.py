@@ -1576,6 +1576,174 @@ async def test_owner_wakes_inside_ten_second_tick_wait(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("cut", ["receipt", "expiry", "stop"])
+async def test_due_tick_honors_open_receipt_window(
+    database, monkeypatch, policy, tmp_path, cut
+):
+    # Aetherra imports
+    from Aetherra.aetherra_core.memory import lifecycle_checkpoint
+    from Aetherra.aetherra_core.memory.checkpoint_stream import (
+        AdvanceReceipt,
+        StreamJob,
+    )
+    from Aetherra.consciousness.checkpoint_session import ObserverCheckpointSession
+    from Aetherra.consciousness.core.consciousness_core import ConsciousnessCore
+    from Aetherra.security.audit_ledger import SecurityAuditLedger
+
+    owned = due_on_first_tick(
+        database, monkeypatch, policy, interval=1, save_interval=300
+    )
+    committed, release = hold_periodic_boundary(monkeypatch, "after_policy")
+    decision, sealed, draining = (threading.Event() for _ in range(3))
+    clock = None
+    next_tick = None
+    choices = []
+    second_tick = []
+    seal_times = []
+    running_clock = runtime.time.monotonic
+    applied = ObserverCheckpointSession.mark_applied
+    tick = ConsciousnessCore.tick
+    seal = StreamJob._seal
+    wait = owned._wake.wait
+    drain = owned._drain_stream
+
+    def start_clock(session):
+        nonlocal clock, next_tick
+        applied(session)
+        # Preserve normal startup validation. After apply the owner and worker
+        # share a controlled clock for their unchanged production budgets.
+        clock = running_clock()
+        next_tick = clock + 1
+        monkeypatch.setattr(lifecycle_checkpoint, "time", runtime.time)
+
+    def signed_tick(core):
+        nonlocal clock
+        first = core.tick_count == 0
+        early = False
+        if core.tick_count == 1:
+            continuity = owned.get_runtime_status()["continuity"]
+            second_tick.append(continuity["last_save_acceptance"])
+            if not decision.is_set():
+                choices.append("tick")
+                decision.set()
+            early = cut == "receipt" and second_tick[-1] == "pending"
+            if early:
+                assert sealed.wait(2), "the committed advance did not seal"
+        tick(core)
+        if first:
+            clock += 0.5
+        if early:
+            # Model a synchronous signed tick crossing the unchanged deadline
+            # after the worker already delivered a valid receipt.
+            clock = owned._session._write_control.deadline
+
+    def observe_seal(job, value, error, **kwargs):
+        seal(job, value, error, **kwargs)
+        if type(value) is AdvanceReceipt and job._sealed is not None:
+            seal_times.append(runtime.time.monotonic())
+            sealed.set()
+
+    def observe_wait(timeout):
+        if next_tick is not None and clock >= next_tick and not decision.is_set():
+            choices.append("wait")
+            decision.set()
+        return wait(timeout)
+
+    def observe_drain():
+        draining.set()
+        drain()
+
+    def tick_and_receipt_resolved(status):
+        return (
+            status["ticks_completed"] >= 2
+            and status["continuity"]["last_save_acceptance"] != "pending"
+        )
+
+    monkeypatch.setattr(
+        runtime.time, "monotonic", lambda: running_clock() if clock is None else clock
+    )
+    monkeypatch.setattr(ObserverCheckpointSession, "mark_applied", start_clock)
+    monkeypatch.setattr(ConsciousnessCore, "tick", signed_tick)
+    monkeypatch.setattr(StreamJob, "_seal", observe_seal)
+    monkeypatch.setattr(owned._wake, "wait", observe_wait)
+    monkeypatch.setattr(owned, "_drain_stream", observe_drain)
+
+    assert owned.start()
+    try:
+        assert await asyncio.to_thread(committed.wait, 2)
+        pending = await until(owned, lambda s: s["continuity"].get("outstanding"))
+        assert pending["ticks_completed"] == 1
+        assert pending["continuity"]["last_save_acceptance"] == "pending"
+        head = database.conn.execute(
+            "SELECT generation, record_id FROM checkpoint_stream_heads"
+        ).fetchone()
+        assert head[0] == 1
+
+        deadline = owned._session._write_control.deadline
+        assert 0 < deadline - next_tick < 1
+        clock = next_tick
+        owned._wake.set()
+        assert await asyncio.to_thread(decision.wait, 2)
+
+        if cut == "receipt":
+            release.set()
+            assert await asyncio.to_thread(sealed.wait, 2)
+            assert seal_times == [next_tick]
+            assert seal_times[0] < deadline
+            result = await until(owned, tick_and_receipt_resolved)
+            continuity = result["continuity"]
+            assert continuity["last_save_acceptance"] == "acknowledged"
+            assert choices == ["wait"]
+            assert second_tick == ["acknowledged"]
+            assert head == (
+                continuity["saved_generation"],
+                continuity["saved_record_id"],
+            )
+        elif cut == "expiry":
+            assert choices == ["wait"]
+            clock = deadline
+            owned._wake.set()
+            result = await until(owned, lambda s: s["ticks_completed"] >= 2)
+            continuity = result["continuity"]
+            assert second_tick == ["unacknowledged"]
+            assert continuity["last_error_code"] == "uncertain"
+            assert continuity["outstanding"]
+            assert continuity["saved_record_id"] is None
+            release.set()
+            drained = await until(owned, lambda s: not s["continuity"]["outstanding"])
+            assert drained["continuity"]["last_save_acceptance"] == "unacknowledged"
+            assert not sealed.is_set()
+        else:
+            assert choices == ["wait"]
+            await owned.stop(timeout=0)
+            assert await asyncio.to_thread(draining.wait, 1)
+            assert clock == next_tick
+            assert not second_tick
+            assert owned.get_runtime_status()["continuity"]["outstanding"]
+            release.set()
+            stopped = await until(owned, lambda s: not s["thread_alive"])
+            continuity = stopped["continuity"]
+            assert stopped["runtime_state"] == "stopped"
+            assert continuity["last_save_acceptance"] == "unacknowledged"
+            assert not continuity["stop_save_submitted"]
+            assert not continuity["outstanding"]
+
+        assert (
+            database.conn.execute(
+                "SELECT generation, record_id FROM checkpoint_stream_heads"
+            ).fetchone()
+            == head
+        )
+        assert SecurityAuditLedger(
+            tmp_path / ".aetherra/security/audit.jsonl"
+        ).verify_integrity(require_signed_records=True)
+    finally:
+        release.set()
+        await owned.stop(timeout=0)
+        await until(owned, lambda s: not s["thread_alive"])
+
+
+@pytest.mark.asyncio
 async def test_repeated_launcher_checkpoint_drain_uses_original_deadline(monkeypatch):
     # Aetherra imports
     import aetherra_os_launcher as launcher_module
