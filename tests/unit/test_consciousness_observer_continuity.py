@@ -1271,7 +1271,7 @@ async def test_repeated_stop_preserves_concluded_retention_denial(
     assert owned.get_runtime_status()["continuity"] == denied
 
 
-def hold_periodic_boundary(monkeypatch, stage):
+def hold_periodic_boundary(monkeypatch, stage, *, release_timeout=5):
     # Standard library imports
     import sqlite3
 
@@ -1282,7 +1282,7 @@ def hold_periodic_boundary(monkeypatch, stage):
 
     def pause():
         entered.set()
-        assert release.wait(5)
+        assert release.wait(release_timeout)
 
     # Aetherra imports
     import Aetherra.guardian.core as guardian
@@ -1593,9 +1593,12 @@ async def test_due_tick_honors_open_receipt_window(
     owned = due_on_first_tick(
         database, monkeypatch, policy, interval=1, save_interval=300
     )
-    committed, release = hold_periodic_boundary(monkeypatch, "after_policy")
+    committed, release = hold_periodic_boundary(
+        monkeypatch, "after_policy", release_timeout=None if cut == "stop" else 5
+    )
     decision, sealed, draining = (threading.Event() for _ in range(3))
     pre_due_wait, clock_advanced = threading.Event(), threading.Event()
+    stop_delivered, receipt_wait_started = threading.Event(), threading.Event()
     clock = None
     next_tick = None
     choices = []
@@ -1661,6 +1664,11 @@ async def test_due_tick_honors_open_receipt_window(
         elif clock >= next_tick and not decision.is_set():
             choices.append("wait")
             decision.set()
+            if cut == "stop":
+                # Start the real timeout after the controller delivers stop.
+                # The original wake event retains its signal across this handoff.
+                stop_delivered.wait()
+            receipt_wait_started.set()
             signaled = wait(timeout)
             receipt_wait_signals.append(signaled)
             return signaled
@@ -1734,7 +1742,10 @@ async def test_due_tick_honors_open_receipt_window(
             assert not sealed.is_set()
         else:
             assert choices == ["wait"]
+            assert not receipt_wait_started.is_set()
+            assert not owned._wake.is_set()
             await owned.stop(timeout=0)
+            stop_delivered.set()
             assert await asyncio.to_thread(draining.wait, 1)
             assert receipt_wait_signals == [True]
             assert clock == next_tick
@@ -1760,7 +1771,10 @@ async def test_due_tick_honors_open_receipt_window(
     finally:
         clock_advanced.set()
         release.set()
-        await owned.stop(timeout=0)
+        try:
+            await owned.stop(timeout=0)
+        finally:
+            stop_delivered.set()
         await until(owned, lambda s: not s["thread_alive"])
 
 
