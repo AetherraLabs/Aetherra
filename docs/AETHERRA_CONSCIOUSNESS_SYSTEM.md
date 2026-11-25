@@ -3,10 +3,98 @@
 > Maintained and officially operated by **Aetherra Labs**.
 > **Powered by Aetherra Labs.**
 
-Aetherra's Consciousness System provides the core phenomenological feedback loop that enables autonomous
-awareness, adaptive decision-making, and self-directed action. Built on principles from consciousness
-studies and cognitive science, it integrates perception, attention, appraisal, deliberation, action, and
-reflection into a unified always-on awareness engine with adaptive self-trust and semantic resonance.
+Aetherra's Consciousness System models perception, attention, appraisal,
+intentions and reflection. These are internal software state and heuristics;
+they do not establish sentience or grant independent action authority. Aetherra
+remains the persistent cognitive system and Lyrixa her user-facing persona.
+
+## Phase C1 Normal Runtime Contract
+
+**GO for supervised operation of this frozen Windows source-runtime candidate.**
+C1 local acceptance passed; `b8719fa2` is committed and pushed, still unmerged.
+Hosted CI, browser and live-model checks are unverified. This section is
+authoritative for the normal full launcher's Phase C1 path. The component and
+historical phase reference below does not imply every standalone feature is active.
+See the [operator procedure](ALPHA_OPERATOR_RUNBOOK.md#consciousness-observer-smoke-phase-c1)
+and [decision](ALPHA_READINESS_DECISION.md#phase-c1-observer-candidate).
+The [source-bound evidence](evidence/integration_phase_c1_2026-11-24.json) records
+3,651 passing tests, 38 skips and 5 passing subtests; boot, integration and quality
+gates pass. Two 215-second normal-launch profiles verify allowed and denied
+reflection, both signed audit chains, actual Observatory HTTP state and chat
+after observer stop. A separate three-process default-disabled run verifies
+personal-memory restart and storage isolation with no observer registration.
+Generation was deterministic and context-derived, with zero fallback; no live
+provider or fresh installation was tested for this candidate.
+
+The normal launcher leaves this observer disabled unless root configuration has
+`consciousness_enabled: true` or, when that key is absent,
+`AETHERRA_CONSCIOUSNESS_ENABLED=1`. `consciousness_mode` accepts only `observe`;
+`consciousness_tick_hz` accepts a finite 0.1–5 Hz, default 1 Hz. The adapter starts
+a single owned worker after actual registry, Kernel, Hub, Memory and Engine
+activation. Readiness compares the registered implementations owned by the
+concrete `MemoryAdapter` and `EngineAdapter` through their `.impl` references;
+an arbitrary object's similarly named attribute is not ownership evidence.
+An existing foreign `consciousness_core` registration is preserved. A missing
+dependency, invalid policy or denied reflection is reported as blocked/failed,
+not fabricated successful work.
+
+C1 constructs `ConsciousnessCore(..., observer_only=True)` with its own ThinkStream
+and a bounded PerceptionBus. Events contain measured internal service health,
+not conversations or broad host sensors. The observer retains at most 64 working
+events, narrative moments and active intents in each window, independent of
+standalone environment capacities. Guardian authorizes both micro and macro
+reflection, with a successful signed-audit receipt required before reflection
+mutation. Enforcing mode, valid required policy, capabilities, strict script and
+release-signing flags, and audit remain mandatory.
+
+No SafetyEnvelope actuator or chat Memory consolidator is attached. Direct
+observer actuation and continuity-save requests fail closed. `ContinuityMemory(path=None)`
+performs no disk load; observer ticks write neither continuity snapshots nor QFAC
+records. Ambient standalone autonomy settings cannot enable actions. Registry
+presence alone is not a completed tick or a readiness proof.
+
+`ConsciousnessObserver` owns lifecycle and exposes cached `get_runtime_status()`
+and `get_think_stream()` reads. The Hub's `/api/consciousness/state` and the
+Observatory's `/api/runtime-ui/subsystems/consciousness` project completed and
+attempted ticks, measured event counts, freshness, worker/lifecycle state and
+explicitly disabled persistence/action flags. Status reads do not call the
+legacy core's autopilot evaluator or create audit entries. A stopped, failed or
+stale observer cannot appear live through an old pushed ThinkStream snapshot.
+Its stop is bounded and reports a still-owned worker honestly. There is no new
+public stop or action route; ordinary chat remains independently owned.
+
+The observer's registry status updates keep Guardian authorization and require
+an audit receipt. One daemon worker slot per registry performs only that
+preflight. Concurrent callers wait asynchronously for the slot within the same
+one-second total deadline as authorization. Registry mutation and status-change
+broadcast remain on the original event loop after rechecking the same
+registration, instance and prior status. An optional post-authorization
+`apply_if` guard can only refuse mutation, never grant permission. Cancellation
+or timeout cannot apply a late result. A still-running preflight retains its
+slot, preventing unbounded worker creation. Unchanged live
+heartbeats are coalesced to 30 seconds under the default 180-second stale limit;
+a shorter configured stale limit reduces that interval. Status transitions are
+handled on the next monitor check. This avoids repeated audit I/O on the chat
+loop without changing registry authority or existing callers' default behavior.
+
+The normal full launcher also refreshes its owned Engine registration on the
+existing 30-second lifecycle cadence. It requires the concrete `EngineAdapter`,
+its initialized implementation, the linked live owned Kernel and its uncancelled
+local task, and both exact healthy registrations. These checks run before and
+after audited authorization. A stopped, replaced, unhealthy or mock instance
+receives no heartbeat. This repairs Engine registration expiry beyond the
+180-second stale threshold; it does not promote health, prove model availability
+or grant observer actions.
+
+C1 state intentionally resets after process restart. **C2** must address isolated
+persistent continuity, failed/corrupt-restore protection and accurate trust
+rehydration before enabling durable consciousness history. This is separate from
+the existing personal-continuity chat Memory path. The pending
+TemporalConsciousnessEngine observer work is preserved and is not imported or
+activated by C1. No production, unattended or autonomous-action GO follows from
+this observer milestone. The [C2a plan](superpowers/plans/2026-11-24-phase-c2-observer-checkpoints.md)
+and [design](superpowers/specs/2026-11-24-phase-c2-observer-continuity-design.md)
+prepare exact Memory checkpoints; none of those proposed APIs/config is active.
 
 ## Architecture overview
 
@@ -64,18 +152,26 @@ core = ConsciousnessCore(
 
 File: `Aetherra/consciousness/core/config.py`
 
-- `TICK_HZ`: Loop frequency (default: 1 Hz)
-- `MAX_FOCUSES`: Top-k focus limit (default: 5)
-- `AUTONOMY_MODE`: "observe" | "suggest" | "auto" (default: "suggest")
-- `SAFETY_ENVELOPE_ENABLED`: Enable action execution (default: True)
-- `ENABLE_QFAC_PERSISTENCE`: Long-term narrative memory (default: True)
-- `DEBUG_CONSCIOUSNESS`: Verbose logging (default: False)
+These are standalone component defaults, not C1 activation settings:
+
+- `TICK_HZ`: Standalone frequency (default: 5 Hz); the C1 owner defaults to 1 Hz.
+- `MAX_FOCUSES`: Top-k focus limit (default: 5).
+- `AUTONOMY_MODE`: `observe` | `assist` | `autopilot` | `emergency` (default: `observe`).
+  C1 accepts only `observe`; `suggest` is not an alias for `assist`.
+- `SAFETY_ENVELOPE_ENABLED`: Standalone configuration flag (default: True);
+  it does not attach an actuator to C1.
+- `ENABLE_QFAC_PERSISTENCE`: Standalone QFAC store writes (default: True);
+  the current store is an in-memory scaffold, not verified durable chat Memory.
+  C1 disables these writes.
+- `DEBUG_CONSCIOUSNESS`: Verbose logging (default: False).
 
 **Key APIs:**
 
-- `run()`: Main loop (blocking, runs until shutdown)
-- `get_status() -> dict`: Current state snapshot (qualia, trust, learning params, metrics)
-- `shutdown()`: Graceful cleanup
+- `tick()`: One synchronous cycle; the lifecycle owner schedules it.
+- `get_status() -> dict`: Component state; standalone mode can evaluate autopilot
+  and audit. C1 HTTP reads use the owner's cached APIs instead.
+- `ConsciousnessObserver.start()` / `await stop()`: C1 lifecycle ownership;
+  `ConsciousnessCore` itself has no `run()` or `shutdown()` method.
 
 **Metrics:**
 

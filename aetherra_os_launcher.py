@@ -1276,7 +1276,6 @@ class AetherraOSLauncher:
         await self._load_aether_script_service(system_config)
         await self._load_persistent_memory_system(system_config)
         await self._load_adaptive_behavior_system(system_config)
-        await self._load_consciousness_systems(system_config)
         await self._load_scheduler(system_config)
         await self._load_aetherra_hub(system_config)
         await self._load_self_maintenance_systems(system_config)
@@ -2496,6 +2495,188 @@ class AetherraOSLauncher:
             logger.warning(f"[WARN] Transcendence level error: {e}")
             return 0.8
 
+    def _consciousness_core_readiness(self):
+        """Require this launcher's activated core; registry presence is insufficient."""
+        registry = self.service_registry
+        if registry is None or not registry.get_registry_status().get("running"):
+            return "core_not_ready"
+        if self.kernel_loop is None or not self.kernel_loop.get_status().get("running"):
+            return "core_not_ready"
+        hub = self.systems.get("aetherra_hub")
+        if hub is None or hub is not getattr(self, "_presence_owned_hub", None):
+            return "core_not_ready"
+        if hub.is_running() is not True:
+            return "core_not_ready"
+        # Normal startup registers implementations, while the kernel owns these
+        # concrete adapters. Do not trust an arbitrary object's `.impl` attribute.
+        memory = self.systems.get("memory")
+        engine = self.systems.get("aetherra")
+        if isinstance(memory, MemoryAdapter):
+            memory = memory.impl
+        if isinstance(engine, EngineAdapter):
+            engine = engine.impl
+        for name, instance in (
+            ("kernel_loop", self.kernel_loop),
+            ("memory_system", memory),
+            ("aetherra_engine", engine),
+            ("aetherra_hub", hub),
+        ):
+            info = registry.get_service_info(name)
+            if (
+                instance is None
+                or info is None
+                or info.instance is not instance
+                or info.status is not ServiceStatus.HEALTHY
+                or info.metadata.get("stub")
+                or info.metadata.get("type") == "mock"
+            ):
+                return "core_not_ready"
+        return None
+
+    def _consciousness_observations(self):
+        """Publish only measured, bounded internal health; never user content."""
+        # Aetherra imports
+        from Aetherra.consciousness.core.types import Event
+
+        events = []
+        for name in ("kernel_loop", "aetherra_hub", "memory_system", "aetherra_engine"):
+            info = self.service_registry.get_service_info(name)
+            if info is not None:
+                events.append(
+                    Event(
+                        "svc.health",
+                        {"service": name, "status": info.status.value},
+                        source="runtime",
+                    )
+                )
+        return events
+
+    async def _start_consciousness_observer(self, config):
+        """Opt in after core activation; the Phase C1 path has no actuation/storage."""
+        # Aetherra imports
+        from Aetherra.consciousness.runtime_observer import (
+            ConsciousnessObserver,
+            observer_settings,
+        )
+
+        if "consciousness_core" in self.systems:
+            return
+        registry = self.service_registry
+        if (
+            registry is not None
+            and registry.get_service_info("consciousness_core") is not None
+        ):
+            logger.warning(
+                "[CONSCIOUSNESS] Observer name already owned; leaving existing service intact"
+            )
+            return
+        error = None
+        try:
+            interval = observer_settings(config or {})
+        except ValueError:
+            interval, error = 1.0, "config_invalid"
+        if interval is None:
+            return
+        observer = ConsciousnessObserver(
+            readiness=self._consciousness_core_readiness,
+            observations=self._consciousness_observations,
+            tick_interval=interval,
+        )
+        if error:
+            observer.block(error)
+        self.systems["consciousness_core"] = observer
+        try:
+            if registry is None or not await registry.register_service(
+                "consciousness_core",
+                observer,
+                metadata={
+                    "type": "consciousness",
+                    "phase": "phase_c1_observer",
+                    "observer_only": True,
+                    "self_heartbeat": True,
+                },
+            ):
+                observer.block("core_not_ready")
+                return
+            observer.start()
+            self._consciousness_task = asyncio.create_task(
+                self._monitor_consciousness_observer(observer)
+            )
+        except Exception:
+            await observer.stop()
+            logger.warning("[CONSCIOUSNESS] Observer registration unavailable")
+
+    async def _monitor_consciousness_observer(self, observer):
+        """Refresh only the exact owned worker; failed/blocked loops never stay healthy."""
+        refreshed_at = 0.0
+        try:
+            while True:
+                registry = self.service_registry
+                info = (
+                    registry.get_service_info("consciousness_core")
+                    if registry
+                    else None
+                )
+                if info is None or info.instance is not observer:
+                    await observer.stop()
+                    return
+                state = observer.get_runtime_status()["runtime_state"]
+                status = {
+                    "starting": ServiceStatus.STARTING,
+                    "running": ServiceStatus.HEALTHY,
+                    "stopping": ServiceStatus.STOPPING,
+                    "stopped": ServiceStatus.STOPPING,
+                    "failed": ServiceStatus.FAILED,
+                }.get(state, ServiceStatus.DEGRADED)
+                # Status transitions are immediate; unchanged live heartbeats are
+                # coalesced. Guardian ledger I/O must never run on the chat loop.
+                heartbeat_interval = min(30.0, max(1.0, registry._stale_sec / 3))
+                if (
+                    info.status != status
+                    or time.monotonic() - refreshed_at >= heartbeat_interval
+                ):
+                    await registry.update_service_status(
+                        "consciousness_core",
+                        status,
+                        expected_instance=observer,
+                        nonblocking_preflight=True,
+                        preflight_timeout=1.0,
+                    )
+                    refreshed_at = time.monotonic()
+                if state in {"blocked", "failed", "stopped"}:
+                    return
+                await asyncio.sleep(1)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            await observer.stop()
+            logger.warning("[CONSCIOUSNESS] Observer lifecycle status unavailable")
+
+    async def _stop_consciousness_observer(self):
+        """Stop only the optional C1 observer, preserving core chat ownership."""
+        observer = self.systems.get("consciousness_core")
+        if observer is None or not callable(
+            getattr(observer, "get_runtime_status", None)
+        ):
+            return
+        task = self._consciousness_task
+        if task is not None:
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+            self._consciousness_task = None
+        await observer.stop()
+        registry = self.service_registry
+        info = registry.get_service_info("consciousness_core") if registry else None
+        if info is not None and info.instance is observer:
+            with contextlib.suppress(Exception):
+                await registry.update_service_status(
+                    "consciousness_core",
+                    ServiceStatus.STOPPING,
+                    expected_instance=observer,
+                    nonblocking_preflight=True,
+                    preflight_timeout=1.0,
+                )
+
     async def _start_consciousness_core(self):
         """Start Phase 1 ConsciousnessCore with ThinkStream for UI visualization.
 
@@ -3500,6 +3681,8 @@ class AetherraOSLauncher:
             except Exception as e:
                 logger.warning(f"[WARN] Self-Incorporation activation failed: {e}")
 
+        await self._start_consciousness_observer(config)
+
         logger.info("[OK] All systems activated")
 
     async def _validate_system_health(self):
@@ -3657,6 +3840,69 @@ class AetherraOSLauncher:
 
         self.running = True
 
+    async def _refresh_owned_engine_heartbeat(self):
+        """Refresh an initialized Engine only while its owned kernel task is live."""
+        registry = self.service_registry
+        adapter = self.systems.get("aetherra")
+        if registry is None or type(adapter) is not EngineAdapter:
+            return False
+        engine = adapter.impl
+        kernel = self.kernel_loop
+        task = getattr(self, "_kernel_task", None)
+        try:
+            engine_info = registry.get_service_info("aetherra_engine")
+            kernel_info = registry.get_service_info("kernel_loop")
+
+            def still_live():
+                # Recheck after authorization too: the audit wait can overlap
+                # shutdown, uninitialization, or another owner's registration.
+                if not (
+                    self.running is True
+                    and self.service_registry is registry
+                    and registry._running is True
+                    and self.systems.get("aetherra") is adapter
+                    and adapter.impl is engine
+                    and getattr(engine, "initialized", False) is True
+                    and self.kernel_loop is kernel
+                    and getattr(kernel, "running", False) is True
+                    and getattr(kernel, "aetherra_engine", None) is adapter
+                    and getattr(self, "_kernel_task", None) is task
+                    and isinstance(task, asyncio.Task)
+                    and not task.done()
+                    and not task.cancelling()
+                    and task.get_loop() is asyncio.get_running_loop()
+                    and task.get_loop().is_running()
+                ):
+                    return False
+                for name, info, instance in (
+                    ("aetherra_engine", engine_info, engine),
+                    ("kernel_loop", kernel_info, kernel),
+                ):
+                    if (
+                        info is None
+                        or registry.get_service_info(name) is not info
+                        or info.instance is not instance
+                        or info.status is not ServiceStatus.HEALTHY
+                        or info.metadata.get("stub")
+                        or info.metadata.get("type") == "mock"
+                    ):
+                        return False
+                return True
+
+            if not still_live():
+                return False
+            return await registry.update_service_status(
+                "aetherra_engine",
+                ServiceStatus.HEALTHY,
+                expected_instance=engine,
+                nonblocking_preflight=True,
+                preflight_timeout=1.0,
+                apply_if=still_live,
+            )
+        except Exception:
+            logger.debug("[HEARTBEAT] Owned Engine liveness unavailable")
+            return False
+
     async def _refresh_observation_service_heartbeats(self):
         """Refresh only healthy registrations backed by this launcher's live services."""
         registry = self.service_registry
@@ -3776,6 +4022,7 @@ class AetherraOSLauncher:
 
         try:
             while self.running:
+                await self._refresh_owned_engine_heartbeat()
                 await self._refresh_observation_service_heartbeats()
 
                 # Write OS status file for cross-process detection
@@ -3913,6 +4160,7 @@ class AetherraOSLauncher:
 
         self.running = False
 
+        await self._stop_consciousness_observer()
         if self._consciousness_task is not None:
             self._consciousness_task.cancel()
             await asyncio.gather(self._consciousness_task, return_exceptions=True)

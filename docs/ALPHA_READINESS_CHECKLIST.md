@@ -2,8 +2,49 @@
 
 Updated: 2026-11-24
 
-Current released baseline: `ba3a04ad` (`v0.5.0-beta.10`), incorporating
-Phase A through PR #351. The focused Phase B local candidate is recorded in
+Current released baseline: `17a833cd` (`v0.5.0-beta.11`), incorporating Phase A
+and Phase B through [PR #352](https://github.com/AetherraLabs/Aetherra/pull/352).
+Clean merge verification passed 3,494 tests, 38 skips and 5 passing subtests,
+29 GUI tests and all 12 main workflows. Required production and release signing
+passed; the release signature and signed artifact checksums were verified.
+See the [merged-main checkpoint](ALPHA_READINESS_DECISION.md#phase-b-merged-main-checkpoint).
+
+**Phase C1: GO for supervised operation of the frozen Windows source-runtime
+candidate.** C1 is committed and pushed as `b8719fa2`, still unmerged.
+Hosted CI, fresh installation, browser and live-model checks are unverified for C1. Local acceptance is recorded
+in the [decision](ALPHA_READINESS_DECISION.md#phase-c1-observer-candidate) and
+[source-bound evidence](evidence/integration_phase_c1_2026-11-24.json):
+
+- [x] Default-disabled normal launch has no observer registration in three fresh
+  processes, including empty-history restart and a separate profile; all exit
+  zero without force and with zero generation fallback.
+- [x] Real Guardian allow, deny and audit-failure regressions enforce truthful
+  completed ticks and fixed 64-entry retention. Both normal-launch signed audit
+  chains verify; the denied 215-second profile has zero completed ticks.
+- [x] The allowed 215-second window advances completed ticks 1 → 214 and measured
+  events 4 → 856, beyond the 180-second stale threshold. Engine and observer
+  heartbeats stay fresh; independent observer stop leaves chat usable.
+- [x] Actual Consciousness and Observatory HTTP payloads show live/blocked/stopped
+  state; after stop they report HTTP 503/offline. Stale/failed cases and pure
+  cached reads have regressions. No public stop route was added.
+- [x] The observer performs no persistent continuity access, QFAC write, Memory
+  consolidation or actuation. The full suite passes 3,651 tests, 38 skips and
+  5 passing subtests, exit
+  zero, with 45.29% configured coverage against the unchanged 22% requirement.
+  Boot/integration and quality gates pass with zero new/edited violations.
+- [x] Opaque saved/retrieved/provider IDs correlate through real storage and
+  context-derived generation, including after observer stop and default-profile
+  process restart. Browser/live-model results are explicitly unverified.
+
+These checks support local supervised C1 operation, not remote CI or merged-main
+acceptance. Next is C2 safe profile-scoped continuity with failed-restore
+protection and accurate trust rehydration. Pending temporal observer work remains
+separate and preserved. Strict signing stays enforced.
+
+## Historical Phase B Candidate Checkpoints
+
+At the earlier `ba3a04ad` (`v0.5.0-beta.10`) baseline, Phase A was merged through
+PR #351. The then-focused Phase B local candidate is recorded in
 [the decision addendum](ALPHA_READINESS_DECISION.md#phase-b-observation-and-maintenance-candidate)
 and [evidence](evidence/integration_phase_b_2026-11-24.json). Those evidence records capture pre-commit verification; PR CI and integration
 are separate gates. Historical main/release passes below do not certify this
@@ -333,9 +374,11 @@ Primary file:
 ## Gate 10: Alpha Decision
 
 Status: GO for supervised internal alpha on the verified Windows source-runtime
-profile. Merge, clean-main checks and required production/release signing are
-complete. Unattended/production operation and unverified installation graphs
-remain NO-GO; no broader authority is inferred.
+profile and local C1 operation on the frozen candidate. The released Phase B
+baseline passed merge, clean-main and required production/release signing gates.
+C1 is committed and pushed as `b8719fa2`, still unmerged, with hosted CI,
+fresh installation, browser and live-model checks unverified. Unattended/production operation and unverified
+installation graphs remain NO-GO; no broader authority is inferred.
 
 Before calling alpha ready:
 
@@ -352,10 +395,12 @@ Decision record:
 
 ## Current Next Actions
 
-1. Complete review and integration of the focused Phase B observation/maintenance
-   candidate and its evidence. Phase A is merged; Phase C remains separate.
-2. Preserve strict signing, Guardian/Security enforcement and observation-only
-   behavior. Resume pending temporal/Phase C work separately.
+1. Review published C1 and obtain hosted CI before merge; merged-main acceptance
+   remains a separate gate.
+2. Use the [prepared C2a plan](superpowers/plans/2026-11-24-phase-c2-observer-checkpoints.md)
+   for exact Memory checkpoint restore/write and accurate trust. Automatic
+   selection and periodic saves remain C2b. C2 code is not implemented.
+   Keep strict signing/governance and preserve the separate temporal milestone.
 3. Verify optional features, other platforms and broader operating modes
    separately before extending the GO decision.
 

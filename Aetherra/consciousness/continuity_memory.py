@@ -18,6 +18,7 @@ Design:
 
 from __future__ import annotations
 
+# Standard library imports
 import hashlib
 import json
 import logging
@@ -52,17 +53,22 @@ class ContinuityMemory:
     persisted to disk for continuity across restarts.
     """
 
-    def __init__(self, path: str = "/var/lib/aetherra/continuity.json", max_snaps: int = 120):
+    def __init__(
+        self,
+        path: str | None = "/var/lib/aetherra/continuity.json",
+        max_snaps: int = 120,
+    ):
         """Initialize continuity memory.
 
         Args:
-            path: Filesystem path for persistence (default: /var/lib/aetherra/continuity.json)
+            path: Persistence path; None explicitly disables reads and writes
             max_snaps: Maximum snapshots to retain (default: 120 = ~2 hours at 1Hz)
         """
         self.path = path
         self.max_snaps = max_snaps
         self.buffer: List[ContinuitySnapshot] = []
-        self.load()
+        if path is not None:
+            self.load()
 
     def _hash_value(self, value: object) -> str | None:
         raw = str(value) if value is not None else ""
@@ -71,10 +77,7 @@ class ContinuityMemory:
         return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
     def _guardian_requester(self) -> str:
-        return (
-            os.environ.get("AETHERRA_PRINCIPAL", "").strip()
-            or "continuity_memory"
-        )
+        return os.environ.get("AETHERRA_PRINCIPAL", "").strip() or "continuity_memory"
 
     def _guardian_capability_checker(self, requester: str, capability: str) -> bool:
         if requester == "continuity_memory" and capability in {
@@ -84,6 +87,7 @@ class ContinuityMemory:
         }:
             return True
 
+        # Aetherra imports
         from Aetherra.security.capabilities import has_capability
 
         return has_capability(requester, capability)
@@ -91,6 +95,7 @@ class ContinuityMemory:
     def _guardian_preflight_save(
         self, snapshots: List[ContinuitySnapshot] | None = None
     ) -> None:
+        # Aetherra imports
         from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
 
         buffer = snapshots if snapshots is not None else self.buffer
@@ -153,6 +158,8 @@ class ContinuityMemory:
             trust_scores: Dict mapping subsystem name to trust score
             tick: Current loop iteration
         """
+        if self.path is None:
+            raise PermissionError("continuity_persistence_disabled")
         # Extract qualia as dict
         qualia_dict = {
             "valence": qualia.valence,
@@ -185,6 +192,8 @@ class ContinuityMemory:
 
     def save(self, *, _preflight: bool = True) -> None:
         """Persist buffer to disk (atomic write)."""
+        if self.path is None:
+            raise PermissionError("continuity_persistence_disabled")
         if _preflight:
             self._guardian_preflight_save()
 
@@ -212,7 +221,7 @@ class ContinuityMemory:
 
     def load(self) -> None:
         """Load buffer from disk."""
-        if not os.path.exists(self.path):
+        if self.path is None or not os.path.exists(self.path):
             return
 
         try:
@@ -270,6 +279,7 @@ class ContinuityMemory:
         latest = self.latest()
         return {
             "snapshots_total": len(self.buffer),
+            "persistence_enabled": self.path is not None,
             "age_seconds": self.get_age_seconds(),
             "oldest_ts": self.buffer[0].ts if self.buffer else None,
             "newest_ts": latest.ts if latest else None,
@@ -316,12 +326,10 @@ class ContinuityMemory:
         # Convert MAD to continuity index (0.0 MAD = 1.0 continuity)
         # Max possible MAD is 2.0 (valence range is 2.0, others are 1.0)
         # Normalize to 0-1 range
-        snci = 1.0 - min(1.0, avg_mad / 1.0)
-
-        return snci
+        return 1.0 - min(1.0, avg_mad / 1.0)
 
     def clear(self) -> None:
         """Clear all snapshots (for testing or reset)."""
         self.buffer = []
-        if os.path.exists(self.path):
+        if self.path is not None and os.path.exists(self.path):
             os.remove(self.path)

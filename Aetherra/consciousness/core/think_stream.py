@@ -11,6 +11,7 @@ No simulation, no fabrication—only actual awareness state.
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import os
 import time
@@ -19,6 +20,7 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional
 if TYPE_CHECKING:
     from .types import Focus, Intent, NarrativeMoment, QualiaVector
 
+# Local imports
 from . import config
 
 
@@ -55,13 +57,23 @@ class ThinkStream:
         focuses: List[Focus],
         intentions: List[Intent],
         narrative: Optional[NarrativeMoment] = None,
+        *,
+        events_processed: Optional[int] = None,
+        autonomy_mode: Optional[str] = None,
     ) -> None:
         """Called every consciousness tick with current state."""
         self.tick_count += 1
         self.last_tick_ts = time.time()
 
         # Build state snapshot
-        state = self._build_state_snapshot(qualia, focuses, intentions, narrative)
+        state = self._build_state_snapshot(
+            qualia,
+            focuses,
+            intentions,
+            narrative,
+            events_processed=events_processed,
+            autonomy_mode=autonomy_mode,
+        )
 
         # Emit to UI
         if self._ui_callback:
@@ -74,6 +86,7 @@ class ThinkStream:
         # Emit to Hub API via HTTP (cross-process)
         if self._hub_api_url:
             try:
+                # Third party imports
                 import requests
 
                 # Fire-and-forget POST (don't wait for response)
@@ -113,8 +126,12 @@ class ThinkStream:
         focuses: List[Focus],
         intentions: List[Intent],
         narrative: Optional[NarrativeMoment],
+        *,
+        events_processed: Optional[int] = None,
+        autonomy_mode: Optional[str] = None,
     ) -> dict:
         """Build JSON-serializable state snapshot."""
+        # Standard library imports
         from datetime import datetime
 
         # Build narrative array (include current + recent if available)
@@ -159,8 +176,12 @@ class ThinkStream:
                 for i in intentions
             ],
             "recent_narrative": narrative_list,
-            "events_processed": self.tick_count,  # Approximate
-            "autonomy_mode": config.AUTONOMY_MODE,
+            "events_processed": (
+                self.tick_count if events_processed is None else events_processed
+            ),
+            "autonomy_mode": (
+                config.AUTONOMY_MODE if autonomy_mode is None else autonomy_mode
+            ),
         }
 
     def _console_output(self, state: dict) -> None:
@@ -170,7 +191,9 @@ class ThinkStream:
         f = [f"{f['source']}/{f['target']}" for f in state["focuses"][:3]]  # top 3
         i = [intent["goal"] for intent in state["intentions"][:2]]  # top 2
 
-        qualia_str = f"v={q['valence']:+.2f} a={q['arousal']:.2f} c={q['certainty']:.2f}"
+        qualia_str = (
+            f"v={q['valence']:+.2f} a={q['arousal']:.2f} c={q['certainty']:.2f}"
+        )
         focus_str = f"F:{','.join(f)}" if f else "F:none"
         intent_str = f"I:{','.join(i)}" if i else "I:none"
 

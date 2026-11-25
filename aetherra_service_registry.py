@@ -14,7 +14,9 @@ with each other in real-time.
 # Standard library imports
 import asyncio
 import logging
+import math
 import os
+import threading
 import time
 from collections.abc import Callable
 from contextlib import suppress
@@ -24,6 +26,7 @@ from enum import Enum
 from typing import Any
 
 logger = logging.getLogger(__name__)
+_UNSPECIFIED_INSTANCE = object()
 
 
 class ServiceStatus(Enum):
@@ -64,6 +67,8 @@ class AetherraServiceRegistry:
         self._event_handlers: dict[str, list[Callable]] = {}
         self._running = False
         self._heartbeat_task = None
+        self._status_preflight_lock = threading.Lock()
+        self._status_preflight_worker: threading.Thread | None = None
         # Heartbeat + staleness configuration
         # Heartbeat monitor runs every 60s today; we allow future tuning via env.
         # Stale threshold defaults to 3x declared heartbeat interval (safe early warning)
@@ -156,7 +161,7 @@ class AetherraServiceRegistry:
         reversible: bool,
         rollback_plan: str,
         metadata: dict[str, Any],
-    ) -> None:
+    ) -> str | None:
         # Aetherra imports
         from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
 
@@ -182,6 +187,7 @@ class AetherraServiceRegistry:
             raise PermissionError(
                 f"Guardian denied service registry action {action}: {decision.reason}"
             )
+        return decision.audit_id
 
     def _message_metadata(self, data: Any) -> dict[str, Any]:
         if isinstance(data, dict):
@@ -468,41 +474,139 @@ class AetherraServiceRegistry:
             }
         return self._services.copy()
 
-    async def update_service_status(
-        self, name: str, status: ServiceStatus, metadata: dict | None = None
-    ):
-        """
-        [STATUS] Update service status and metadata.
+    async def _bounded_status_preflight(self, preflight: Callable, timeout: float):
+        """Run authorization only in one daemon worker; never mutate from it.
 
-        Args:
-            name: Service name
-            status: New status
-            metadata: Optional metadata updates
+        A canceled or timed-out worker keeps its slot until it exits. This bounds
+        retries even when audit storage is stuck and avoids executor shutdown waits.
         """
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout
+        result = loop.create_future()
+
+        def deliver(error):
+            if not result.done():
+                if error is not None:
+                    result.set_exception(error)
+                else:
+                    result.set_result(None)
+
+        def authorize():
+            error = None
+            try:
+                receipt = preflight()
+                if not isinstance(receipt, str) or not receipt.strip():
+                    raise PermissionError("Guardian status update has no audit receipt")
+            except Exception as exc:
+                error = exc
+            # The calling loop may already have closed after cancellation. The
+            # worker owns no mutation callback, and late results are discarded.
+            with suppress(RuntimeError):
+                loop.call_soon_threadsafe(deliver, error)
+
+        while True:
+            with self._status_preflight_lock:
+                if loop.time() >= deadline:
+                    raise TimeoutError("Service registry status preflight timed out")
+                if (
+                    self._status_preflight_worker is None
+                    or not self._status_preflight_worker.is_alive()
+                ):
+                    worker = threading.Thread(
+                        target=authorize, name="registry-status-preflight", daemon=True
+                    )
+                    self._status_preflight_worker = worker
+                    worker.start()
+                    break
+            # Slot acquisition shares the authorization deadline. Waiting or
+            # cancellation here creates no extra worker and never holds the lock.
+            await asyncio.sleep(min(0.01, max(0.0, deadline - loop.time())))
+        await asyncio.wait_for(result, timeout=max(0.0, deadline - loop.time()))
+
+    async def update_service_status(
+        self,
+        name: str,
+        status: ServiceStatus,
+        metadata: dict | None = None,
+        *,
+        expected_instance: Any = _UNSPECIFIED_INSTANCE,
+        nonblocking_preflight: bool = False,
+        preflight_timeout: float = 1.0,
+        apply_if: Callable[[], bool] | None = None,
+    ):
+        """[STATUS] Update service status and metadata after Guardian authorization.
+
+        Legacy calls keep synchronous preflight and their existing return value.
+        The opt-in path requires an audit receipt, waits at most the positive finite
+        timeout, and returns whether it applied to the same registration. It raises
+        TimeoutError on deadline (including waiting for another pending worker)
+        and PermissionError on denial or missing audit. Cancellation cannot apply later.
+        ``expected_instance`` optionally restricts either path to its exact owner.
+        ``apply_if`` is an optional synchronous owner-loop guard, evaluated after
+        authorization; only True permits mutation and guard errors refuse it.
+        """
+        if nonblocking_preflight:
+            try:
+                timeout = float(preflight_timeout)
+            except (TypeError, ValueError, OverflowError) as exc:
+                raise ValueError(
+                    "preflight_timeout must be positive and finite"
+                ) from exc
+            if (
+                isinstance(preflight_timeout, bool)
+                or not math.isfinite(timeout)
+                or timeout <= 0
+            ):
+                raise ValueError("preflight_timeout must be positive and finite")
         cname = self._canonical(name)
         if cname not in self._services:
             logger.warning(f"[WARN] Cannot update status for unknown service '{name}'")
-            return
+            return False if nonblocking_preflight else None
 
         service_info = self._services[cname]
+        instance = service_info.instance
+        if (
+            expected_instance is not _UNSPECIFIED_INSTANCE
+            and instance is not expected_instance
+        ):
+            return False
         old_status = service_info.status
-        metadata = metadata or {}
-        self._guardian_preflight(
-            requester=self._guardian_requester(metadata),
-            action="service_registry.status_update",
-            service_name=cname,
-            purpose=f"Update service {cname} status",
-            capabilities=("registry:status",),
-            reversible=True,
-            rollback_plan="restore the previous service status and metadata snapshot",
-            metadata={
+        metadata = dict(metadata or {}) if nonblocking_preflight else metadata or {}
+        preflight_args = {
+            "requester": self._guardian_requester(metadata),
+            "action": "service_registry.status_update",
+            "service_name": cname,
+            "purpose": f"Update service {cname} status",
+            "capabilities": ("registry:status",),
+            "reversible": True,
+            "rollback_plan": "restore the previous service status and metadata snapshot",
+            "metadata": {
                 "service_name": cname,
                 "old_status": old_status.value,
                 "new_status": status.value,
                 "metadata_keys": tuple(sorted(str(key) for key in metadata)),
-                "instance_type": self._service_instance_type(service_info.instance),
+                "instance_type": self._service_instance_type(instance),
             },
-        )
+        }
+        if nonblocking_preflight:
+            await self._bounded_status_preflight(
+                lambda: self._guardian_preflight(**preflight_args), timeout
+            )
+            if (
+                self._services.get(cname) is not service_info
+                or service_info.instance is not instance
+                or service_info.status is not old_status
+            ):
+                return False
+        else:
+            self._guardian_preflight(**preflight_args)
+        if apply_if is not None:
+            try:
+                if apply_if() is not True:
+                    return False
+            except Exception:
+                return False
+        # Everything below runs on the caller's loop, never in the audit worker.
         service_info.status = status
         service_info.last_heartbeat = datetime.now()
 
@@ -524,6 +628,7 @@ class AetherraServiceRegistry:
                     "metadata": metadata,
                 },
             )
+        return True if nonblocking_preflight else None
 
     async def update_heartbeat(self, name: str, requester: str | None = None):
         """[HEARTBEAT] Update service heartbeat timestamp."""

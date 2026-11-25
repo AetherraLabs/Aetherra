@@ -1,0 +1,415 @@
+{
+  "schema": 1,
+  "milestone": "Phase C1: opt-in governed Consciousness observer",
+  "recorded_at_utc": "2026-11-24T23:12:46.843291+00:00",
+  "operator_date": "2026-11-24",
+  "operator_timezone": "America/Denver",
+  "decision": "GO for supervised C1 source-runtime review and operation on this frozen Windows candidate; unmerged and not a production/unattended approval",
+  "base_commit": "17a833cd0653556b50d869be1f22b989d5633cb4",
+  "branch": "codex/phase-c-observer",
+  "source_sha256": {
+    "Aetherra/consciousness/continuity_memory.py": "8f4527f92008e0b29c5f20aed98de3dc20b82d6e07ac78066a2171addfc1defa",
+    "Aetherra/consciousness/core/consciousness_core.py": "5745175e9afd755bdd078ff493d7c6c304f2ec93e49bbdf28d2b9e4c5ef0178a",
+    "Aetherra/consciousness/core/think_stream.py": "0eca3685a34d3c9ac63de52fc59206f833c624129feb4bc07e859b6490ab6a65",
+    "Aetherra/consciousness/runtime_observer.py": "ffbe21703ab3a0a1fca9c0ca003b76aca66034708290fced0064dd1b1836113a",
+    "Aetherra/runtime_ui/snapshot.py": "741f288e533c1abfd98cf6744b16941ba6be53b8a49a23fa3c574853d3ac0295",
+    "aetherra_hub/blueprints/consciousness.py": "e6e7594a03ec0bfcb247dabd2a13ec44b77fc8f49cac8525233d33589db82bbc",
+    "aetherra_os_launcher.py": "4f68baa6d31d4086ec7e28e8c70f7a798b650a70faa2fec90af158c18fc4cec8",
+    "aetherra_service_registry.py": "b642af8b208d7e0ba14ea498162a867bea318e916f3ba874132e916d214aa065",
+    "tests/unit/test_consciousness_observer_core.py": "7d926a4cade961677b78de62f8661b71638f53ce858544c7c901e8df1227b58e",
+    "tests/unit/test_consciousness_observer_lifecycle.py": "206e822542d5d21b911a40e9c1ea98a7b7003c8360d23b46bbdf008e95b7b82f",
+    "tests/unit/test_hub_consciousness_observer.py": "d92ed94761a24cd4fd095b7df4b678e31bc5191f091475267c58cbf9c4c05ab4",
+    "tests/unit/test_launcher_engine_heartbeat.py": "942c773923c03f42f0687adbecf101f0d935ed85469dd622a248de7f2ece89b0",
+    "tests/unit/test_runtime_ui_consciousness.py": "605a8855dd0e5ea4cbcc25e4409f08c47e418259ca551548f2d47bef47075719",
+    "tests/unit/test_service_registry_async_status.py": "5723e2a2e17bb37e7d924f28afbb103b4bd741cd7e921f0860e5922d44b4981c",
+    "tools/alpha_consciousness_smoke.py": "911525b0181c491dbcdd045fe9c64c5f2df627890ed09a5756d929aae13f490e"
+  },
+  "environment": {
+    "os": "Windows x64",
+    "python": "3.13.7",
+    "environment_reused": true,
+    "fresh_installation_check": false
+  },
+  "baseline": {
+    "focused_tests": "18 passed, 1 Windows skip",
+    "standalone_contracts_preserved": true,
+    "inspection": "Normal startup unconditionally loaded the legacy core before core activation, used its default shared continuity path, and could leave denied/stopped work looking registered."
+  },
+  "repairs": [
+    "Opt-in observer starts after activated owned core services and strict policy; concrete Memory/Engine adapter registrations are matched correctly.",
+    "Existing Core owns bounded in-process observation without continuity/QFAC/Memory consolidation or actuation; successful reflection requires an audit receipt.",
+    "One bounded daemon observer and one serialized daemon audit worker preserve the event loop; cancellation cannot apply late status changes.",
+    "Owned Engine heartbeat prevents stale healthy services; liveness and exact registration are rechecked after authorization; stopped/foreign/degraded services are never revived.",
+    "Hub and Observatory read actual cached successful ticks and reject stale/failed/stopped state; disabled malformed legacy config does not break Hub import.",
+    "Invalid optional config, unbounded ambient history sizes, audit failures and foreign ownership have focused regressions."
+  ],
+  "full_suite": {
+    "passed": 3651,
+    "skipped": 38,
+    "subtests_passed": 5
+  },
+  "checks": {
+    "full-verified": {
+      "receipt": "full-verified.json",
+      "receipt_sha256": "59e095f764de2e532fb8fed8ecc16e6d7d521b980313b210ababc0fbca2859b3",
+      "log_sha256": "1077ee77181e679be92b917058daae92509833dd91686b223ac1ec12d217a732",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "--junitxml",
+        "D:\\Aetherra Labs\\.codex-integration-phase-c-20261124\\evidence\\full-verified.xml",
+        "--cov-report",
+        "html:D:\\Aetherra Labs\\.codex-integration-phase-c-20261124\\evidence\\coverage-verified-html",
+        "--cov-report",
+        "xml:D:\\Aetherra Labs\\.codex-integration-phase-c-20261124\\evidence\\coverage-verified.xml",
+        "-o",
+        "cache_dir=D:\\Aetherra Labs\\.codex-integration-phase-c-20261124\\evidence\\pytest-cache",
+        "--basetemp",
+        "D:\\Aetherra Labs\\.codex-integration-phase-c-20261124\\evidence\\pytest-full-verified"
+      ],
+      "exit_code": 0,
+      "seconds": 1469.82
+    },
+    "quality-verified": {
+      "receipt": "quality-verified.json",
+      "receipt_sha256": "d8da641a5b946d663f0f2c52b5d10af95a194aeb5b92415969b7ccca91323c6c",
+      "log_sha256": "90c0f798151ab1bb81a4e79e4b6d84ccb33ea381e064f4f4c6ee2721e5adccfa",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "tools/python_quality.py"
+      ],
+      "exit_code": 0,
+      "seconds": 129.36
+    },
+    "alpha-boot-verified": {
+      "receipt": "alpha-boot-verified.json",
+      "receipt_sha256": "07550d4e5b1d3f502b36bf5169f3c102bce704d589993847049a4579a7e195eb",
+      "log_sha256": "7d39881357559623117ba793a757d013e6ca3076b79fca882031c995d522dd8e",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "tools/alpha_boot_validation.py"
+      ],
+      "exit_code": 0,
+      "seconds": 2.67
+    },
+    "integration-verified": {
+      "receipt": "integration-verified.json",
+      "receipt_sha256": "1842ef10a6771ce2c8531060a7864f2265d112e223e012d892fb715f0005d2f8",
+      "log_sha256": "38e665ddb1b82a72a7ee6c6fb3ec9c554b87a556bd613b4e0ec812c074bcae7d",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-dependency-followup-20261123\\runtime\\Scripts\\python.exe",
+        "-m",
+        "Aetherra.integration_validation"
+      ],
+      "exit_code": 0,
+      "seconds": 1.17
+    }
+  },
+  "focused_checks": {
+    "integrated_before_engine_repair": "194 passed, 1 expected Windows skip",
+    "engine_registry_existing_caller_compatibility": "166 passed"
+  },
+  "launch": {
+    "entry": "aetherra_os_launcher.py --mode full --no-gui --config PROFILE/launcher.json",
+    "responder": "deterministic-context-responder",
+    "storage_scope": "Separate local data directories; no account-isolation claim",
+    "profiles": {
+      "allowed": {
+        "observation_seconds": 215.0,
+        "completed_ticks": [
+          1,
+          214
+        ],
+        "events_processed": [
+          4,
+          856
+        ],
+        "final_window_state": "running",
+        "final_window_observatory_status": "active",
+        "final_window_thinkstream_http": 200,
+        "after_stop_thinkstream_http": 503,
+        "after_stop_observatory_status": "offline",
+        "persistence_enabled": false,
+        "qfac_persistence_enabled": false,
+        "action_execution_enabled": false,
+        "observer_window_memory_ids_unchanged": true,
+        "continuity_access_attempts": 0,
+        "experimental_modules": [],
+        "signed_audit_integrity_verified": true,
+        "reflection_count": 236,
+        "first_reflection": {
+          "timestamp": "2026-11-24T22:48:28.009793Z",
+          "hash": "c4530919ea965b2c0d23e933d4553aea5f363a41e2911ab851ec4fad774e9663",
+          "action": "consciousness.micro_reflection_update",
+          "decision": "allow_limited"
+        },
+        "last_reflection": {
+          "timestamp": "2026-11-24T22:52:25.822140Z",
+          "hash": "162c7442e47a1678c8da92522d1230020036c56acc8ec895d2080f3023213500",
+          "action": "consciousness.micro_reflection_update",
+          "decision": "allow_limited"
+        },
+        "observer_healthy_refresh_count": 8,
+        "engine_healthy_refresh_count": 9,
+        "chat_turn_count": 6,
+        "fallback_count": 0,
+        "process_exit": 0,
+        "forced_stop": false,
+        "port_closed": true,
+        "strict_flags": {
+          "AETHERRA_GUARDIAN_ENABLED": "1",
+          "AETHERRA_GUARDIAN_REQUIRE_POLICY": "1",
+          "AETHERRA_REQUIRE_CAPABILITIES": "1",
+          "AETHERRA_NET_STRICT": "1",
+          "AETHERRA_SCRIPT_VERIFY_STRICT": "1",
+          "AETHERRA_SIGNING_STRICT": "1",
+          "AETHERRA_AUDIT": "1"
+        },
+        "guardian_mode": "enforcing"
+      },
+      "denied": {
+        "observation_seconds": 215.0,
+        "completed_ticks": [
+          0,
+          0
+        ],
+        "events_processed": [
+          0,
+          0
+        ],
+        "final_window_state": "blocked",
+        "final_window_observatory_status": "degraded",
+        "final_window_thinkstream_http": 503,
+        "after_stop_thinkstream_http": null,
+        "after_stop_observatory_status": null,
+        "persistence_enabled": false,
+        "qfac_persistence_enabled": false,
+        "action_execution_enabled": false,
+        "observer_window_memory_ids_unchanged": true,
+        "continuity_access_attempts": 0,
+        "experimental_modules": [],
+        "signed_audit_integrity_verified": true,
+        "reflection_count": 1,
+        "first_reflection": {
+          "timestamp": "2026-11-24T22:52:41.926348Z",
+          "hash": "964dfde779faad8bde499a317c955a8de31e8b7e9a09840e1241acb089ab4fc1",
+          "action": "consciousness.micro_reflection_update",
+          "decision": "deny"
+        },
+        "last_reflection": {
+          "timestamp": "2026-11-24T22:52:41.926348Z",
+          "hash": "964dfde779faad8bde499a317c955a8de31e8b7e9a09840e1241acb089ab4fc1",
+          "action": "consciousness.micro_reflection_update",
+          "decision": "deny"
+        },
+        "observer_healthy_refresh_count": 0,
+        "engine_healthy_refresh_count": 9,
+        "chat_turn_count": 1,
+        "fallback_count": 0,
+        "process_exit": 0,
+        "forced_stop": false,
+        "port_closed": true,
+        "strict_flags": {
+          "AETHERRA_GUARDIAN_ENABLED": "1",
+          "AETHERRA_GUARDIAN_REQUIRE_POLICY": "1",
+          "AETHERRA_REQUIRE_CAPABILITIES": "1",
+          "AETHERRA_NET_STRICT": "1",
+          "AETHERRA_SCRIPT_VERIFY_STRICT": "1",
+          "AETHERRA_SIGNING_STRICT": "1",
+          "AETHERRA_AUDIT": "1"
+        },
+        "guardian_mode": "enforcing"
+      }
+    },
+    "post_observer_stop_recall_trace": {
+      "record_id": "6b0d861d607a4f3a81b04b5c39dc183d",
+      "retrieved_ids": [
+        "6b0d861d607a4f3a81b04b5c39dc183d"
+      ],
+      "provider_evidence_ids": [
+        "6b0d861d607a4f3a81b04b5c39dc183d"
+      ],
+      "llm": {
+        "diag": {
+          "event": "ok",
+          "model": {
+            "model": "context-responder",
+            "provider": "deterministic"
+          }
+        },
+        "evidence_ids": [
+          "6b0d861d607a4f3a81b04b5c39dc183d"
+        ],
+        "fallback": false,
+        "model": {
+          "model": "context-responder",
+          "provider": "deterministic"
+        },
+        "used": true
+      },
+      "response": "You told me: My aunt Leona taught me to mend a flat bike tire.",
+      "unknown_response": "I don't know that detail yet. You haven't told me."
+    },
+    "default_disabled": {
+      "passed": true,
+      "runs": [
+        {
+          "profile": "primary",
+          "session": "write",
+          "pid": 40348,
+          "observer_registration_absent": true,
+          "initial_chat_context_empty": true,
+          "process_exit": 0,
+          "forced_stop": false,
+          "fallback_count": 0
+        },
+        {
+          "profile": "primary",
+          "session": "recall",
+          "pid": 60896,
+          "observer_registration_absent": true,
+          "initial_chat_context_empty": true,
+          "process_exit": 0,
+          "forced_stop": false,
+          "fallback_count": 0
+        },
+        {
+          "profile": "separate",
+          "session": "empty",
+          "pid": 54724,
+          "observer_registration_absent": true,
+          "initial_chat_context_empty": true,
+          "process_exit": 0,
+          "forced_stop": false,
+          "fallback_count": 0
+        }
+      ],
+      "restart_trace": {
+        "record_id": "b53ff4fc40f5dfacaf9867e7380d31f7",
+        "write_pid": 40348,
+        "recall_pid": 60896,
+        "retrieved_ids": [
+          "b53ff4fc40f5dfacaf9867e7380d31f7"
+        ],
+        "provider_evidence_ids": [
+          "b53ff4fc40f5dfacaf9867e7380d31f7"
+        ],
+        "llm": {
+          "diag": {
+            "event": "ok",
+            "model": {
+              "model": "context-responder",
+              "provider": "deterministic"
+            }
+          },
+          "evidence_ids": [
+            "b53ff4fc40f5dfacaf9867e7380d31f7"
+          ],
+          "fallback": false,
+          "model": {
+            "model": "context-responder",
+            "provider": "deterministic"
+          },
+          "used": true
+        },
+        "response": "You told me: My aunt Leona taught me to mend a flat bike tire. What would you like to try next?"
+      },
+      "unknown_response": "I don't know that detail yet. You haven't told me.",
+      "separate_profile_response": "I don't have that in my memories yet. What would you like to try next?",
+      "max_readiness_request_seconds": 0.364,
+      "frozen_sources_unchanged": true
+    }
+  },
+  "launch_receipts": [
+    {
+      "path": "evidence/observer-smoke-04.json",
+      "sha256": "d851d6cdbca868173e815f4b9c421e911cc30d5128d8da1642a52fa247320ac4"
+    },
+    {
+      "path": "evidence/observer-smoke-04/summary.json",
+      "sha256": "4b83299f2c3da7ece5d11c0c98a0b3a2ce9760e121dfeda6d06c0cbff2dfbe5b"
+    },
+    {
+      "path": "evidence/observer-smoke04-audit-verification.json",
+      "sha256": "1287a6563437388f6c389d6602696b90d183f7b2c2ded201dc55b307a255b92b"
+    },
+    {
+      "path": "evidence/default-smoke-02.json",
+      "sha256": "9776a3b6c3a3f9f6cedc440bdd6f3fa4e0a7934e6220f78dca34830e7fc7ee3e"
+    },
+    {
+      "path": "evidence/default-smoke-02/summary.json",
+      "sha256": "d922f2d28067290f0509c30bcd342afdae766e992c4b8dc9034c6fbb077c6e17"
+    },
+    {
+      "path": "evidence/default-smoke-02-source-verification.json",
+      "sha256": "b51482c81e7eab4e99c308653f680073879ac357d5cdcf3d0fb8cb5549948ae2"
+    }
+  ],
+  "launch_manifest": {
+    "path": "phase-c1-launch-verification.json",
+    "sha256": "881d42d07be21bc1365d5b3857bf5f79d3d1972908c78a4c517ff3b905bce46c"
+  },
+  "retained_nonpassing_reproductions": [
+    {
+      "path": "evidence/observer-smoke-01/summary.json",
+      "sha256": "103c654a9137421c10bc4ff853aadcc29da0c46c78391b72979fcae0f1653b5a",
+      "passed": false,
+      "finding": "Normal Memory/Engine registrations contain implementations; comparing them to launcher adapters blocked observer startup."
+    },
+    {
+      "path": "evidence/observer-smoke-03/summary.json",
+      "sha256": "db9f2df53ce42caece137cb7fdeaa86d212355953535665d13b957bb10f1e0c5",
+      "passed": false,
+      "finding": "Observer heartbeats stayed fresh, but the normal Engine had no owner heartbeat and became stale; observer correctly blocked."
+    }
+  ],
+  "superseded_full_runs": [
+    "full-interrupted.json",
+    "full-final-interrupted.json"
+  ],
+  "signing_and_release_controls": "Unchanged; final normal launches retained enforcing Guardian, required capabilities, strict script/signing/network flags and signed audit.",
+  "limitations": {
+    "browser": "Not exercised; actual Observatory HTTP payload verified.",
+    "live_model": "Unverified; offline generation derives answers only from supplied context.",
+    "shutdown": "Local harness sentinel calls the owned observer stop; runtime stops with SIGINT, not interactive ConPTY keyboard evidence.",
+    "durable_consciousness_continuity": "Deferred to C2; observer persistence remains disabled.",
+    "remote_ci": "Not run: this candidate is uncommitted and unpushed.",
+    "pending_temporal": "Separate existing work preserved; not activated in C1."
+  },
+  "next_milestone": "C2: safe profile-scoped continuity restore/write and accurate trust rehydration through existing interfaces.",
+  "artifact_policy": "Only compact synthetic evidence is versioned; full logs and disposable profiles remain in the task-local evidence directory.",
+  "coverage": {
+    "targets": [
+      "aetherra_script_service",
+      "Aetherra.core"
+    ],
+    "percent": 45.29,
+    "required_percent": 22.0
+  },
+  "documentation": {
+    "consistency_exit_code": 0,
+    "new_markdown_findings": 0,
+    "unchanged_legacy_markdown_findings": 45,
+    "report_restored_exact": true,
+    "receipt": "docs-final-verification-summary.json",
+    "receipt_sha256": "7a584128b98212a7eb1639626e45e0b8b2734fd61b747cca5fc9dd10c78fa78e",
+    "source_sha256": {
+      "docs/AETHERRA_CONSCIOUSNESS_SYSTEM.md": "7e9dc419b7f366515a87406aa3100ec769aaebc247eafbdede73424322c663fb",
+      "docs/ALPHA_OPERATOR_RUNBOOK.md": "2f6cc146516247577f03111d15b63721a03232fda34a39e39620d54378f5863f",
+      "docs/ALPHA_READINESS_DECISION.md": "f91dacce88044dbfdbed7e9d741fb2ed50be881933914e8b92b0e348a16d0b57",
+      "docs/ALPHA_READINESS_CHECKLIST.md": "67dfcffa1c4cefcacdf4bbe63aa25485a2f8fa7ce34f7e4f3b8b80069b8ad5b0",
+      "docs/ACTIVE_SYSTEMS.md": "94334af301165787c22c87b35627628b26d38faccd1bc2327efc6b64520cf3fb",
+      "docs/superpowers/plans/2026-11-24-phase-c1-consciousness-observer.md": "422de34e0fc8e4f922846220113c1dd34d6b338be9f5a8b17cf818ab9e5ed894"
+    }
+  },
+  "preservation": {
+    "protected_original_and_temporal_HEAD_index_status_and_file_hashes_match": true,
+    "candidate_index_empty": true,
+    "signing_release_dependencies_and_quality_baseline_unchanged": true,
+    "no_commit_push_or_merge": true
+  },
+  "local_evidence_root": "D:/Aetherra Labs/.codex-integration-phase-c-20261124/evidence",
+  "receipt_path_convention": "Check/documentation receipt names are relative to local_evidence_root; launch receipt paths beginning evidence/ are relative to its parent."
+}

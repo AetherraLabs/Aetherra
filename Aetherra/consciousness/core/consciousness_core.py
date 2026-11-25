@@ -11,6 +11,7 @@ Perceive → Appraise → Attend → Intend → Reflect.
 
 from __future__ import annotations
 
+# Standard library imports
 import contextlib
 import hashlib
 import logging
@@ -18,6 +19,7 @@ import os
 import time
 from typing import List, Optional
 
+# Aetherra imports
 from Aetherra.aetherra_core.memory.qfac import qfac_store
 
 # Consciousness components (alphabetical)
@@ -32,8 +34,9 @@ from Aetherra.consciousness.qualia_learning import QualiaLearner
 from Aetherra.consciousness.self_trust import SelfTrust
 from Aetherra.consciousness.semantic_resonance import SemanticResonance
 
+# Local imports
 from . import config
-from .think_stream import get_think_stream
+from .think_stream import ThinkStream, get_think_stream
 from .types import (
     Event,
     Focus,
@@ -45,6 +48,9 @@ from .types import (
 )
 
 logger = logging.getLogger(__name__)
+
+# Observer retention is fixed independently of standalone environment settings.
+_OBSERVER_HISTORY_LIMIT = 64
 
 
 def _hash_value(value: object) -> str | None:
@@ -63,6 +69,7 @@ def _consciousness_core_capability_checker(requester: str, capability: str) -> b
     }:
         return True
 
+    # Aetherra imports
     from Aetherra.security.capabilities import has_capability
 
     return has_capability(requester, capability)
@@ -75,18 +82,29 @@ class ConsciousnessCore:
     Runs independently of action permissions; awareness is fundamental.
     """
 
-    def __init__(self, perception_bus, safety_envelope=None, memory_engine=None):
+    def __init__(
+        self,
+        perception_bus,
+        safety_envelope=None,
+        memory_engine=None,
+        *,
+        observer_only=False,
+    ):
         """Initialize consciousness core.
 
         Args:
             perception_bus: Event bus for real-world signals
             safety_envelope: Optional actuator for world-changing actions
             memory_engine: Optional MemoryEngine for consolidation
+            observer_only: Isolated in-process observation, without persistence or action
         """
+        if observer_only and (safety_envelope is not None or memory_engine is not None):
+            raise ValueError("observer_only rejects actuators and memory consolidation")
+        self.observer_only = observer_only
         self.bus = perception_bus
         self.safety_envelope = safety_envelope
         self.memory_engine = memory_engine
-        self.ui = get_think_stream()
+        self.ui = ThinkStream() if observer_only else get_think_stream()
 
         # Phase 3: Self-Trust & Adaptive Awareness
         self.self_trust = SelfTrust()
@@ -94,7 +112,9 @@ class ConsciousnessCore:
         self.ql = QualiaLearner()
 
         # Phase 4: Continuity & Dream Cycle
-        self.continuity = ContinuityMemory()
+        self.continuity = (
+            ContinuityMemory(path=None) if observer_only else ContinuityMemory()
+        )
         self.dream_cycle = DreamCycle(self.continuity)
         self.consolidator = Consolidator(memory_engine) if memory_engine else None
         self.qualia_learner = self.ql  # Alias for dream cycle integration
@@ -129,7 +149,8 @@ class ConsciousnessCore:
         )
 
         # Rehydrate from latest continuity snapshot (if available)
-        self._rehydrate_from_continuity()
+        if not self.observer_only:
+            self._rehydrate_from_continuity()
 
     def tick(self) -> None:
         """Single consciousness cycle: perceive → appraise → attend → intend → reflect."""
@@ -161,14 +182,31 @@ class ConsciousnessCore:
             self._reflect_macro()
 
         # 8) Phase 4: Record continuity snapshot (throttled)
-        if self.tick_count % config.CONTINUITY_SNAPSHOT_INTERVAL == 0:
+        if (
+            not self.observer_only
+            and self.tick_count % config.CONTINUITY_SNAPSHOT_INTERVAL == 0
+        ):
             self._record_continuity_snapshot()
 
         # 9) Emit to UI/telemetry
-        self.ui.on_tick(self.qualia, focuses, self.active_intents[:10], moment)
+        if self.observer_only:
+            self.ui.on_tick(
+                self.qualia,
+                focuses,
+                self.active_intents[:10],
+                moment,
+                events_processed=self.total_events_perceived,
+                autonomy_mode="observe",
+            )
+        else:
+            self.ui.on_tick(self.qualia, focuses, self.active_intents[:10], moment)
 
         # 10) (Maybe) Act via safety envelope
-        if self.safety_envelope and config.AUTONOMY_MODE != "observe":
+        if (
+            not self.observer_only
+            and self.safety_envelope
+            and config.AUTONOMY_MODE != "observe"
+        ):
             self._maybe_act()
 
         # Adaptive tick rate (simple backpressure)
@@ -185,8 +223,11 @@ class ConsciousnessCore:
 
         # Update working memory (rolling window)
         self.working_memory.extend(events)
-        if len(self.working_memory) > config.MAX_WORKING_MEMORY:
-            self.working_memory = self.working_memory[-config.MAX_WORKING_MEMORY :]
+        capacity = (
+            _OBSERVER_HISTORY_LIMIT if self.observer_only else config.MAX_WORKING_MEMORY
+        )
+        if len(self.working_memory) > capacity:
+            self.working_memory = self.working_memory[-capacity:]
 
         return events
 
@@ -232,7 +273,8 @@ class ConsciousnessCore:
         # Apply learned curiosity gain
         self.qualia.curiosity = min(
             1.0,
-            self.qualia.curiosity * config.QUALIA_DECAY + self.ql.p.curiosity_gain * len(events),
+            self.qualia.curiosity * config.QUALIA_DECAY
+            + self.ql.p.curiosity_gain * len(events),
         )
 
         # Apply learned certainty gain/penalty
@@ -279,7 +321,9 @@ class ConsciousnessCore:
                 reason = "internal system"
 
             # Novelty attracts attention
-            similar_count = sum(1 for ev in self.working_memory[-200:] if ev.type == e.type)
+            similar_count = sum(
+                1 for ev in self.working_memory[-200:] if ev.type == e.type
+            )
             if similar_count < 3:
                 severity += 0.5
                 reason = "novel" if not reason else f"{reason}, novel"
@@ -399,9 +443,13 @@ class ConsciousnessCore:
         """Remove expired intentions."""
         now = time.time()
         self.active_intents = [i for i in self.active_intents if not i.is_expired(now)]
+        if self.observer_only:
+            self.active_intents = self.active_intents[-_OBSERVER_HISTORY_LIMIT:]
 
     # ========== Reflect ==========
-    def _reflect_micro(self, focuses: List[Focus], intents: List[Intent]) -> NarrativeMoment:
+    def _reflect_micro(
+        self, focuses: List[Focus], intents: List[Intent]
+    ) -> NarrativeMoment:
         """Create a first-person narrative moment for continuity."""
         focus_types = [f.event.type for f in focuses]
         intent_goals = [i.goal for i in intents]
@@ -410,7 +458,9 @@ class ConsciousnessCore:
         if focuses and intents:
             text = f"I noticed {', '.join(focus_types[:3])}; felt {self._qualia_summary()}; chose to {intent_goals[0] if intent_goals else 'wait'}"
         elif focuses:
-            text = f"I noticed {', '.join(focus_types[:3])}; felt {self._qualia_summary()}"
+            text = (
+                f"I noticed {', '.join(focus_types[:3])}; felt {self._qualia_summary()}"
+            )
         else:
             text = f"Quiet moment; felt {self._qualia_summary()}"
 
@@ -427,15 +477,20 @@ class ConsciousnessCore:
             text=text,
             focus_types=focus_types,
             intent_goals=intent_goals,
-            qfac_enabled=config.ENABLE_QFAC_PERSISTENCE,
+            qfac_enabled=config.ENABLE_QFAC_PERSISTENCE and not self.observer_only,
         )
 
         self.narrative_thread.append(moment)
-        if len(self.narrative_thread) > config.MAX_NARRATIVE_MOMENTS:
-            self.narrative_thread = self.narrative_thread[-config.MAX_NARRATIVE_MOMENTS :]
+        capacity = (
+            _OBSERVER_HISTORY_LIMIT
+            if self.observer_only
+            else config.MAX_NARRATIVE_MOMENTS
+        )
+        if len(self.narrative_thread) > capacity:
+            self.narrative_thread = self.narrative_thread[-capacity:]
 
         # Persist to QFAC if enabled
-        if config.ENABLE_QFAC_PERSISTENCE:
+        if config.ENABLE_QFAC_PERSISTENCE and not self.observer_only:
             qfac_store(
                 content=text,
                 observer_state={
@@ -469,13 +524,13 @@ class ConsciousnessCore:
             text=summary,
             focus_types=[],
             intent_goals=[],
-            qfac_enabled=config.ENABLE_QFAC_PERSISTENCE,
+            qfac_enabled=config.ENABLE_QFAC_PERSISTENCE and not self.observer_only,
         )
 
         # Decay qualia learning parameters toward defaults
         self.ql.decay_toward_defaults()
 
-        if config.ENABLE_QFAC_PERSISTENCE:
+        if config.ENABLE_QFAC_PERSISTENCE and not self.observer_only:
             qfac_store(
                 content=summary,
                 observer_state={"type": "macro_reflection", "tick": self.tick_count},
@@ -518,6 +573,7 @@ class ConsciousnessCore:
         intent_goals: List[str],
         qfac_enabled: bool,
     ):
+        # Aetherra imports
         from Aetherra.guardian import IntentDeclaration, evaluate_intent
 
         requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "consciousness:core"
@@ -530,7 +586,10 @@ class ConsciousnessCore:
                 target=f"reflection:{reflection_kind}",
                 purpose="Update consciousness reflection state and optional reflection persistence",
                 capabilities=("consciousness:reflect", "memory:write"),
-                evidence=("ConsciousnessCore._reflect_micro", "ConsciousnessCore._reflect_macro"),
+                evidence=(
+                    "ConsciousnessCore._reflect_micro",
+                    "ConsciousnessCore._reflect_macro",
+                ),
                 reversible=True,
                 rollback_plan="remove the appended reflection moment or restore prior qualia-learning parameters and QFAC state",
                 metadata={
@@ -539,9 +598,13 @@ class ConsciousnessCore:
                     "text_hash": _hash_value(text),
                     "text_length": len(text or ""),
                     "focus_count": len(focus_types),
-                    "focus_type_hashes": [_hash_value(item) for item in focus_types[:10]],
+                    "focus_type_hashes": [
+                        _hash_value(item) for item in focus_types[:10]
+                    ],
                     "intent_count": len(intent_goals),
-                    "intent_goal_hashes": [_hash_value(item) for item in intent_goals[:10]],
+                    "intent_goal_hashes": [
+                        _hash_value(item) for item in intent_goals[:10]
+                    ],
                     "narrative_size_before": len(self.narrative_thread),
                     "qfac_enabled": bool(qfac_enabled),
                     "qualia_learning": {
@@ -557,6 +620,8 @@ class ConsciousnessCore:
         )
         if not decision.allowed:
             raise PermissionError(f"guardian_denied:{decision.reason}")
+        if self.observer_only and not decision.audit_id:
+            raise PermissionError("guardian_audit_unavailable")
         return decision
 
     # ========== Act ==========
@@ -568,11 +633,15 @@ class ConsciousnessCore:
 
         Phase 3: Updates qualia learning and self-trust based on action outcomes.
         """
+        if self.observer_only:
+            raise PermissionError("observer_actuation_disabled")
         if not self.safety_envelope:
             return
 
         # Process high-priority intents first
-        sorted_intents = sorted(self.active_intents, key=lambda i: i.priority, reverse=True)
+        sorted_intents = sorted(
+            self.active_intents, key=lambda i: i.priority, reverse=True
+        )
 
         for intent in sorted_intents[:5]:  # max 5 intents per tick
             # Convert intent to plan
@@ -580,7 +649,7 @@ class ConsciousnessCore:
             self._guardian_preflight_autonomy_plan(intent, plan)
 
             # Phase 5: Pre-check policy for explainability (non-binding)
-            try:
+            with contextlib.suppress(Exception):
                 policy = getattr(self.safety_envelope, "policy", None)
                 if policy is not None:
                     cap_names = [s.capability for s in plan.steps]
@@ -600,20 +669,16 @@ class ConsciousnessCore:
                         whitelisted=getattr(policy, "allowed_capabilities", []),
                     )
                     self._last_policy_diff = getattr(self, "_last_policy_diff", diff)
-            except Exception:
-                pass
 
             # Execute via actuator
             ledger = self.safety_envelope.execute(plan)
 
             # Phase 5: Explain action outcome and record for autopilot
-            try:
+            with contextlib.suppress(Exception):
                 self.explainer.explain_action(ledger)
                 self.autopilot.record_ledger(
                     time.time(), bool(ledger.success), ledger.policy_decision
                 )
-            except Exception:
-                pass
 
             # Update qualia learning based on outcome
             if ledger.success:
@@ -642,6 +707,7 @@ class ConsciousnessCore:
                 self.active_intents.remove(intent)
 
     def _guardian_preflight_autonomy_plan(self, intent: Intent, plan: Plan):
+        # Aetherra imports
         from Aetherra.guardian import IntentDeclaration, evaluate_intent
 
         requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "consciousness:core"
@@ -650,11 +716,7 @@ class ConsciousnessCore:
         step_ids = [step.id for step in plan.steps]
         rollback_ids = [step.id for step in plan.rollback]
         plan_args_keys = sorted(
-            {
-                key
-                for step in plan.steps
-                for key in getattr(step, "args", {})
-            }
+            {key for step in plan.steps for key in getattr(step, "args", {})}
         )
         decision = evaluate_intent(
             IntentDeclaration(
@@ -701,11 +763,11 @@ class ConsciousnessCore:
             cap = plan.capability.lower()  # type: ignore
             if "service" in cap or "svc" in cap:
                 return "services"
-            elif "disk" in cap or "storage" in cap:
+            if "disk" in cap or "storage" in cap:
                 return "disk"
-            elif "mem" in cap or "memory" in cap:
+            if "mem" in cap or "memory" in cap:
                 return "memory"
-            elif "net" in cap or "network" in cap:
+            if "net" in cap or "network" in cap:
                 return "network"
         # Default: infer from plan type or label
         return None
@@ -737,8 +799,12 @@ class ConsciousnessCore:
 
     def _record_continuity_snapshot(self) -> None:
         """Record current consciousness state to continuity memory."""
+        if self.observer_only:
+            raise PermissionError("observer_persistence_disabled")
         # Extract trust scores
-        trust_scores = {name: trust.score for name, trust in self.self_trust.subsystems.items()}
+        trust_scores = {
+            name: trust.score for name, trust in self.self_trust.subsystems.items()
+        }
 
         # Record snapshot
         self.continuity.record(
@@ -758,7 +824,11 @@ class ConsciousnessCore:
         # (Starter examples; expand with real capability registry)
         capability_map = {
             "rotate_logs": ("system.rotate_logs", {"service": "syslog"}),
-            "cleanup_temp": ("fs.cleanup", {"path": "/tmp", "older_than_days": 7}),
+            "cleanup_temp": (
+                "fs.cleanup",
+                # Fixed legacy cleanup target; observer mode cannot execute it.
+                {"path": "/tmp", "older_than_days": 7},  # noqa: S108
+            ),
             "restart_service": (
                 "systemd.restart",
                 {"service": intent.goal.split()[-1]},
@@ -780,7 +850,12 @@ class ConsciousnessCore:
             if step_id in capability_map:
                 cap_name, args = capability_map[step_id]
                 steps.append(
-                    PlanStep(id=step_id, capability=cap_name, args=args, description=intent.why)
+                    PlanStep(
+                        id=step_id,
+                        capability=cap_name,
+                        args=args,
+                        description=intent.why,
+                    )
                 )
 
         for step_id in intent.rollback:
@@ -802,23 +877,30 @@ class ConsciousnessCore:
             "care": self.qualia.care,
             "fatigue": self.qualia.fatigue,
         }
-        snci = self.continuity.compute_continuity_index(current_qualia_dict)
+        snci = (
+            None
+            if self.observer_only
+            else self.continuity.compute_continuity_index(current_qualia_dict)
+        )
 
-        # Phase 5: Evaluate autopilot readiness (non-acting)
-        autopilot_status = {}
-        try:
-            status_obj = self.autopilot.evaluate(config.AUTONOMY_MODE)
-            autopilot_status = {
-                "mode": status_obj.mode,
-                "eligible": status_obj.eligible,
-                "reasons": status_obj.reasons,
-                "days_clean": status_obj.days_clean,
-                "incidents_last_7d": status_obj.incidents_last_7d,
-                "suggested_mode": status_obj.suggested_mode,
-            }
-        except Exception:
-            autopilot_status = {"available": False}
-
+        # Observer status must not evaluate or mutate autopilot readiness.
+        if self.observer_only:
+            autopilot_status = {"available": False, "reason": "observer_only"}
+        else:
+            # Phase 5: Evaluate autopilot readiness (non-acting)
+            autopilot_status = {}
+            try:
+                status_obj = self.autopilot.evaluate(config.AUTONOMY_MODE)
+                autopilot_status = {
+                    "mode": status_obj.mode,
+                    "eligible": status_obj.eligible,
+                    "reasons": status_obj.reasons,
+                    "days_clean": status_obj.days_clean,
+                    "incidents_last_7d": status_obj.incidents_last_7d,
+                    "suggested_mode": status_obj.suggested_mode,
+                }
+            except Exception:
+                autopilot_status = {"available": False}
         return {
             "tick": self.tick_count,
             "uptime_s": time.time() - self.start_time,
@@ -829,12 +911,14 @@ class ConsciousnessCore:
             "total_events": self.total_events_perceived,
             "total_focuses": self.total_focuses,
             "total_intents": self.total_intents_formed,
-            "autonomy_mode": config.AUTONOMY_MODE,
+            "autonomy_mode": "observe" if self.observer_only else config.AUTONOMY_MODE,
+            "observer_only": self.observer_only,
             # Phase 3: Self-Trust & Adaptive Awareness metrics
             "self_trust": {
                 "global_score": self.self_trust.global_score(),
                 "subsystems": {
-                    name: trust.score for name, trust in self.self_trust.subsystems.items()
+                    name: trust.score
+                    for name, trust in self.self_trust.subsystems.items()
                 },
             },
             "qualia_learning": {
@@ -868,7 +952,9 @@ class ConsciousnessCore:
                         getattr(self, "_last_policy_diff", None), "blacklist_remove", []
                     ),
                     "require_approval": getattr(
-                        getattr(self, "_last_policy_diff", None), "require_approval", False
+                        getattr(self, "_last_policy_diff", None),
+                        "require_approval",
+                        False,
                     ),
                 }
             },
