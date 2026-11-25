@@ -14,8 +14,11 @@ installation graphs.** The operating boundary below remains in force.
 - Phase C1 local acceptance: GO for supervised operation of the frozen Windows
   source-runtime candidate, committed/pushed as `b8719fa2` and still unmerged.
   Hosted CI, browser and live-model checks are unverified; see the C1 checkpoint below.
+- Phase C2a local acceptance: GO for supervised explicit observer checkpoints at
+  frozen source `a10b734e`, local, unmerged and unpushed. Full suite, extended
+  restart/profile checks and six browser checks pass; the C2a section bounds this GO.
 - Historical desktop and Phase A/B checkpoints retain their own revision and
-  verification boundaries; they are not substituted for C1 evidence.
+  verification boundaries; they are not substituted for C1 or C2a evidence.
 - Supported profile: Windows x64, Python 3.13.7 source checkout, Node 22.18.0,
   PowerShell 7.5+, the normal full launcher and React Runtime Observatory.
 - All conversations are synthetic. Separate local directories isolate storage;
@@ -52,6 +55,75 @@ the operator's `2026-11-24` PR352 evidence set, SHA-256
 `cc3e3a752cb025d9903a3e9af4c0fc16d9bbb3d3f2b535d01d24275b0704a7cf`.
 The PR summary records this acceptance. The earlier review checkpoints below
 are historical and do not replace this clean-main result.
+
+## Phase C2a Observer Checkpoints
+
+**GO for supervised local Windows source-runtime checkpoint operation** at
+`a10b734eb276ae2469b8fbeded0489e01ab45e4c` on
+`codex/phase-c2-observer-checkpoints`, based on published C1 preparation
+commit `0b226864`. This candidate is local, unmerged and unpushed. Hosted CI,
+fresh Python installation, intentional live-model operation and interactive
+keyboard shutdown remain unverified. No unattended, production or
+action-execution GO follows from checkpoint continuity.
+
+The implementation uses existing Memory ownership for exact immutable
+checkpoints, restores trust and all six qualia before the first fresh tick,
+and requests one save only at explicit orderly stop. Missing, invalid or denied
+restore blocks the observer and saves. Checkpoint data stays outside personal
+chat. The [operator procedure](ALPHA_OPERATOR_RUNBOOK.md#consciousness-checkpoints-phase-c2a)
+and [source-bound receipt](evidence/integration_phase_c2a_2026-11-24.json) record
+configuration, checkpoint handle, distinct row ID, commands and verification.
+
+The final default full suite passed **3,821 tests and 38 skips**,
+with zero failures/errors, in 1845.33 seconds (1872.10 seconds wall time).
+Configured coverage was **45.29%**, above the unchanged 22% requirement.
+Boot, Integration Validation and the quality gate passed; quality reported zero
+new/edited violations and 952 unchanged legacy files. All **1,732 frozen
+source/control hashes** stayed unchanged. GUI verification passed 32 tests,
+build and lint against the same GUI tree.
+
+The final extended launch passed in **761.75 seconds**. A/B/C completed
+**215/234/0 ticks**; the separate profile stayed blocked and saved no checkpoint.
+All three processes exited zero without force, their ports closed and signed
+audit chains verified. Memory row `cfca237a2a5d4c79bb4aa9623fcb0864`
+was restored exactly before B's first tick; all six qualia and the trust
+aggregate matched. The restore handle is distinct from this row ID. Checkpoint
+rows stayed out of chat evidence and provider input. Context-derived
+deterministic generation ran without fallback; it is not a live-model pass.
+C1 persistence-disabled allow/deny compatibility passed in **130.84 seconds**.
+The final-source browser passed six checks: running status, continuity fields,
+stopped/unavailable status, the same restored row, blocked isolated-profile
+state and no console errors.
+
+Failure history remains part of acceptance. The initial short-run monitor stop
+captured no exception type; its cause remains unknown. At `26a28efe`, an
+extended restart restored correctly but stopped after 125 ticks with a
+1.029709-second status timeout. Two controlled regressions reproduced loop
+starvation from Homeostasis's synchronous one-second CPU samples; those samples
+now run off-loop with the same measurement window. At `06feac58`, standalone
+extended acceptance passed, then the full suite failed with **1 failure,
+3,813 passes and 38 skips** (45.29% coverage). That restart stopped at 41 ticks
+with a 1.982992-second timeout. Controlled regressions demonstrated prompt
+signed authorization followed by health-broadcast starvation of loop delivery.
+Fix `a10b734e` yields between recipients and checks the exact original service
+registration before dispatch. Six new cases failed before the fix; all seven
+broadcast cases and 106 compatibility tests passed afterward. The original
+unclassified failure is not retroactively assigned either reproduced cause.
+
+Independent review also corrected cancelled-stop acceptance, generic
+consolidation of aged checkpoints, invalid-backend drain calls, callbacks under
+lifecycle locks and oversized dictionary allocation. Fifteen regressions
+reproduced those findings; the integrated review bundle passed 253 tests.
+All failed/superseded captures remain in the receipt. Signing, policy,
+the one-second authorization deadline and quality baselines were unchanged.
+The broadcast fix does not promise a latency bound for an individually slow
+audit or handler.
+
+The trusted local harness and SIGINT do not establish interactive keyboard
+shutdown acceptance. Directory separation verifies local storage isolation,
+not account isolation. Automatic latest selection, periodic saves and retention
+remain C2b. Pending TemporalConsciousnessEngine work stays preserved. Hosted
+review/CI, publication and merged-main verification remain separate gates.
 
 ## Phase C1 Observer Candidate
 
@@ -117,13 +189,10 @@ The committed Python content matches the verified snapshot after Git newline
 normalization. Publication does not add a remote-CI or merged-main claim.
 
 C1 state intentionally resets on restart and attaches no chat Memory consolidator
-or SafetyEnvelope actuator. **Next: C2 safe profile-scoped continuity** through
-existing interfaces, including failed/corrupt-restore protection and accurate
-trust rehydration before durable consciousness history is enabled. The separate
-pending TemporalConsciousnessEngine observer is not activated by C1.
-The [prepared C2a plan](superpowers/plans/2026-11-24-phase-c2-observer-checkpoints.md)
-starts with exact trust restoration and immutable Memory checkpoints. Automatic
-selection/periodic saves are C2b; no C2 implementation or readiness is claimed.
+or SafetyEnvelope actuator. The separate [C2a checkpoint](#phase-c2a-observer-checkpoints)
+implements exact trust restoration and immutable Memory checkpoints through
+existing interfaces. Automatic selection/periodic saves/retention remain C2b.
+The pending TemporalConsciousnessEngine observer is not activated by either milestone.
 
 ## Merge Review: Maintenance Restore And Status
 

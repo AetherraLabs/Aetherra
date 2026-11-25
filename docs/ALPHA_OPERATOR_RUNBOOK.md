@@ -998,10 +998,113 @@ is implied by unit tests or successful HTTP reads.
 
 C1 performs no persistent continuity read/write and has fixed 64-entry windows
 for working events, narrative moments and active intents. State resets on restart.
-C2 must implement safe isolated restore/write and accurate trust restoration;
-the separate pending temporal observer is not activated. An intentional live
-provider continuity check remains the separate Phase A procedure above; report
-that evidence separately from this offline observer check. Signing stays strict.
+Its historical acceptance applies with checkpoint persistence disabled. C2a's
+separate opt-in follows; pending temporal work stays inactive and signing strict.
+
+## Consciousness Checkpoints (Phase C2a)
+
+The checkpoint path has a scoped local GO for supervised Windows source-runtime
+operation at `a10b734e`; this candidate remains local, unmerged and unpushed.
+See the [C2a decision](ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints)
+and [source-bound receipt](evidence/integration_phase_c2a_2026-11-24.json).
+The final extended run passed in 761.75 seconds with A/B/C tick counts
+215/234/0, exact pre-tick restore, signed audits and clean process exits.
+Use the same isolated regression environment, synthetic data and cached
+embedding model as C1. The output directory must be new; use 5-300 observation
+seconds.
+
+```powershell
+$c2Output = Join-Path $env:TEMP ('aetherra-c2-' + [guid]::NewGuid().ToString('N'))
+python tools/alpha_consciousness_smoke.py --continuity --output $c2Output --observe-seconds 215
+Get-Content (Join-Path $c2Output 'summary.json')
+```
+
+For a short check use `--observe-seconds 20` and a different new output directory. Three processes use
+the same normal full-launcher CLI: A saves a nontrivial synthetic aggregate; B selects its actual handle
+with empty chat history and captures exact restoration before its first tick; C uses a separate profile,
+where that handle must be missing, with zero ticks and no checkpoint save. Require unchanged source
+hashes, matched checkpoint/row receipts, all process exits zero without force, verified signed audits,
+continued post-stop chat, correct personal recall, honest unknowns and no checkpoint sentinel or row ID
+in actual provider input/evidence. `passed=true` is required; historical ticks, configuration flags,
+fallback responses or a changed-source run cannot pass.
+
+Artifacts are in `run-a`, `run-b` and `run-c`; persisted profiles are `primary` and `foreign`. B
+preserves A's database and appends its audit chain. There are three process audit receipts but two final
+ledger files. After exit, use the C1 independent signed-ledger verifier above with `$observerOutput =
+$c2Output` and its loop changed to `for label in ("primary", "foreign"):`. Keep audit keys and raw
+synthetic captures in the disposable artifact directory, not ordinary logs. The helper's generation
+double verifies HTTP/storage/context behavior only.
+
+For manual use, preserve the disposable profile's other root config keys and merge this object into
+`launcher.json`:
+
+```json
+{
+  "consciousness_enabled": true,
+  "consciousness_mode": "observe",
+  "consciousness_tick_hz": 1,
+  "consciousness_continuity": {"enabled": true, "restore_checkpoint_id": null}
+}
+```
+
+Persistence separately defaults off. `null` explicitly starts fresh while preserving prior rows. To
+restore, use the exact 32-lowercase-hex `continuity_saved_checkpoint_id` as `restore_checkpoint_id`,
+never the distinct `continuity_saved_record_id`. Keep the same profile directory, SQLite database, audit
+ledger and key; restarting with an empty conversation does not reset them. Retain C1's reflection rules
+and strict flags, default deny, registry/chat/shutdown rules and network restrictions. Add these entries
+to Guardian's `allow` array:
+
+```json
+[
+  {"requester": "consciousness:core", "subsystem": "consciousness",
+   "action": "consciousness.continuity_save", "target": "memory:core"},
+  {"requester": "consciousness:core", "subsystem": "consciousness",
+   "action": "consciousness.continuity_restore", "target": "memory:core"}
+]
+```
+
+Merge `consciousness:core` into the existing capabilities policy's `allow` map with
+`consciousness:write`, `memory:read`, `memory:write`, `fs:read`, `fs:write`. Keep `AETHERRA_PRINCIPAL`
+unset for these default-requester rules and do not enable `AETHERRA_PROD_UNSAFE_ALLOW`. The ordinary
+entry point remains:
+
+```powershell
+Push-Location $alphaProfile
+& $alphaPython (Join-Path $alphaRepo 'aetherra_os_launcher.py') --mode full --no-gui `
+  --config (Join-Path $alphaProfile 'launcher.json')
+Pop-Location
+```
+
+Read the existing endpoints with `Read-AlphaJson`. Their scalar metrics include `continuity_enabled`,
+`continuity_state`, `continuity_selected_checkpoint_id`, `continuity_restored_record_id`,
+`continuity_saved_checkpoint_id`, `continuity_saved_record_id`, `continuity_outstanding` and
+`continuity_error_code`. Persistence enabled or reflection stopped is not a successful-save receipt. Only
+acknowledged `saved` status publishes saved IDs; `restored` does not prove a fresh completed tick.
+Legacy-file persistence, QFAC and actuation remain off. Normal Ctrl+C requests orderly shutdown; cleanup
+paths and cancelled stop must not acquire save authority. Pending/uncertain work must not report clean
+success. Preserve existing rows/audits on blocked, failed or uncertain outcomes; do not wipe data, retry
+automatically or infer absence from a missing receipt. Inspect the exact attempted handle from its audit
+metadata when available, then recover through an explicit new launch selecting a valid checkpoint or a
+fresh start. No public checkpoint-save/stop route or automatic recovery is introduced.
+
+The final-source Observatory browser gate passed six checks: running status,
+continuity fields, stopped/unavailable status, exact restored row, isolated
+missing-checkpoint state and absence of console errors. The restored Memory
+row was `cfca237a2a5d4c79bb4aa9623fcb0864`; use the separate checkpoint handle
+from the receipt for restore configuration. Repeat the browser procedure below
+for a different candidate. GUI tests passed 32 cases, build and lint against
+an unchanged GUI tree.
+
+Live-model C2a operation remains unverified because credentials were unavailable;
+intentionally provision them and follow [the existing strict-signing live
+procedure](#live-model-recheck-with-strict-signing) when that gate is required.
+Deterministic generation is not a live-model pass. Hosted CI and a fresh Python
+installation remain unverified. The trusted local harness and SIGINT evidence
+do not establish interactive keyboard shutdown acceptance. Signing, policy and
+the one-second registry status deadline remain unchanged. Profile directories
+provide storage isolation, not account isolation. C2b defers automatic latest
+selection, periodic saves and retention; unattended operation and autonomous
+action remain outside this scope.
 
 ## Browser Observation And Stop/Restart
 

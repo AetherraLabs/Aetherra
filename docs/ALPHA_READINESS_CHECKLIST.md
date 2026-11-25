@@ -37,9 +37,42 @@ in the [decision](ALPHA_READINESS_DECISION.md#phase-c1-observer-candidate) and
   process restart. Browser/live-model results are explicitly unverified.
 
 These checks support local supervised C1 operation, not remote CI or merged-main
-acceptance. Next is C2 safe profile-scoped continuity with failed-restore
-protection and accurate trust rehydration. Pending temporal observer work remains
+acceptance. C2a's separate checkpoint verification is recorded below; C1's
+historical result does not certify those new changes. Pending temporal observer work remains
 separate and preserved. Strict signing stays enforced.
+
+## Phase C2a Candidate Checks
+
+**GO for supervised local Windows source-runtime checkpoint operation** at
+`a10b734e` on `codex/phase-c2-observer-checkpoints`. The candidate is local,
+unmerged and unpushed. See the
+[C2a decision](ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints) and
+[source-bound evidence](evidence/integration_phase_c2a_2026-11-24.json).
+
+- [x] Exact bounded codec restores trust/qualia on the owner thread before ticks;
+  malformed/future-schema inputs cannot partially apply or allocate unbounded keys.
+- [x] Real SQLite exact immutable rows, signed authorization, policy revocation,
+  cancellation, uncertain commits and worker drain have focused regressions.
+- [x] Review fixes preserve old checkpoints during generic consolidation, abandon
+  cancelled saves, keep callbacks outside lifecycle locks and reject foreign stores.
+- [x] Final source-bound three-process launch passed in 761.75 seconds,
+  with A/B/C ticks 215/234/0, checkpoint chat exclusion, signed audits and clean exits.
+- [x] Six final-source Observatory browser checks passed, including exact restored
+  row, blocked isolated profile, stopped/unavailable state and no console errors.
+- [x] Default full suite passed 3,821 tests and 38 skips
+  in 1845.33 seconds, with 45.29% configured coverage (22% required).
+- [x] Boot, Integration Validation and unchanged quality passed. GUI passed
+  32 tests, build and lint; all 1,732 frozen source/control hashes stayed unchanged.
+- [x] C1 persistence-disabled allow/deny compatibility passed in 130.84 seconds.
+- [x] Operator/docs contract records explicit handle-versus-row semantics,
+  uncertainty/recovery, unchanged signing/policy/deadline and scoped local GO.
+- [ ] Hosted CI, fresh Python installation, intentional live-model operation and
+  interactive keyboard shutdown remain separate, unverified gates.
+
+C2b automatic latest selection, periodic saves and retention are deferred.
+Storage isolation comes from distinct local directories; no account isolation,
+unattended readiness or autonomous authority is claimed. Pending temporal work
+remains preserved. Historical failed attempts remain in the decision and receipt.
 
 ## Historical Phase B Candidate Checkpoints
 
@@ -397,9 +430,9 @@ Decision record:
 
 1. Review published C1 and obtain hosted CI before merge; merged-main acceptance
    remains a separate gate.
-2. Use the [prepared C2a plan](superpowers/plans/2026-11-24-phase-c2-observer-checkpoints.md)
-   for exact Memory checkpoint restore/write and accurate trust. Automatic
-   selection and periodic saves remain C2b. C2 code is not implemented.
+2. Review the [C2a implementation](superpowers/plans/2026-11-24-phase-c2-observer-checkpoints.md)
+   and its source-bound local evidence before publication or integration.
+   Automatic selection, periodic saves and retention remain C2b.
    Keep strict signing/governance and preserve the separate temporal milestone.
 3. Verify optional features, other platforms and broader operating modes
    separately before extending the GO decision.

@@ -17,8 +17,9 @@ Keep chat, telemetry, policy and checkpoint lifecycle independent.
 pytest, normal full launcher, Hub and Runtime Observatory; no new dependency.
 
 **Spec:** [C2 observer continuity design](../specs/2026-11-24-phase-c2-observer-continuity-design.md).
-Read it first. This is preparation only; no C2 implementation or acceptance is
-claimed. C2b automatic selection/interval/retention is explicitly deferred.
+Read it first. C2a has scoped local GO at frozen source `a10b734e`, recorded
+in the decision and source-bound evidence below. The candidate remains local,
+unmerged and unpushed. C2b automatic selection/interval/retention is deferred.
 
 ## Global Constraints
 
@@ -55,7 +56,7 @@ descendant, on an isolated `codex/` branch. Reconcile any C1 review changes befo
 implementation. Record original/temporal workspace index, status and hashes.
 
 New modules below are helpers inside existing components, not new services.
-All signatures below are proposed, not APIs currently available on Memory.
+The interfaces below are implemented on the local C2a candidate.
 
 | File | Responsibility |
 | --- | --- |
@@ -92,22 +93,22 @@ Create `tests/unit/test_consciousness_checkpoint.py`; extend
   and `restore_observer_checkpoint(state: ObserverCheckpoint) -> None`.
   These are called only by the owning observer worker, not HTTP handlers.
 
-- [ ] Add round-trip tests with score 40, nonzero timestamps/history, negative
+- [x] Add round-trip tests with score 40, nonzero timestamps/history, negative
   valence and all six dimensions. Assert exact trust import, unchanged history,
   zero invented observations and zero restored runtime ticks. At one half-life,
   a subsequent ordinary read moves 40 toward 90 to 65; clock rollback causes no
   decay. Reject invalid bounds, booleans, NaN/Infinity, excess history, extra
   fields and future schema without changing any preexisting Core state.
-- [ ] Run `python -m pytest tests/unit/test_consciousness_checkpoint.py -q`;
+- [x] Run `python -m pytest tests/unit/test_consciousness_checkpoint.py -q`;
   expect failure for the absent checkpoint API.
-- [ ] Implement the spec's 64 KiB, 64 subsystem and 64-history limits. Build all
+- [x] Implement the spec's 64 KiB, 64 subsystem and 64-history limits. Build all
   replacement state first, then swap on the owner thread. Preserve normal
   SelfTrust behavior and leave legacy file loading disabled in observer mode.
   Do not replay intents or modify the standalone persistence format.
-- [ ] Run the new file plus
+- [x] Run the new file plus
   `tests/unit/test_consciousness_observer_core.py` and `tests/capabilities/test_consciousness_phase3.py` and
   `tests/unit/test_health_checks_guardian.py`; expect all selected tests to pass.
-- [ ] Review and commit only this task's codec/Core/trust changes and tests.
+- [x] Review and commit only this task's codec/Core/trust changes and tests.
 
 ### Task 2: Exact Checkpoint I/O Owned by Existing Memory
 
@@ -135,27 +136,27 @@ Create `tests/unit/test_memory_lifecycle_checkpoint.py`.
   Preserve existing Memory `close()` callers without closing a worker's active
   connection from another thread.
 
-- [ ] Write real temporary-SQLite tests for exact immutable round trips and
+- [x] Write real temporary-SQLite tests for exact immutable round trips and
   distinct handle/row IDs; ambiguous/missing/malformed rows; duplicate handles
   across two Memory instances; unsupported database forms; foreign owner/scope;
   denied and missing-audit operations before any checkpoint DB open.
   Pin no access-stat mutation on exact load and no broad recall fallback.
-- [ ] Add synchronization-based tests for blocked audit, SQLite lock contention,
+- [x] Add synchronization-based tests for blocked audit, SQLite lock contention,
   admission while busy, caller payload mutation during blocked audit,
   pre-transaction cancellation and cancellation during commit. Assert one slot/worker, bounded return, no automatic retry, no false
   rollback claim and prior rows unchanged. Avoid timing-only sleep assertions.
-- [ ] Run `python -m pytest tests/unit/test_memory_lifecycle_checkpoint.py -q`;
+- [x] Run `python -m pytest tests/unit/test_memory_lifecycle_checkpoint.py -q`;
   expect failure for absent APIs.
-- [ ] Implement the spec's existing-database-only connection and atomic
+- [x] Implement the spec's existing-database-only connection and atomic
   check-and-insert, using the exact memory type and existing Guardian/Security
   interfaces. Enforce allowed plus audit receipt before database access.
   Freeze validated payload bytes before admission and recheck the frozen content
   before insert; return detached receipts. A running Future alone is not a
   cancellation token. No changes to generic chat retrieval, dependency locks
   or policy defaults.
-- [ ] Rerun the new file and `tests/unit/test_memory_core_guardian.py`;
+- [x] Rerun the new file and `tests/unit/test_memory_core_guardian.py`;
   expect all tests to pass and all worker connections to close.
-- [ ] Review and commit only this task's Memory changes and tests.
+- [x] Review and commit only this task's Memory changes and tests.
 
 ### Task 3: Governed Restore and Orderly Stop Save
 
@@ -179,25 +180,25 @@ Create `tests/unit/test_consciousness_observer_continuity.py`; extend
   Task 2 control token so stopping reflection does not itself cancel an explicitly
   requested save. Failed startup/replacement/monitor cleanup keeps the default.
 
-- [ ] Write tests for default-off/no-I/O, malformed config, null-handle fresh
+- [x] Write tests for default-off/no-I/O, malformed config, null-handle fresh
   lineage, restore-before-first-tick and zero initial counters. Missing/corrupt
   restore must block ticks and all writes; a later stop must preserve old rows.
   Policy denial/revocation and foreign/replaced Memory must fail closed.
-- [ ] Add tests for exactly one acknowledged save from the last fully completed
+- [x] Add tests for exactly one acknowledged save from the last fully completed
   tick on explicit orderly stop; ordinary stop without the new flag, startup
   cleanup, replacement, repeated stops, failed/incomplete ticks and emergency
   shutdown cannot save. Block audit/DB work while servicing an asyncio heartbeat
   and chat double; require bounded stop, retained ownership, truthful
   pending/uncertain state and no late apply/false success. Cache-only repeated
   GETs must cause no audit, read, write or trust decay.
-- [ ] Run the new continuity file; expect failure for absent config/lifecycle.
-- [ ] Implement staged restore and a latched failure state on the owner worker.
+- [x] Run the new continuity file; expect failure for absent config/lifecycle.
+- [x] Implement staged restore and a latched failure state on the owner worker.
   At stop, hold policy/registration/Memory ownership until bounded save/drain
   completes. Do not overwrite checkpoint errors in a generic stopped-state
   finalizer. A shutdown that cannot drain must not claim clean success.
-- [ ] Run all four affected lifecycle/Hub/UI files plus observer Core tests;
+- [x] Run all four affected lifecycle/Hub/UI files plus observer Core tests;
   expect passing allow/deny/failure cases with no action/QFAC/consolidation.
-- [ ] Review and commit only this task's lifecycle, projection and tests.
+- [x] Review and commit only this task's lifecycle, projection and tests.
 
 ### Task 4: Restart Evidence and Operator Contract
 
@@ -212,47 +213,72 @@ Add a dated compact receipt in `docs/evidence/`.
 
 **Interfaces:**
 
-- Extend existing smoke CLI with proposed `--continuity`, retaining C1 defaults.
+- Extend existing smoke CLI with `--continuity`, retaining C1 defaults.
   Use the same normal full-launch entry and trusted local harness; no new route.
 - Capture checkpoint handle, committed row ID, restore row ID, audit references,
   source hashes, fresh counters, statuses, provider/fallback identity and exits.
   Do not put raw checkpoint/private content or signing keys in ordinary logs.
 
-- [ ] Add failing three-process tests: A saves a nontrivial aggregate; B selects
+- [x] Add failing three-process tests: A saves a nontrivial aggregate; B selects
   that exact handle with empty chat history; C uses a distinct database and
   cannot restore it. Check state before the first tick via the existing trusted
   harness, not by marking historical ticks as current success.
-- [ ] Seed a valid checkpoint-only sentinel and competing personal facts. Exercise
+- [x] Seed a valid checkpoint-only sentinel and competing personal facts. Exercise
   normal HTTP chat/retrieval/context assembly and assert the checkpoint row ID
   and sentinel never reach the responder. Verify correct personal recall,
   honest unknowns and no fallback after independent observer stop.
-- [ ] Run the two affected acceptance files; expect missing C2 behavior to fail,
+- [x] Run the two affected acceptance files; expect missing C2 behavior to fail,
   then implement the smoke extension and rerun until both pass.
-- [ ] Freeze implementation hashes. Run `python -m pytest -q`,
+- [x] Freeze implementation hashes. Run `python -m pytest -q`,
   `python tools/alpha_boot_validation.py`,
   `python -m Aetherra.integration_validation`, `python tools/python_quality.py` and
   `python tools/verify_docs_consistency.py`. Require exit zero, preserve
   generated-report baselines and distinguish expected skips from passes.
-- [ ] Run the following proposed command after implementing its flag, with a
+- [x] Run the following command, with a
   new disposable output directory and the existing isolated environment:
 
   `python tools/alpha_consciousness_smoke.py --output C2_EVIDENCE --observe-seconds 215 --continuity`
 
   Require save/restart/profile evidence, verified signed audits, independent
   chat and clean exits. Repeat C1 default-off/deny checks unchanged.
-- [ ] Verify Observatory browser status and intentional live-provider personal
-  recall using the existing operator procedures. If unavailable, record the
-  exact boundary as unverified; never count an offline responder as a model pass.
-- [ ] Document exact final commands/config, receipt versus handle semantics,
+- [x] Verify Observatory browser status using the existing operator procedure;
+  all six final-source checks passed. Complete the plan's conditional live
+  verification disposition: credentials were unavailable, so intentional
+  live-provider personal recall remains explicitly unverified. This checked
+  item records that boundary; it does not claim a live-model pass.
+- [x] Document exact final commands/config, receipt versus handle semantics,
   explicit restore selection, uncertainty/recovery and C2b remaining work.
   Record a scoped go/no-go with evidence; do not imply unattended readiness.
-- [ ] Review and commit only this task's tests/helper/docs. Before any requested
-  publication, compare protected workspaces and signing controls with baseline.
+- [x] Review and commit this task's tests/helper/docs locally. Before any
+  requested publication, compare protected workspaces and signing controls
+  with baseline.
 
-## Preparation Outcome
+## Implementation Outcome
 
-The four tasks cover codec, storage, lifecycle and observable evidence without
-activating the legacy continuity file or consuming pending temporal work.
-All tests and new flags above are planned, not executed or already supported.
-C1 review/hosted CI and merge remain separate gates; the next implementation
-step is Task 1, followed by the real Memory boundary in Task 2.
+The four tasks are complete within the approved scoped local verification
+boundary, including the conditional live-verification disposition above.
+Implementation commits `011fcd24`, `b786a216`, `5d10935a`, `736ecd80`,
+`e6e24e25`, review fix `26a28efe` and launch fixes `06feac58` / `a10b734e` are local
+on `codex/phase-c2-observer-checkpoints`, unmerged and unpushed. The unchanged
+personal-continuity acceptance file retains default-off coverage; the new
+checkpoint acceptance file and helper reuse the normal launcher and existing
+smoke CLI. This preserves the recorded deviation from modifying that existing
+acceptance file. The GUI uses the existing read-only renderer and scalar metrics.
+No legacy continuity file or pending temporal runtime work was activated.
+
+The final source-bound full suite passed 3,821 tests and 38 skips,
+with 45.29% configured coverage in 1845.33 seconds. The extended
+three-process run passed in 761.75 seconds with A/B/C ticks 215/234/0;
+C1 default-off/deny compatibility passed in 130.84 seconds. Boot,
+Integration Validation and unchanged quality passed; GUI passed 32 tests,
+build and lint, and all six browser checks passed. All 1,732 source/control
+hashes stayed unchanged. The [decision](../../ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints)
+and [receipt](../../evidence/integration_phase_c2a_2026-11-24.json) retain failed
+attempts, corrections, exact selected-row evidence and final commands.
+Signing, policy and the one-second authorization deadline remain unchanged.
+
+Hosted CI, fresh Python installation, live-model operation and interactive
+keyboard shutdown remain unverified. Directory isolation is not account
+isolation; no unattended or autonomous-action readiness is claimed. C2b
+selection/interval/retention, hosted review, publication and merged-main
+verification remain separate gates.

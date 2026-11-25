@@ -1,6 +1,6 @@
 # Aetherra Master Roadmap
 
-Updated: 2026-11-22
+Updated: 2026-11-24
 
 This is the single source of truth for Aetherra roadmap planning.
 
@@ -34,6 +34,18 @@ Account isolation and broader memory/runtime redesign remain outside this scope.
 Aetherra is ready for supervised internal alpha on the verified Windows
 source-runtime profile. The current objective is bounded internal testing with
 the existing governance, observation and signing controls enforced.
+
+Phase C2a is complete for supervised local Windows source-runtime verification
+at `a10b734e`: one explicit orderly-stop save through existing Memory and exact
+selected restore before fresh ticks. The default suite passed 3,821
+tests; extended restart/profile checks and six Observatory browser checks passed.
+The [C2a decision](ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints) and
+[source-bound receipt](evidence/integration_phase_c2a_2026-11-24.json) record this
+scoped local GO. The candidate remains local, unmerged and unpushed. Hosted CI,
+fresh Python installation, live-model operation and interactive keyboard
+shutdown remain unverified. C2b automatic selection, periodic saves and retention
+remain deferred. Pending TemporalConsciousnessEngine work stays separate;
+checkpoints confer no autonomous action authority or unattended readiness.
 
 Authoritative identity and system references:
 

@@ -1,6 +1,10 @@
 # Phase C2: Observer Continuity Design
 
-Prepared: 2026-11-24. Status: proposed; no C2 runtime behavior is implemented.
+Prepared, implemented and locally verified: 2026-11-24. C2a has scoped local
+GO for supervised Windows source-runtime checkpoints at `a10b734e`, local,
+unmerged and unpushed. The [decision](../../ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints)
+and [source-bound receipt](../../evidence/integration_phase_c2a_2026-11-24.json)
+record actual acceptance and remaining verification boundaries.
 
 C1 implementation is committed and pushed as
 [b8719fa2](https://github.com/AetherraLabs/Aetherra/commit/b8719fa22b8bd21ea77b3c4aa721522e312e86ea)
@@ -12,9 +16,9 @@ CI, fresh-install, browser or live-model acceptance.
 ## Goal and boundary
 
 The user's Phase C plan calls for governed continuity of the optional
-Consciousness sidecar without taking over chat. The next focused milestone,
-**C2a**, will save one bounded aggregate checkpoint at an orderly observer stop
-and restore an explicitly selected checkpoint before the first tick of a new
+Consciousness sidecar without taking over chat. The focused milestone,
+**C2a**, saves one bounded aggregate checkpoint at an orderly observer stop
+and restores an explicitly selected checkpoint before the first tick of a new
 process. Storage belongs to the existing Memory system.
 
 C2a establishes the codec, authority, ownership and recovery contract first.
@@ -136,7 +140,7 @@ Duplicate handles must fail under concurrent writers using one atomic
 check-and-insert transaction. Return a receipt only after commit.
 
 Use existing Guardian intent evaluation, Security capability checks and signed
-audit ledger. Proposed actions are `consciousness.continuity_restore` with
+audit ledger. Actions are `consciousness.continuity_restore` with
 `consciousness:write`, `memory:read`, `fs:read`, and
 `consciousness.continuity_save` with `consciousness:write`, `memory:write`,
 `fs:read`, `fs:write`. Both require allowed plus a nonblank audit receipt.
@@ -151,7 +155,7 @@ until actual completion, report uncertainty and forbid automatic retry. A late
 result cannot apply state or become an acknowledged successful save. Subsequent
 inspection uses the exact handle; no destructive rollback or replacement row.
 
-## Proposed launcher lifecycle
+## Implemented launcher lifecycle
 
 Use a root config object `consciousness_continuity` with `enabled: false`
 by default and `restore_checkpoint_id: null` by default. Validate strict booleans,
@@ -207,8 +211,19 @@ it cannot replace checkpoint persistence or retrieval. Prove:
 - Signed audit chains verify, every process exits honestly and all relevant
   tests, full suite, boot/integration, quality and documentation gates pass.
 
-Verify actual Observatory HTTP status and browser rendering separately. Repeat
-intentional live-provider personal continuity when credentials are available;
-otherwise record it unverified. C1's deterministic result is not a live pass.
-Do not extend the current GO decision until C2 evidence exists. Hosted review
-and CI for C1 remain separate from this preparatory document.
+Actual Observatory HTTP status and all six final-source browser checks passed.
+The final default full suite passed 3,821 tests and 38 skips,
+with 45.29% configured coverage in 1845.33 seconds. The extended
+three-process run passed in 761.75 seconds with A/B/C ticks 215/234/0 and
+exact selected restore before the first fresh tick. All 1,732 frozen source
+hashes stayed unchanged. Signing, policy and the one-second registry deadline
+remain unchanged; the [C2a evidence](../../evidence/integration_phase_c2a_2026-11-24.json)
+and readiness decision retain the failed attempts and source-bound final gates.
+
+Intentional live-provider personal continuity remains unverified because
+credentials were unavailable; deterministic generation is not a live pass.
+Hosted CI, fresh Python installation and interactive keyboard shutdown also
+remain unverified. This is a scoped supervised local GO, with no account
+isolation, unattended readiness or action authority. Hosted review, publication
+and merged-main verification remain separate gates. C2b is not implemented by
+this milestone; pending temporal runtime work stays preserved.

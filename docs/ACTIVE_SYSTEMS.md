@@ -44,10 +44,18 @@ checks are unverified.
 See [source-bound evidence](evidence/integration_phase_c1_2026-11-24.json), the
 [C1 contract](AETHERRA_CONSCIOUSNESS_SYSTEM.md#phase-c1-normal-runtime-contract)
 and [operator procedure](ALPHA_OPERATOR_RUNBOOK.md#consciousness-observer-smoke-phase-c1).
-Next is [C2a checkpoint preparation](superpowers/plans/2026-11-24-phase-c2-observer-checkpoints.md):
-safe profile-scoped restore/write and accurate trust rehydration through existing
-Memory, with automatic selection and periodic saves reserved for C2b. Pending
-temporal observer work remains separate and preserved. No action authority or broader readiness is granted.
+Phase C2a local acceptance (2026-11-24): **GO for supervised Windows operation of
+explicit observer checkpoints at `a10b734e`.** The full suite passed
+3,821 tests and 38 skips; the extended three-process run and
+six Observatory browser checks passed. Existing Memory saves once at explicit
+orderly stop and restores exact selected trust/qualia before fresh ticks.
+The candidate is local, unmerged and unpushed. See the
+[C2a decision](ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints) and
+[source-bound evidence](evidence/integration_phase_c2a_2026-11-24.json).
+Hosted CI, fresh Python installation, live-model operation and interactive
+keyboard shutdown remain unverified. Automatic selection, periodic saves and
+retention remain C2b. Pending temporal work is preserved; no action authority
+or unattended readiness follows from this local GO.
 
 | System | Status | Primary Reference |
 | --- | --- | --- |
