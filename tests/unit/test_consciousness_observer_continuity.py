@@ -1595,9 +1595,11 @@ async def test_due_tick_honors_open_receipt_window(
     )
     committed, release = hold_periodic_boundary(monkeypatch, "after_policy")
     decision, sealed, draining = (threading.Event() for _ in range(3))
+    pre_due_wait, clock_advanced = threading.Event(), threading.Event()
     clock = None
     next_tick = None
     choices = []
+    receipt_wait_signals = []
     second_tick = []
     seal_times = []
     running_clock = runtime.time.monotonic
@@ -1644,9 +1646,24 @@ async def test_due_tick_honors_open_receipt_window(
             sealed.set()
 
     def observe_wait(timeout):
-        if next_tick is not None and clock >= next_tick and not decision.is_set():
+        if next_tick is None:
+            return wait(timeout)
+        if not pre_due_wait.is_set():
+            assert clock < next_tick
+            assert (
+                owned.get_runtime_status()["continuity"]["last_save_acceptance"]
+                == "pending"
+            )
+            pre_due_wait.set()
+            # Keep the first pre-due wait at this boundary until the test clock
+            # moves. Only a subsequent poll can select the due-tick behavior.
+            assert clock_advanced.wait(2)
+        elif clock >= next_tick and not decision.is_set():
             choices.append("wait")
             decision.set()
+            signaled = wait(timeout)
+            receipt_wait_signals.append(signaled)
+            return signaled
         return wait(timeout)
 
     def observe_drain():
@@ -1681,8 +1698,10 @@ async def test_due_tick_honors_open_receipt_window(
 
         deadline = owned._session._write_control.deadline
         assert 0 < deadline - next_tick < 1
+        assert await asyncio.to_thread(pre_due_wait.wait, 2)
         clock = next_tick
         owned._wake.set()
+        clock_advanced.set()
         assert await asyncio.to_thread(decision.wait, 2)
 
         if cut == "receipt":
@@ -1717,6 +1736,7 @@ async def test_due_tick_honors_open_receipt_window(
             assert choices == ["wait"]
             await owned.stop(timeout=0)
             assert await asyncio.to_thread(draining.wait, 1)
+            assert receipt_wait_signals == [True]
             assert clock == next_tick
             assert not second_tick
             assert owned.get_runtime_status()["continuity"]["outstanding"]
@@ -1738,6 +1758,7 @@ async def test_due_tick_honors_open_receipt_window(
             tmp_path / ".aetherra/security/audit.jsonl"
         ).verify_integrity(require_signed_records=True)
     finally:
+        clock_advanced.set()
         release.set()
         await owned.stop(timeout=0)
         await until(owned, lambda s: not s["thread_alive"])
