@@ -10,13 +10,13 @@ remains the persistent cognitive system and Lyrixa her user-facing persona.
 
 ## Phase C1 Normal Runtime Contract
 
-**GO for supervised operation of this frozen Windows source-runtime candidate.**
-C1 local acceptance passed; `b8719fa2` is committed and pushed, still unmerged.
-Hosted CI, browser and live-model checks are unverified. This section is
+C1 is merged through PR #354. Its historical candidate GO and evidence below
+retain their original scope; the [current decision](ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up)
+records subsequent CI, release and checkpoint verification. This section remains
 authoritative for the normal full launcher's Phase C1 path. The component and
 historical phase reference below does not imply every standalone feature is active.
 See the [operator procedure](ALPHA_OPERATOR_RUNBOOK.md#consciousness-observer-smoke-phase-c1)
-and [decision](ALPHA_READINESS_DECISION.md#phase-c1-observer-candidate).
+and [historical C1 decision](ALPHA_READINESS_DECISION.md#phase-c1-observer-candidate).
 The [source-bound evidence](evidence/integration_phase_c1_2026-11-24.json) records
 3,651 passing tests, 38 skips and 5 passing subtests; boot, integration and quality
 gates pass. Two 215-second normal-launch profiles verify allowed and denied
@@ -93,16 +93,15 @@ C1's production, unattended, action, browser or live-provider acceptance.
 
 ## Phase C2a Observer Checkpoints
 
-C2a has scoped publication-review GO for supervised Windows source-runtime
-operation at `5d8ccecb`, using exact checkpoints through existing owned Memory
-on the normal full-launcher path. Review corrected first-SIGINT saving on
-Windows and added C2 acceptance to CI. Current targeted checks passed 129
-unit/lifecycle and 4 acceptance tests. Full-suite, extended and browser
-results at `a10b734e` remain historical; the changed launcher has not had a
-full-suite or browser rerun. The
-[current decision](ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints) and
-[review receipt](evidence/integration_phase_c2a_pr_review_2026-11-24.json) bound
-this GO. The [operator procedure](ALPHA_OPERATOR_RUNBOOK.md#consciousness-checkpoints-phase-c2a)
+C2a is merged through PR #353 on released main `949312c3` (`v0.5.0-beta.13`).
+Hosted main CI and production/release signing passed. The command-task diagnostic
+correction passes local regressions and the full suite; review/publication and
+hosted follow-up CI remain pending. The original stop-receipt failure is retained
+and its slow operation remains unproven.
+See the [current decision](ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up).
+The earlier [publication-review receipt](evidence/integration_phase_c2a_pr_review_2026-11-24.json)
+and browser evidence retain their historical scope. The earlier scoped GO is
+not expanded. The [operator procedure](ALPHA_OPERATOR_RUNBOOK.md#consciousness-checkpoints-phase-c2a)
 keeps C1 defaults and historical evidence separate.
 
 Root `consciousness_continuity` accepts only `enabled` (strict boolean, default `false`) and
@@ -147,8 +146,8 @@ as an orderly-stop request; unrelated or additional cancellation remains
 cleanup-only. A programmatically delivered SIGINT verified save and exact
 restart through that CLI without independently stopping the observer. Physical
 keyboard delivery remains unverified. This is profile-directory storage
-isolation, not account isolation. Hosted CI awaits publication; fresh Python
-installation and live-provider operation remain unverified. Signing, policy and
+isolation, not account isolation. Fresh Python installation and current
+browser/live-provider operation remain unverified. Signing, policy and
 the one-second registry status deadline remain unchanged. C2b automatic latest
 selection, periodic saves and retention are deferred; no unattended, production
 or autonomous-action readiness follows from this scoped GO.

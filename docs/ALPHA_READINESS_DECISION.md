@@ -2,25 +2,24 @@
 
 Date: 2026-11-24 (America/Denver)
 
-**GO for supervised internal alpha on the documented Windows source-runtime
-profile.** Desktop blockers, clean-main acceptance and required production
-signing pass. **NO-GO for unattended or production operation and unverified
-installation graphs.** The operating boundary below remains in force.
+**The existing supervised internal-alpha boundary remains unchanged.** C1 and
+C2a are merged. The checkpoint command-error correction passes local verification;
+the original runtime delay remains unexplained. This follow-up does not expand
+the earlier scoped GO or claim hosted CI for its uncommitted candidate.
+**NO-GO for unattended or production operation and unverified installation graphs.**
 
 - Decision owner: Aetherra Labs.
-- Current integrated baseline: [PR #352](https://github.com/AetherraLabs/Aetherra/pull/352),
-  merged as `42b8f6a7483c588a8cdc91450ffd095a10c1d992`.
-- Released main: `17a833cd0653556b50d869be1f22b989d5633cb4`, `v0.5.0-beta.11`.
-- Phase C1 local acceptance: GO for supervised operation of the frozen Windows
-  source-runtime candidate, committed/pushed as `b8719fa2` and still unmerged.
-  Hosted CI, browser and live-model checks are unverified; see the C1 checkpoint below.
-- Phase C2a publication-review acceptance: scoped GO at `5d8ccecb`, based on
-  current targeted review/checks and historical `a10b734e` broader evidence.
-  Full-suite and browser checks were not repeated for the changed launcher;
-  hosted CI, main and release gates remain separate. See the C2a decision below.
-
-- Historical desktop and Phase A/B checkpoints retain their own revision and
-  verification boundaries; they are not substituted for C1 or C2a evidence.
+- Current integrated baseline: C1 [PR #354](https://github.com/AetherraLabs/Aetherra/pull/354)
+  merged as `5a900016912f44b84bf8adfc361c80d56620507b`; C2a
+  [PR #353](https://github.com/AetherraLabs/Aetherra/pull/353) merged as
+  `4116f5c62f72f14275953a2015b05ad71beb2bee` after retargeting to main.
+- Released main: `949312c3f842283b8b25a8da6babff4e66b0c764`, `v0.5.0-beta.13`.
+  Only release metadata differs from the C2a merge.
+- Current checkpoint-stop follow-up: local regressions and the full suite pass
+  on `949312c3` plus the uncommitted harness/test changes. Publication and hosted
+  follow-up CI remain pending; see [the follow-up](#checkpoint-stop-follow-up).
+- Historical desktop, Phase A/B and C1/C2a candidate checkpoints retain their own
+  revisions and verification boundaries; they are not current-main substitutes.
 - Supported profile: Windows x64, Python 3.13.7 source checkout, Node 22.18.0,
   PowerShell 7.5+, the normal full launcher and React Runtime Observatory.
 - All conversations are synthetic. Separate local directories isolate storage;
@@ -29,9 +28,74 @@ installation graphs.** The operating boundary below remains in force.
 
 See [the checklist](ALPHA_READINESS_CHECKLIST.md),
 [fresh installation commands](DESKTOP_INSTALLATION.md),
-[operator commands](ALPHA_OPERATOR_RUNBOOK.md) and
+[operator commands](ALPHA_OPERATOR_RUNBOOK.md) and historical
 [fresh-install evidence](evidence/desktop_alpha_2026-11-22.json) and
 [clean-main acceptance](evidence/desktop_alpha_main_2026-11-22.json).
+
+## Checkpoint-Stop Follow-Up
+
+C1 and C2a merged after review and current CI. C2a's final main-target checks
+passed 37 entries with one expected skip. All 11 main-push workflows passed.
+[CI Quality Gates](https://github.com/AetherraLabs/Aetherra/actions/runs/45546947307)
+executed production signing and signed-manifest enforcement successfully; neither
+step was skipped. [Automatic Release](https://github.com/AetherraLabs/Aetherra/actions/runs/45548258107)
+published beta.13. Published assets were not independently downloaded for local
+verification in this checkpoint; actual hosted signing and verification passed.
+
+The clean merged-main Windows suite at `4116f5c6` had **3,830 passed, 38 skipped,
+one failure and five passing subtests**, 45.29% coverage against the unchanged
+22% requirement, with process exit 1. The failure was
+`test_selected_checkpoint_restores_before_ticks_and_stays_out_of_chat`, waiting
+for `observer-stopped.json`. Restore before tick zero succeeded; a later row
+committed without an accepted stop receipt, and continuity became uncertain.
+The original artifacts do not establish which operation exhausted its budget.
+
+An isolated diagnostic and then both unmodified acceptance tests passed on
+released main `949312c3`. These passes do not resolve or erase the full-suite
+failure. The successful restart restored Memory row
+`de2832db1e4d40d38ef7de560afc572f` before tick zero with an exact aggregate match;
+all three processes exited zero and verified signed audits. Checkpoints remained
+outside chat evidence. The context-derived deterministic responder used no fallback.
+GUI 32 tests, install/build/lint, four boot contracts and five integration
+contracts also passed. They do not establish a new browser or live-model pass.
+
+The follow-up corrects a confirmed verification defect: an exception in the
+background stop/session command task was lost, producing only a missing-file
+timeout. It now reports sanitized stage/code failures promptly and consumes the
+task exception. Nine focused regressions and 99 existing control tests pass.
+A controlled real-SQLite experiment delays completion three seconds after commit:
+the original harness reports a generic missing receipt after 15.016 seconds;
+the corrected harness reports `stop_observer/consciousness_shutdown_pending`
+after 2.035 seconds. Both runs retain one committed row, no accepted receipt,
+no retry, uncertain status, drained ownership, verified signed audit and runtime
+exit zero. This proves the diagnostic correction, not the original slow operation.
+
+The **uninstrumented full suite passes 3,840 tests, 38 skips and five subtests**,
+including both continuity acceptance tests: 1,538.70 seconds pytest time and
+1,558.66 seconds through process exit zero, with 45.29% coverage against the
+unchanged 22% requirement. Separate instrumented normal-launch
+acceptance passed both tests across five processes in 160.77 seconds pytest time
+(161.79 seconds through process exit). The source-bound
+[follow-up receipt](evidence/checkpoint_stop_followup_2026-11-24.json) records the
+`949312c3` base, uncommitted harness/test changes, exact commands, results and
+limits. All 1,552 hashes in the verification manifest match after the run. In the
+uninstrumented full-suite trace, handle `bc1dfbc011b7410d80589d91493aa50d` saved
+Memory row `cd1d84e53983413eb3292cc8edfe10c6`; a new process restored that same row
+before tick zero with an exact aggregate match. All three processes exited zero,
+closed their ports and verified signed audits; checkpoint data stayed outside
+chat evidence. No runtime deadline, policy or late-save acceptance rule changed.
+The original full-suite failure remains recorded and its slow operation remains
+unproven. Passing reruns do not retroactively assign
+that failure a cause.
+
+**Local diagnostic-fix verification passes; review/publication and hosted
+follow-up CI remain pending.** The earlier main CI/signing passes apply to the
+merged baseline, not this uncommitted candidate. The existing scoped GO is not
+expanded. Fresh Python installation, current browser/live-model operation and
+physical keyboard shutdown remain unverified.
+Python verification reused the pinned environment. Signing, Guardian/Security
+and pending Temporal work remain preserved. C2b selection, periodic saves and
+retention remain separate work.
 
 ## Phase B Merged-Main Checkpoint
 
@@ -60,14 +124,13 @@ are historical and do not replace this clean-main result.
 
 ## Phase C2a Observer Checkpoints
 
-**Scoped GO for supervised Windows source-runtime checkpoint operation and
-publication review** at `5d8ccecba5ef9f3b9177bbf64063c572f5cf0142` on
-`codex/phase-c2-observer-checkpoints`. This decision rests on current targeted
-review/checks and explicitly historical broader verification. **The full suite
-and browser checks were not rerun for the changed launcher.** Hosted CI awaits
-publication; fresh Python installation, live-model operation and physical
-keyboard shutdown remain unverified. No main/release, unattended, production
-or action-execution acceptance follows from this decision.
+Historical **scoped GO for supervised Windows source-runtime checkpoint operation
+and publication review** at `5d8ccecba5ef9f3b9177bbf64063c572f5cf0142` on
+`codex/phase-c2-observer-checkpoints`. At that checkpoint, the changed launcher
+had targeted verification but no full-suite/browser rerun or hosted/main/release
+acceptance. The [merged-main follow-up](#checkpoint-stop-follow-up) supersedes
+those pending integration claims and records the later full-suite failure.
+This historical decision establishes no unattended, production or action authority.
 
 Publication review found two Important gaps after the original local GO.
 On Windows, asyncio Runner's first Ctrl+C cancelled the main task and took the
@@ -79,12 +142,12 @@ first signal-triggered cancellation as orderly-stop intent; unrelated/additional
 cancellation remains cleanup-only, and signal-handler ownership is restored.
 The CI workflow now includes C2 acceptance in its existing offline pinned-model
 step. Nine platform-portable signal regressions are included in Linux CI
-selection; hosted execution is pending. Windows-specific CLI acceptance remains
-platform-specific. Targeted fix review
+selection; hosted execution was pending at this checkpoint. Windows-specific
+CLI acceptance remains platform-specific. Targeted fix review
 reported no remaining findings. Signing, policy, the one-second authorization
 deadline and CI quality/signing controls were not weakened.
 
-Current checks passed **129 unit/lifecycle tests** and **4 acceptance tests**
+Publication-review checks passed **129 unit/lifecycle tests** and **4 acceptance tests**
 in 184.72 seconds (185.82 seconds wall time for acceptance).
 Acceptance covers three-process checkpoint isolation, normal Windows CLI-only
 shutdown/restart and ask/stream shutdown. Windows processes **21492 and 63284**
@@ -141,15 +204,15 @@ saves; one save is requested only at explicit orderly stop. Directory separation
 verifies storage isolation, not account isolation. C2b automatic latest
 selection, periodic saves and retention remain deferred; pending
 TemporalConsciousnessEngine work stays preserved. Hosted CI, merged-main and
-release verification remain separate gates.
+release outcomes are now recorded in the [follow-up](#checkpoint-stop-follow-up).
 
 ## Phase C1 Observer Candidate
 
-**GO for supervised C1 operation on the frozen Windows source-runtime candidate.**
-This is local acceptance of `codex/phase-c-observer` based on released main
-`17a833cd`; C1 is committed and pushed as `b8719fa2`, still unmerged.
-Hosted CI, a fresh installation, browser rendering and live-model operation
-are unverified for C1.
+Historical **GO for supervised C1 operation on the frozen Windows source-runtime
+candidate**, `codex/phase-c-observer`, based on released main `17a833cd`.
+At this checkpoint C1 was committed/pushed as `b8719fa2` and not yet merged;
+hosted CI, fresh installation, browser and live-model operation were unverified.
+The later [merge and follow-up](#checkpoint-stop-follow-up) have separate evidence.
 Unattended/production operation and action execution remain NO-GO. The
 [source-bound evidence](evidence/integration_phase_c1_2026-11-24.json) records the
 exact source hashes, commands, result counts, audit references and limitations.

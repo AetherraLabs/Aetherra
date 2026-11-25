@@ -2,18 +2,19 @@
 
 Updated: 2026-11-24
 
-Current released baseline: `17a833cd` (`v0.5.0-beta.11`), incorporating Phase A
-and Phase B through [PR #352](https://github.com/AetherraLabs/Aetherra/pull/352).
-Clean merge verification passed 3,494 tests, 38 skips and 5 passing subtests,
-29 GUI tests and all 12 main workflows. Required production and release signing
-passed; the release signature and signed artifact checksums were verified.
-See the [merged-main checkpoint](ALPHA_READINESS_DECISION.md#phase-b-merged-main-checkpoint).
+Current released baseline: `949312c3` (`v0.5.0-beta.13`), incorporating C1
+[PR #354](https://github.com/AetherraLabs/Aetherra/pull/354) and C2a
+[PR #353](https://github.com/AetherraLabs/Aetherra/pull/353). Hosted main CI and
+required production/release signing passed. The command-error correction passes
+local regressions and the full suite; review/publication and hosted follow-up CI
+remain pending. The original runtime delay is unproven. See the
+[current decision](ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up).
 
-**Phase C1: GO for supervised operation of the frozen Windows source-runtime
-candidate.** C1 is committed and pushed as `b8719fa2`, still unmerged.
-Hosted CI, fresh installation, browser and live-model checks are unverified for C1. Local acceptance is recorded
-in the [decision](ALPHA_READINESS_DECISION.md#phase-c1-observer-candidate) and
-[source-bound evidence](evidence/integration_phase_c1_2026-11-24.json):
+**Historical Phase C1 candidate acceptance:** GO for supervised operation of the
+frozen Windows source-runtime candidate published as `b8719fa2`. The local
+checks below retain their original scope in the
+[decision](ALPHA_READINESS_DECISION.md#phase-c1-observer-candidate) and
+[source-bound evidence](evidence/integration_phase_c1_2026-11-24.json).
 
 - [x] Default-disabled normal launch has no observer registration in three fresh
   processes, including empty-history restart and a separate profile; all exit
@@ -36,44 +37,55 @@ in the [decision](ALPHA_READINESS_DECISION.md#phase-c1-observer-candidate) and
   context-derived generation, including after observer stop and default-profile
   process restart. Browser/live-model results are explicitly unverified.
 
-These checks support local supervised C1 operation, not remote CI or merged-main
-acceptance. C2a's separate checkpoint verification is recorded below; C1's
-historical result does not certify those new changes. Pending temporal observer work remains
-separate and preserved. Strict signing stays enforced.
+These historical checks support local supervised C1 operation; later remote CI
+and merged-main outcomes are recorded separately above. C2a's checkpoint
+verification is recorded below; the C1 historical result does not certify those
+changes. Pending Temporal work remains separate and preserved. Strict signing
+stays enforced.
 
 ## Phase C2a Candidate Checks
 
-**Scoped publication-review GO for supervised Windows source-runtime checkpoints**
-at `5d8ccecb`. See the
-[current decision](ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints) and
+The publication-review checks below are historical at `5d8ccecb`; see the
 [review receipt](evidence/integration_phase_c2a_pr_review_2026-11-24.json).
+The [current follow-up decision](ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up)
+records merged-main verification, the local diagnostic-fix pass and the original
+unexplained runtime delay. The earlier scoped GO is not expanded.
 
 - [x] Exact bounded codec and governed immutable Memory rows restore trust/qualia
   before ticks; policy, cancellation, uncertain commits and drain have regressions.
 - [x] Publication review's two Important findings are corrected: Windows first
   CLI SIGINT now requests orderly save, and the CI workflow includes C2 acceptance.
-- [x] Current targeted unit/lifecycle checks passed 129 tests; acceptance passed
+- [x] Publication-review unit/lifecycle checks passed 129 tests; acceptance passed
   4 tests in 184.72 seconds (185.82 seconds wall time).
 - [x] Windows normal CLI-only shutdown saved and restored exact state across two
   processes, both exiting zero, before any restored-process ticks/events.
   SIGINT delivery was programmatic; no independent observer stop was invoked.
-- [x] Current boot, Integration Validation, quality and CI-control checks passed;
+- [x] Publication-review boot, Integration Validation, quality and CI-control checks passed;
   all 1,733 frozen source/control hashes match the committed fix.
 - [x] Nine signal regressions are platform-portable for Linux CI; Windows-only
-  acceptance passed locally. Hosted CI results await publication.
+  acceptance passed locally; subsequent hosted CI also passed.
 - [x] Historical `a10b734e` full suite: 3,821 passes, 38 skips, 45.29% coverage,
   1845.33 seconds. Historical extended launch: 761.75 seconds, A/B/C ticks
   215/234/0; C1 default-off/deny compatibility: 130.84 seconds.
 - [x] Historical `a10b734e` browser: six checks passed. GUI: 32 tests, build and
   lint passed; the GUI tree remains unchanged.
-- [ ] Full-suite and browser checks have not been repeated for the changed launcher.
-- [ ] Hosted CI, fresh Python installation, live-model operation and physical
-  keyboard shutdown remain unverified. Main/release integration gates are separate.
+- [x] C1/C2a merged; current PR checks, all 11 main workflows and required
+  production/release signing passed.
+- [x] Local follow-up: nine diagnostic regressions and 99 control tests pass;
+  the uninstrumented full suite passes 3,840 tests, 38 skips and five subtests,
+  including both normal-entry continuity acceptance tests, with process exit zero.
+- [x] Preserve the original clean-main result: 3,830 passed, 38 skipped, one
+  stop-receipt failure and five passing subtests. The diagnostic fix and passing
+  reruns do not establish the original slow operation.
+- [ ] Review/publish the uncommitted follow-up and run its hosted CI. Earlier
+  merged-main signing/CI results do not certify this candidate.
+- [ ] Current browser checks, fresh Python installation, live-model operation
+  and physical keyboard shutdown remain unverified.
 
 The original GO missed the Windows first-Ctrl+C path because earlier smoke
-stopped the observer independently. Current GO rests on targeted review and
-checks plus explicitly historical broader evidence. Signing, policy and the
-one-second deadline remain unchanged. C2b automatic selection, periodic saves
+stopped the observer independently. That historical GO rested on targeted review
+and explicitly historical broader evidence; the current qualification is above.
+Signing, policy and the one-second deadline remain unchanged. C2b automatic selection, periodic saves
 and retention are deferred. Pending temporal work is preserved; directory
 isolation does not establish account isolation or unattended/action readiness.
 
@@ -409,12 +421,13 @@ Primary file:
 
 ## Gate 10: Alpha Decision
 
-Status: GO for supervised internal alpha on the verified Windows source-runtime
-profile and local C1 operation on the frozen candidate. The released Phase B
-baseline passed merge, clean-main and required production/release signing gates.
-C1 is committed and pushed as `b8719fa2`, still unmerged, with hosted CI,
-fresh installation, browser and live-model checks unverified. Unattended/production operation and unverified
-installation graphs remain NO-GO; no broader authority is inferred.
+Status: the existing supervised Windows source-runtime boundary remains unchanged.
+C1/C2a are merged and hosted signing passed. Local diagnostic-fix verification
+passes; follow-up publication/CI remain pending and the original delay remains
+unexplained. See the
+[current decision](ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up).
+Unattended/production operation and unverified installation graphs remain NO-GO;
+no broader authority is inferred.
 
 Before calling alpha ready:
 
@@ -431,14 +444,13 @@ Decision record:
 
 ## Current Next Actions
 
-1. Review published C1 and obtain hosted CI before merge; merged-main acceptance
-   remains a separate gate.
-2. Review the [C2a implementation](superpowers/plans/2026-11-24-phase-c2-observer-checkpoints.md)
-   and its source-bound local evidence before publication or integration.
-   Automatic selection, periodic saves and retention remain C2b.
-   Keep strict signing/governance and preserve the separate temporal milestone.
-3. Verify optional features, other platforms and broader operating modes
-   separately before extending the GO decision.
+1. Review and publish the focused checkpoint-stop follow-up with its source-bound
+   evidence, then run hosted CI. Preserve the original failure and the distinction
+   between corrected diagnostics and an unproven runtime delay.
+2. Complete fresh Python, current browser/live-model and physical-keyboard checks
+   separately before extending the verified scope.
+3. Resume C2b automatic selection, periodic saves and retention, then the separate
+   Temporal milestone. Keep strict signing/governance and unrelated work preserved.
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
