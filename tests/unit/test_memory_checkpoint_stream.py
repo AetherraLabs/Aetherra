@@ -1,5 +1,6 @@
 """Atomic stream transactions against the actual governed Memory database."""
 
+# Standard library imports
 import hashlib
 import json
 import sqlite3
@@ -7,12 +8,15 @@ import threading
 import time
 from dataclasses import asdict, replace
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.aetherra_core.memory.memory_core import LyrixaMemorySystem
 from Aetherra.consciousness.checkpoint import decode_checkpoint, dump_checkpoint_json
 from Aetherra.security.audit_ledger import SecurityAuditLedger
 
+# Local imports
 from . import test_memory_lifecycle_checkpoint as legacy
 
 policy = legacy.policy
@@ -20,6 +24,7 @@ memory = legacy.memory
 
 
 def api():
+    # Aetherra imports
     from Aetherra.aetherra_core.memory import checkpoint_stream
 
     return checkpoint_stream
@@ -71,7 +76,7 @@ def request(token, head, n, metadata=None):
     attempt = api().AttemptDescriptor(
         token,
         head,
-        f"{n+1000:032x}",
+        f"{n + 1000:032x}",
         handle,
         hashlib.sha256(data).hexdigest(),
         hashlib.sha256(meta).hexdigest(),
@@ -246,6 +251,7 @@ def test_advance_enforces_current_epoch_capacity(governed, lower):
 def test_denied_or_unaudited_stream_operation_never_opens_database(
     governed, policy, monkeypatch, operation, fault
 ):
+    # Aetherra imports
     import Aetherra.guardian.core as guardian
 
     with LyrixaMemorySystem(governed.db_path) as other:
