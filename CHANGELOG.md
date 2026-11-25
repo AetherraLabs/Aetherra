@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.14 (2026-11-25)
+
+### Bug Fixes
+
+- Report checkpoint smoke command failures
+  ([`007e651`](https://github.com/AetherraLabs/Aetherra/commit/007e651039799f201d3b1179303b61aa8498c456))
+
+### Documentation
+
+- Reconcile alpha integration roadmap
+  ([`2767230`](https://github.com/AetherraLabs/Aetherra/commit/2767230f851a5c8fe646b21d91ea84cd113fbc0e))
+
+
 ## v0.5.0-beta.13 (2026-11-25)
 
 ### Chores
