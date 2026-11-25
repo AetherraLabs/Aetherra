@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.12 (2026-11-25)
+
+### Documentation
+
+- **consciousness**: Prepare governed C2 checkpoint milestone
+  ([`0b22686`](https://github.com/AetherraLabs/Aetherra/commit/0b226864c5de728c7c0572d74ce0db2a80c182e2))
+
+### Features
+
+- **consciousness**: Integrate governed runtime observer
+  ([`b8719fa`](https://github.com/AetherraLabs/Aetherra/commit/b8719fa22b8bd21ea77b3c4aa721522e312e86ea))
+
+
 ## v0.5.0-beta.11 (2026-11-24)
 
 ### Bug Fixes
