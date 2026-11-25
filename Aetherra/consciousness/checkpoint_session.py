@@ -1,16 +1,23 @@
-"""Owner-thread startup selection of an exact Memory checkpoint stream."""
+"""Owner-thread selection and nonblocking saves for an exact Memory checkpoint stream."""
 
 from __future__ import annotations
 
 # Standard library imports
+import copy
+import hashlib
 import threading
 import uuid
+from collections.abc import Callable
+from dataclasses import asdict, replace
 
 # Aetherra imports
 from Aetherra.aetherra_core.memory.checkpoint_stream import (
     AcquiredStream,
+    AdvanceReceipt,
+    AdvanceRequest,
     AttemptDescriptor,
     InspectionResult,
+    SnapshotMetadata,
     StreamHead,
     StreamKey,
     StreamToken,
@@ -19,7 +26,12 @@ from Aetherra.aetherra_core.memory.lifecycle_checkpoint import (
     CheckpointError,
     CheckpointJobControl,
 )
-from Aetherra.consciousness.checkpoint import OWNER, SCOPE
+from Aetherra.consciousness.checkpoint import (
+    OWNER,
+    SCOPE,
+    ObserverCheckpoint,
+    dump_checkpoint_json,
+)
 
 
 def _invalid():
@@ -114,7 +126,7 @@ def recovery_descriptor(value, automatic):
 
 
 class ObserverCheckpointSession:
-    """The observer owner advances startup. Memory alone selects and fences state."""
+    """The owner schedules frozen ticks. Memory selects, fences and commits state."""
 
     def __init__(
         self,
@@ -125,6 +137,8 @@ class ObserverCheckpointSession:
         monotonic_clock,
         still_owned,
         recovery_attempt=None,
+        wake_event=None,
+        tick_interval=1.0,
     ):
         self._memory = memory
         self._config = automatic_settings(automatic)
@@ -139,6 +153,16 @@ class ObserverCheckpointSession:
         self._monotonic_clock = monotonic_clock
         self._still_owned = still_owned
         self.startup_cancelled = threading.Event()
+        self.wake_event = wake_event if wake_event is not None else threading.Event()
+        self._freshness = max(3.0, 3 * tick_interval)
+        self._stop_lock = threading.Lock()
+        self._cancelled = threading.Event()
+        self._stop_deadline = None
+        self._final_attempted = False
+        self._write_control = None
+        self._write_job = None
+        self._candidate = None
+        self._completed = self._attempted_tick = 0
         self._started = False
         self._job = None
         self._acquire_job = None
@@ -147,6 +171,17 @@ class ObserverCheckpointSession:
         self._taken = False
         self._status = {
             "state": "restoring",
+            "last_save_trigger": None,
+            "last_save_acceptance": "none",
+            "current_attempt": None,
+            "saved_operation_id": None,
+            "saved_generation": None,
+            "saved_trigger": None,
+            "saved_record_id": None,
+            "saved_checkpoint_id": None,
+            "stop_save_submitted": False,
+            "ownership_checked_at_unix_s": None,
+            "ownership_lost_at_unix_s": None,
             "outstanding": False,
             "last_error_code": None,
             "stream_id": self._config["stream_id"],
@@ -172,8 +207,12 @@ class ObserverCheckpointSession:
         }
 
     def _control(self):
+        self._startup_deadline = self._monotonic_clock() + 1.0
         return CheckpointJobControl(
-            self.startup_cancelled, self._monotonic_clock() + 1.0, self._still_owned
+            self.startup_cancelled,
+            self._startup_deadline,
+            self._still_owned,
+            self.wake_event,
         )
 
     def begin_start(self) -> None:
@@ -181,6 +220,7 @@ class ObserverCheckpointSession:
             return
         self._started = True
         self.started_monotonic = self._monotonic_clock()
+        self._next_due = self.started_monotonic + self._config["save_interval_seconds"]
         self._status.update(
             session_id=uuid.uuid4().hex, session_started_at_unix_s=self._wall_clock()
         )
@@ -221,7 +261,7 @@ class ObserverCheckpointSession:
             ownership_state="lost" if code == "writer_fenced" else "uncertain",
         )
 
-    def poll(self, *, local_owned: bool) -> None:
+    def _poll_start(self, *, local_owned: bool) -> None:
         job = self._job
         if job is None:
             return
@@ -246,6 +286,8 @@ class ObserverCheckpointSession:
                 ):
                     raise CheckpointError("invalid")
                 self._acquired = acquired
+                self._head = acquired.head
+                self._status["ownership_checked_at_unix_s"] = self._wall_clock()
                 self._status.update(
                     observed_writer_epoch=acquired.token.writer_epoch,
                     observed_generation=acquired.head.generation,
@@ -331,5 +373,244 @@ class ObserverCheckpointSession:
             self._inspect_job is None or self._inspect_job.restore_window_open()
         )
 
+    def mark_applied(self):
+        state = "restored" if self._acquired.head.generation else "fresh"
+        self._status["state"] = state
+        if state == "restored" and self._attempt is None:
+            self._status["recovery_outcome"] = "restored"
+
+    def on_completed_tick(
+        self,
+        state: ObserverCheckpoint,
+        *,
+        observation_wall: float,
+        observation_uptime: float,
+        capture_uptime: float,
+    ) -> None:
+        self._candidate = (state, observation_wall, observation_uptime, capture_uptime)
+        self._completed += 1
+        self._status["session_uptime_seconds"] = capture_uptime
+
+    def begin_stop(self, *, deadline: float, save_checkpoint: bool) -> None:
+        # This may run off-owner. Only short local control operations belong here.
+        with self._stop_lock:
+            if self._stop_deadline is None or deadline < self._stop_deadline:
+                self._stop_deadline = deadline
+            self.startup_cancelled.set()
+            if self._write_control is not None:
+                self._write_control.limit_deadline(self._stop_deadline)
+            if not save_checkpoint:
+                self._cancel_writes()
+        self.wake_event.set()
+
+    def _cancel_writes(self):
+        self._cancelled.set()
+        if self._write_control is not None:
+            self._write_control.cancel()
+
+    def cancel(self) -> None:
+        with self._stop_lock:
+            self.startup_cancelled.set()
+            self._cancel_writes()
+        self.wake_event.set()
+
+    def wait_timeout(self):
+        """Time left to consume the active receipt. Closed work wakes on real drain."""
+        job = self._job or self._write_job
+        if job is None:
+            return None
+        if not job.outstanding:
+            return 0
+        if job.acceptance_closed:
+            return None if self._status["last_error_code"] is not None else 0
+        deadline = (
+            self._startup_deadline
+            if self._job is not None
+            else self._write_control.deadline
+        )
+        if self._stop_deadline is not None:
+            deadline = min(deadline, self._stop_deadline)
+        return max(0.0, deadline - self._monotonic_clock())
+
+    def poll(self, *, local_owned: bool | Callable[[], bool]) -> None:
+        # A positive receipt is immutable once the worker releases the slot.
+        # Observe that boundary before sampling the observer's local identities.
+        write_pending = self._write_job is not None and self._write_job.outstanding
+        if callable(local_owned):
+            local_owned = local_owned()
+        if self._job is not None:
+            self._poll_start(local_owned=local_owned)
+            return
+        if self._write_job is not None:
+            self._consume_write(local_owned, was_pending=write_pending)
+        if (
+            self._write_job is None
+            and self._taken
+            and self._acquired is not None
+            and self._status["last_error_code"] is None
+            and local_owned
+            and not self._cancelled.is_set()
+        ):
+            self._schedule_write()
+
+    def _schedule_write(self):
+        now = self._monotonic_clock()
+        stopping = self._stop_deadline is not None
+        if stopping:
+            if self._final_attempted or now >= self._stop_deadline:
+                return
+        elif now < self._next_due:
+            return
+        if self._candidate is None or self._completed == self._attempted_tick:
+            return
+        state, wall, observed, captured = self._candidate
+        if not 0 <= now - self.started_monotonic - observed <= self._freshness:
+            return
+        trigger = "orderly_stop" if stopping else "periodic"
+        try:
+            handle = uuid.uuid4().hex
+            payload = dump_checkpoint_json(replace(state, checkpoint_id=handle))
+            metadata = SnapshotMetadata(
+                1,
+                self._status["session_id"],
+                self._status["session_started_at_unix_s"],
+                wall,
+                state.captured_at,
+                observed,
+                captured,
+                trigger,
+            ).to_bytes()
+            attempt = AttemptDescriptor(
+                self._acquired.token,
+                self._head,
+                uuid.uuid4().hex,
+                handle,
+                hashlib.sha256(payload).hexdigest(),
+                hashlib.sha256(metadata).hexdigest(),
+            )
+            request = AdvanceRequest(attempt, payload, metadata)
+            with self._stop_lock:
+                # Encoding is outside the stop lock. A stop during encoding wins.
+                if self._cancelled.is_set() or stopping != (
+                    self._stop_deadline is not None
+                ):
+                    return
+                deadline = now + 1.0
+                if stopping:
+                    self._final_attempted = True
+                    deadline = min(deadline, self._stop_deadline)
+                    if self._monotonic_clock() >= deadline:
+                        return
+                self._write_control = CheckpointJobControl(
+                    self._cancelled, deadline, self._still_owned, self.wake_event
+                )
+            self._attempted_tick = self._completed
+            self._write_attempt = attempt
+            self._write_job = self._memory.submit_advance_checkpoint_stream(
+                request=request, control=self._write_control
+            )
+            if not self._write_job.admitted:
+                refusal = self._write_job.poll(local_owned=True)
+                self._write_job = None
+                self._next_due = (
+                    self._monotonic_clock() + self._config["save_interval_seconds"]
+                )
+                if refusal.error_code != "busy":
+                    self._write_failure(refusal.error_code)
+                return
+            self._status.update(
+                state="saving",
+                outstanding=True,
+                last_save_trigger=trigger,
+                last_save_acceptance="pending",
+                current_attempt=asdict(attempt),
+                stop_save_submitted=stopping,
+            )
+        except (ValueError, CheckpointError) as exc:
+            self._write_failure(getattr(exc, "code", "invalid"))
+        except Exception:
+            self._write_failure("unavailable")
+
+    def _write_failure(self, code):
+        if code not in {
+            "busy",
+            "cancelled",
+            "uncertain",
+            "unavailable",
+            "denied",
+            "audit_failed",
+            "corrupt",
+            "capacity",
+            "invalid",
+            "writer_fenced",
+            "conflict",
+        }:
+            code = "unavailable"
+        lost = code == "writer_fenced"
+        self._status.update(
+            state="uncertain" if code == "uncertain" else "blocked",
+            last_error_code=code,
+            ownership_state="lost" if lost else "uncertain",
+        )
+        # Only admission publishes pending. A refusal before admission belongs
+        # to no new attempt and leaves the previous receipt history intact.
+        if self._status["last_save_acceptance"] == "pending":
+            self._status["last_save_acceptance"] = "unacknowledged"
+        if lost:
+            self._status["ownership_lost_at_unix_s"] = self._wall_clock()
+
+    def _consume_write(self, local_owned, *, was_pending):
+        job = self._write_job
+        deadline = self._write_control.deadline
+        if self._stop_deadline is not None:
+            deadline = min(deadline, self._stop_deadline)
+        eligible = local_owned is True and self._monotonic_clock() < deadline
+        if was_pending and eligible and not job.acceptance_closed:
+            # The worker may have sealed during the identity check. Its wake
+            # causes a fresh post-seal check. Local refusal/expiry needs no wait.
+            return
+        result = job.poll(local_owned=eligible)
+        if result is None:
+            return
+        outstanding = job.outstanding
+        self._status["outstanding"] = outstanding
+        if not outstanding:
+            self._write_job = None
+            self._next_due = (
+                self._monotonic_clock() + self._config["save_interval_seconds"]
+            )
+        if self._status["last_save_acceptance"] != "pending":
+            return
+        if result.error_code is not None:
+            self._write_failure(result.error_code)
+            return
+        receipt = result.value
+        attempt = self._write_attempt
+        if (
+            type(receipt) is not AdvanceReceipt
+            or receipt.attempt != attempt
+            or type(receipt.head) is not StreamHead
+            or type(receipt.audit_id) is not str
+            or not receipt.audit_id.strip()
+            or receipt.head.generation != attempt.proposed_generation
+            or receipt.head.checkpoint_id != attempt.checkpoint_id
+            or receipt.head.payload_digest != attempt.payload_digest
+            or receipt.head.metadata_digest != attempt.metadata_digest
+        ):
+            self._write_failure("corrupt")
+            return
+        self._head = receipt.head
+        self._status.update(
+            state="saved",
+            saved_record_id=receipt.head.record_id,
+            saved_operation_id=attempt.operation_id,
+            saved_generation=receipt.head.generation,
+            saved_trigger=self._status["last_save_trigger"],
+            saved_checkpoint_id=receipt.head.checkpoint_id,
+            observed_generation=receipt.head.generation,
+            last_save_acceptance="acknowledged",
+            ownership_checked_at_unix_s=self._wall_clock(),
+        )
+
     def get_cached_status(self) -> dict:
-        return dict(self._status)
+        return copy.deepcopy(self._status)

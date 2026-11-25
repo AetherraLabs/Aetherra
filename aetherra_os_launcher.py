@@ -496,6 +496,7 @@ class AetherraOSLauncher:
         self._daemon_heartbeat_tasks: list[asyncio.Task] = []
         self._perception_adapters = []
         self._consciousness_task = None
+        self._consciousness_stop_deadline = None
         # One-shot intent from main()'s Windows SIGINT handler, never task.cancel().
         self._orderly_cli_sigint_task: asyncio.Task | None = None
 
@@ -2808,13 +2809,25 @@ class AetherraOSLauncher:
             getattr(observer, "get_runtime_status", None)
         ):
             return
+        if self._consciousness_stop_deadline is None:
+            self._consciousness_stop_deadline = time.monotonic() + 2.0
+        stop_deadline = self._consciousness_stop_deadline
         task = self._consciousness_task
         if task is not None:
             task.cancel()
-            await asyncio.gather(task, return_exceptions=True)
-            self._consciousness_task = None
-        stop_deadline = time.monotonic() + 2.0
-        await observer.stop(save_checkpoint=save_checkpoint)
+        try:
+            async with asyncio.timeout(max(0.0, stop_deadline - time.monotonic())):
+                await observer.stop(
+                    save_checkpoint=save_checkpoint, deadline=stop_deadline
+                )
+                if task is not None:
+                    if not task.done():
+                        await asyncio.gather(task, return_exceptions=True)
+                    elif not task.cancelled():
+                        task.exception()
+                    self._consciousness_task = None
+        except TimeoutError:
+            raise RuntimeError("consciousness_shutdown_pending") from None
         status = observer.get_runtime_status()
         if status.get("thread_alive") or status.get("continuity", {}).get(
             "outstanding"
@@ -2822,22 +2835,32 @@ class AetherraOSLauncher:
             raise RuntimeError("consciousness_shutdown_pending")
         checkpoint_store = getattr(observer, "_checkpoint_store", None)
         if status.get("continuity", {}).get("enabled") and checkpoint_store is not None:
-            drained = await asyncio.to_thread(
-                checkpoint_store.drain_lifecycle_checkpoints,
-                timeout=max(0.0, stop_deadline - time.monotonic()),
-            )
+            remaining = stop_deadline - time.monotonic()
+            if remaining <= 0:
+                # A repeated cleanup may observe a real drain without waiting.
+                drained = checkpoint_store.drain_lifecycle_checkpoints(timeout=0)
+            else:
+                try:
+                    async with asyncio.timeout(remaining):
+                        drained = await asyncio.to_thread(
+                            checkpoint_store.drain_lifecycle_checkpoints,
+                            timeout=remaining,
+                        )
+                except TimeoutError:
+                    drained = False
             if not drained:
                 raise RuntimeError("consciousness_shutdown_pending")
         registry = self.service_registry
         info = registry.get_service_info("consciousness_core") if registry else None
-        if info is not None and info.instance is observer:
-            with contextlib.suppress(Exception):
+        remaining = stop_deadline - time.monotonic()
+        if info is not None and info.instance is observer and remaining > 0:
+            with contextlib.suppress(Exception), asyncio.timeout(remaining):
                 await registry.update_service_status(
                     "consciousness_core",
                     ServiceStatus.STOPPING,
                     expected_instance=observer,
                     nonblocking_preflight=True,
-                    preflight_timeout=1.0,
+                    preflight_timeout=min(1.0, remaining),
                 )
 
     async def _start_consciousness_core(self):

@@ -171,7 +171,6 @@ class ConsciousnessObserver:
                 )
         self._local_owned = local_owned if local_owned is not None else lambda: True
         self._session = None
-        self._startup_cancelled = None
         self._checkpoint_store = checkpoint_store
         self._continuity_enabled = continuity_enabled
         initial_state = "fresh" if continuity_enabled else "disabled"
@@ -201,6 +200,7 @@ class ConsciousnessObserver:
         self._observations = observations
         self._interval = tick_interval
         self._stop = threading.Event()
+        self._wake = threading.Event()
         self._lock = threading.Lock()
         self._thread: threading.Thread | None = None
         self._state = "starting"
@@ -276,7 +276,10 @@ class ConsciousnessObserver:
         }
         with self._lock:
             self._checkpoint_failed = True
-            if self._continuity["state"] == "uncertain":
+            if (
+                self._continuity["state"] == "uncertain"
+                or self._continuity.get("ownership_state") == "lost"
+            ):
                 return
             self._continuity.update(
                 state=(
@@ -379,12 +382,11 @@ class ConsciousnessObserver:
             self._checkpoint_control = None
 
     def _startup_local_owned(self):
+        return not self._stop.is_set() and self._locally_owned()
+
+    def _locally_owned(self):
         try:
-            return (
-                not self._stop.is_set()
-                and not self._checkpoint_failed
-                and self._local_owned() is True
-            )
+            return not self._checkpoint_failed and self._local_owned() is True
         except Exception:
             return False
 
@@ -400,18 +402,20 @@ class ConsciousnessObserver:
             recovery_attempt=self._recovery_attempt,
             wall_clock=time.time,
             monotonic_clock=time.monotonic,
-            still_owned=lambda: (
-                self._startup_local_owned() and self._checkpoint_owned()
-            ),
+            still_owned=lambda: self._locally_owned() and self._checkpoint_owned(),
+            wake_event=self._wake,
+            tick_interval=self._interval,
         )
-        self._session = session
         # Stop can arrive after a local identity check but before StreamJob.poll.
         with self._lock:
-            self._startup_cancelled = session.startup_cancelled
+            self._session = session
             if self._stop.is_set():
-                self._startup_cancelled.set()
+                session.begin_stop(
+                    deadline=self._save_deadline, save_checkpoint=self._save_requested
+                )
         session.begin_start()
         while True:
+            self._wake.clear()
             session.poll(local_owned=self._startup_local_owned())
             status = session.get_cached_status()
             with self._lock:
@@ -421,7 +425,7 @@ class ConsciousnessObserver:
                     self._continuity.update(status)
             if status["state"] != "restoring" and not status["outstanding"]:
                 break
-            time.sleep(0.005)
+            self._wake.wait(session.wait_timeout())
         acquired = session.take_restore()
         if acquired is None:
             self._checkpoint_failure(
@@ -461,6 +465,7 @@ class ConsciousnessObserver:
                 )
                 if record and self._recovery_attempt is None:
                     self._continuity["recovery_outcome"] = "restored"
+            session.mark_applied()
             return True
         except Exception as exc:
             code = getattr(exc, "code", "invalid")
@@ -559,7 +564,7 @@ class ConsciousnessObserver:
                     accepted
                     and not self._checkpoint_failed
                     and not control.cancelled.is_set()
-                    and time.monotonic() < control.deadline
+                    and time.monotonic() < min(control.deadline, self._save_deadline)
                 )
                 if accepted:
                     self._continuity.update(
@@ -576,7 +581,46 @@ class ConsciousnessObserver:
         finally:
             self._finish_checkpoint()
 
+    def _poll_stream(self):
+        session = self._session
+        session.poll(local_owned=self._locally_owned)
+        status = session.get_cached_status()
+        with self._lock:
+            # A stop may cancel a later attempt, but cannot retract a receipt
+            # already consumed by this owner before publishing the cached status.
+            if self._checkpoint_failed and status["last_error_code"] is None:
+                status.pop("state")
+                status.pop("last_error_code")
+            self._continuity.update(status)
+        return status
+
+    def _wait_for_tick(self, next_tick):
+        if self._session is None:
+            self._stop.wait(max(0.001, next_tick - time.monotonic()))
+            return
+        while not self._stop.is_set():
+            # Clear before observing condition/result so racing signals are kept.
+            self._wake.clear()
+            self._poll_stream()
+            remaining = next_tick - time.monotonic()
+            if remaining <= 0 or self._stop.is_set():
+                return
+            acceptance = self._session.wait_timeout()
+            self._wake.wait(
+                remaining if acceptance is None else min(remaining, acceptance)
+            )
+
+    def _drain_stream(self):
+        session = self._session
+        while True:
+            self._wake.clear()
+            status = self._poll_stream()
+            if not status["outstanding"]:
+                return
+            self._wake.wait(session.wait_timeout())
+
     def _run(self) -> None:
+        stream_active = False
         try:
             reason = self._ready_reason()
             if reason:
@@ -596,6 +640,7 @@ class ConsciousnessObserver:
                 with self._lock:
                     self._state, self._error = "blocked", "continuity_restore_failed"
                 return
+            stream_active = self._session is not None
             while not self._stop.is_set():
                 reason = self._ready_reason()
                 if reason:
@@ -622,6 +667,9 @@ class ConsciousnessObserver:
                     if self._continuity_enabled:
                         self._checkpoint_failure(reason, blocked=True)
                     return
+                if stream_active:
+                    observation_wall = time.time()
+                    elapsed = time.monotonic() - self._session.started_monotonic
                 frozen = (
                     core.export_observer_checkpoint("0" * 32)
                     if self._continuity_enabled
@@ -632,17 +680,18 @@ class ConsciousnessObserver:
                         break
                     self._last_completed_checkpoint = frozen
                     self._completed += 1
-                    if self._session is not None:
-                        self._continuity["session_uptime_seconds"] = (
-                            time.monotonic() - self._session.started_monotonic
+                    if stream_active:
+                        self._session.on_completed_tick(
+                            frozen,
+                            observation_wall=observation_wall,
+                            observation_uptime=elapsed,
+                            capture_uptime=elapsed,
                         )
                     self._events = core.total_events_perceived
-                    self._last_tick = time.time()
+                    self._last_tick = observation_wall if stream_active else time.time()
                     self._snapshot = self._pending_snapshot
                     self._state, self._error = "running", None
-                self._stop.wait(
-                    max(0.001, self._interval - (time.monotonic() - started))
-                )
+                self._wait_for_tick(started + self._interval)
             self._save_checkpoint()
         except PermissionError:
             with self._lock:
@@ -655,6 +704,10 @@ class ConsciousnessObserver:
             if self._continuity_enabled:
                 self._checkpoint_failure("tick_failed")
         finally:
+            if stream_active:
+                if self._checkpoint_failed or not self._stop.is_set():
+                    self._session.cancel()
+                self._drain_stream()
             if self._stop.is_set():
                 with self._lock:
                     if self._state not in {"blocked", "failed"}:
@@ -665,16 +718,28 @@ class ConsciousnessObserver:
         # Keep the actual worker and outstanding receipt owned until they drain.
         with self._lock:
             self._save_requested = False
+            if self._session is not None:
+                self._session.cancel()
             self._checkpoint_failed = True
             if self._checkpoint_control is not None:
                 self._checkpoint_control.cancelled.set()
-            if self._continuity_enabled:
+            if (
+                self._continuity_enabled
+                and self._continuity.get("ownership_state") != "lost"
+            ):
                 self._continuity.update(state="uncertain", last_error_code="uncertain")
 
     async def stop(
-        self, *, timeout: float = 2.0, save_checkpoint: bool = False
+        self,
+        *,
+        timeout: float = 2.0,
+        save_checkpoint: bool = False,
+        deadline: float | None = None,
     ) -> None:
-        deadline = time.monotonic() + max(0, min(float(timeout), 5))
+        cap = 2.0 if self._automatic is not None else 5.0
+        wait_until = time.monotonic() + max(0, min(float(timeout), cap))
+        if deadline is not None:
+            wait_until = min(wait_until, deadline)
         with self._lock:
             abandon = (
                 self._stop_requested
@@ -685,10 +750,19 @@ class ConsciousnessObserver:
             if not self._stop_requested:
                 self._stop_requested = True
                 self._save_requested = save_checkpoint is True
-                self._save_deadline = deadline
+                self._save_deadline = wait_until
+            elif deadline is not None:
+                self._save_deadline = min(self._save_deadline, wait_until)
+                if self._checkpoint_control is not None:
+                    self._checkpoint_control.limit_deadline(self._save_deadline)
+            if self._automatic is not None:
+                wait_until = min(wait_until, self._save_deadline)
+                if self._session is not None:
+                    self._session.begin_stop(
+                        deadline=wait_until, save_checkpoint=save_checkpoint is True
+                    )
             self._stop.set()
-            if self._startup_cancelled is not None:
-                self._startup_cancelled.set()
+            self._wake.set()
             if (
                 self._checkpoint_control is not None
                 and self._continuity["state"] != "saving"
@@ -703,7 +777,9 @@ class ConsciousnessObserver:
             self._abandon_checkpoint()
         try:
             while (
-                thread is not None and thread.is_alive() and time.monotonic() < deadline
+                thread is not None
+                and thread.is_alive()
+                and time.monotonic() < wait_until
             ):
                 await asyncio.sleep(0.01)
         except asyncio.CancelledError:
@@ -736,7 +812,7 @@ class ConsciousnessObserver:
                 "persistence_enabled": self._continuity_enabled
                 and self._checkpoint_store is not None,
                 "legacy_file_persistence_enabled": False,
-                "continuity": dict(self._continuity),
+                "continuity": copy.deepcopy(self._continuity),
                 "qfac_persistence_enabled": False,
                 "action_execution_enabled": False,
                 "last_error_code": self._error,
