@@ -443,3 +443,244 @@ def test_session_preserves_current_selection_and_unknown_old_acceptance(
     assert status["session_uptime_seconds"] == 0
     assert session.take_restore().head == expected
     assert session.take_restore() is None
+
+
+@pytest.fixture
+def writing(database):
+    # Aetherra imports
+    from Aetherra.consciousness.checkpoint import decode_checkpoint
+    from Aetherra.consciousness.checkpoint_session import ObserverCheckpointSession
+
+    clock = [time.monotonic()]
+    session = ObserverCheckpointSession(
+        database,
+        dict(AUTO, start_mode="create", save_interval_seconds=30),
+        wall_clock=lambda: 500,
+        monotonic_clock=lambda: clock[0],
+        still_owned=lambda: True,
+    )
+    session.begin_start()
+    assert finish(session)["state"] == "selected"
+    assert session.take_restore().head.generation == 0
+    state = decode_checkpoint(stream.legacy.payload())
+
+    def tick(elapsed, wall=500):
+        clock[0] = session.started_monotonic + elapsed
+        session.on_completed_tick(
+            replace(state, captured_at=wall + 0.25),
+            observation_wall=wall,
+            observation_uptime=elapsed,
+            capture_uptime=elapsed,
+        )
+
+    return session, clock, tick
+
+
+def test_periodic_spacing_freezes_one_new_completed_tick(
+    writing, database, monkeypatch
+):
+    session, clock, tick = writing
+    tick(29)
+    session.poll(local_owned=True)
+    assert stream.legacy.rows(database) == []
+    tick(30, wall=490)
+    entered, release = stream.legacy.blocked_audit(monkeypatch)
+    session.poll(local_owned=True)
+    try:
+        assert entered.wait(1)
+        tick(30.5, wall=480)
+        for _ in range(5):
+            session.poll(local_owned=True)
+            assert session.get_cached_status()["outstanding"]
+    finally:
+        release.set()
+    assert finish(session)["last_save_acceptance"] == "acknowledged"
+    meta = database.conn.execute(
+        "SELECT metadata_bytes FROM checkpoint_stream_commits"
+    ).fetchone()[0]
+    assert json.loads(meta)["last_verified_observation_at_unix_s"] == 490
+    assert json.loads(meta)["captured_at_unix_s"] == 490.25
+    assert json.loads(meta)["observation_uptime_s"] == 30
+    clock[0] += 300
+    session.poll(local_owned=True)
+    assert len(stream.legacy.rows(database)) == 1
+    tick(331)
+    assert finish(session)["observed_generation"] == 2
+    clock[0] += 30
+    session.poll(local_owned=True)
+    session.begin_stop(deadline=clock[0] + 2, save_checkpoint=True)
+    assert finish(session)["observed_generation"] == 2
+
+
+@pytest.mark.parametrize("cut", ["deadline", "cancel", "owner"])
+def test_sealed_periodic_receipt_closes_before_consumption(writing, database, cut):
+    session, clock, tick = writing
+    tick(30)
+    session.poll(local_owned=True)
+    end = time.monotonic() + 2
+    while database.lifecycle_checkpoint_pending() and time.monotonic() < end:
+        time.sleep(0.001)
+    assert len(stream.legacy.rows(database)) == 1
+    if cut == "cancel":
+        session.cancel()
+    elif cut == "deadline":
+        clock[0] += 1
+    session.poll(local_owned=cut != "owner")
+    state = session.get_cached_status()
+    assert state["last_save_acceptance"] == "unacknowledged"
+    assert state["saved_record_id"] is None
+    assert state["last_error_code"] == "uncertain"
+    tick(100)
+    session.begin_stop(deadline=clock[0] + 2, save_checkpoint=True)
+    assert finish(session)["observed_generation"] == 0
+    assert len(stream.legacy.rows(database)) == 1
+
+
+def test_busy_before_admission_skips_interval_but_fenced_write_latches(
+    writing, database, monkeypatch
+):
+    session, clock, tick = writing
+    entered, release = stream.legacy.blocked_audit(monkeypatch)
+    occupied = stream.legacy.save(database)
+    try:
+        assert entered.wait(1)
+        tick(30)
+        assert finish(session)["last_save_acceptance"] == "none"
+        assert session.get_cached_status()["last_error_code"] is None
+    finally:
+        release.set()
+    occupied.result(1)
+    tick(59)
+    assert finish(session)["observed_generation"] == 0
+    tick(60)
+    accepted = finish(session)
+    assert accepted["observed_generation"] == 1
+    newer = done(stream.acquire(database, "resume"))
+    tick(90)
+    rejected = finish(session)
+    assert rejected["ownership_state"] == "lost"
+    assert rejected["last_error_code"] == "writer_fenced"
+    assert rejected["saved_record_id"] == accepted["saved_record_id"]
+    tick(150)
+    session.begin_stop(deadline=clock[0] + 2, save_checkpoint=True)
+    assert finish(session)["ownership_state"] == "lost"
+    assert database.conn.execute(
+        "SELECT writer_epoch, generation FROM checkpoint_stream_heads"
+    ).fetchone() == (newer.token.writer_epoch, 1)
+
+
+@pytest.mark.parametrize("new_tick", [False, True])
+def test_orderly_stop_drains_periodic_then_saves_only_newer_tick(
+    writing, database, monkeypatch, new_tick
+):
+    session, clock, tick = writing
+    tick(30)
+    entered, release = stream.legacy.blocked_audit(monkeypatch)
+    session.poll(local_owned=True)
+    try:
+        assert entered.wait(1)
+        if new_tick:
+            tick(30.5, wall=501)
+        session.begin_stop(deadline=clock[0] + 2, save_checkpoint=True)
+        session.begin_stop(deadline=clock[0] + 20, save_checkpoint=True)
+        assert session.get_cached_status()["outstanding"]
+    finally:
+        release.set()
+    accepted = finish(session)
+    assert accepted["observed_generation"] == 1 + int(new_tick)
+    assert accepted["last_save_acceptance"] == "acknowledged"
+    rows = database.conn.execute(
+        "SELECT metadata_bytes FROM checkpoint_stream_commits ORDER BY generation"
+    ).fetchall()
+    assert [json.loads(row[0])["save_trigger"] for row in rows] == (
+        ["periodic", "orderly_stop"] if new_tick else ["periodic"]
+    )
+
+
+def test_admitted_busy_latches_failure_while_preserving_exact_prior_receipt(
+    writing, database, monkeypatch
+):
+    session, clock, tick = writing
+    tick(30)
+    first = finish(session)
+    assert first["last_save_acceptance"] == "acknowledged"
+    initial = dict(first["current_attempt"])
+    first["current_attempt"]["token"]["writer_epoch"] = 999
+    assert session.get_cached_status()["current_attempt"]["token"]["writer_epoch"] == 1
+    calls = []
+
+    def busy(connection, request, audit):
+        calls.append(request.attempt)
+        raise stream.legacy.api().CheckpointError("busy")
+
+    monkeypatch.setattr(stream.api(), "_advance", busy)
+    tick(60)
+    session.begin_stop(deadline=clock[0] + 2, save_checkpoint=True)
+    state = finish(session)
+    assert state["last_error_code"] == "busy"
+    assert state["last_save_trigger"] == "orderly_stop"
+    assert state["last_save_acceptance"] == "unacknowledged"
+    assert state["saved_record_id"] == first["saved_record_id"]
+    assert state["saved_operation_id"] == initial["operation_id"]
+    assert state["saved_generation"] == 1
+    assert state["saved_trigger"] == "periodic"
+    assert state["current_attempt"]["operation_id"] == calls[0].operation_id
+    assert state["current_attempt"]["checkpoint_id"] != state["saved_checkpoint_id"]
+    tick(100)
+    finish(session)
+    assert len(calls) == 1
+
+
+def test_malformed_advance_receipt_blocks_without_publishing_or_retry(
+    writing, database, monkeypatch
+):
+    session, clock, tick = writing
+    advance = stream.api()._advance
+
+    def malformed(connection, request, audit):
+        receipt = advance(connection, request, audit)
+        return replace(receipt, head=None)
+
+    monkeypatch.setattr(stream.api(), "_advance", malformed)
+    tick(30)
+    status = finish(session)
+    assert status["last_error_code"] == "corrupt"
+    assert status["saved_record_id"] is None
+    assert len(stream.legacy.rows(database)) == 1
+    tick(100)
+    session.begin_stop(deadline=clock[0] + 2, save_checkpoint=True)
+    assert finish(session)["last_save_acceptance"] == "unacknowledged"
+    assert len(stream.legacy.rows(database)) == 1
+
+
+def test_real_drain_racing_expiry_poll_releases_outstanding_status(
+    writing, database, monkeypatch
+):
+    session, clock, tick = writing
+    tick(30)
+    entered, release = stream.legacy.blocked_audit(monkeypatch)
+    session.poll(local_owned=True)
+    job_type = stream.api().StreamJob
+    actual = job_type.outstanding.fget
+
+    def sampled(job):
+        was_pending = actual(job)
+        if was_pending and job.acceptance_closed and not release.is_set():
+            release.set()
+            deadline = time.monotonic() + 2
+            while actual(job) and time.monotonic() < deadline:
+                time.sleep(0.001)
+            assert not actual(job)
+        return was_pending
+
+    try:
+        assert entered.wait(1)
+        monkeypatch.setattr(job_type, "outstanding", property(sampled))
+        clock[0] += 1
+        session.poll(local_owned=True)
+        session.poll(local_owned=True)
+        status = session.get_cached_status()
+        assert status["last_save_acceptance"] == "unacknowledged"
+        assert not status["outstanding"]
+    finally:
+        release.set()

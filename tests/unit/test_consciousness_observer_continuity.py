@@ -964,8 +964,9 @@ backends = recovery.backends
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("orderly", [False, True])
 async def test_launcher_resumes_configured_descriptor_through_registered_memory(
-    database, backends, policy
+    database, backends, policy, orderly
 ):
     # Standard library imports
     import json
@@ -1036,9 +1037,18 @@ async def test_launcher_resumes_configured_descriptor_through_registered_memory(
         assert owned._local_owned()
     finally:
         engine.core_memory = original
-        await launcher._stop_consciousness_observer(save_checkpoint=True)
-    assert recovery.stream.legacy.rows(original)[0][0] == commits[0].head.record_id
-    assert len(recovery.stream.legacy.rows(original)) == 1
+        await launcher._stop_consciousness_observer(save_checkpoint=orderly)
+    rows = recovery.stream.legacy.rows(original)
+    assert commits[0].head.record_id in {row[0] for row in rows}
+    assert len(rows) == 1 + int(orderly)
+    result = owned.get_runtime_status()["continuity"]
+    if orderly:
+        assert result["saved_trigger"] == "orderly_stop"
+        assert result["last_save_acceptance"] == "acknowledged"
+        assert result["saved_record_id"] in {row[0] for row in rows}
+        assert result["saved_generation"] == 2
+    else:
+        assert result["saved_record_id"] is None
 
 
 @pytest.mark.asyncio
@@ -1072,6 +1082,7 @@ async def test_stop_between_local_check_and_sealed_startup_poll_refuses_receipt(
         await owned.stop(timeout=0)
         release.set()
         await owned.stop()
+        await until(owned, lambda s: not s["thread_alive"])
         assert len(consumed) == 1
         assert consumed[0].value is None
         assert consumed[0].error_code == "uncertain"
@@ -1152,3 +1163,340 @@ async def test_core_import_preparation_never_blocks_status_or_publishes_after_cu
     finally:
         release.set()
         await owned.stop()
+
+
+def due_on_first_tick(database, monkeypatch, policy, *, interval=10):
+    # Standard library imports
+    import json
+
+    # Aetherra imports
+    from Aetherra.consciousness.checkpoint_session import ObserverCheckpointSession
+
+    path = policy / "guardian.json"
+    rules = json.loads(path.read_text())
+    rules["allow"].append(
+        {
+            "requester": "consciousness:core",
+            "subsystem": "consciousness",
+            "action": "consciousness.micro_reflection_update",
+        }
+    )
+    path.write_text(json.dumps(rules))
+    take = ObserverCheckpointSession.take_restore
+
+    # A monotonic scheduler pause makes the first completed tick due without
+    # shortening either the production interval or the Memory acceptance window.
+    offset = [0]
+    monkeypatch.setattr(
+        runtime,
+        "time",
+        SimpleNamespace(
+            monotonic=lambda: time.monotonic() + offset[0],
+            time=time.time,
+            sleep=time.sleep,
+        ),
+    )
+
+    def advance_clock(session):
+        selection = take(session)
+        offset[0] = 30
+        return selection
+
+    monkeypatch.setattr(ObserverCheckpointSession, "take_restore", advance_clock)
+    return runtime.ConsciousnessObserver(
+        readiness=lambda: None,
+        observations=lambda: [],
+        checkpoint_store=database,
+        tick_interval=interval,
+        continuity_enabled=True,
+        automatic=dict(recovery.AUTO, start_mode="create", save_interval_seconds=30),
+    )
+
+
+def hold_periodic_boundary(monkeypatch, stage):
+    # Standard library imports
+    import sqlite3
+
+    # Aetherra imports
+    from Aetherra.aetherra_core.memory import lifecycle_checkpoint as persistence
+
+    entered, release, committed = (threading.Event() for _ in range(3))
+
+    def pause():
+        entered.set()
+        assert release.wait(5)
+
+    # Aetherra imports
+    import Aetherra.guardian.core as guardian
+
+    append_decision = guardian.append_guardian_decision
+    connect = sqlite3.connect
+    recheck = persistence._recheck_policy
+
+    def audit(intent, risk, decision):
+        if stage == "audit" and intent.action == "consciousness.continuity_advance":
+            pause()
+        return append_decision(intent, risk, decision)
+
+    class Connection(sqlite3.Connection):
+        def commit(self):
+            generation = self.execute(
+                "SELECT generation FROM checkpoint_stream_heads"
+            ).fetchone()[0]
+            if generation and stage == "commit":
+                pause()
+            super().commit()
+            if generation:
+                committed.set()
+
+    def policy_check(intent):
+        if committed.is_set() and stage == "before_policy":
+            pause()
+        recheck(intent)
+        if committed.is_set() and stage == "after_policy":
+            pause()
+
+    monkeypatch.setattr(guardian, "append_guardian_decision", audit)
+    monkeypatch.setattr(
+        sqlite3, "connect", lambda *a, **kw: connect(*a, **kw, factory=Connection)
+    )
+    monkeypatch.setattr(persistence, "_recheck_policy", policy_check)
+    return entered, release
+
+
+async def heartbeat_launcher(policy):
+    # Standard library imports
+    import json
+
+    # Aetherra imports
+    from aetherra_kernel_loop import AetherraKernelLoop
+    from aetherra_os_launcher import AetherraOSLauncher, EngineAdapter
+    from aetherra_service_registry import AetherraServiceRegistry
+
+    path = policy / "guardian.json"
+    rules = json.loads(path.read_text())
+    rules["allow"].append(
+        {
+            "requester": "service_registry",
+            "subsystem": "service_registry",
+            "action": "service_registry.*",
+        }
+    )
+    path.write_text(json.dumps(rules))
+    launcher = AetherraOSLauncher()
+    registry = launcher.service_registry = AetherraServiceRegistry()
+    launcher.running = registry._running = True
+    kernel = launcher.kernel_loop = AetherraKernelLoop()
+    kernel.running = True
+    engine = kernel.aetherra_engine = EngineAdapter(SimpleNamespace(initialized=True))
+    launcher.systems["aetherra"] = engine
+    launcher._kernel_task = asyncio.current_task()
+    assert await registry.register_service("kernel_loop", kernel)
+    assert await registry.register_service("aetherra_engine", engine.impl)
+    return launcher
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("stage", ["audit", "commit", "after_policy"])
+async def test_blocked_periodic_work_keeps_ticks_heartbeat_status_and_bounded_stop(
+    database, monkeypatch, policy, stage
+):
+    launcher = await heartbeat_launcher(policy)
+    owned = due_on_first_tick(database, monkeypatch, policy, interval=0.2)
+    entered, release = hold_periodic_boundary(monkeypatch, stage)
+    owned.start()
+    try:
+        assert await asyncio.to_thread(entered.wait, 1.5), owned.get_runtime_status()
+        engine_info = launcher.service_registry.get_service_info("aetherra_engine")
+        before = engine_info.last_heartbeat
+        assert await asyncio.wait_for(launcher._refresh_owned_engine_heartbeat(), 0.8)
+        assert engine_info.last_heartbeat > before
+        active = await until(owned, lambda s: s["ticks_completed"] >= 2)
+        assert active["continuity"]["outstanding"]
+        assert owned.get_think_stream()["runtime_state"] == "running"
+        await asyncio.wait_for(owned.stop(timeout=0.05, save_checkpoint=True), 0.5)
+        await asyncio.wait_for(owned.stop(save_checkpoint=True), 0.5)
+        assert owned.get_runtime_status()["continuity"]["outstanding"]
+        assert database.lifecycle_checkpoint_pending()
+    finally:
+        release.set()
+        await owned.stop(timeout=0)
+        await until(owned, lambda s: not s["thread_alive"])
+    rejected = owned.get_runtime_status()["continuity"]
+    assert rejected["saved_record_id"] is None
+    assert not rejected["outstanding"]
+    assert rejected["last_save_acceptance"] == "unacknowledged"
+    assert len(recovery.stream.legacy.rows(database)) <= 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("stage", ["before_policy", "after_policy", "expiry"])
+async def test_owner_wakes_inside_ten_second_tick_wait(
+    database, monkeypatch, policy, stage
+):
+    owned = due_on_first_tick(database, monkeypatch, policy)
+    entered, release = hold_periodic_boundary(
+        monkeypatch, "after_policy" if stage == "expiry" else stage
+    )
+    owned.start()
+    try:
+        assert await asyncio.to_thread(entered.wait, 1.5), owned.get_runtime_status()
+        if stage == "expiry":
+            expired = await asyncio.wait_for(
+                until(
+                    owned,
+                    lambda s: s["continuity"]["last_error_code"] == "uncertain",
+                ),
+                1.5,
+            )
+            assert expired["continuity"]["outstanding"]
+        else:
+            (policy / "capabilities.json").write_text('{"allow":{}}')
+        release.set()
+        end = await asyncio.wait_for(
+            until(owned, lambda s: not s["continuity"]["outstanding"]), 0.8
+        )
+        assert end["ticks_completed"] == 1
+        status = end["continuity"]
+        assert bool(status["saved_record_id"]) == (stage == "after_policy")
+        assert status["last_save_acceptance"] == (
+            "acknowledged" if stage == "after_policy" else "unacknowledged"
+        )
+        assert len(recovery.stream.legacy.rows(database)) == 1
+    finally:
+        release.set()
+        await owned.stop()
+
+
+@pytest.mark.asyncio
+async def test_repeated_launcher_checkpoint_drain_uses_original_deadline(monkeypatch):
+    # Aetherra imports
+    import aetherra_os_launcher as launcher_module
+
+    launcher = launcher_module.AetherraOSLauncher()
+    elapsed = [100.0]
+    budgets = []
+
+    def drain(*, timeout):
+        budgets.append(timeout)
+        return timeout == 0
+
+    class Owned:
+        _checkpoint_store = SimpleNamespace(drain_lifecycle_checkpoints=drain)
+
+        async def stop(self, *, save_checkpoint):
+            elapsed[0] += 1.25
+
+        def get_runtime_status(self):
+            return {"continuity": {"enabled": True}}
+
+    launcher.systems["consciousness_core"] = Owned()
+    monkeypatch.setattr(
+        launcher_module, "time", SimpleNamespace(monotonic=lambda: elapsed[0])
+    )
+    with pytest.raises(RuntimeError, match="consciousness_shutdown_pending"):
+        await launcher._stop_consciousness_observer(save_checkpoint=True)
+    await launcher._stop_consciousness_observer()
+    assert budgets == [0.75, 0.0]
+
+
+@pytest.mark.asyncio
+async def test_consumed_periodic_receipt_survives_stop_before_status_publication(
+    database, monkeypatch, policy
+):
+    # Aetherra imports
+    from Aetherra.consciousness.checkpoint_session import ObserverCheckpointSession
+
+    owned = due_on_first_tick(database, monkeypatch, policy)
+    status = ObserverCheckpointSession.get_cached_status
+    entered, release = threading.Event(), threading.Event()
+
+    def after_consumption(session):
+        result = status(session)
+        if result["last_save_acceptance"] == "acknowledged" and not entered.is_set():
+            entered.set()
+            assert release.wait(3)
+        return result
+
+    monkeypatch.setattr(
+        ObserverCheckpointSession, "get_cached_status", after_consumption
+    )
+    owned.start()
+    try:
+        assert await asyncio.to_thread(entered.wait, 2)
+        await owned.stop(timeout=0)
+    finally:
+        release.set()
+        await until(owned, lambda s: not s["thread_alive"])
+    receipt = owned.get_runtime_status()["continuity"]
+    assert receipt["last_save_acceptance"] == "acknowledged"
+    assert receipt["saved_record_id"] == recovery.stream.legacy.rows(database)[0][0]
+    assert receipt["saved_trigger"] == "periodic"
+    assert not receipt["outstanding"]
+
+
+@pytest.mark.asyncio
+async def test_launcher_two_seconds_then_zero_budget_until_actual_periodic_drain(
+    database, monkeypatch, policy
+):
+    # Aetherra imports
+    from aetherra_os_launcher import AetherraOSLauncher
+
+    owned = due_on_first_tick(database, monkeypatch, policy)
+    entered, release = hold_periodic_boundary(monkeypatch, "after_policy")
+    launcher = AetherraOSLauncher()
+    launcher.systems["consciousness_core"] = owned
+    launcher._consciousness_task = asyncio.create_task(asyncio.sleep(60))
+    owned.start()
+    try:
+        assert await asyncio.to_thread(entered.wait, 2)
+        started = time.monotonic()
+        with pytest.raises(RuntimeError, match="consciousness_shutdown_pending"):
+            await asyncio.wait_for(
+                launcher._stop_consciousness_observer(save_checkpoint=True), 2.5
+            )
+        assert 1.75 <= time.monotonic() - started < 2.5
+        assert database.lifecycle_checkpoint_pending()
+        with pytest.raises(RuntimeError, match="consciousness_shutdown_pending"):
+            await asyncio.wait_for(launcher._stop_consciousness_observer(), 0.3)
+    finally:
+        release.set()
+        await until(owned, lambda s: not s["thread_alive"])
+    assert not owned.get_runtime_status()["continuity"]["outstanding"]
+    assert await asyncio.to_thread(database.drain_lifecycle_checkpoints, 0.5)
+    await asyncio.wait_for(launcher._stop_consciousness_observer(), 0.3)
+    assert owned.get_runtime_status()["continuity"]["saved_record_id"] is None
+    assert len(recovery.stream.legacy.rows(database)) == 1
+
+
+@pytest.mark.asyncio
+async def test_launcher_budget_includes_executor_wait_and_allows_drained_probe(
+    monkeypatch,
+):
+    # Aetherra imports
+    from aetherra_os_launcher import AetherraOSLauncher
+
+    class Drained:
+        _checkpoint_store = SimpleNamespace(
+            drain_lifecycle_checkpoints=lambda *, timeout: timeout == 0
+        )
+
+        async def stop(self, *, save_checkpoint):
+            pass
+
+        def get_runtime_status(self):
+            return {"continuity": {"enabled": True}}
+
+    async def busy_executor(*args, **kwargs):
+        await asyncio.Event().wait()
+
+    launcher = AetherraOSLauncher()
+    launcher.systems["consciousness_core"] = Drained()
+    launcher._consciousness_stop_deadline = time.monotonic() + 0.05
+    monkeypatch.setattr(asyncio, "to_thread", busy_executor)
+    with pytest.raises(RuntimeError, match="consciousness_shutdown_pending"):
+        await asyncio.wait_for(launcher._stop_consciousness_observer(), 0.4)
+    finished_monitor = asyncio.create_task(asyncio.sleep(0))
+    await finished_monitor
+    launcher._consciousness_task = finished_monitor
+    await asyncio.wait_for(launcher._stop_consciousness_observer(), 0.2)

@@ -84,6 +84,14 @@ class CheckpointJobControl:
             object.__setattr__(self, "_closed", True)
             self.cancelled.set()
 
+    def limit_deadline(self, deadline: float) -> None:
+        """Shorten an admitted attempt to the original orderly-stop budget."""
+        with self._lock:
+            current = (
+                self.deadline if self._bound_deadline is None else self._bound_deadline
+            )
+            object.__setattr__(self, "_bound_deadline", min(current, deadline))
+
     def _bind(self):
         with self._lock:
             # A token is never refreshed or extended by resubmission.

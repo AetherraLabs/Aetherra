@@ -166,3 +166,43 @@ def test_embedded_noncallable_signal_disposition_is_preserved(
     # Do not deliver SIG_DFL: its process-termination policy must stay intact.
     assert active_handlers == [disposition]
     assert signal.getsignal(signal.SIGINT) is disposition
+
+
+memory = continuity_tests.memory
+policy = continuity_tests.policy
+governed = continuity_tests.governed
+database = continuity_tests.database
+
+
+def test_second_sigint_cancels_periodic_work_inside_orderly_stop(
+    monkeypatch, cli_operation, database, policy
+):
+    owned = continuity_tests.due_on_first_tick(database, monkeypatch, policy)
+    entered, release = continuity_tests.hold_periodic_boundary(
+        monkeypatch, "after_policy"
+    )
+    observed = []
+
+    async def operation(launcher, config):
+        owned.start()
+        try:
+            assert await asyncio.to_thread(entered.wait, 1.5)
+            launcher.running = True
+            asyncio.get_running_loop().call_soon(signal.raise_signal, signal.SIGINT)
+            assert await launcher._main_operation_loop()
+            asyncio.get_running_loop().call_later(
+                0.05, signal.raise_signal, signal.SIGINT
+            )
+            await owned.stop(save_checkpoint=True)
+        finally:
+            release.set()
+            await owned.stop()
+            await continuity_tests.until(owned, lambda s: not s["thread_alive"])
+            observed.append(owned.get_runtime_status()["continuity"])
+
+    monkeypatch.setattr(launcher_module.AetherraOSLauncher, "launch_full_os", operation)
+    with pytest.raises(KeyboardInterrupt):
+        asyncio.run(launcher_module.main())
+    assert observed[0]["last_save_acceptance"] == "unacknowledged"
+    assert observed[0]["saved_record_id"] is None
+    assert len(continuity_tests.recovery.stream.legacy.rows(database)) == 1
