@@ -24,7 +24,13 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     # Local imports
-    from .checkpoint_stream import AdvanceRequest, StreamJob, StreamKey
+    from .checkpoint_stream import (
+        AdvanceRequest,
+        AttemptDescriptor,
+        StreamJob,
+        StreamKey,
+        StreamToken,
+    )
 
 _OWNER = "consciousness:observer"
 _SCOPE = "observer_continuity:v1"
@@ -288,7 +294,7 @@ def _authorize_stream(job):
             "retain_checkpoints": retain,
         }
     else:
-        attempt = job.data.attempt
+        attempt = job.data[1] if job.operation == "inspect" else job.data.attempt
         metadata = {
             "stream_id": attempt.token.key.stream_id,
             "writer_epoch": attempt.token.writer_epoch,
@@ -300,6 +306,9 @@ def _authorize_stream(job):
             "predecessor_head_digest": attempt.expected_head.digest(),
         }
     caps = ("consciousness:write", "memory:read", "memory:write", "fs:read", "fs:write")
+    if job.operation == "inspect":
+        caps = ("consciousness:write", "memory:read", "fs:read")
+        metadata["inspecting_epoch"] = job.data[0].writer_epoch
     intent, audit = _authorize_intent(job.operation, caps, metadata)
     if len(audit.encode("utf-8")) > 256:
         raise CheckpointError("audit_failed")
@@ -343,7 +352,13 @@ def _authorize_intent(operation, caps, metadata):
 class _Job:
     operation: str
     checkpoint_id: str
-    data: bytes | tuple[StreamKey, str, int] | AdvanceRequest | None
+    data: (
+        bytes
+        | tuple[StreamKey, str, int]
+        | tuple[StreamToken, AttemptDescriptor]
+        | AdvanceRequest
+        | None
+    )
     control: CheckpointJobControl
     future: _CheckpointFuture | StreamJob
     backend_owned: Callable[[], bool] | None = None
@@ -405,10 +420,18 @@ class LifecycleCheckpointWorker:
         start_mode=None,
         retain_checkpoints=None,
         request=None,
+        token=None,
+        attempt=None,
         backend_owned=None,
     ):
         # Local imports
-        from .checkpoint_stream import AdvanceRequest, StreamJob, StreamKey
+        from .checkpoint_stream import (
+            AdvanceRequest,
+            AttemptDescriptor,
+            StreamJob,
+            StreamKey,
+            StreamToken,
+        )
 
         try:
             if (
@@ -427,6 +450,15 @@ class LifecycleCheckpointWorker:
             ):
                 data = (key, start_mode, retain_checkpoints)
                 handle = key.stream_id
+            elif (
+                operation == "inspect"
+                and type(token) is StreamToken
+                and type(attempt) is AttemptDescriptor
+                and token.key == attempt.token.key
+                and token.writer_epoch > attempt.token.writer_epoch
+            ):
+                data = (token, attempt)
+                handle = attempt.checkpoint_id
             elif operation == "advance" and type(request) is AdvanceRequest:
                 data = request
                 handle = request.attempt.checkpoint_id
@@ -502,7 +534,8 @@ class LifecycleCheckpointWorker:
                 result = None
                 failure = None
                 committing = False
-                stream = job.operation in ("acquire", "advance")
+                intent = None
+                stream = job.operation in ("acquire", "advance", "inspect")
                 try:
                     job.check()
                     if stream:
@@ -524,13 +557,19 @@ class LifecycleCheckpointWorker:
                         # Local imports
                         from . import checkpoint_stream
 
-                        connection.execute("BEGIN IMMEDIATE")
+                        connection.execute(
+                            "BEGIN" if job.operation == "inspect" else "BEGIN IMMEDIATE"
+                        )
                         job.check()
                         _recheck_policy(intent)
                         job.check()
                         with checkpoint_stream._bounded_rows(connection):
                             if job.operation == "acquire":
                                 result = checkpoint_stream._acquire(
+                                    connection, *job.data
+                                )
+                            elif job.operation == "inspect":
+                                result = checkpoint_stream._inspect(
                                     connection, *job.data
                                 )
                             else:
@@ -540,7 +579,7 @@ class LifecycleCheckpointWorker:
                         job.check()
                         _recheck_policy(intent)
                         job.check()
-                        committing = True
+                        committing = job.operation != "inspect"
                         connection.commit()
                         _recheck_policy(intent)
                     elif job.operation == "save":
@@ -596,7 +635,14 @@ class LifecycleCheckpointWorker:
                 with self._condition:
                     self._job = None
                     if stream:
-                        job.future._seal(result, failure.code if failure else None)
+                        restore_authority = None
+                        if job.operation in ("acquire", "inspect"):
+                            restore_authority = intent, job.backend_owned
+                        job.future._seal(
+                            result,
+                            failure.code if failure else None,
+                            restore_authority=restore_authority,
+                        )
                     self._condition.notify_all()
                 if stream:
                     if job.control.wake_event is not None:
