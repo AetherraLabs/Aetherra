@@ -261,3 +261,93 @@ def test_mode_specific_bounds(smoke, flags, seconds, accepted):
         with pytest.raises(SystemExit) as error:
             cli.parse_args(argv)
         assert error.value.code == 2
+
+
+@pytest.fixture
+def cadence(monkeypatch):
+    monkeypatch.syspath_prepend(str(ROOT / "tools"))
+    # Third party imports
+    from alpha_consciousness_automatic_smoke import periodic_in_window
+
+    return periodic_in_window
+
+
+def timing_receipt(generation, due, submitted):
+    return {
+        "saved_generation": generation,
+        "saved_operation_id": f"{generation:032x}",
+        "eligible_monotonic": due,
+        "submission_monotonic": submitted,
+        "consume_started_monotonic": submitted + 0.03,
+        "acknowledged_monotonic": submitted + 0.05,
+        "attempt_deadline_monotonic": submitted + 0.99,
+    }
+
+
+def session_clock():
+    return {
+        "session_started_monotonic": 100.0,
+        "save_interval_seconds": 300,
+        "retain_checkpoints": 10,
+    }
+
+
+def test_cadence_rejects_fast_scheduler_despite_timely_receipts(cadence):
+    receipts = [
+        timing_receipt(1, 300.0, 300.5),
+        timing_receipt(2, 500.54, 501.0),
+        timing_receipt(3, 701.04, 701.4),
+    ]
+    with pytest.raises(AssertionError):
+        cadence(session_clock(), 102.0, 762.2, 660, receipts)
+
+
+def test_cadence_rejects_second_fast_due_after_valid_first(cadence):
+    receipts = [timing_receipt(1, 400.0, 400.5), timing_receipt(2, 600.54, 601.0)]
+    with pytest.raises(AssertionError):
+        cadence(session_clock(), 102.0, 762.2, 660, receipts)
+
+
+def test_cadence_rejects_second_ack_after_window_even_if_end_sample_is_late(cadence):
+    receipts = [timing_receipt(1, 400.0, 400.5), timing_receipt(2, 700.54, 763.0)]
+    with pytest.raises(AssertionError):
+        cadence(session_clock(), 102.0, 764.0, 660, receipts)
+
+
+def test_cadence_separates_chat_receipts_in_short_window(cadence):
+    receipts = [timing_receipt(1, 400.0, 400.5), timing_receipt(2, 700.54, 701.0)]
+    observed, outside = cadence(session_clock(), 399.0, 404.2, 5, receipts)
+    assert observed == receipts[:1]
+    assert outside == receipts[1:]
+
+
+@pytest.mark.parametrize(
+    ("key", "bad"),
+    [
+        ("retain_checkpoints", 2),
+        ("save_interval_seconds", 200),
+        ("save_interval_seconds", 300.0),
+    ],
+)
+def test_cadence_verifies_effective_settings_even_without_commits(cadence, key, bad):
+    with pytest.raises(AssertionError):
+        cadence({**session_clock(), key: bad}, 102.0, 107.1, 5, [])
+
+
+def test_cadence_requires_child_observation_to_reach_requested_duration(cadence):
+    with pytest.raises(AssertionError):
+        cadence(session_clock(), 102.0, 106.9, 5, [])
+
+
+def test_cadence_rejects_reused_operation_id(cadence):
+    receipts = [timing_receipt(1, 400.0, 400.5), timing_receipt(2, 700.54, 701.0)]
+    receipts[1]["saved_operation_id"] = receipts[0]["saved_operation_id"]
+    with pytest.raises(AssertionError):
+        cadence(session_clock(), 102.0, 762.0, 660, receipts)
+
+
+def test_cadence_rejects_unbounded_consume_bracket(cadence):
+    first = timing_receipt(1, 400.0, 400.5)
+    first["consume_started_monotonic"] = 200.0
+    with pytest.raises(AssertionError):
+        cadence(session_clock(), 399.0, 404.2, 5, [first])

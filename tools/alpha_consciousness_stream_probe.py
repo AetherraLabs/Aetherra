@@ -42,7 +42,11 @@ class StreamProbe:
         if (self.artifacts / f"request-{self.next_sample}").exists():
             write_json(
                 self.artifacts / f"sample-{self.next_sample}.json",
-                {"status": status, "submissions": self.submissions[:]},
+                {
+                    "status": status,
+                    "submissions": self.submissions[:],
+                    "sample_monotonic": time.monotonic(),
+                },
             )
             self.next_sample += 1
 
@@ -82,12 +86,15 @@ class StreamProbe:
 
         def timed_consume(session, *args, **kwargs):
             old_id = session._status["saved_operation_id"]
+            consume_start = time.monotonic()
             result = consume(session, *args, **kwargs)
+            consume_end = time.monotonic()
             accepted = session._status["saved_operation_id"]
             if accepted and accepted != old_id:
                 submission = self.submissions[-1]
                 assert submission["operation_id"] == accepted
-                submission["acknowledged_monotonic"] = time.monotonic()
+                submission["consume_started_monotonic"] = consume_start
+                submission["acknowledged_monotonic"] = consume_end
             return result
 
         stack.enter_context(
@@ -105,6 +112,15 @@ class StreamProbe:
                 self.artifacts / "selection.json",
                 {
                     "status": instance.get_runtime_status(),
+                    "session_clock": {
+                        "session_started_monotonic": instance._session.started_monotonic,
+                        "save_interval_seconds": instance._session._config[
+                            "save_interval_seconds"
+                        ],
+                        "retain_checkpoints": instance._session._config[
+                            "retain_checkpoints"
+                        ],
+                    },
                     "submissions": self.submissions[:],
                     "core_ticks": core.tick_count,
                     "core_events": core.total_events_perceived,

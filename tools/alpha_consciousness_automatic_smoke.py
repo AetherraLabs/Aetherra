@@ -5,6 +5,7 @@ from __future__ import annotations
 # Standard library imports
 import hashlib
 import json
+import math
 import socket
 import sqlite3
 import subprocess
@@ -337,6 +338,49 @@ def acknowledged(status, row, trigger, profile):
     }
 
 
+def periodic_in_window(session, start, observed_through, seconds, receipts):
+    """Check durable periodic receipts against child clocks independent of the due value."""
+    interval = session["save_interval_seconds"]
+    retain = session["retain_checkpoints"]
+    assert type(interval) is int
+    assert interval == 300
+    assert type(retain) is int
+    assert retain == 10
+    began = session["session_started_monotonic"]
+    assert all(math.isfinite(t) for t in (began, start, observed_through, seconds))
+    assert 5 <= seconds <= 1800
+    end = start + seconds
+    assert 0 <= began <= start < end <= observed_through
+
+    observed, outside = [], []
+    operations = set()
+    # The first due originates at begin_start. Every subsequent due originates
+    # inside the preceding successful consume that drained the real worker.
+    origin_low = origin_high = began
+    for generation, receipt in enumerate(receipts, start=1):
+        assert receipt["saved_generation"] == generation
+        operation = receipt["saved_operation_id"]
+        assert operation
+        assert operation not in operations
+        operations.add(operation)
+        due = receipt["eligible_monotonic"]
+        submitted = receipt["submission_monotonic"]
+        consume_start = receipt["consume_started_monotonic"]
+        accepted = receipt["acknowledged_monotonic"]
+        deadline = receipt["attempt_deadline_monotonic"]
+        assert origin_low + interval <= due <= origin_high + interval
+        assert due <= submitted <= consume_start <= accepted < deadline
+        assert deadline <= submitted + 1.0
+        origin_low, origin_high = consume_start, accepted
+        if start <= due and accepted <= end:
+            observed.append(receipt)
+        else:
+            outside.append(receipt)
+    if seconds >= 660:
+        assert len(observed) >= 2, "Two in-window periodic acknowledgments required"
+    return observed, outside
+
+
 def run(output, observe_seconds, *, live=False):
     output.mkdir(parents=True, exist_ok=False)
     summary = {
@@ -380,10 +424,14 @@ def run(output, observe_seconds, *, live=False):
                     start = child.until(lambda s: s["ticks_completed"] > 0, 15)
                 if phase == "a":
                     time.sleep(observe_seconds)
-                    latest = child.sample()["status"]
+                    end_sample = child.sample()
                     assert (
-                        latest["ticks_completed"] > start["status"]["ticks_completed"]
+                        end_sample["status"]["ticks_completed"]
+                        > start["status"]["ticks_completed"]
                     )
+                    window_start = start["sample_monotonic"]
+                    observed_through = end_sample["sample_monotonic"]
+                    session_clock = child.selection["session_clock"]
                 messages = (
                     [smoke.FACT, *smoke.COMPETITORS] if phase == "a" else []
                 ) + [smoke.QUESTION, smoke.UNKNOWN]
@@ -429,17 +477,39 @@ def run(output, observe_seconds, *, live=False):
                         submission["acknowledged_monotonic"],
                         submission["deadline"],
                     )
-                    assert due <= submitted <= accepted < deadline
                     receipt.update(
                         observation_uptime_s=row["metadata"]["observation_uptime_s"],
                         eligible_monotonic=due,
                         submission_monotonic=submitted,
+                        consume_started_monotonic=submission[
+                            "consume_started_monotonic"
+                        ],
                         acknowledged_monotonic=accepted,
                         attempt_deadline_monotonic=deadline,
                     )
-                if observe_seconds >= 660:
-                    assert len(receipts) >= 2
-                summary["periodic_acknowledgments"] = receipts
+                observed, outside = periodic_in_window(
+                    session_clock,
+                    window_start,
+                    observed_through,
+                    observe_seconds,
+                    receipts,
+                )
+                summary.update(
+                    periodic_acknowledgments=observed,
+                    outside_window_periodic_acknowledgments=outside,
+                    observation_window={
+                        "start_monotonic": window_start,
+                        "end_monotonic": window_start + observe_seconds,
+                        "end_sample_monotonic": observed_through,
+                        "session_started_monotonic": session_clock[
+                            "session_started_monotonic"
+                        ],
+                        "session_id": selected["session_id"],
+                        "pid": child.process.pid,
+                    },
+                    interval_seconds=session_clock["save_interval_seconds"],
+                    retention_limit=session_clock["retain_checkpoints"],
+                )
         assert len({r["pid"] for r in records}) == 3
         forbidden = {
             smoke.SENTINEL,
@@ -503,8 +573,6 @@ def run(output, observe_seconds, *, live=False):
             live_provider_verified=live,
             process_ids=[r["pid"] for r in records],
             observation_seconds=observe_seconds,
-            interval_seconds=300,
-            retention_limit=10,
             checkpoint_excluded_from_chat=True,
             stop_method="harness_sigint",
             signed_audits_verified=True,
