@@ -60,9 +60,15 @@ SOURCES = (
     "Aetherra/consciousness/core/consciousness_core.py",
     "Aetherra/consciousness/core/think_stream.py",
     "Aetherra/consciousness/continuity_memory.py",
+    "Aetherra/consciousness/checkpoint.py",
+    "Aetherra/consciousness/self_trust.py",
+    "Aetherra/aetherra_core/memory/lifecycle_checkpoint.py",
+    "Aetherra/aetherra_core/memory/memory_core.py",
+    "Aetherra/aetherra_core/memory/aetherra_memory_engine.py",
     "Aetherra/runtime_ui/snapshot.py",
     "aetherra_hub/blueprints/consciousness.py",
     "tools/alpha_consciousness_smoke.py",
+    "tools/alpha_consciousness_continuity_smoke.py",
     "tools/alpha_integration_smoke.py",
     "tests/acceptance/continuity_runtime.py",
 )
@@ -630,12 +636,31 @@ def main():
     parser.add_argument("--output", type=Path, help="New disposable artifact directory")
     parser.add_argument("--observe-seconds", type=float, default=20)
     parser.add_argument("--worker", type=Path, help=argparse.SUPPRESS)
+    parser.add_argument(
+        "--continuity",
+        action="store_true",
+        help="Verify exact checkpoint restart across three normal full launches",
+    )
+    parser.add_argument("--artifacts", type=Path, help=argparse.SUPPRESS)
+    parser.add_argument("--phase", choices=("a", "b", "c"), help=argparse.SUPPRESS)
     args = parser.parse_args()
     if args.worker:
+        if args.continuity:
+            if args.artifacts is None or args.phase is None:
+                parser.error("Continuity workers require --artifacts and --phase")
+            # Third party imports
+            from alpha_consciousness_continuity_smoke import worker as continuity_worker
+
+            return continuity_worker(args.worker, args.artifacts, args.phase)
         return worker(args.worker)
     if args.output is None or not 5 <= args.observe_seconds <= 300:
         parser.error("--output is required and --observe-seconds must be 5..300")
     output = args.output.resolve()
+    if args.continuity:
+        # Third party imports
+        from alpha_consciousness_continuity_smoke import run as continuity_run
+
+        return continuity_run(output, args.observe_seconds)
     output.mkdir(parents=True, exist_ok=False)
     summary = {"passed": False, "source_hashes_before": hashes()}
     write_json(output / "summary.json", summary)
