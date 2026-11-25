@@ -135,6 +135,38 @@ class MemoryAdapter:
 
     def __init__(self, memory_impl):
         self.impl = memory_impl
+        self._checkpoint_impl = memory_impl
+        self._checkpoint_core = getattr(memory_impl, "core_memory", None)
+
+    def _checkpoint_backend(self):
+        """Only the original initialized normal-launch Memory owns this boundary."""
+        # Aetherra imports
+        from Aetherra.aetherra_core.memory.aetherra_memory_engine import (
+            AetherraMemoryEngineAdvanced,
+        )
+        from Aetherra.aetherra_core.memory.memory_core import LyrixaMemorySystem
+
+        if (
+            type(self.impl) is not AetherraMemoryEngineAdvanced
+            or self.impl is not self._checkpoint_impl
+            or type(self._checkpoint_core) is not LyrixaMemorySystem
+            or self.impl.core_memory is not self._checkpoint_core
+            or self._checkpoint_core.conn is None
+        ):
+            raise RuntimeError("checkpoint_unavailable")
+        return self.impl
+
+    def submit_load_lifecycle_checkpoint(self, **kwargs):
+        return self._checkpoint_backend().submit_load_lifecycle_checkpoint(**kwargs)
+
+    def submit_store_lifecycle_checkpoint(self, **kwargs):
+        return self._checkpoint_backend().submit_store_lifecycle_checkpoint(**kwargs)
+
+    def drain_lifecycle_checkpoints(self, *, timeout=1.0):
+        return self._checkpoint_backend().drain_lifecycle_checkpoints(timeout=timeout)
+
+    def lifecycle_checkpoint_pending(self):
+        return self._checkpoint_backend().lifecycle_checkpoint_pending()
 
     async def activate(self):
         return True
@@ -528,7 +560,11 @@ class AetherraOSLauncher:
             await self._announce_os_online()
 
             # Phase 7: Enter main operation loop
-            await self._main_operation_loop()
+            orderly_stop = await self._main_operation_loop()
+            # Only an explicit orderly loop exit requests a checkpoint. The loop
+            # also returns after cancellation/failure, which are cleanup paths.
+            if orderly_stop is True:
+                await self._stop_consciousness_observer(save_checkpoint=True)
 
         except Exception as e:
             logger.error(f"[ERROR] CRITICAL FAILURE during OS launch: {e}")
@@ -537,7 +573,7 @@ class AetherraOSLauncher:
             raise
         finally:
             # Startup can be cancelled before the operation loop is ever entered.
-            await self._graceful_shutdown()
+            await self._graceful_shutdown(save_checkpoint=False)
 
     def _apply_logging_mode(self, config: dict[str, Any]):
         """Adjust logging levels based on config/env (quiet mode, log level)."""
@@ -2552,10 +2588,11 @@ class AetherraOSLauncher:
         return events
 
     async def _start_consciousness_observer(self, config):
-        """Opt in after core activation; the Phase C1 path has no actuation/storage."""
+        """Opt in after activation; continuity requires separately owned Memory."""
         # Aetherra imports
         from Aetherra.consciousness.runtime_observer import (
             ConsciousnessObserver,
+            continuity_settings,
             observer_settings,
         )
 
@@ -2571,16 +2608,43 @@ class AetherraOSLauncher:
             )
             return
         error = None
+        continuity = {"enabled": False, "restore_checkpoint_id": None}
         try:
+            continuity = continuity_settings(config or {})
             interval = observer_settings(config or {})
         except ValueError:
             interval, error = 1.0, "config_invalid"
         if interval is None:
             return
+        memory = self.systems.get("memory") if continuity["enabled"] else None
+        if continuity["enabled"]:
+            try:
+                if type(memory) is not MemoryAdapter:
+                    raise RuntimeError("checkpoint_unavailable")
+                memory._checkpoint_backend()
+            except Exception:
+                error = error or "core_not_ready"
+
+        def owned_readiness():
+            info = registry.get_service_info("consciousness_core") if registry else None
+            if info is None or info.instance is not observer:
+                return "core_not_ready"
+            if continuity["enabled"]:
+                if self.systems.get("memory") is not memory:
+                    return "core_not_ready"
+                try:
+                    memory._checkpoint_backend()
+                except Exception:
+                    return "core_not_ready"
+            return self._consciousness_core_readiness()
+
         observer = ConsciousnessObserver(
-            readiness=self._consciousness_core_readiness,
+            readiness=owned_readiness,
             observations=self._consciousness_observations,
             tick_interval=interval,
+            checkpoint_store=memory,
+            continuity_enabled=continuity["enabled"],
+            restore_checkpoint_id=continuity["restore_checkpoint_id"],
         )
         if error:
             observer.block(error)
@@ -2648,11 +2712,14 @@ class AetherraOSLauncher:
                 await asyncio.sleep(1)
         except asyncio.CancelledError:
             raise
-        except Exception:
+        except Exception as exc:
             await observer.stop()
-            logger.warning("[CONSCIOUSNESS] Observer lifecycle status unavailable")
+            logger.warning(
+                "[CONSCIOUSNESS] Observer lifecycle status unavailable (%s)",
+                type(exc).__name__,
+            )
 
-    async def _stop_consciousness_observer(self):
+    async def _stop_consciousness_observer(self, *, save_checkpoint=False):
         """Stop only the optional C1 observer, preserving core chat ownership."""
         observer = self.systems.get("consciousness_core")
         if observer is None or not callable(
@@ -2664,7 +2731,21 @@ class AetherraOSLauncher:
             task.cancel()
             await asyncio.gather(task, return_exceptions=True)
             self._consciousness_task = None
-        await observer.stop()
+        stop_deadline = time.monotonic() + 2.0
+        await observer.stop(save_checkpoint=save_checkpoint)
+        status = observer.get_runtime_status()
+        if status.get("thread_alive") or status.get("continuity", {}).get(
+            "outstanding"
+        ):
+            raise RuntimeError("consciousness_shutdown_pending")
+        checkpoint_store = getattr(observer, "_checkpoint_store", None)
+        if status.get("continuity", {}).get("enabled") and checkpoint_store is not None:
+            drained = await asyncio.to_thread(
+                checkpoint_store.drain_lifecycle_checkpoints,
+                timeout=max(0.0, stop_deadline - time.monotonic()),
+            )
+            if not drained:
+                raise RuntimeError("consciousness_shutdown_pending")
         registry = self.service_registry
         info = registry.get_service_info("consciousness_core") if registry else None
         if info is not None and info.instance is observer:
@@ -4038,14 +4119,17 @@ class AetherraOSLauncher:
 
                     if not (registry_healthy and kernel_healthy):
                         logger.error("[ERROR] Critical system failure detected")
-                        break
-
+                        return False
+            return True
         except asyncio.CancelledError:
-            logger.debug("[LOOP] Operation loop cancelled (normal shutdown)")
+            logger.debug("[LOOP] Operation loop cancelled (cleanup only)")
+            return False
         except KeyboardInterrupt:
             logger.info("🛑 Received shutdown signal")
+            return True
         except Exception as e:
             logger.error(f"[ERROR] Main operation loop error: {e}")
+            return False
         finally:
             await self._cleanup_os_status()
 
@@ -4154,13 +4238,13 @@ class AetherraOSLauncher:
                     process.kill()
                     await asyncio.wait_for(process.wait(), timeout=2)
 
-    async def _graceful_shutdown(self):
+    async def _graceful_shutdown(self, *, save_checkpoint=True):
         """🛑 Perform graceful system shutdown."""
         logger.info("🛑 Initiating graceful shutdown...")
 
         self.running = False
 
-        await self._stop_consciousness_observer()
+        await self._stop_consciousness_observer(save_checkpoint=save_checkpoint)
         if self._consciousness_task is not None:
             self._consciousness_task.cancel()
             await asyncio.gather(self._consciousness_task, return_exceptions=True)
@@ -4205,6 +4289,9 @@ class AetherraOSLauncher:
         logger.error("🚨 EMERGENCY SHUTDOWN INITIATED")
 
         self.running = False
+
+        # Never detach Memory while an observer checkpoint job is still owned.
+        await self._stop_consciousness_observer()
 
         # Force shutdown all systems
         for _system_name, system in self.systems.items():

@@ -165,3 +165,50 @@ def test_no_registry_is_created_for_observatory(monkeypatch):
     monkeypatch.setattr(registry_module, "get_service_registry", forbidden)
     assert collect_runtime_ui_system_status()["consciousness"]["status"] == "unknown"
     assert registry_module._service_registry is None
+
+
+def test_checkpoint_persistence_does_not_fabricate_live_ticks(registry):
+    _register(
+        registry,
+        _status(
+            ticks_completed=0,
+            persistence_enabled=True,
+            legacy_file_persistence_enabled=False,
+            continuity={
+                "enabled": True,
+                "state": "restored",
+                "selected_checkpoint_id": "a" * 32,
+                "restored_record_id": "row-original",
+                "saved_checkpoint_id": None,
+                "saved_record_id": None,
+                "outstanding": False,
+                "last_error_code": None,
+            },
+        ),
+    )
+    observed = collect_runtime_ui_system_status()["consciousness"]
+    assert observed["status"] != "active"
+    assert observed["metrics"]["continuity_state"] == "restored"
+
+
+def test_live_observer_with_governed_checkpoint_persistence_remains_active(registry):
+    _register(
+        registry,
+        _status(
+            persistence_enabled=True,
+            legacy_file_persistence_enabled=False,
+            continuity={
+                "enabled": True,
+                "state": "fresh",
+                "selected_checkpoint_id": None,
+                "restored_record_id": None,
+                "saved_checkpoint_id": None,
+                "saved_record_id": None,
+                "outstanding": False,
+                "last_error_code": None,
+            },
+        ),
+    )
+    observed = collect_runtime_ui_system_status()["consciousness"]
+    assert observed["status"] == "active"
+    assert observed["metrics"]["persistence_enabled"] is True
