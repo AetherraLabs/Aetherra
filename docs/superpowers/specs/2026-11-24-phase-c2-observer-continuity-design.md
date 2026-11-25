@@ -1,10 +1,11 @@
 # Phase C2: Observer Continuity Design
 
-Prepared, implemented and locally verified: 2026-11-24. C2a has scoped local
-GO for supervised Windows source-runtime checkpoints at `a10b734e`, local,
-unmerged and unpushed. The [decision](../../ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints)
-and [source-bound receipt](../../evidence/integration_phase_c2a_2026-11-24.json)
-record actual acceptance and remaining verification boundaries.
+Prepared and implemented: 2026-11-24. C2a has scoped publication-review GO at
+`5d8ccecb`, based on current targeted checks and historical `a10b734e` broader
+verification. The changed launcher has not had a full-suite or browser rerun.
+The [current decision](../../ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints)
+and [review receipt](../../evidence/integration_phase_c2a_pr_review_2026-11-24.json)
+record exact scope and remaining verification boundaries.
 
 C1 implementation is committed and pushed as
 [b8719fa2](https://github.com/AetherraLabs/Aetherra/commit/b8719fa22b8bd21ea77b3c4aa721522e312e86ea)
@@ -211,19 +212,26 @@ it cannot replace checkpoint persistence or retrieval. Prove:
 - Signed audit chains verify, every process exits honestly and all relevant
   tests, full suite, boot/integration, quality and documentation gates pass.
 
-Actual Observatory HTTP status and all six final-source browser checks passed.
-The final default full suite passed 3,821 tests and 38 skips,
-with 45.29% configured coverage in 1845.33 seconds. The extended
-three-process run passed in 761.75 seconds with A/B/C ticks 215/234/0 and
-exact selected restore before the first fresh tick. All 1,732 frozen source
-hashes stayed unchanged. Signing, policy and the one-second registry deadline
-remain unchanged; the [C2a evidence](../../evidence/integration_phase_c2a_2026-11-24.json)
-and readiness decision retain the failed attempts and source-bound final gates.
+Publication review corrected the Windows normal CLI first-SIGINT no-save path
+and added C2 acceptance to the existing offline pinned-model CI step. Current
+targeted checks at `5d8ccecb` passed 129 unit/lifecycle and 4 acceptance tests,
+including CLI-only save and exact restore before any fresh ticks/events.
+The signal was programmatic; physical keyboard delivery remains unverified.
+Current boot/integration/quality/CI-control checks passed and all 1,733 frozen
+source/control hashes match the committed fix. Signing, policy and the
+one-second deadline remain unchanged.
 
-Intentional live-provider personal continuity remains unverified because
-credentials were unavailable; deterministic generation is not a live pass.
-Hosted CI, fresh Python installation and interactive keyboard shutdown also
-remain unverified. This is a scoped supervised local GO, with no account
-isolation, unattended readiness or action authority. Hosted review, publication
-and merged-main verification remain separate gates. C2b is not implemented by
-this milestone; pending temporal runtime work stays preserved.
+Historical `a10b734e` evidence includes 3,821 passes, 38 skips, 45.29% coverage,
+the 761.75-second extended run, six browser checks and GUI 32 tests/build/lint.
+The GUI tree is unchanged. The changed launcher has not had a full-suite,
+extended-window or browser rerun. The
+[current decision](../../ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints)
+and [review receipt](../../evidence/integration_phase_c2a_pr_review_2026-11-24.json)
+retain the original GO's missed shutdown path, corrections and verification scopes.
+
+Hosted CI awaits publication; fresh Python installation, intentional live-provider
+operation and physical keyboard shutdown remain unverified. Deterministic
+generation is not a live-model pass. This scoped supervised GO establishes no
+account isolation, unattended readiness or action authority. Merged-main and
+release verification are separate. C2b is deferred and pending temporal runtime
+work stays preserved.

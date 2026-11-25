@@ -1003,15 +1003,16 @@ separate opt-in follows; pending temporal work stays inactive and signing strict
 
 ## Consciousness Checkpoints (Phase C2a)
 
-The checkpoint path has a scoped local GO for supervised Windows source-runtime
-operation at `a10b734e`; this candidate remains local, unmerged and unpushed.
-See the [C2a decision](ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints)
-and [source-bound receipt](evidence/integration_phase_c2a_2026-11-24.json).
-The final extended run passed in 761.75 seconds with A/B/C tick counts
-215/234/0, exact pre-tick restore, signed audits and clean process exits.
-Use the same isolated regression environment, synthetic data and cached
-embedding model as C1. The output directory must be new; use 5-300 observation
-seconds.
+The checkpoint path has scoped publication-review GO for supervised Windows
+source-runtime operation at `5d8ccecb`. See the
+[current decision](ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints) and
+[review receipt](evidence/integration_phase_c2a_pr_review_2026-11-24.json).
+The Windows normal CLI-only shutdown path passed programmatic SIGINT save/restart
+acceptance; physical keyboard delivery is unverified. The earlier 761.75-second
+extended run and browser checks are historical evidence at `a10b734e`, not reruns
+of the changed launcher. Use the same isolated regression environment, synthetic
+data and cached embedding model as C1. The output directory must be new; use
+5-300 observation seconds.
 
 ```powershell
 $c2Output = Join-Path $env:TEMP ('aetherra-c2-' + [guid]::NewGuid().ToString('N'))
@@ -1080,31 +1081,53 @@ Read the existing endpoints with `Read-AlphaJson`. Their scalar metrics include 
 `continuity_saved_checkpoint_id`, `continuity_saved_record_id`, `continuity_outstanding` and
 `continuity_error_code`. Persistence enabled or reflection stopped is not a successful-save receipt. Only
 acknowledged `saved` status publishes saved IDs; `restored` does not prove a fresh completed tick.
-Legacy-file persistence, QFAC and actuation remain off. Normal Ctrl+C requests orderly shutdown; cleanup
-paths and cancelled stop must not acquire save authority. Pending/uncertain work must not report clean
-success. Preserve existing rows/audits on blocked, failed or uncertain outcomes; do not wipe data, retry
-automatically or infer absence from a missing receipt. Inspect the exact attempted handle from its audit
-metadata when available, then recover through an explicit new launch selecting a valid checkpoint or a
-fresh start. No public checkpoint-save/stop route or automatic recovery is introduced.
+Legacy-file persistence, QFAC and actuation remain off. On Windows, the normal
+CLI's first SIGINT requests orderly checkpoint shutdown; unrelated or additional
+cancellation must not acquire save authority. Pending/uncertain work must not
+report clean success. Preserve existing rows/audits on blocked, failed or
+uncertain outcomes; do not wipe data, retry automatically or infer absence from
+a missing receipt. Inspect the exact attempted handle from its audit metadata
+when available, then recover through an explicit new launch selecting a valid
+checkpoint or a fresh start. No public checkpoint-save/stop route or automatic
+recovery is introduced.
 
-The final-source Observatory browser gate passed six checks: running status,
-continuity fields, stopped/unavailable status, exact restored row, isolated
-missing-checkpoint state and absence of console errors. The restored Memory
-row was `cfca237a2a5d4c79bb4aa9623fcb0864`; use the separate checkpoint handle
-from the receipt for restore configuration. Repeat the browser procedure below
-for a different candidate. GUI tests passed 32 cases, build and lint against
-an unchanged GUI tree.
+The current Windows CLI regression uses the existing normal-CLI smoke helper
+for two separate processes, sends SIGINT programmatically and never invokes an
+independent observer stop. Run it in the same isolated Windows environment:
 
-Live-model C2a operation remains unverified because credentials were unavailable;
-intentionally provision them and follow [the existing strict-signing live
-procedure](#live-model-recheck-with-strict-signing) when that gate is required.
-Deterministic generation is not a live-model pass. Hosted CI and a fresh Python
-installation remain unverified. The trusted local harness and SIGINT evidence
-do not establish interactive keyboard shutdown acceptance. Signing, policy and
-the one-second registry status deadline remain unchanged. Profile directories
-provide storage isolation, not account isolation. C2b defers automatic latest
-selection, periodic saves and retention; unattended operation and autonomous
-action remain outside this scope.
+```powershell
+python -m pytest `
+  tests/acceptance/test_consciousness_continuity.py::test_windows_cli_sigint_saves_and_restores_without_observer_stop `
+  -q --no-cov
+```
+
+The passing publication-review capture used PIDs 21492 and 63284, both exiting
+zero. Checkpoint handle `0b3fc55c3dec44d289d466ae48e9b3fe` restored exact state
+from Memory row `6bf0c95b32514484845b6de5a9f76bcd` with zero ticks/events before the
+first fresh tick. The handle and row are distinct; use the handle for restore
+configuration. The 4-test acceptance bundle also covered three-process
+continuity and ask/stream shutdown. This verifies the normal Windows CLI's
+programmatic signal path, not a physical keyboard Ctrl+C interaction.
+
+At historical source `a10b734e`, six Observatory browser checks passed: running
+status, continuity fields, stopped/unavailable status, exact restored row,
+isolated missing-checkpoint state and absence of console errors. GUI tests
+passed 32 cases, build and lint; the GUI tree is unchanged. Those browser checks
+and the 3,821-pass/38-skip full suite were not repeated for the changed launcher.
+Repeat the browser procedure below when a new browser acceptance is required.
+
+The CI workflow includes C2 acceptance in the existing offline pinned-model
+step. Nine platform-portable signal cases are included in the Linux unit-test
+selection; the Windows-specific normal-CLI acceptance is verified locally and skips
+on other platforms. Hosted CI results remain pending publication.
+Live-model C2a operation is unverified because credentials were unavailable;
+use [the strict-signing live procedure](#live-model-recheck-with-strict-signing)
+when that gate is required. Deterministic generation is not a live-model pass.
+Fresh Python installation and physical keyboard shutdown remain unverified.
+Signing, policy and the one-second registry deadline remain unchanged. Profile
+directories provide storage isolation, not account isolation. C2b automatic
+latest selection, periodic saves and retention, unattended operation and
+autonomous action remain outside this scope.
 
 ## Browser Observation And Stop/Restart
 

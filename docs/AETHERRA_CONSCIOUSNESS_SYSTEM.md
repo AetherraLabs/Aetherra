@@ -93,14 +93,17 @@ C1's production, unattended, action, browser or live-provider acceptance.
 
 ## Phase C2a Observer Checkpoints
 
-C2a has a scoped local GO for supervised Windows source-runtime operation at
-`a10b734e`, using exact checkpoints through the existing owned Memory service on
-the normal full-launcher path. The candidate is local, unmerged and unpushed.
-The [C2a decision](ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints) and
-[source-bound receipt](evidence/integration_phase_c2a_2026-11-24.json) record the
-passing extended restart, full-suite and six browser checks. The
-[operator procedure](ALPHA_OPERATOR_RUNBOOK.md#consciousness-checkpoints-phase-c2a)
-keeps C1's default behavior and historical evidence separate.
+C2a has scoped publication-review GO for supervised Windows source-runtime
+operation at `5d8ccecb`, using exact checkpoints through existing owned Memory
+on the normal full-launcher path. Review corrected first-SIGINT saving on
+Windows and added C2 acceptance to CI. Current targeted checks passed 129
+unit/lifecycle and 4 acceptance tests. Full-suite, extended and browser
+results at `a10b734e` remain historical; the changed launcher has not had a
+full-suite or browser rerun. The
+[current decision](ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints) and
+[review receipt](evidence/integration_phase_c2a_pr_review_2026-11-24.json) bound
+this GO. The [operator procedure](ALPHA_OPERATOR_RUNBOOK.md#consciousness-checkpoints-phase-c2a)
+keeps C1 defaults and historical evidence separate.
 
 Root `consciousness_continuity` accepts only `enabled` (strict boolean, default `false`) and
 `restore_checkpoint_id` (`null` by default or 32 lowercase hexadecimal characters). Enabled persistence
@@ -139,12 +142,16 @@ scalar `continuity_*` receipt/error fields, not payloads; restored history alone
 `persistence_enabled` indicates the configured path, while only acknowledged `saved` status supplies
 successful save receipts. Read-only status cannot trigger checkpoint operations.
 
-This is profile-directory storage isolation, not account isolation. C2b defers
-automatic latest selection, periodic saves and retention. Hosted CI, fresh Python
-installation, intentional live-provider operation and interactive keyboard
-shutdown remain unverified. Signing, policy and the one-second registry status
-deadline remain unchanged. This local checkpoint GO does not establish
-unattended, production or autonomous-action readiness.
+The Windows normal CLI now recognizes its first SIGINT-triggered cancellation
+as an orderly-stop request; unrelated or additional cancellation remains
+cleanup-only. A programmatically delivered SIGINT verified save and exact
+restart through that CLI without independently stopping the observer. Physical
+keyboard delivery remains unverified. This is profile-directory storage
+isolation, not account isolation. Hosted CI awaits publication; fresh Python
+installation and live-provider operation remain unverified. Signing, policy and
+the one-second registry status deadline remain unchanged. C2b automatic latest
+selection, periodic saves and retention are deferred; no unattended, production
+or autonomous-action readiness follows from this scoped GO.
 
 ## Architecture overview
 

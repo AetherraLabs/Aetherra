@@ -14,9 +14,11 @@ installation graphs.** The operating boundary below remains in force.
 - Phase C1 local acceptance: GO for supervised operation of the frozen Windows
   source-runtime candidate, committed/pushed as `b8719fa2` and still unmerged.
   Hosted CI, browser and live-model checks are unverified; see the C1 checkpoint below.
-- Phase C2a local acceptance: GO for supervised explicit observer checkpoints at
-  frozen source `a10b734e`, local, unmerged and unpushed. Full suite, extended
-  restart/profile checks and six browser checks pass; the C2a section bounds this GO.
+- Phase C2a publication-review acceptance: scoped GO at `5d8ccecb`, based on
+  current targeted review/checks and historical `a10b734e` broader evidence.
+  Full-suite and browser checks were not repeated for the changed launcher;
+  hosted CI, main and release gates remain separate. See the C2a decision below.
+
 - Historical desktop and Phase A/B checkpoints retain their own revision and
   verification boundaries; they are not substituted for C1 or C2a evidence.
 - Supported profile: Windows x64, Python 3.13.7 source checkout, Node 22.18.0,
@@ -58,42 +60,56 @@ are historical and do not replace this clean-main result.
 
 ## Phase C2a Observer Checkpoints
 
-**GO for supervised local Windows source-runtime checkpoint operation** at
-`a10b734eb276ae2469b8fbeded0489e01ab45e4c` on
-`codex/phase-c2-observer-checkpoints`, based on published C1 preparation
-commit `0b226864`. This candidate is local, unmerged and unpushed. Hosted CI,
-fresh Python installation, intentional live-model operation and interactive
-keyboard shutdown remain unverified. No unattended, production or
-action-execution GO follows from checkpoint continuity.
+**Scoped GO for supervised Windows source-runtime checkpoint operation and
+publication review** at `5d8ccecba5ef9f3b9177bbf64063c572f5cf0142` on
+`codex/phase-c2-observer-checkpoints`. This decision rests on current targeted
+review/checks and explicitly historical broader verification. **The full suite
+and browser checks were not rerun for the changed launcher.** Hosted CI awaits
+publication; fresh Python installation, live-model operation and physical
+keyboard shutdown remain unverified. No main/release, unattended, production
+or action-execution acceptance follows from this decision.
 
-The implementation uses existing Memory ownership for exact immutable
-checkpoints, restores trust and all six qualia before the first fresh tick,
-and requests one save only at explicit orderly stop. Missing, invalid or denied
-restore blocks the observer and saves. Checkpoint data stays outside personal
-chat. The [operator procedure](ALPHA_OPERATOR_RUNBOOK.md#consciousness-checkpoints-phase-c2a)
-and [source-bound receipt](evidence/integration_phase_c2a_2026-11-24.json) record
-configuration, checkpoint handle, distinct row ID, commands and verification.
+Publication review found two Important gaps after the original local GO.
+On Windows, asyncio Runner's first Ctrl+C cancelled the main task and took the
+cleanup-only path without saving a checkpoint. Earlier smoke had independently
+stopped the observer before CLI shutdown, so it missed this path. CI also
+omitted the new C2 acceptance file. Regression tests reproduced the signal
+failure before correction. The launcher now recognizes only its matching
+first signal-triggered cancellation as orderly-stop intent; unrelated/additional
+cancellation remains cleanup-only, and signal-handler ownership is restored.
+The CI workflow now includes C2 acceptance in its existing offline pinned-model
+step. Nine platform-portable signal regressions are included in Linux CI
+selection; hosted execution is pending. Windows-specific CLI acceptance remains
+platform-specific. Targeted fix review
+reported no remaining findings. Signing, policy, the one-second authorization
+deadline and CI quality/signing controls were not weakened.
 
-The final default full suite passed **3,821 tests and 38 skips**,
-with zero failures/errors, in 1845.33 seconds (1872.10 seconds wall time).
-Configured coverage was **45.29%**, above the unchanged 22% requirement.
-Boot, Integration Validation and the quality gate passed; quality reported zero
-new/edited violations and 952 unchanged legacy files. All **1,732 frozen
-source/control hashes** stayed unchanged. GUI verification passed 32 tests,
-build and lint against the same GUI tree.
+Current checks passed **129 unit/lifecycle tests** and **4 acceptance tests**
+in 184.72 seconds (185.82 seconds wall time for acceptance).
+Acceptance covers three-process checkpoint isolation, normal Windows CLI-only
+shutdown/restart and ask/stream shutdown. Windows processes **21492 and 63284**
+both exited zero; no independent observer-stop command was issued. Handle
+`0b3fc55c3dec44d289d466ae48e9b3fe` restored exact state from Memory row
+`6bf0c95b32514484845b6de5a9f76bcd` before B had any ticks or events. The handle
+is distinct from the row ID. This used programmatic SIGINT, not a physical
+keyboard interaction. Current boot, Integration Validation, quality and
+CI-control checks passed; **1,733 frozen source/control hashes** match the
+committed fix. The [publication-review receipt](evidence/integration_phase_c2a_pr_review_2026-11-24.json)
+records exact source, gate labels, commands, durations and checkpoint evidence.
+The [operator procedure](ALPHA_OPERATOR_RUNBOOK.md#consciousness-checkpoints-phase-c2a)
+provides the normal-CLI regression command and recovery contract.
 
-The final extended launch passed in **761.75 seconds**. A/B/C completed
-**215/234/0 ticks**; the separate profile stayed blocked and saved no checkpoint.
-All three processes exited zero without force, their ports closed and signed
-audit chains verified. Memory row `cfca237a2a5d4c79bb4aa9623fcb0864`
-was restored exactly before B's first tick; all six qualia and the trust
-aggregate matched. The restore handle is distinct from this row ID. Checkpoint
-rows stayed out of chat evidence and provider input. Context-derived
-deterministic generation ran without fallback; it is not a live-model pass.
-C1 persistence-disabled allow/deny compatibility passed in **130.84 seconds**.
-The final-source browser passed six checks: running status, continuity fields,
-stopped/unavailable status, the same restored row, blocked isolated-profile
-state and no console errors.
+Historical verification at `a10b734e` remains in the
+[original receipt](evidence/integration_phase_c2a_2026-11-24.json): **3,821 passes
+and 38 skips**, 45.29% configured coverage against the unchanged 22% requirement,
+1845.33 seconds pytest/1872.10 seconds wall time. The extended run passed in
+761.75 seconds with A/B/C ticks 215/234/0, signed audits, clean exits and exact
+restore of row `cfca237a2a5d4c79bb4aa9623fcb0864`; checkpoint data stayed out of
+chat evidence/provider input. C1 default-off/deny compatibility passed in
+130.84 seconds. Six browser checks and GUI 32 tests/build/lint passed against
+that historical source; the GUI tree remains unchanged. These results do not
+claim a new full-suite, extended-window or browser pass for the shutdown fix.
+Context-derived deterministic generation is not a live-model pass.
 
 Failure history remains part of acceptance. The initial short-run monitor stop
 captured no exception type; its cause remains unknown. At `26a28efe`, an
@@ -114,16 +130,18 @@ Independent review also corrected cancelled-stop acceptance, generic
 consolidation of aged checkpoints, invalid-backend drain calls, callbacks under
 lifecycle locks and oversized dictionary allocation. Fifteen regressions
 reproduced those findings; the integrated review bundle passed 253 tests.
-All failed/superseded captures remain in the receipt. Signing, policy,
+Those failed/superseded captures remain in the historical receipt. Signing, policy,
 the one-second authorization deadline and quality baselines were unchanged.
 The broadcast fix does not promise a latency bound for an individually slow
 audit or handler.
 
-The trusted local harness and SIGINT do not establish interactive keyboard
-shutdown acceptance. Directory separation verifies local storage isolation,
-not account isolation. Automatic latest selection, periodic saves and retention
-remain C2b. Pending TemporalConsciousnessEngine work stays preserved. Hosted
-review/CI, publication and merged-main verification remain separate gates.
+Existing Memory remains the authority/ownership boundary for immutable
+checkpoints. Missing, malformed or denied restore blocks observer ticks and
+saves; one save is requested only at explicit orderly stop. Directory separation
+verifies storage isolation, not account isolation. C2b automatic latest
+selection, periodic saves and retention remain deferred; pending
+TemporalConsciousnessEngine work stays preserved. Hosted CI, merged-main and
+release verification remain separate gates.
 
 ## Phase C1 Observer Candidate
 

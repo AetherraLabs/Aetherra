@@ -35,17 +35,19 @@ Aetherra is ready for supervised internal alpha on the verified Windows
 source-runtime profile. The current objective is bounded internal testing with
 the existing governance, observation and signing controls enforced.
 
-Phase C2a is complete for supervised local Windows source-runtime verification
-at `a10b734e`: one explicit orderly-stop save through existing Memory and exact
-selected restore before fresh ticks. The default suite passed 3,821
-tests; extended restart/profile checks and six Observatory browser checks passed.
-The [C2a decision](ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints) and
-[source-bound receipt](evidence/integration_phase_c2a_2026-11-24.json) record this
-scoped local GO. The candidate remains local, unmerged and unpushed. Hosted CI,
-fresh Python installation, live-model operation and interactive keyboard
-shutdown remain unverified. C2b automatic selection, periodic saves and retention
-remain deferred. Pending TemporalConsciousnessEngine work stays separate;
-checkpoints confer no autonomous action authority or unattended readiness.
+Phase C2a has scoped publication-review GO at `5d8ccecb` for supervised Windows
+source-runtime checkpoints through existing Memory. Review corrected normal CLI
+first-SIGINT saving and added C2 acceptance to CI; 129 unit/lifecycle and
+4 acceptance tests passed. The `a10b734e` full-suite, extended and browser
+results remain historical. The changed launcher has not had a full-suite or
+browser rerun. See the
+[current decision](ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints) and
+[review receipt](evidence/integration_phase_c2a_pr_review_2026-11-24.json).
+Hosted CI awaits publication; fresh Python installation, live-model operation
+and physical keyboard shutdown remain unverified. Main/release verification is
+separate. C2b automatic selection, periodic saves and retention remain deferred.
+Pending TemporalConsciousnessEngine work stays separate; checkpoints confer no
+autonomous action authority or unattended readiness.
 
 Authoritative identity and system references:
 

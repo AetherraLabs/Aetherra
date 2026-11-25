@@ -44,18 +44,19 @@ checks are unverified.
 See [source-bound evidence](evidence/integration_phase_c1_2026-11-24.json), the
 [C1 contract](AETHERRA_CONSCIOUSNESS_SYSTEM.md#phase-c1-normal-runtime-contract)
 and [operator procedure](ALPHA_OPERATOR_RUNBOOK.md#consciousness-observer-smoke-phase-c1).
-Phase C2a local acceptance (2026-11-24): **GO for supervised Windows operation of
-explicit observer checkpoints at `a10b734e`.** The full suite passed
-3,821 tests and 38 skips; the extended three-process run and
-six Observatory browser checks passed. Existing Memory saves once at explicit
-orderly stop and restores exact selected trust/qualia before fresh ticks.
-The candidate is local, unmerged and unpushed. See the
-[C2a decision](ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints) and
-[source-bound evidence](evidence/integration_phase_c2a_2026-11-24.json).
-Hosted CI, fresh Python installation, live-model operation and interactive
-keyboard shutdown remain unverified. Automatic selection, periodic saves and
-retention remain C2b. Pending temporal work is preserved; no action authority
-or unattended readiness follows from this local GO.
+Phase C2a publication-review checkpoint (2026-11-24): **scoped GO for supervised
+Windows source-runtime observer checkpoints at `5d8ccecb`.** Review corrected
+the normal Windows CLI first-SIGINT save path and added C2 acceptance to CI.
+Current targeted checks passed 129 unit/lifecycle tests and 4 acceptance tests,
+including CLI-only shutdown and exact pre-tick restore. The full suite,
+extended run and browser results at `a10b734e` are historical; the changed launcher
+has not had a full-suite or browser rerun. See the
+[current decision](ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints) and
+[review receipt](evidence/integration_phase_c2a_pr_review_2026-11-24.json).
+Hosted CI awaits publication; fresh Python installation, live-model operation
+and physical keyboard shutdown remain unverified. C2b automatic selection,
+periodic saves and retention are deferred. Pending temporal work is preserved;
+no unattended readiness, account isolation or action authority is claimed.
 
 | System | Status | Primary Reference |
 | --- | --- | --- |

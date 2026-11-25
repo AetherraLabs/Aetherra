@@ -17,9 +17,10 @@ Keep chat, telemetry, policy and checkpoint lifecycle independent.
 pytest, normal full launcher, Hub and Runtime Observatory; no new dependency.
 
 **Spec:** [C2 observer continuity design](../specs/2026-11-24-phase-c2-observer-continuity-design.md).
-Read it first. C2a has scoped local GO at frozen source `a10b734e`, recorded
-in the decision and source-bound evidence below. The candidate remains local,
-unmerged and unpushed. C2b automatic selection/interval/retention is deferred.
+Read it first. C2a has scoped publication-review GO at `5d8ccecb`, based on
+current targeted checks and historical `a10b734e` broader verification. The
+changed launcher has not had a full-suite or browser rerun. See the current
+decision and review receipt below. C2b selection/interval/retention is deferred.
 
 ## Global Constraints
 
@@ -229,20 +230,20 @@ Add a dated compact receipt in `docs/evidence/`.
   honest unknowns and no fallback after independent observer stop.
 - [x] Run the two affected acceptance files; expect missing C2 behavior to fail,
   then implement the smoke extension and rerun until both pass.
-- [x] Freeze implementation hashes. Run `python -m pytest -q`,
+- [x] At historical source `a10b734e`, freeze hashes and run `python -m pytest -q`,
   `python tools/alpha_boot_validation.py`,
   `python -m Aetherra.integration_validation`, `python tools/python_quality.py` and
   `python tools/verify_docs_consistency.py`. Require exit zero, preserve
   generated-report baselines and distinguish expected skips from passes.
-- [x] Run the following command, with a
+- [x] At historical source `a10b734e`, run the following command with a
   new disposable output directory and the existing isolated environment:
 
   `python tools/alpha_consciousness_smoke.py --output C2_EVIDENCE --observe-seconds 215 --continuity`
 
   Require save/restart/profile evidence, verified signed audits, independent
   chat and clean exits. Repeat C1 default-off/deny checks unchanged.
-- [x] Verify Observatory browser status using the existing operator procedure;
-  all six final-source checks passed. Complete the plan's conditional live
+- [x] At historical source `a10b734e`, verify Observatory browser status;
+  all six checks passed. Complete the plan's conditional live
   verification disposition: credentials were unavailable, so intentional
   live-provider personal recall remains explicitly unverified. This checked
   item records that boundary; it does not claim a live-model pass.
@@ -252,33 +253,46 @@ Add a dated compact receipt in `docs/evidence/`.
 - [x] Review and commit this task's tests/helper/docs locally. Before any
   requested publication, compare protected workspaces and signing controls
   with baseline.
+- [x] Correct the publication-review Windows first-SIGINT shutdown gap with
+  regressions that fail before the fix and pass afterward; preserve unrelated
+  cancellation and second-interrupt cleanup-only behavior.
+- [x] Add C2 acceptance to the existing offline pinned-model CI step. Keep the
+  nine signal cases platform-portable; Windows-specific CLI acceptance runs locally.
+- [x] Pass 129 targeted unit/lifecycle and 4 acceptance tests, including two
+  normal CLI processes that save/restore without independent observer stop.
+  Programmatic SIGINT is verified; physical keyboard delivery remains unverified.
+- [x] Verify current boot, Integration Validation, quality, CI controls and the
+  1,733-file committed freeze. Record the publication-review receipt and scoped GO.
+- [ ] Repeat full-suite/browser verification of the changed launcher when required;
+  this publication-review decision does not claim those reruns or hosted CI.
 
 ## Implementation Outcome
 
-The four tasks are complete within the approved scoped local verification
-boundary, including the conditional live-verification disposition above.
-Implementation commits `011fcd24`, `b786a216`, `5d10935a`, `736ecd80`,
-`e6e24e25`, review fix `26a28efe` and launch fixes `06feac58` / `a10b734e` are local
-on `codex/phase-c2-observer-checkpoints`, unmerged and unpushed. The unchanged
-personal-continuity acceptance file retains default-off coverage; the new
-checkpoint acceptance file and helper reuse the normal launcher and existing
-smoke CLI. This preserves the recorded deviation from modifying that existing
-acceptance file. The GUI uses the existing read-only renderer and scalar metrics.
-No legacy continuity file or pending temporal runtime work was activated.
+The original four tasks reached local verification at `a10b734e`; publication
+review then found and corrected Windows first-Ctrl+C no-save behavior and an
+omitted CI acceptance file. Current scoped review GO is at `5d8ccecb` with
+129 passing unit/lifecycle tests and 4 passing acceptance tests, current
+boot/integration/quality/CI-control checks and 1,733 frozen source/control hashes.
+The normal Windows CLI saved and restored exact state without an independent
+observer stop, using programmatic SIGINT. Physical keyboard delivery is unverified.
 
-The final source-bound full suite passed 3,821 tests and 38 skips,
-with 45.29% configured coverage in 1845.33 seconds. The extended
-three-process run passed in 761.75 seconds with A/B/C ticks 215/234/0;
-C1 default-off/deny compatibility passed in 130.84 seconds. Boot,
-Integration Validation and unchanged quality passed; GUI passed 32 tests,
-build and lint, and all six browser checks passed. All 1,732 source/control
-hashes stayed unchanged. The [decision](../../ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints)
-and [receipt](../../evidence/integration_phase_c2a_2026-11-24.json) retain failed
-attempts, corrections, exact selected-row evidence and final commands.
-Signing, policy and the one-second authorization deadline remain unchanged.
+The unchanged personal-continuity acceptance file retains default-off coverage;
+the new checkpoint acceptance file and helper reuse the normal launcher and
+existing smoke CLI. This preserves the recorded deviation from modifying that
+existing acceptance file. The GUI uses the existing read-only renderer and
+scalar metrics. No legacy continuity file or pending temporal work was activated.
 
-Hosted CI, fresh Python installation, live-model operation and interactive
-keyboard shutdown remain unverified. Directory isolation is not account
-isolation; no unattended or autonomous-action readiness is claimed. C2b
-selection/interval/retention, hosted review, publication and merged-main
-verification remain separate gates.
+The original 3,821-pass/38-skip full suite, 45.29% coverage, 761.75-second extended
+run, C1 compatibility and six browser checks remain historical at `a10b734e`.
+GUI 32 tests/build/lint also belong to that evidence; its tree is unchanged.
+The changed launcher has not had a full-suite, extended-window or browser rerun.
+The [current decision](../../ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints)
+and [review receipt](../../evidence/integration_phase_c2a_pr_review_2026-11-24.json)
+distinguish those scopes and retain failure history. Signing, policy and the
+one-second deadline remain unchanged; CI adds acceptance without weakening gates.
+
+Hosted CI awaits publication. Fresh Python installation, live-model operation
+and physical keyboard shutdown remain unverified. Directory isolation is not
+account isolation; no unattended or autonomous-action readiness is claimed.
+C2b selection/interval/retention, merged-main and release verification remain
+separate gates, and pending temporal runtime work stays preserved.

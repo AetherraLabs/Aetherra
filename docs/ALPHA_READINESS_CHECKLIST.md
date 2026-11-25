@@ -43,36 +43,39 @@ separate and preserved. Strict signing stays enforced.
 
 ## Phase C2a Candidate Checks
 
-**GO for supervised local Windows source-runtime checkpoint operation** at
-`a10b734e` on `codex/phase-c2-observer-checkpoints`. The candidate is local,
-unmerged and unpushed. See the
-[C2a decision](ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints) and
-[source-bound evidence](evidence/integration_phase_c2a_2026-11-24.json).
+**Scoped publication-review GO for supervised Windows source-runtime checkpoints**
+at `5d8ccecb`. See the
+[current decision](ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints) and
+[review receipt](evidence/integration_phase_c2a_pr_review_2026-11-24.json).
 
-- [x] Exact bounded codec restores trust/qualia on the owner thread before ticks;
-  malformed/future-schema inputs cannot partially apply or allocate unbounded keys.
-- [x] Real SQLite exact immutable rows, signed authorization, policy revocation,
-  cancellation, uncertain commits and worker drain have focused regressions.
-- [x] Review fixes preserve old checkpoints during generic consolidation, abandon
-  cancelled saves, keep callbacks outside lifecycle locks and reject foreign stores.
-- [x] Final source-bound three-process launch passed in 761.75 seconds,
-  with A/B/C ticks 215/234/0, checkpoint chat exclusion, signed audits and clean exits.
-- [x] Six final-source Observatory browser checks passed, including exact restored
-  row, blocked isolated profile, stopped/unavailable state and no console errors.
-- [x] Default full suite passed 3,821 tests and 38 skips
-  in 1845.33 seconds, with 45.29% configured coverage (22% required).
-- [x] Boot, Integration Validation and unchanged quality passed. GUI passed
-  32 tests, build and lint; all 1,732 frozen source/control hashes stayed unchanged.
-- [x] C1 persistence-disabled allow/deny compatibility passed in 130.84 seconds.
-- [x] Operator/docs contract records explicit handle-versus-row semantics,
-  uncertainty/recovery, unchanged signing/policy/deadline and scoped local GO.
-- [ ] Hosted CI, fresh Python installation, intentional live-model operation and
-  interactive keyboard shutdown remain separate, unverified gates.
+- [x] Exact bounded codec and governed immutable Memory rows restore trust/qualia
+  before ticks; policy, cancellation, uncertain commits and drain have regressions.
+- [x] Publication review's two Important findings are corrected: Windows first
+  CLI SIGINT now requests orderly save, and the CI workflow includes C2 acceptance.
+- [x] Current targeted unit/lifecycle checks passed 129 tests; acceptance passed
+  4 tests in 184.72 seconds (185.82 seconds wall time).
+- [x] Windows normal CLI-only shutdown saved and restored exact state across two
+  processes, both exiting zero, before any restored-process ticks/events.
+  SIGINT delivery was programmatic; no independent observer stop was invoked.
+- [x] Current boot, Integration Validation, quality and CI-control checks passed;
+  all 1,733 frozen source/control hashes match the committed fix.
+- [x] Nine signal regressions are platform-portable for Linux CI; Windows-only
+  acceptance passed locally. Hosted CI results await publication.
+- [x] Historical `a10b734e` full suite: 3,821 passes, 38 skips, 45.29% coverage,
+  1845.33 seconds. Historical extended launch: 761.75 seconds, A/B/C ticks
+  215/234/0; C1 default-off/deny compatibility: 130.84 seconds.
+- [x] Historical `a10b734e` browser: six checks passed. GUI: 32 tests, build and
+  lint passed; the GUI tree remains unchanged.
+- [ ] Full-suite and browser checks have not been repeated for the changed launcher.
+- [ ] Hosted CI, fresh Python installation, live-model operation and physical
+  keyboard shutdown remain unverified. Main/release integration gates are separate.
 
-C2b automatic latest selection, periodic saves and retention are deferred.
-Storage isolation comes from distinct local directories; no account isolation,
-unattended readiness or autonomous authority is claimed. Pending temporal work
-remains preserved. Historical failed attempts remain in the decision and receipt.
+The original GO missed the Windows first-Ctrl+C path because earlier smoke
+stopped the observer independently. Current GO rests on targeted review and
+checks plus explicitly historical broader evidence. Signing, policy and the
+one-second deadline remain unchanged. C2b automatic selection, periodic saves
+and retention are deferred. Pending temporal work is preserved; directory
+isolation does not establish account isolation or unattended/action readiness.
 
 ## Historical Phase B Candidate Checkpoints
 
