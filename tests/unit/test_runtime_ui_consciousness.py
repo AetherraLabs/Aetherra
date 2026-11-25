@@ -471,3 +471,29 @@ def test_continuity_projection_rejects_malformed_scalars_and_nested_data(registr
     assert metrics["continuity_last_save_acceptance"] == "unknown"
     assert "private" not in str(metrics)
     assert "continuity_current_attempt" not in metrics
+
+
+@pytest.mark.parametrize(
+    ("submission", "expected"),
+    [
+        ({"stop_save_submitted": False}, False),
+        ({"stop_save_submitted": True}, True),
+        ({}, None),
+        ({"stop_save_submitted": 0}, None),
+        ({"stop_save_submitted": "true"}, None),
+    ],
+)
+def test_stop_save_submission_projects_only_explicit_booleans(
+    registry, submission, expected
+):
+    _register(
+        registry,
+        _status(
+            runtime_state="stopped",
+            running=False,
+            thread_alive=False,
+            continuity={"enabled": True, "state": "saved", **submission},
+        ),
+    )
+    metrics = collect_runtime_ui_system_status()["consciousness"]["metrics"]
+    assert metrics["continuity_stop_save_submitted"] is expected

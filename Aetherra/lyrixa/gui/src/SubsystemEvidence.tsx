@@ -121,9 +121,23 @@ function consciousnessEvidence(observed: EvidenceMetrics): Array<[string, string
         ["Last save trigger", status(trigger, triggers)],
         ["Last save acceptance", status(acceptance, ["none", "pending", "acknowledged", "unacknowledged", "unknown"])],
     );
-    if (savedRecord !== "Unknown" && savedCheckpoint !== "Unknown") {
-        const final = trigger === "orderly_stop" && acceptance === "acknowledged" && savedTrigger === "orderly_stop";
-        const receipt = final ? "Final checkpoint acknowledged" : "Historical receipt";
+    const hasSavedReceipt = savedRecord !== "Unknown" && savedCheckpoint !== "Unknown";
+    const finalAcknowledged = hasSavedReceipt && trigger === "orderly_stop"
+        && acceptance === "acknowledged" && savedTrigger === "orderly_stop";
+    const submitted = observed.continuity_stop_save_submitted;
+    const finalAdmitted = submitted === true && trigger === "orderly_stop";
+    if (finalAdmitted || observed.runtime_state === "stopped") {
+        let disposition = "Unknown";
+        if (finalAdmitted) {
+            disposition = finalAcknowledged ? "Acknowledged" : status(acceptance, ["pending", "unacknowledged"]);
+        } else if (submitted === false && hasSavedReceipt && acceptance === "acknowledged"
+            && trigger === "periodic" && savedTrigger === "periodic") {
+            disposition = "No additional stop save submitted";
+        }
+        rows.push(["Stop save", disposition]);
+    }
+    if (hasSavedReceipt) {
+        const receipt = finalAcknowledged ? "Final checkpoint acknowledged" : "Historical receipt";
         rows.push(["Saved checkpoint", savedCheckpoint], ["Saved record evidence", receipt]);
         if (savedTrigger) rows.push(["Saved checkpoint trigger", status(savedTrigger, triggers)]);
         if (typeof observed.continuity_saved_generation === "number") {

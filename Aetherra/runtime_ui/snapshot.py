@@ -396,6 +396,7 @@ def _continuity_metrics(raw: Any) -> dict[str, Any]:
             "unknown",
         ),
         "saved_trigger": choice("saved_trigger", triggers),
+        "stop_save_submitted": flag("stop_save_submitted"),
         "retention_needed": flag("retention_needed"),
         "restored_save_trigger": choice("restored_save_trigger", triggers),
         # C2b has no independent lifecycle evidence for a previous session.

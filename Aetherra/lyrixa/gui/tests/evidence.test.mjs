@@ -323,3 +323,51 @@ test('Exact inspection reports the matched operation separately from the restore
     assert.match(html, /Previous save acceptance<\/dt><dd>Unknown<\/dd>/)
     assert.doesNotMatch(html, /Final checkpoint acknowledged|crash|interrupted/i)
 })
+
+test('Consciousness reports a stopped runtime’s stop-save disposition from explicit evidence', async () => {
+    const savedPeriodic = {
+        runtime_state: 'stopped', continuity_enabled: true, continuity_state: 'saved',
+        continuity_saved_record_id: 'row-periodic', continuity_saved_checkpoint_id: 'e'.repeat(32),
+        continuity_last_save_trigger: 'periodic', continuity_saved_trigger: 'periodic',
+        continuity_last_save_acceptance: 'acknowledged',
+    }
+    const unchanged = await renderEvidence('consciousness', {
+        ...savedPeriodic, continuity_stop_save_submitted: false,
+    })
+    assert.match(unchanged, /Stop save<\/dt><dd>No additional stop save submitted<\/dd>/)
+    assert.match(unchanged, /Saved record<\/dt><dd>row-periodic<\/dd>/)
+    assert.doesNotMatch(unchanged, /Final checkpoint acknowledged/)
+    for (const missing of [undefined, null, 0, 'false']) {
+        const html = await renderEvidence('consciousness', {
+            ...savedPeriodic, continuity_stop_save_submitted: missing,
+        })
+        assert.match(html, /Stop save<\/dt><dd>Unknown<\/dd>/)
+        assert.doesNotMatch(html, /No additional stop save submitted/)
+    }
+    const running = await renderEvidence('consciousness', {
+        ...savedPeriodic, runtime_state: 'running', continuity_stop_save_submitted: false,
+    })
+    assert.doesNotMatch(running, /No additional stop save submitted/)
+    const missingReceipt = await renderEvidence('consciousness', {
+        ...savedPeriodic, continuity_saved_checkpoint_id: null, continuity_stop_save_submitted: false,
+    })
+    assert.match(missingReceipt, /Stop save<\/dt><dd>Unknown<\/dd>/)
+})
+
+test('Consciousness distinguishes an admitted final attempt from the previous periodic receipt', async () => {
+    for (const [runtimeState, acceptance, label] of [
+        ['stopping', 'pending', 'Pending'],
+        ['stopped', 'unacknowledged', 'Unacknowledged'],
+    ]) {
+        const html = await renderEvidence('consciousness', {
+            runtime_state: runtimeState, continuity_enabled: true, continuity_stop_save_submitted: true,
+            continuity_last_save_trigger: 'orderly_stop', continuity_last_save_acceptance: acceptance,
+            continuity_saved_trigger: 'periodic', continuity_saved_record_id: 'row-periodic',
+            continuity_saved_checkpoint_id: 'e'.repeat(32),
+        })
+        assert.ok(html.includes(`Stop save</dt><dd>${label}</dd>`))
+        assert.match(html, /Saved record<\/dt><dd>row-periodic<\/dd>/)
+        assert.match(html, /Saved record evidence<\/dt><dd>Historical receipt<\/dd>/)
+        assert.doesNotMatch(html, /No additional stop save submitted|Final checkpoint acknowledged/)
+    }
+})
