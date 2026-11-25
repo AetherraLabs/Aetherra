@@ -1,0 +1,868 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "phase": "C2a publication-review fixes",
+  "generated_at_utc": "2026-11-25T03:21:22.076042Z",
+  "scope": "Supervised observe-only Windows source-runtime review verification; targeted checks after the explicit SIGINT and CI-inclusion fixes.",
+  "configuration_manifest": {
+    "file": "c2a-publication-evidence-manifest.json",
+    "sha256": "921c2f28d43ac1d3ba22ce098dadd8cee84d26564d95dd6afdecc99308fb691c"
+  },
+  "source": {
+    "final_head": "5d8ccecba5ef9f3b9177bbf64063c572f5cf0142",
+    "tested_base_head": "515010fa35f501fa2fbd9a2a2ef6543d1dd763e4",
+    "freeze": {
+      "file": "c2a-publication-source-freeze-v2.json",
+      "sha256": "38e2e751b7d6158fc284fa63e93724b2d295f92a89bba1aca7f0c2d1d6f07257"
+    },
+    "verified_tracked_non_docs_files": 1733,
+    "all_frozen_hashes_unchanged": true,
+    "commit_source_matches_freeze": true,
+    "review_changed_sha256": {
+      ".github/workflows/ci_quality_gates.yml": "0e1dde7e63074317ad20b151a84d569b884ff83382f8e334e7acef1097658b45",
+      "aetherra_os_launcher.py": "85596c70115512621fb67b5b207a4ad76a9d7ecf7e72e75ca03f2f6789c50b4c",
+      "tests/acceptance/test_consciousness_continuity.py": "988cf8a1c17fac356c26ccf43ec172f4fd7640953c88beb05abef257d7852364",
+      "tests/unit/test_launcher_windows_sigint.py": "85e94624d8b6a7f2a7c0c76906e28736526f0d33680a9d5a5fc1fcb79a362d3c",
+      "tools/alpha_consciousness_continuity_smoke.py": "72b39ac41b00a444a112db44bbb46614541ab6dc5dedd95dd4d4558fae225b61"
+    },
+    "review_hashes_before": {
+      "file": "c2a-windows-stop-hashes-before-v2.json",
+      "sha256": "25fd56e7cc0c32ecf40119d95838949036ba3ae81b52cfad159489625475219c"
+    },
+    "review_hashes_after": {
+      "file": "c2a-windows-stop-hashes-after-v2.json",
+      "sha256": "f9a4d9f7ed4c04766ad9383733c4d7d6428129943fc4603af3c9647a4f53c28d"
+    },
+    "original_targeted_freeze": {
+      "file": "c2a-publication-source-freeze.json",
+      "sha256": "8ee846a729f4fbec35872c2990f32483a18298c8d9d26e7482cdf4a663198d96"
+    },
+    "unchanged_targeted_source_except_acceptance_assertion": true,
+    "binding": "Tests recorded the precommit HEAD plus frozen working changes; raw files remain unchanged and Git-normalized committed content matches the complete freeze.",
+    "smoke_module_sha256": {
+      "aetherra_os_launcher.py": "85596c70115512621fb67b5b207a4ad76a9d7ecf7e72e75ca03f2f6789c50b4c",
+      "aetherra_service_registry.py": "0322182912272815ac96870ee300a203ebef7a083491ec115ef09943c0de11f0",
+      "Aetherra/consciousness/runtime_observer.py": "44e76ec418b142a1f0e701580da286acd46b7d92f6977e0446794c22bed353be",
+      "Aetherra/consciousness/core/consciousness_core.py": "a27caea6383e34f23c32b167a7464be7367334a4c938975c44b8decb0a722bd0",
+      "Aetherra/consciousness/core/think_stream.py": "0eca3685a34d3c9ac63de52fc59206f833c624129feb4bc07e859b6490ab6a65",
+      "Aetherra/consciousness/continuity_memory.py": "8f4527f92008e0b29c5f20aed98de3dc20b82d6e07ac78066a2171addfc1defa",
+      "Aetherra/consciousness/checkpoint.py": "65fc757442b9b1c951cd95bc689c948a835c90528b80bdc1cd87942b429ebf9f",
+      "Aetherra/consciousness/self_trust.py": "2025ed08ad326a31906d201268fb378c8f624b9baebe82b2f4e447f49ad4e94a",
+      "Aetherra/aetherra_core/memory/lifecycle_checkpoint.py": "9357d71c47c8e569c9c39d15faec4113908ba106d704d8e01e37b59afecc076a",
+      "Aetherra/aetherra_core/memory/memory_core.py": "d3ef49f05399fde5cca0cf55f515b3df914e001c4b5d2613b9d94bd03083c91c",
+      "Aetherra/aetherra_core/memory/aetherra_memory_engine.py": "13fb567554820366151bfbd78ebd4e17f50cbcb61af310816c15a396d28fac8b",
+      "Aetherra/runtime_ui/snapshot.py": "50b5ce89df6880eebd8329e19f3d2a261afc8dd610f3e317bfb4eadfc7754d54",
+      "aetherra_hub/blueprints/consciousness.py": "e6e7594a03ec0bfcb247dabd2a13ec44b77fc8f49cac8525233d33589db82bbc",
+      "tools/alpha_consciousness_smoke.py": "5e5e30241a08b1a80d0030816586c5c0cbb756ea2eddb91cf1f70735da128489",
+      "tools/alpha_consciousness_continuity_smoke.py": "72b39ac41b00a444a112db44bbb46614541ab6dc5dedd95dd4d4558fae225b61",
+      "tools/alpha_integration_smoke.py": "a8674a8af020cdbdfd0c477b179f6dc3c130327f7b149c9f15f00a4ea00e4b3b",
+      "tests/acceptance/continuity_runtime.py": "05c0d44a85d0240f2b5b970a0fa38a3057486ee46c65bffdf64c143ce1095dd8"
+    },
+    "generator": {
+      "file": "build-publication-evidence.py",
+      "sha256": "486874ceb3616210ab69e3733143ce9abb5a7d692a97c571fbec2308eee317a7"
+    },
+    "shared_verification_utility": {
+      "file": "build-final-evidence.py",
+      "sha256": "ba4bb66e181fd17db2706606d542cf02aabe03ee4677bf4c283672ccdcef5715"
+    }
+  },
+  "gate_labels": {
+    "unit": "c2a-windows-stop-final-unit-01",
+    "acceptance": "c2a-windows-stop-final-acceptance-v2",
+    "ci_controls": "c2-publication-ci-controls",
+    "quality": "c2a-publication-quality-v2",
+    "boot": "c2a-publication-boot",
+    "integration": "c2a-publication-integration"
+  },
+  "gates": {
+    "c2a-windows-stop-final-unit-01": {
+      "label": "c2a-windows-stop-final-unit-01",
+      "exit_code": 0,
+      "seconds": 12.99,
+      "metadata": {
+        "file": "c2a-windows-stop-final-unit-01.json",
+        "sha256": "2171410f3e18b93d714aa16afc2b62cffccc7d53ed11677e0ed9d1f1a2297e3c"
+      },
+      "log": {
+        "file": "c2a-windows-stop-final-unit-01.log",
+        "sha256": "84c543cd541c6cfd7bf1b645630ff17eafc4b66bc74b5032c337d389ea1b91a1"
+      },
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/unit/test_launcher_windows_sigint.py",
+        "tests/unit/test_consciousness_observer_continuity.py",
+        "tests/unit/test_consciousness_observer_lifecycle.py",
+        "tests/unit/test_memory_lifecycle_checkpoint.py",
+        "tests/capabilities/test_launcher_shutdown.py",
+        "-q",
+        "--no-cov",
+        "-o",
+        "cache_dir=EVIDENCE/pytest-cache",
+        "--basetemp",
+        "EVIDENCE/pytest-c2a-windows-stop-final-unit-01"
+      ],
+      "command_sha256": "e528c6976a7a2b5643a0c095e36d33aa247de729b0c88d700d87893365a75c7e",
+      "recorded_head": "515010fa35f501fa2fbd9a2a2ef6543d1dd763e4",
+      "source_binding": "Recorded precommit revision plus reviewed working hashes; relevant files match the final committed freeze.",
+      "counts": {
+        "passed": 129,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "deselected": 0,
+        "warnings": 0,
+        "subtests_passed": 0,
+        "pytest_reported_seconds": 11.79
+      }
+    },
+    "c2a-windows-stop-final-acceptance-v2": {
+      "label": "c2a-windows-stop-final-acceptance-v2",
+      "exit_code": 0,
+      "seconds": 185.82,
+      "metadata": {
+        "file": "c2a-windows-stop-final-acceptance-v2.json",
+        "sha256": "52ced02ea3648950865c68f8ee8a1bf61424474687597a0306209c9f9b938dee"
+      },
+      "log": {
+        "file": "c2a-windows-stop-final-acceptance-v2.log",
+        "sha256": "32a8d368e6d078fb1c831a9304c1ce74b8e8e82ba2e93a2508ae1ce2cec0b58b"
+      },
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/acceptance/test_consciousness_continuity.py",
+        "tests/acceptance/test_launcher_active_shutdown.py",
+        "-q",
+        "--no-cov",
+        "-o",
+        "cache_dir=EVIDENCE/pytest-cache",
+        "--basetemp",
+        "EVIDENCE/pytest-c2a-windows-stop-final-acceptance-v2"
+      ],
+      "command_sha256": "334fa99874b95f9422f464cb8edeba6fe07e4abfc19b581f026d8edac9bf34e0",
+      "recorded_head": "515010fa35f501fa2fbd9a2a2ef6543d1dd763e4",
+      "source_binding": "Recorded precommit revision plus reviewed working hashes; relevant files match the final committed freeze.",
+      "counts": {
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "deselected": 0,
+        "warnings": 0,
+        "subtests_passed": 0,
+        "pytest_reported_seconds": 184.72
+      }
+    },
+    "c2-publication-ci-controls": {
+      "label": "c2-publication-ci-controls",
+      "exit_code": 0,
+      "seconds": 9.62,
+      "metadata": {
+        "file": "c2-publication-ci-controls.json",
+        "sha256": "6064c50a0bda48edb66f46ffb312c7ca320cc01c2b8a22301126b03105367e36"
+      },
+      "log": {
+        "file": "c2-publication-ci-controls.log",
+        "sha256": "492755e3aae92a1695b3e32fb75ce9d517990447310047a8a0a3f0e59721a6f4"
+      },
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/tools/test_quality_gates_pr_description.py",
+        "tests/tools/test_quality_gate_controls.py",
+        "tests/tools/test_release_ci.py",
+        "tests/tools/test_release_signing.py",
+        "-q",
+        "--no-cov",
+        "-o",
+        "cache_dir=EVIDENCE/pytest-cache",
+        "--basetemp",
+        "EVIDENCE/pytest-c2-publication-ci-controls"
+      ],
+      "command_sha256": "7f800c6e906bd5e6a01ea399d1f2de83793fbc7f2e5b68087a6c9ed661eeae21",
+      "recorded_head": "43737366598a8da131b1dea443081fc9d585c1ba",
+      "source_binding": "Control tests are unchanged; CI workflow was tested as a precommit change and is separately checked against the committed narrow inclusion diff.",
+      "counts": {
+        "passed": 68,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "deselected": 0,
+        "warnings": 0,
+        "subtests_passed": 0,
+        "pytest_reported_seconds": 8.26
+      }
+    },
+    "c2a-publication-quality-v2": {
+      "label": "c2a-publication-quality-v2",
+      "exit_code": 0,
+      "seconds": 106.65,
+      "metadata": {
+        "file": "c2a-publication-quality-v2.json",
+        "sha256": "fae4551658a7e44e1d188c8c5d1e3428cf162238002acbe65d088ca3fd22ba3e"
+      },
+      "log": {
+        "file": "c2a-publication-quality-v2.log",
+        "sha256": "1a0b5365dcd30162bfaed3ebd0dd750cbc8cadab1b868cde49b16dab52fd2582"
+      },
+      "command": [
+        "python",
+        "tools/python_quality.py"
+      ],
+      "command_sha256": "94d45282a3f58e0ed3a2b72c8fa62bda79c323648e22418c373bbc6950a53cca",
+      "recorded_head": "515010fa35f501fa2fbd9a2a2ef6543d1dd763e4",
+      "source_binding": "Recorded precommit revision plus reviewed working hashes; relevant files match the final committed freeze."
+    },
+    "c2a-publication-boot": {
+      "label": "c2a-publication-boot",
+      "exit_code": 0,
+      "seconds": 2.29,
+      "metadata": {
+        "file": "c2a-publication-boot.json",
+        "sha256": "1ab63ccb31920e8174c4e4b30d1e52135ddea7feb5b5b1cc07eac5ac04da4543"
+      },
+      "log": {
+        "file": "c2a-publication-boot.log",
+        "sha256": "5eb2a09c05bc5df2ed99d573f2a65765e73c634a1fdd685e74ceb19036eff2f5"
+      },
+      "command": [
+        "python",
+        "tools/alpha_boot_validation.py"
+      ],
+      "command_sha256": "c83ea5d3f0f6f25ccfceb9fded506dfb5119fce58cd3efe2c1817e312a9d4379",
+      "recorded_head": "515010fa35f501fa2fbd9a2a2ef6543d1dd763e4",
+      "source_binding": "Recorded precommit revision plus reviewed working hashes; relevant files match the final committed freeze."
+    },
+    "c2a-publication-integration": {
+      "label": "c2a-publication-integration",
+      "exit_code": 0,
+      "seconds": 1.04,
+      "metadata": {
+        "file": "c2a-publication-integration.json",
+        "sha256": "9f1b94567abc5073253c255331a0e27d4d37e4e0ca5c31469eee837ccf177afb"
+      },
+      "log": {
+        "file": "c2a-publication-integration.log",
+        "sha256": "54688ad06853b64b3503575fac208b7df44a9cd4fa3579f3a76ff36a9a0b4cd4"
+      },
+      "command": [
+        "python",
+        "-m",
+        "Aetherra.integration_validation"
+      ],
+      "command_sha256": "e0ad2b3a791a25bca8224a61beefe8f2deeea98de37257e9c4a4b97aae8d192e",
+      "recorded_head": "515010fa35f501fa2fbd9a2a2ef6543d1dd763e4",
+      "source_binding": "Recorded precommit revision plus reviewed working hashes; relevant files match the final committed freeze."
+    }
+  },
+  "quality": {
+    "new_or_edited_violations": 0,
+    "unchanged_legacy_files": 952,
+    "resolved": 81
+  },
+  "windows_cli_restart": {
+    "processes": {
+      "a": {
+        "pid": 21492,
+        "exit_code": 0,
+        "readiness": "ready",
+        "signed_audit_verified": true,
+        "launcher_stopped": true,
+        "observer_thread_alive": false,
+        "ticks_completed": 2,
+        "continuity": {
+          "enabled": true,
+          "state": "saved",
+          "outstanding": false,
+          "last_error_code": null,
+          "selected_checkpoint_id": null,
+          "saved_checkpoint_id": "0b3fc55c3dec44d289d466ae48e9b3fe",
+          "restored_record_id": null,
+          "saved_record_id": "6bf0c95b32514484845b6de5a9f76bcd"
+        },
+        "no_independent_observer_stop": true,
+        "boot": {
+          "file": "pytest-c2a-windows-stop-final-acceptance-v2/test_windows_cli_sigint_saves_0/a/boot.json",
+          "sha256": "78c95d405d594897a5b4969b5d3731d0505e8cc2da7a8586bdb458e588d93707"
+        },
+        "provider": {
+          "file": "pytest-c2a-windows-stop-final-acceptance-v2/test_windows_cli_sigint_saves_0/a/provider.json",
+          "sha256": "74c33b50f3960731aba8a9fff3d9c1981adc7ce5cc5d7af9c52c2f059cee64ab"
+        }
+      },
+      "b": {
+        "pid": 63284,
+        "exit_code": 0,
+        "readiness": "ready",
+        "signed_audit_verified": true,
+        "launcher_stopped": true,
+        "observer_thread_alive": false,
+        "ticks_completed": 19,
+        "continuity": {
+          "enabled": true,
+          "state": "saved",
+          "outstanding": false,
+          "last_error_code": null,
+          "selected_checkpoint_id": "0b3fc55c3dec44d289d466ae48e9b3fe",
+          "saved_checkpoint_id": "850ff46becab4f818137eba8c0127cfd",
+          "restored_record_id": "6bf0c95b32514484845b6de5a9f76bcd",
+          "saved_record_id": "7991d2aa8a22418eaf2fc6d54b96b3ea"
+        },
+        "no_independent_observer_stop": true,
+        "boot": {
+          "file": "pytest-c2a-windows-stop-final-acceptance-v2/test_windows_cli_sigint_saves_0/b/boot.json",
+          "sha256": "874335ef593c7236b6b7e4ee9f44e4f47a3cc0ec7641268eccecb2a05452fc27"
+        },
+        "provider": {
+          "file": "pytest-c2a-windows-stop-final-acceptance-v2/test_windows_cli_sigint_saves_0/b/provider.json",
+          "sha256": "4eb44ad93e17113f9ee4ca5856192461afa501e1578a658b07e25d7d9357ad65"
+        }
+      }
+    },
+    "checkpoint": {
+      "checkpoint_id": "0b3fc55c3dec44d289d466ae48e9b3fe",
+      "saved_record_id": "6bf0c95b32514484845b6de5a9f76bcd",
+      "restored_record_id": "6bf0c95b32514484845b6de5a9f76bcd",
+      "persisted_payload_sha256": "825283301c7883c484ddc33f0047ff557c8e74d64fd463be51b9f64a43bd586f",
+      "persisted_aggregate_sha256": "1c1d9e9d6b0acc07a30a85329ea598d6e5a451631c94ed02684d12761e42fb27",
+      "restored_aggregate_sha256": "1c1d9e9d6b0acc07a30a85329ea598d6e5a451631c94ed02684d12761e42fb27",
+      "exact_state_match": true,
+      "pre_first_tick_count": 0,
+      "pre_first_tick_events": 0
+    },
+    "checkpoint_counts_after_process": {
+      "a": 1,
+      "b": 2
+    },
+    "normal_cli_sigint": true,
+    "no_independent_observer_stop": true,
+    "mechanism": "Trusted local _thread.interrupt_main and I/O-loop wake drive normal asyncio.run(main()); no separate observer stop.",
+    "signed_ledger": {
+      "ledger": {
+        "file": "pytest-c2a-windows-stop-final-acceptance-v2/test_windows_cli_sigint_saves_0/profile/.aetherra/security/audit.jsonl",
+        "sha256": "73819a24ae0df278423a0a5897c00d33afe4e3277d5f1c03dd7094d497501755"
+      },
+      "signed_integrity_verified": true,
+      "records": 305
+    },
+    "checkpoint_audit_references": [
+      {
+        "audit_id": "f2760979c686ef0912c5e5a166844542c43eaef5c8c0c3e536438403871f19c5",
+        "action": "consciousness.continuity_save"
+      },
+      {
+        "audit_id": "37ca9123fee7ec27f4a866d7e1c6138caaf90d34c16cb7d5dd7524200626b23e",
+        "action": "consciousness.continuity_restore"
+      },
+      {
+        "audit_id": "1b3a0407b400278d56ba67c856dc8feb0f9f1dd54339fa0c1643be4e492b00e0",
+        "action": "consciousness.continuity_save"
+      }
+    ],
+    "synthetic_seed": {
+      "trust_observations": 5,
+      "trust_score": 40.0,
+      "qualia_dimensions": 6
+    },
+    "interactive_keyboard_or_conpty_verified": false
+  },
+  "current_three_process_continuity": {
+    "summary": {
+      "file": "pytest-c2a-windows-stop-final-acceptance-v2/test_selected_checkpoint_resto0/continuity-evidence/summary.json",
+      "sha256": "2af23c0ef32a1cb836ccbd068e93d4c74e6b07038b759d5da1e9103d863ff4be"
+    },
+    "observation_seconds_per_process": 5,
+    "checkpoint": {
+      "checkpoint_id": "1527db9d132e449c8be469a2b3d5ee0f",
+      "saved_record_id": "d6c71d5dbb2249dab59343bcec8f849f",
+      "restored_record_id": "d6c71d5dbb2249dab59343bcec8f849f",
+      "persisted_payload_sha256": "ec387faf1bb93d93cef3adeca654b2398d322bd2618734889631c77cbe2e0719",
+      "persisted_aggregate_sha256": "e06d2d881cacb52f42b8b98181a7726bf8d717ebea4c958dc0becea1905ae709",
+      "restored_aggregate_sha256": "e06d2d881cacb52f42b8b98181a7726bf8d717ebea4c958dc0becea1905ae709",
+      "exact_state_match": true,
+      "pre_first_tick_count": 0,
+      "nontrivial_trust_observations": 5,
+      "nontrivial_trust_score": 40.0,
+      "nontrivial_qualia_dimensions": 6,
+      "negative_valence_restored": true
+    },
+    "checkpoint_counts_after_process": {
+      "a": 1,
+      "b": 2,
+      "c": 0
+    },
+    "processes": {
+      "a": {
+        "pid": 48732,
+        "exit_code": 0,
+        "forced_stop": false,
+        "port_closed": true,
+        "fresh_chat_history": true,
+        "signed_audit_verified": true,
+        "first_completed_ticks": 2,
+        "last_completed_ticks": 7,
+        "first_events_processed": 8,
+        "last_events_processed": 28,
+        "stopped_runtime_state": "stopped",
+        "continuity": {
+          "enabled": true,
+          "state": "saved",
+          "outstanding": false,
+          "last_error_code": null,
+          "selected_checkpoint_id": null,
+          "saved_checkpoint_id": "1527db9d132e449c8be469a2b3d5ee0f",
+          "restored_record_id": null,
+          "saved_record_id": "d6c71d5dbb2249dab59343bcec8f849f"
+        },
+        "checkpoint_audit_references": [
+          {
+            "action": "consciousness.continuity_save",
+            "audit_id": "29f0b703a891805df7b16a76e33ae82b1d7c8bbd40d74f5f1007756490356a3a"
+          }
+        ]
+      },
+      "b": {
+        "pid": 63068,
+        "exit_code": 0,
+        "forced_stop": false,
+        "port_closed": true,
+        "fresh_chat_history": true,
+        "signed_audit_verified": true,
+        "first_completed_ticks": 20,
+        "last_completed_ticks": 25,
+        "first_events_processed": 80,
+        "last_events_processed": 100,
+        "stopped_runtime_state": "stopped",
+        "continuity": {
+          "enabled": true,
+          "state": "saved",
+          "outstanding": false,
+          "last_error_code": null,
+          "selected_checkpoint_id": "1527db9d132e449c8be469a2b3d5ee0f",
+          "saved_checkpoint_id": "194e5c54e5404916ae052bc8f7f7bc38",
+          "restored_record_id": "d6c71d5dbb2249dab59343bcec8f849f",
+          "saved_record_id": "630f833348c6490bb76398519fa0ea47"
+        },
+        "checkpoint_audit_references": [
+          {
+            "action": "consciousness.continuity_restore",
+            "audit_id": "8b00984b73ddbaf4402f0e0c55fd41a5a8c18b4d3180cfc16280215aedcb812b"
+          },
+          {
+            "action": "consciousness.continuity_save",
+            "audit_id": "8598aec07846abe7ece70bea666f2cf0ce3ba884848e097dd7146f671d49707e"
+          }
+        ]
+      },
+      "c": {
+        "pid": 61492,
+        "exit_code": 0,
+        "forced_stop": false,
+        "port_closed": true,
+        "fresh_chat_history": true,
+        "signed_audit_verified": true,
+        "first_completed_ticks": 0,
+        "last_completed_ticks": 0,
+        "first_events_processed": 0,
+        "last_events_processed": 0,
+        "stopped_runtime_state": "blocked",
+        "continuity": {
+          "enabled": true,
+          "state": "blocked",
+          "outstanding": false,
+          "last_error_code": "missing",
+          "selected_checkpoint_id": "1527db9d132e449c8be469a2b3d5ee0f",
+          "saved_checkpoint_id": null,
+          "restored_record_id": null,
+          "saved_record_id": null
+        },
+        "checkpoint_audit_references": [
+          {
+            "action": "consciousness.continuity_restore",
+            "audit_id": "843c7440be0b02d590dc1176e593d60c8c166fe39f35deca15d82d7f5fe1e213"
+          }
+        ]
+      }
+    },
+    "signed_ledgers": {
+      "primary": {
+        "ledger": {
+          "file": "pytest-c2a-windows-stop-final-acceptance-v2/test_selected_checkpoint_resto0/continuity-evidence/primary/.aetherra/security/audit.jsonl",
+          "sha256": "681700517ea5cf83f2515019784aabcb8975a698a46db1413b986b5a62d4b0bb"
+        },
+        "signed_integrity_verified": true,
+        "records": 343
+      },
+      "foreign": {
+        "ledger": {
+          "file": "pytest-c2a-windows-stop-final-acceptance-v2/test_selected_checkpoint_resto0/continuity-evidence/foreign/.aetherra/security/audit.jsonl",
+          "sha256": "dc70895ab6dccfe1fb5e31253b92a8e521d241ec6197951a3599d464b69ca3f7"
+        },
+        "signed_integrity_verified": true,
+        "records": 153
+      }
+    },
+    "personal_written_record_id": "f0cc193e614a23bd7acd234ef3bb675f",
+    "personal_evidence_traces": [
+      {
+        "process": "a",
+        "retrieved_record_ids": [
+          "f0cc193e614a23bd7acd234ef3bb675f"
+        ],
+        "provider_evidence_ids": [
+          "f0cc193e614a23bd7acd234ef3bb675f"
+        ],
+        "provider": "deterministic",
+        "model": "context-responder",
+        "used": true,
+        "fallback": false,
+        "honest_unknown_verified": true
+      },
+      {
+        "process": "b",
+        "retrieved_record_ids": [
+          "f0cc193e614a23bd7acd234ef3bb675f"
+        ],
+        "provider_evidence_ids": [
+          "f0cc193e614a23bd7acd234ef3bb675f"
+        ],
+        "provider": "deterministic",
+        "model": "context-responder",
+        "used": true,
+        "fallback": false,
+        "honest_unknown_verified": true
+      },
+      {
+        "process": "c",
+        "retrieved_record_ids": [],
+        "provider_evidence_ids": [],
+        "provider": "deterministic",
+        "model": "context-responder",
+        "used": true,
+        "fallback": false,
+        "honest_unknown_verified": true
+      }
+    ],
+    "checkpoint_excluded_from_provider_input_and_chat_evidence": true,
+    "profile_isolation": "Local storage directories only; no account isolation.",
+    "generation": {
+      "provider": "deterministic",
+      "model": "context-responder",
+      "fallback": false,
+      "live_provider_verified": false
+    },
+    "synthetic_seed": {
+      "trust_observations": 5,
+      "trust_score": 40.0,
+      "qualia_dimensions": 6,
+      "temporary_seed_clock_only": true,
+      "ordinary_runtime_clock_restored": true
+    }
+  },
+  "ci": {
+    "workflow": ".github/workflows/ci_quality_gates.yml",
+    "workflow_sha256": "0e1dde7e63074317ad20b151a84d569b884ff83382f8e334e7acef1097658b45",
+    "inclusion_commit": "515010fa35f501fa2fbd9a2a2ef6543d1dd763e4",
+    "acceptance_file": "tests/acceptance/test_consciousness_continuity.py",
+    "offline_flags_preserved": true,
+    "only_acceptance_inclusion_and_step_label_changed": true,
+    "release_signing_steps_unchanged": true,
+    "release_signing_step_sha256": {
+      "Release signing and bundle regression tests": "f1e04bd6c51c067f21ba802659af734df229e0fb747cfed94894f8b1d603bb13",
+      "Production bundle with signed release manifest": "b1a531f91eb0c061d793bf637d355d056c1e1c7cb09413a5facad4eb0451004b",
+      "Enforce signed-manifest policy": "7c3aa4ab52c09bdd05a302b8c8ed6358b61f0a3c2274b08891bd325a900bffbc"
+    },
+    "controls_gate": "c2-publication-ci-controls",
+    "hosted_ci_executed": false,
+    "platform_scope": "The three-process case is included in the Linux offline CI step; the Windows-specific SIGINT case remains skipped on non-Windows hosts."
+  },
+  "historical": {
+    "source_head": "a10b734eb276ae2469b8fbeded0489e01ab45e4c",
+    "receipt": {
+      "repository_file": "docs/evidence/integration_phase_c2a_2026-11-24.json",
+      "sha256": "c6e6f7c995545aeb712bd64e0bd47a142b69e7c8a866ce9310bd04b25b03e16e"
+    },
+    "full_suite": {
+      "passed": 3821,
+      "failed": 0,
+      "skipped": 38,
+      "errors": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "deselected": 0,
+      "warnings": 0,
+      "subtests_passed": 0,
+      "pytest_reported_seconds": 1845.33,
+      "coverage_percent": 45.29,
+      "required_coverage_percent": 22.0
+    },
+    "full_suite_gate": {
+      "label": "c2-full-suite-fairness-final",
+      "exit_code": 0,
+      "seconds": 1872.1,
+      "metadata": {
+        "file": "c2-full-suite-fairness-final.json",
+        "sha256": "9bf6189d5ce0503058ac530968131f7d9449150afad89d78f651a1b4a29a7bc4"
+      },
+      "log": {
+        "file": "c2-full-suite-fairness-final.log",
+        "sha256": "a86d5d31955cf1391753d0f65d620232c9be1dbd015fecf080089541674e54be"
+      },
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "cache_dir=EVIDENCE/pytest-cache",
+        "--basetemp",
+        "EVIDENCE/pytest-c2-full-suite-fairness-final"
+      ],
+      "command_sha256": "d0c53420af627c733a340c8793d199b6fe70fe611fd46b2f5113ac8f548a019d",
+      "source_bound_to_final_freeze": false,
+      "recorded_head": "a10b734eb276ae2469b8fbeded0489e01ab45e4c"
+    },
+    "browser": {
+      "receipt": {
+        "file": "c2-browser-fairness-final.json",
+        "sha256": "5050004a646fe01554c9b7611d5a1a10667f893ab957ac06a559fb0b22d4b5a9"
+      },
+      "passed": true,
+      "source_head": "a10b734eb276ae2469b8fbeded0489e01ab45e4c",
+      "running_state_verified": true,
+      "continuity_fields_verified": true,
+      "stopped_state_verified": true,
+      "restored_state_verified": true,
+      "isolated_missing_state_verified": true,
+      "console_errors_absent": true,
+      "restored_record_id": "cfca237a2a5d4c79bb4aa9623fcb0864"
+    },
+    "gui_tree_unchanged": true,
+    "gui_tree": "b9eade51820322051659e2ce9d568cd15604f968",
+    "gui_results": {
+      "results": {
+        "tests": 32,
+        "pass": 32,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "build_passed": true,
+      "lint_passed": true,
+      "source_binding": "GUI tree matches the tested GUI revision and the final source freeze."
+    },
+    "full_suite_repeated_on_current_source": false,
+    "browser_repeated_on_current_source": false,
+    "extended_215_second_smoke_repeated_on_current_source": false,
+    "original_review_acceptance": {
+      "gate": {
+        "label": "c2a-windows-stop-final-acceptance-01",
+        "exit_code": 0,
+        "seconds": 184.1,
+        "metadata": {
+          "file": "c2a-windows-stop-final-acceptance-01.json",
+          "sha256": "8381e0764892de65e721144403527fdd7a4d13606084c79e6ad867dd9c6de088"
+        },
+        "log": {
+          "file": "c2a-windows-stop-final-acceptance-01.log",
+          "sha256": "e76d94928323421351bde1e4c0bea642e7febb277bd554da9f59df64c1db0c30"
+        },
+        "command": [
+          "python",
+          "-m",
+          "pytest",
+          "tests/acceptance/test_consciousness_continuity.py",
+          "tests/acceptance/test_launcher_active_shutdown.py",
+          "-q",
+          "--no-cov",
+          "-o",
+          "cache_dir=EVIDENCE/pytest-cache",
+          "--basetemp",
+          "EVIDENCE/pytest-c2a-windows-stop-final-acceptance-01"
+        ],
+        "command_sha256": "295e1f175d77d3059913daa91b3431eadec1545f45072622f49a60a1d59cacd3",
+        "source_bound_to_final_freeze": false,
+        "recorded_head": "515010fa35f501fa2fbd9a2a2ef6543d1dd763e4"
+      },
+      "counts": {
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "deselected": 0,
+        "warnings": 0,
+        "subtests_passed": 0,
+        "pytest_reported_seconds": 183.05
+      },
+      "hashes_before": {
+        "file": "c2a-windows-stop-hashes-before.json",
+        "sha256": "24accffea46183d49249cda4c0a1c314dc07813523aa0464d1c9d3f46b9f881b"
+      },
+      "hashes_after": {
+        "file": "c2a-windows-stop-hashes-after.json",
+        "sha256": "c676e441ed239a532cdc789e399ec13520b59feb8e85c5fbc32474d82ef6f6f9"
+      },
+      "disposition": "Four cases passed before an acceptance-assertion formatting correction; the current acceptance gate independently reruns the corrected frozen source."
+    },
+    "scope": "The earlier full suite, extended smoke, browser and GUI evidence remain bound to their recorded source; only GUI tree identity is carried forward as unchanged."
+  },
+  "reproduced_failures": [
+    {
+      "gate": {
+        "label": "c2a-windows-cli-sigint-red-01",
+        "exit_code": 1,
+        "seconds": 13.01,
+        "metadata": {
+          "file": "c2a-windows-cli-sigint-red-01.json",
+          "sha256": "49ce4d1812b675530eccd8dfe8a5cd356e7074e6033295a48c26bf9066010379"
+        },
+        "log": {
+          "file": "c2a-windows-cli-sigint-red-01.log",
+          "sha256": "35fd24d45592d5380dd7410c0167a84e9d47ba8de401b6a6584a5d780d385c06"
+        },
+        "command": [
+          "python",
+          "-m",
+          "pytest",
+          "tests/acceptance/test_consciousness_continuity.py::test_windows_cli_sigint_saves_and_restores_without_observer_stop",
+          "-q",
+          "--no-cov",
+          "-o",
+          "cache_dir=EVIDENCE/pytest-cache",
+          "--basetemp",
+          "EVIDENCE/pytest-c2a-windows-cli-sigint-red-01"
+        ],
+        "command_sha256": "34a1783ddadbce904a46ae94f98c81f4bbd0eb863216610021cf305766e1b789",
+        "source_bound_to_final_freeze": false,
+        "recorded_head": "515010fa35f501fa2fbd9a2a2ef6543d1dd763e4"
+      },
+      "counts": {
+        "passed": 0,
+        "failed": 1,
+        "skipped": 0,
+        "errors": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "deselected": 0,
+        "warnings": 0,
+        "subtests_passed": 0,
+        "pytest_reported_seconds": 11.98
+      },
+      "disposition": "Expected pre-fix regression failure; retained as rejected evidence, not a publication pass."
+    },
+    {
+      "gate": {
+        "label": "c2a-windows-cli-intent-red-01",
+        "exit_code": 1,
+        "seconds": 2.42,
+        "metadata": {
+          "file": "c2a-windows-cli-intent-red-01.json",
+          "sha256": "aef6e54ce09e5e6ae589d69e813127c469b23c5218b9ebf012206796c0db8fbb"
+        },
+        "log": {
+          "file": "c2a-windows-cli-intent-red-01.log",
+          "sha256": "d30b5cf5360a9d5d3f07f3cea7ab05a8b0aa1f905f5108bd9491a475a7507f4c"
+        },
+        "command": [
+          "python",
+          "-m",
+          "pytest",
+          "tests/unit/test_launcher_windows_sigint.py",
+          "-q",
+          "--no-cov",
+          "-o",
+          "cache_dir=EVIDENCE/pytest-cache",
+          "--basetemp",
+          "EVIDENCE/pytest-c2a-windows-cli-intent-red-01"
+        ],
+        "command_sha256": "c834bef7214d41a7f30f3042cb9d22a405e64ae60f517e51ee52eddc19c98a05",
+        "source_bound_to_final_freeze": false,
+        "recorded_head": "515010fa35f501fa2fbd9a2a2ef6543d1dd763e4"
+      },
+      "counts": {
+        "passed": 5,
+        "failed": 2,
+        "skipped": 0,
+        "errors": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "deselected": 0,
+        "warnings": 0,
+        "subtests_passed": 0,
+        "pytest_reported_seconds": 1.36
+      },
+      "disposition": "Expected pre-fix regression failure; retained as rejected evidence, not a publication pass."
+    },
+    {
+      "gate": {
+        "label": "c2a-windows-cli-disposition-red-01",
+        "exit_code": 1,
+        "seconds": 2.45,
+        "metadata": {
+          "file": "c2a-windows-cli-disposition-red-01.json",
+          "sha256": "6a127c03448b74703256c9d2af8227259e0bff3de924a9ee15350e7ece37b268"
+        },
+        "log": {
+          "file": "c2a-windows-cli-disposition-red-01.log",
+          "sha256": "a85731dc0b320056c6e30db37403e405733e66f0a19e1864670460ec6ee45fb3"
+        },
+        "command": [
+          "python",
+          "-m",
+          "pytest",
+          "tests/unit/test_launcher_windows_sigint.py::test_embedded_noncallable_signal_disposition_is_preserved",
+          "-q",
+          "--no-cov",
+          "-o",
+          "cache_dir=EVIDENCE/pytest-cache",
+          "--basetemp",
+          "EVIDENCE/pytest-c2a-windows-cli-disposition-red-01"
+        ],
+        "command_sha256": "0668545cffe882dcd618aad0856f7ac02279945ef8d502c12b823f9026986c28",
+        "source_bound_to_final_freeze": false,
+        "recorded_head": "515010fa35f501fa2fbd9a2a2ef6543d1dd763e4"
+      },
+      "counts": {
+        "passed": 0,
+        "failed": 2,
+        "skipped": 0,
+        "errors": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "deselected": 0,
+        "warnings": 0,
+        "subtests_passed": 0,
+        "pytest_reported_seconds": 1.17
+      },
+      "disposition": "Expected pre-fix regression failure; retained as rejected evidence, not a publication pass."
+    }
+  ],
+  "review_resolution": {
+    "windows_sigint": "A first SIGINT is recognized as one-shot orderly intent only for its matched launcher task; unrelated cancellation and repeated SIGINT abandon checkpoint acknowledgement.",
+    "ci_inclusion": "The existing offline CI continuity step now explicitly includes observer checkpoint acceptance."
+  },
+  "limitations": [
+    "The full suite and coverage were not repeated on the publication-review source; the 3821-pass/38-skip/45.29-percent result is historical.",
+    "The browser and 215-second extended smoke were not repeated on the publication-review source.",
+    "Hosted CI and a fresh Python installation remain unverified.",
+    "Live-provider operation remains unverified; deterministic ContextResponder generation is not a live-model pass.",
+    "The local Windows SIGINT path was exercised through trusted instrumentation; an interactive keyboard or ConPTY Ctrl+C was not exercised.",
+    "Separate local profile directories establish storage isolation, not account isolation.",
+    "C2b automatic latest selection, periodic saves and retention remain deferred.",
+    "Unattended production use and autonomous action remain outside this scope."
+  ]
+}

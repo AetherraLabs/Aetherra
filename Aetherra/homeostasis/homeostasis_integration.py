@@ -2267,7 +2267,8 @@ class SystemFeedback:
             import psutil
 
             # Collect basic system metrics
-            cpu_percent = psutil.cpu_percent(interval=1)
+            # Preserve the sampling window without starving lifecycle/audit delivery.
+            cpu_percent = await asyncio.to_thread(psutil.cpu_percent, interval=1)
             memory = psutil.virtual_memory()
             disk = psutil.disk_usage("/")
 
@@ -2428,7 +2429,9 @@ class ContinuousValidator:
                 import psutil
 
                 metrics["os_metrics"] = {
-                    "cpu_percent": psutil.cpu_percent(interval=1),
+                    "cpu_percent": await asyncio.to_thread(
+                        psutil.cpu_percent, interval=1
+                    ),
                     "memory_percent": psutil.virtual_memory().percent,
                     "load_average": (
                         psutil.getloadavg()[0] if hasattr(psutil, "getloadavg") else 0.0

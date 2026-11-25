@@ -42,14 +42,15 @@ jobs:
 
           SentenceTransformer(MODEL, revision=REVISION, device="cpu", trust_remote_code=False)
           PY
-      - name: Offline personal continuity checks
+      - name: Offline personal and observer continuity checks
         env:
           HF_HUB_OFFLINE: '1'
           TRANSFORMERS_OFFLINE: '1'
         # Run the complete restart acceptance cases explicitly; the main suite
         # also runs retrieval unit tests and appends this coverage.
         run: >-
-          python -m pytest tests/acceptance/test_personal_continuity.py -q -o addopts=
+          python -m pytest tests/acceptance/test_personal_continuity.py
+          tests/acceptance/test_consciousness_continuity.py -q -o addopts=
           --cov=. --cov-report= --cov-fail-under=0
       - name: Release signing and bundle regression tests
         run: >-

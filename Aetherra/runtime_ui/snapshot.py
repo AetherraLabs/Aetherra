@@ -6,6 +6,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import math
+import re
 import time
 from datetime import UTC, datetime
 from hashlib import sha256
@@ -286,6 +287,69 @@ def _observe_service(name, service_names, registry, observation, now) -> None:
     )
 
 
+def _continuity_metrics(raw: Any) -> dict[str, Any]:
+    """Project cached receipts only, never checkpoint contents or historical health."""
+    raw = raw if isinstance(raw, dict) else {}
+    states = {
+        "disabled",
+        "fresh",
+        "restoring",
+        "restored",
+        "saving",
+        "saved",
+        "blocked",
+        "failed",
+        "uncertain",
+    }
+    errors = {
+        "busy",
+        "denied",
+        "audit_failed",
+        "missing",
+        "ambiguous",
+        "invalid",
+        "unavailable",
+        "cancelled",
+        "uncertain",
+        "policy_not_ready",
+        "core_not_ready",
+        "tick_failed",
+        "reflection_denied",
+        "config_invalid",
+        "stale",
+    }
+    state = raw.get("state")
+    error = raw.get("last_error_code")
+    result = {
+        "enabled": raw.get("enabled") if type(raw.get("enabled")) is bool else False,
+        "state": state if isinstance(state, str) and state in states else "disabled",
+        "outstanding": (
+            raw.get("outstanding") if type(raw.get("outstanding")) is bool else False
+        ),
+        "last_error_code": (
+            error if isinstance(error, str) and error in errors else None
+        ),
+    }
+    for key in ("selected_checkpoint_id", "saved_checkpoint_id"):
+        value = raw.get(key)
+        result[key] = (
+            value
+            if isinstance(value, str) and re.fullmatch(r"[0-9a-f]{32}", value)
+            else None
+        )
+    for key in ("restored_record_id", "saved_record_id"):
+        value = raw.get(key)
+        result[key] = (
+            value
+            if isinstance(value, str) and re.fullmatch(r"[A-Za-z0-9_-]{1,128}", value)
+            else None
+        )
+    return {
+        "continuity_" + ("error_code" if key == "last_error_code" else key): value
+        for key, value in result.items()
+    }
+
+
 def consciousness_runtime_metrics(raw: dict[str, Any]) -> dict[str, Any]:
     """Allowlist observer evidence; never call the core's mutating status API."""
     states = {
@@ -304,9 +368,11 @@ def consciousness_runtime_metrics(raw: dict[str, Any]) -> dict[str, Any]:
         "runtime_state": state if isinstance(state, str) and state in states else None,
         "autonomy_mode": "observe" if raw.get("autonomy_mode") == "observe" else None,
         "readiness_verified": False,
+        **_continuity_metrics(raw.get("continuity")),
     }
     for key in (
         "running",
+        "legacy_file_persistence_enabled",
         "thread_alive",
         "persistence_enabled",
         "qfac_persistence_enabled",
@@ -350,12 +416,15 @@ def consciousness_runtime_metrics(raw: dict[str, Any]) -> dict[str, Any]:
         and attempted >= completed
         and fresh
         and result["autonomy_mode"] == "observe"
-        and all(
-            result[key] is False
-            for key in (
-                "persistence_enabled",
-                "qfac_persistence_enabled",
-                "action_execution_enabled",
+        and result["qfac_persistence_enabled"] is False
+        and result["action_execution_enabled"] is False
+        and (
+            result["persistence_enabled"] is False
+            or (
+                result["persistence_enabled"] is True
+                and result["legacy_file_persistence_enabled"] is False
+                and result["continuity_enabled"] is True
+                and result["continuity_state"] in {"fresh", "restored"}
             )
         )
     )

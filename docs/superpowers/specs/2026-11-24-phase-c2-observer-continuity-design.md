@@ -1,6 +1,11 @@
 # Phase C2: Observer Continuity Design
 
-Prepared: 2026-11-24. Status: proposed; no C2 runtime behavior is implemented.
+Prepared and implemented: 2026-11-24. C2a has scoped publication-review GO at
+`5d8ccecb`, based on current targeted checks and historical `a10b734e` broader
+verification. The changed launcher has not had a full-suite or browser rerun.
+The [current decision](../../ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints)
+and [review receipt](../../evidence/integration_phase_c2a_pr_review_2026-11-24.json)
+record exact scope and remaining verification boundaries.
 
 C1 implementation is committed and pushed as
 [b8719fa2](https://github.com/AetherraLabs/Aetherra/commit/b8719fa22b8bd21ea77b3c4aa721522e312e86ea)
@@ -12,9 +17,9 @@ CI, fresh-install, browser or live-model acceptance.
 ## Goal and boundary
 
 The user's Phase C plan calls for governed continuity of the optional
-Consciousness sidecar without taking over chat. The next focused milestone,
-**C2a**, will save one bounded aggregate checkpoint at an orderly observer stop
-and restore an explicitly selected checkpoint before the first tick of a new
+Consciousness sidecar without taking over chat. The focused milestone,
+**C2a**, saves one bounded aggregate checkpoint at an orderly observer stop
+and restores an explicitly selected checkpoint before the first tick of a new
 process. Storage belongs to the existing Memory system.
 
 C2a establishes the codec, authority, ownership and recovery contract first.
@@ -136,7 +141,7 @@ Duplicate handles must fail under concurrent writers using one atomic
 check-and-insert transaction. Return a receipt only after commit.
 
 Use existing Guardian intent evaluation, Security capability checks and signed
-audit ledger. Proposed actions are `consciousness.continuity_restore` with
+audit ledger. Actions are `consciousness.continuity_restore` with
 `consciousness:write`, `memory:read`, `fs:read`, and
 `consciousness.continuity_save` with `consciousness:write`, `memory:write`,
 `fs:read`, `fs:write`. Both require allowed plus a nonblank audit receipt.
@@ -151,7 +156,7 @@ until actual completion, report uncertainty and forbid automatic retry. A late
 result cannot apply state or become an acknowledged successful save. Subsequent
 inspection uses the exact handle; no destructive rollback or replacement row.
 
-## Proposed launcher lifecycle
+## Implemented launcher lifecycle
 
 Use a root config object `consciousness_continuity` with `enabled: false`
 by default and `restore_checkpoint_id: null` by default. Validate strict booleans,
@@ -207,8 +212,26 @@ it cannot replace checkpoint persistence or retrieval. Prove:
 - Signed audit chains verify, every process exits honestly and all relevant
   tests, full suite, boot/integration, quality and documentation gates pass.
 
-Verify actual Observatory HTTP status and browser rendering separately. Repeat
-intentional live-provider personal continuity when credentials are available;
-otherwise record it unverified. C1's deterministic result is not a live pass.
-Do not extend the current GO decision until C2 evidence exists. Hosted review
-and CI for C1 remain separate from this preparatory document.
+Publication review corrected the Windows normal CLI first-SIGINT no-save path
+and added C2 acceptance to the existing offline pinned-model CI step. Current
+targeted checks at `5d8ccecb` passed 129 unit/lifecycle and 4 acceptance tests,
+including CLI-only save and exact restore before any fresh ticks/events.
+The signal was programmatic; physical keyboard delivery remains unverified.
+Current boot/integration/quality/CI-control checks passed and all 1,733 frozen
+source/control hashes match the committed fix. Signing, policy and the
+one-second deadline remain unchanged.
+
+Historical `a10b734e` evidence includes 3,821 passes, 38 skips, 45.29% coverage,
+the 761.75-second extended run, six browser checks and GUI 32 tests/build/lint.
+The GUI tree is unchanged. The changed launcher has not had a full-suite,
+extended-window or browser rerun. The
+[current decision](../../ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints)
+and [review receipt](../../evidence/integration_phase_c2a_pr_review_2026-11-24.json)
+retain the original GO's missed shutdown path, corrections and verification scopes.
+
+Hosted CI awaits publication; fresh Python installation, intentional live-provider
+operation and physical keyboard shutdown remain unverified. Deterministic
+generation is not a live-model pass. This scoped supervised GO establishes no
+account isolation, unattended readiness or action authority. Merged-main and
+release verification are separate. C2b is deferred and pending temporal runtime
+work stays preserved.

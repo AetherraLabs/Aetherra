@@ -37,9 +37,45 @@ in the [decision](ALPHA_READINESS_DECISION.md#phase-c1-observer-candidate) and
   process restart. Browser/live-model results are explicitly unverified.
 
 These checks support local supervised C1 operation, not remote CI or merged-main
-acceptance. Next is C2 safe profile-scoped continuity with failed-restore
-protection and accurate trust rehydration. Pending temporal observer work remains
+acceptance. C2a's separate checkpoint verification is recorded below; C1's
+historical result does not certify those new changes. Pending temporal observer work remains
 separate and preserved. Strict signing stays enforced.
+
+## Phase C2a Candidate Checks
+
+**Scoped publication-review GO for supervised Windows source-runtime checkpoints**
+at `5d8ccecb`. See the
+[current decision](ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints) and
+[review receipt](evidence/integration_phase_c2a_pr_review_2026-11-24.json).
+
+- [x] Exact bounded codec and governed immutable Memory rows restore trust/qualia
+  before ticks; policy, cancellation, uncertain commits and drain have regressions.
+- [x] Publication review's two Important findings are corrected: Windows first
+  CLI SIGINT now requests orderly save, and the CI workflow includes C2 acceptance.
+- [x] Current targeted unit/lifecycle checks passed 129 tests; acceptance passed
+  4 tests in 184.72 seconds (185.82 seconds wall time).
+- [x] Windows normal CLI-only shutdown saved and restored exact state across two
+  processes, both exiting zero, before any restored-process ticks/events.
+  SIGINT delivery was programmatic; no independent observer stop was invoked.
+- [x] Current boot, Integration Validation, quality and CI-control checks passed;
+  all 1,733 frozen source/control hashes match the committed fix.
+- [x] Nine signal regressions are platform-portable for Linux CI; Windows-only
+  acceptance passed locally. Hosted CI results await publication.
+- [x] Historical `a10b734e` full suite: 3,821 passes, 38 skips, 45.29% coverage,
+  1845.33 seconds. Historical extended launch: 761.75 seconds, A/B/C ticks
+  215/234/0; C1 default-off/deny compatibility: 130.84 seconds.
+- [x] Historical `a10b734e` browser: six checks passed. GUI: 32 tests, build and
+  lint passed; the GUI tree remains unchanged.
+- [ ] Full-suite and browser checks have not been repeated for the changed launcher.
+- [ ] Hosted CI, fresh Python installation, live-model operation and physical
+  keyboard shutdown remain unverified. Main/release integration gates are separate.
+
+The original GO missed the Windows first-Ctrl+C path because earlier smoke
+stopped the observer independently. Current GO rests on targeted review and
+checks plus explicitly historical broader evidence. Signing, policy and the
+one-second deadline remain unchanged. C2b automatic selection, periodic saves
+and retention are deferred. Pending temporal work is preserved; directory
+isolation does not establish account isolation or unattended/action readiness.
 
 ## Historical Phase B Candidate Checkpoints
 
@@ -397,9 +433,9 @@ Decision record:
 
 1. Review published C1 and obtain hosted CI before merge; merged-main acceptance
    remains a separate gate.
-2. Use the [prepared C2a plan](superpowers/plans/2026-11-24-phase-c2-observer-checkpoints.md)
-   for exact Memory checkpoint restore/write and accurate trust. Automatic
-   selection and periodic saves remain C2b. C2 code is not implemented.
+2. Review the [C2a implementation](superpowers/plans/2026-11-24-phase-c2-observer-checkpoints.md)
+   and its source-bound local evidence before publication or integration.
+   Automatic selection, periodic saves and retention remain C2b.
    Keep strict signing/governance and preserve the separate temporal milestone.
 3. Verify optional features, other platforms and broader operating modes
    separately before extending the GO decision.

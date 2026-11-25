@@ -1,4 +1,4 @@
-﻿# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
 """
@@ -49,6 +49,7 @@ def _guardian_capability_checker(requester: str, capability: str) -> bool:
     }:
         return True
 
+    # Aetherra imports
     from Aetherra.security.capabilities import has_capability
 
     return has_capability(requester, capability)
@@ -63,6 +64,7 @@ def _guardian_preflight_memory_operation(
     rollback_plan: str,
     metadata: dict[str, Any],
 ):
+    # Aetherra imports
     from Aetherra.guardian import IntentDeclaration, evaluate_intent
 
     requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "memory:core"
@@ -84,8 +86,10 @@ def _guardian_preflight_memory_operation(
         capability_checker=_guardian_capability_checker,
     )
 
+
 # Import the advanced memory engine with STORM support
 try:
+    # Local imports
     from .aetherra_memory_engine import AetherraMemoryEngineAdvanced
 
     ADVANCED_ENGINE_AVAILABLE = True
@@ -154,6 +158,10 @@ class LyrixaMemorySystem:
 
     def __init__(self, memory_db_path: str = ":memory:"):
         self.db_path = memory_db_path
+        # Local imports
+        from .lifecycle_checkpoint import LifecycleCheckpointWorker
+
+        self._lifecycle_checkpoints = LifecycleCheckpointWorker(memory_db_path)
         self._transaction_failed = False
         self.conn: Optional[sqlite3.Connection] = sqlite3.connect(
             self.db_path,
@@ -175,20 +183,48 @@ class LyrixaMemorySystem:
             # Fallback to basic quantum engine if advanced not available
             self.engine = QuantumEnhancedMemoryEngine()
 
-    def close(self) -> None:
-        """Close the underlying SQLite connection if open.
+    def submit_load_lifecycle_checkpoint(self, *, owner, scope, checkpoint_id, control):
+        return self._lifecycle_checkpoints.submit(
+            operation="restore",
+            owner=owner,
+            scope=scope,
+            checkpoint_id=checkpoint_id,
+            control=control,
+        )
 
-        Windows cannot remove an open SQLite file; tests that create a temporary
-        LyrixaMemorySystem instance need deterministic cleanup. This method is
-        idempotent and safe to call multiple times.
+    def submit_store_lifecycle_checkpoint(
+        self, *, owner, scope, checkpoint_id, payload, control
+    ):
+        return self._lifecycle_checkpoints.submit(
+            operation="save",
+            owner=owner,
+            scope=scope,
+            checkpoint_id=checkpoint_id,
+            payload=payload,
+            control=control,
+        )
+
+    def lifecycle_checkpoint_pending(self) -> bool:
+        return self._lifecycle_checkpoints.pending()
+
+    def drain_lifecycle_checkpoints(self, timeout: float = 1.0) -> bool:
+        return self._lifecycle_checkpoints.shutdown(timeout)
+
+    def close(self) -> bool:
+        """Close only after owned checkpoint I/O drains; false retains ownership.
+
+        Existing no-argument callers remain valid. The checkpoint worker closes
+        its own connection; an uninterruptible audit/commit never loses its slot.
         """
+        if not self.drain_lifecycle_checkpoints(timeout=1.0):
+            return False
         if self.conn is not None:
             try:
                 self.conn.close()
             except Exception:
-                pass
-            finally:
-                self.conn = None
+                return False
+            self.conn = None
+        return True
 
     def __del__(self):  # pragma: no cover - best effort GC finalizer
         with suppress(Exception):
@@ -219,8 +255,7 @@ class LyrixaMemorySystem:
             cursor = conn.cursor()
 
             # Create memories table
-            cursor.execute(
-                """
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS memories (
                     id TEXT PRIMARY KEY,
                     content TEXT NOT NULL,
@@ -232,13 +267,18 @@ class LyrixaMemorySystem:
                     access_count INTEGER DEFAULT 0,
                     memory_type TEXT NOT NULL
                 )
-            """
-            )
+            """)
 
             # Create indexes for efficient querying
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_memory_type ON memories(memory_type)")
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_importance ON memories(importance)")
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_created_at ON memories(created_at)")
+            cursor.execute(
+                "CREATE INDEX IF NOT EXISTS idx_memory_type ON memories(memory_type)"
+            )
+            cursor.execute(
+                "CREATE INDEX IF NOT EXISTS idx_importance ON memories(importance)"
+            )
+            cursor.execute(
+                "CREATE INDEX IF NOT EXISTS idx_created_at ON memories(created_at)"
+            )
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_tags ON memories(tags)")
 
             conn.commit()
@@ -258,9 +298,13 @@ class LyrixaMemorySystem:
     def validate_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """Validate and normalize query parameters."""
         validated = {}
-        validated["importance"] = self.normalize_importance(params.get("importance", 0.0))
+        validated["importance"] = self.normalize_importance(
+            params.get("importance", 0.0)
+        )
         validated["text"] = str(params.get("text", ""))
-        validated["tags"] = params.get("tags", []) if isinstance(params.get("tags"), list) else []
+        validated["tags"] = (
+            params.get("tags", []) if isinstance(params.get("tags"), list) else []
+        )
         validated["context"] = (
             params.get("context", {}) if isinstance(params.get("context"), dict) else {}
         )
@@ -313,7 +357,8 @@ class LyrixaMemorySystem:
 
             with self.db_session() as cursor:
                 # Help type checker: created_at/last_accessed set above
-                assert memory.created_at is not None and memory.last_accessed is not None
+                assert memory.created_at is not None
+                assert memory.last_accessed is not None
                 cursor.execute(
                     """
                     INSERT OR REPLACE INTO memories
@@ -411,7 +456,9 @@ class LyrixaMemorySystem:
             logger.exception("Failed to recall memories")
             return []
 
-    async def get_conversation_context(self, session_id: str, limit: int = 10) -> List[Memory]:
+    async def get_conversation_context(
+        self, session_id: str, limit: int = 10
+    ) -> List[Memory]:
         """Get recent conversation context for a session"""
         return await self.recall_memories(
             query_text=session_id, limit=limit, memory_type="conversation"
@@ -428,6 +475,7 @@ class LyrixaMemorySystem:
         Read/model failures propagate so Engine can distinguish missing evidence
         from unavailable retrieval. Legacy recall_memories callers are unchanged.
         """
+        # Local imports
         from .chat_retrieval import rank
 
         if not query_text.strip() or limit <= 0:
@@ -503,16 +551,25 @@ class LyrixaMemorySystem:
         self, user_context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """Get user preferences"""
-        memories = await self.recall_memories(query_text="", limit=100, memory_type="preference")
+        memories = await self.recall_memories(
+            query_text="", limit=100, memory_type="preference"
+        )
 
         preferences = {}
         for memory in memories:
-            if "preference_key" in memory.content and "preference_value" in memory.content:
-                preferences[memory.content["preference_key"]] = memory.content["preference_value"]
+            if (
+                "preference_key" in memory.content
+                and "preference_value" in memory.content
+            ):
+                preferences[memory.content["preference_key"]] = memory.content[
+                    "preference_value"
+                ]
 
         return preferences
 
-    async def store_project_context(self, project_name: str, context: Dict[str, Any]) -> str:
+    async def store_project_context(
+        self, project_name: str, context: Dict[str, Any]
+    ) -> str:
         """Store project-specific context"""
         content = {"project_name": project_name, "context": context}
 
@@ -569,11 +626,15 @@ class LyrixaMemorySystem:
                 """
                 SELECT COUNT(*) FROM memories
                 WHERE importance < 0.3 AND created_at < ? AND access_count < 2
+                  AND memory_type NOT GLOB 'consciousness_observer_checkpoint:*'
             """,
                 (cutoff_date,),
             )
             delete_candidates = int(cursor.fetchone()[0] or 0)
-            cursor.execute("SELECT COUNT(*) FROM memories WHERE access_count > 5")
+            cursor.execute(
+                "SELECT COUNT(*) FROM memories WHERE access_count > 5 "
+                "AND memory_type NOT GLOB 'consciousness_observer_checkpoint:*'"
+            )
             boost_candidates = int(cursor.fetchone()[0] or 0)
             decision = _guardian_preflight_memory_operation(
                 action="memory.consolidate",
@@ -589,25 +650,27 @@ class LyrixaMemorySystem:
                 },
             )
             if not decision.allowed:
-                logger.warning("Guardian denied memory consolidation: %s", decision.reason)
+                logger.warning(
+                    "Guardian denied memory consolidation: %s", decision.reason
+                )
                 return False
 
             cursor.execute(
                 """
                 DELETE FROM memories
                 WHERE importance < 0.3 AND created_at < ? AND access_count < 2
+                  AND memory_type NOT GLOB 'consciousness_observer_checkpoint:*'
             """,
                 (cutoff_date,),
             )
 
             # Update importance based on access patterns
-            cursor.execute(
-                """
+            cursor.execute("""
                 UPDATE memories
                 SET importance = MIN(1.0, importance + (access_count * 0.1))
                 WHERE access_count > 5
-            """
-            )
+                  AND memory_type NOT GLOB 'consciousness_observer_checkpoint:*'
+            """)
 
             self.ensure_connection().commit()
             return True
@@ -685,7 +748,9 @@ class LyrixaMemorySystem:
                 if query.text:
                     sql += " AND (content LIKE ? OR tags LIKE ?)"
 
-                    params.extend([f"%{query.text}%", f"%{query.text}%"])  # Cast to str explicitly
+                    params.extend(
+                        [f"%{query.text}%", f"%{query.text}%"]
+                    )  # Cast to str explicitly
 
                 if query.tags:
                     for tag in query.tags:
@@ -736,7 +801,9 @@ class LyrixaMemorySystem:
             total_memories = cursor.fetchone()[0]
 
             # Memories by type
-            cursor.execute("SELECT memory_type, COUNT(*) FROM memories GROUP BY memory_type")
+            cursor.execute(
+                "SELECT memory_type, COUNT(*) FROM memories GROUP BY memory_type"
+            )
             by_type = dict(cursor.fetchall())
 
             # Average importance
@@ -745,7 +812,9 @@ class LyrixaMemorySystem:
 
             # Recent activity
             recent_date = (datetime.now() - timedelta(days=7)).isoformat()
-            cursor.execute("SELECT COUNT(*) FROM memories WHERE created_at >= ?", (recent_date,))
+            cursor.execute(
+                "SELECT COUNT(*) FROM memories WHERE created_at >= ?", (recent_date,)
+            )
             recent_memories = cursor.fetchone()[0]
 
             return {
@@ -765,10 +834,14 @@ class LyrixaMemorySystem:
         params: List[Any] = []
 
         if query.memory_type:
-            params.append(float(query.memory_type))  # Ensure type matches expected float
+            params.append(
+                float(query.memory_type)
+            )  # Ensure type matches expected float
 
         if query.text:
-            params.extend([float(query.text), float(query.text)])  # Convert text to float if needed
+            params.extend(
+                [float(query.text), float(query.text)]
+            )  # Convert text to float if needed
 
         if query.tags:
             for tag in query.tags:
@@ -776,7 +849,9 @@ class LyrixaMemorySystem:
 
         if query.time_range:
             start_time, end_time = query.time_range
-            params.extend([start_time.timestamp(), end_time.timestamp()])  # Use timestamps
+            params.extend(
+                [start_time.timestamp(), end_time.timestamp()]
+            )  # Use timestamps
 
         return params
 

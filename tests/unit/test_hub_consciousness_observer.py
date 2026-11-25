@@ -295,3 +295,34 @@ print("disabled observer: real Hub boot and offline state passed")
     )
     assert result.returncode == 0, (result.stdout + result.stderr)[-4000:]
     assert "real Hub boot and offline state passed" in result.stdout
+
+
+def test_checkpoint_status_survives_offline_observer_without_payload(setup):
+    registry, client = setup
+    _register(
+        registry,
+        runtime_state="stopped",
+        running=False,
+        thread_alive=False,
+        persistence_enabled=True,
+        legacy_file_persistence_enabled=False,
+        continuity={
+            "enabled": True,
+            "state": "saved",
+            "selected_checkpoint_id": None,
+            "restored_record_id": None,
+            "saved_checkpoint_id": "a" * 32,
+            "saved_record_id": "row-saved",
+            "outstanding": False,
+            "last_error_code": None,
+            "payload": {"private": "secret"},
+        },
+    )
+    for _ in range(3):
+        response = client.get("/api/consciousness/state")
+        assert response.status_code == 503
+        body = response.get_json()
+        assert body["runtime"]["continuity_saved_record_id"] == "row-saved"
+        assert body["runtime"]["continuity_state"] == "saved"
+        assert "private" not in str(body)
+        assert "payload" not in str(body)

@@ -86,15 +86,72 @@ receives no heartbeat. This repairs Engine registration expiry beyond the
 180-second stale threshold; it does not promote health, prove model availability
 or grant observer actions.
 
-C1 state intentionally resets after process restart. **C2** must address isolated
-persistent continuity, failed/corrupt-restore protection and accurate trust
-rehydration before enabling durable consciousness history. This is separate from
-the existing personal-continuity chat Memory path. The pending
-TemporalConsciousnessEngine observer work is preserved and is not imported or
-activated by C1. No production, unattended or autonomous-action GO follows from
-this observer milestone. The [C2a plan](superpowers/plans/2026-11-24-phase-c2-observer-checkpoints.md)
-and [design](superpowers/specs/2026-11-24-phase-c2-observer-continuity-design.md)
-prepare exact Memory checkpoints; none of those proposed APIs/config is active.
+C1 state intentionally resets after process restart. Its historical acceptance
+above covers persistence disabled. C2a adds the separate checkpoint opt-in below;
+it does not activate the pending TemporalConsciousnessEngine observer or extend
+C1's production, unattended, action, browser or live-provider acceptance.
+
+## Phase C2a Observer Checkpoints
+
+C2a has scoped publication-review GO for supervised Windows source-runtime
+operation at `5d8ccecb`, using exact checkpoints through existing owned Memory
+on the normal full-launcher path. Review corrected first-SIGINT saving on
+Windows and added C2 acceptance to CI. Current targeted checks passed 129
+unit/lifecycle and 4 acceptance tests. Full-suite, extended and browser
+results at `a10b734e` remain historical; the changed launcher has not had a
+full-suite or browser rerun. The
+[current decision](ALPHA_READINESS_DECISION.md#phase-c2a-observer-checkpoints) and
+[review receipt](evidence/integration_phase_c2a_pr_review_2026-11-24.json) bound
+this GO. The [operator procedure](ALPHA_OPERATOR_RUNBOOK.md#consciousness-checkpoints-phase-c2a)
+keeps C1 defaults and historical evidence separate.
+
+Root `consciousness_continuity` accepts only `enabled` (strict boolean, default `false`) and
+`restore_checkpoint_id` (`null` by default or 32 lowercase hexadecimal characters). Enabled persistence
+requires the enabled observe-only worker, strict enforcing policy and the exactly owned supported Memory
+implementation. Unsupported backends or foreign ownership perform no checkpoint I/O. A null handle starts
+fresh without deleting other checkpoints. A selected handle must restore successfully before the first
+tick; missing, malformed, ambiguous, denied or failed restoration blocks this observer and all its
+checkpoint saves. Recovery requires an explicit new launch; there is no implicit latest selection.
+
+Each immutable versioned aggregate contains all six qualia dimensions and exact trust scores, timestamps,
+bounded history and half-life. Closed-schema validation bounds payloads to 64 KiB, 64 trust subsystems
+and 64 history entries per subsystem before any Core mutation. Restoration runs on the Core owner thread
+and imports no runtime ticks, events, intentions, narratives, chat history or action authority. The
+checkpoint handle differs from the committed Memory row ID. Logical owner `consciousness:observer` and
+scope `observer_continuity:v1` identify the stored aggregate; Guardian authorizes requester
+`consciousness:core` by default.
+
+Memory owns one bounded checkpoint worker/slot and its SQLite connection to the existing store.
+Save/restore require scoped capabilities and a signed audit receipt before checkpoint database access,
+with policy and ownership rechecks. Ownership/policy callbacks run outside admission locks. Reserved
+checkpoint rows are excluded from ordinary chat evidence and generic Memory consolidation; normal
+personal-memory retrieval remains independent. The observer still uses no legacy `continuity.json`, QFAC
+writes, consolidator or action executor.
+
+Only an explicit orderly stop may request one save from the last fully completed, fresh tick.
+`stop(timeout=2.0, save_checkpoint=False)` preserves no-save cleanup; the orderly launcher path requests
+`save_checkpoint=True`. Cancelled stop abandons that request and fences late acknowledgement. A commit
+already in progress may leave an unacknowledged row: cancellation is not a rollback receipt. Pending work
+stays owned until completion; uncertainty never triggers an automatic retry, replacement row or late
+successful status. Failed/incomplete first ticks, emergency cleanup and repeated stops cannot manufacture
+a saved checkpoint.
+
+Cached status keeps reflection lifecycle separate from continuity state: `disabled`, `fresh`,
+`restoring`, `restored`, `saving`, `saved`, `blocked`, `failed` or `uncertain`. Hub/Observatory expose
+scalar `continuity_*` receipt/error fields, not payloads; restored history alone is never a live tick.
+`persistence_enabled` indicates the configured path, while only acknowledged `saved` status supplies
+successful save receipts. Read-only status cannot trigger checkpoint operations.
+
+The Windows normal CLI now recognizes its first SIGINT-triggered cancellation
+as an orderly-stop request; unrelated or additional cancellation remains
+cleanup-only. A programmatically delivered SIGINT verified save and exact
+restart through that CLI without independently stopping the observer. Physical
+keyboard delivery remains unverified. This is profile-directory storage
+isolation, not account isolation. Hosted CI awaits publication; fresh Python
+installation and live-provider operation remain unverified. Signing, policy and
+the one-second registry status deadline remain unchanged. C2b automatic latest
+selection, periodic saves and retention are deferred; no unattended, production
+or autonomous-action readiness follows from this scoped GO.
 
 ## Architecture overview
 
