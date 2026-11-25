@@ -232,6 +232,7 @@ async def test_failed_restore_latches_and_inhibits_all_writes(observer_profile, 
     owned.start()
     await until(owned, lambda s: s["runtime_state"] == "blocked")
     await owned.stop(save_checkpoint=True)
+    await owned.stop()
     status = owned.get_runtime_status()
     assert status["ticks_attempted"] == 0
     assert status["continuity"]["state"] == "blocked"
@@ -1165,7 +1166,9 @@ async def test_core_import_preparation_never_blocks_status_or_publishes_after_cu
         await owned.stop()
 
 
-def due_on_first_tick(database, monkeypatch, policy, *, interval=10):
+def due_on_first_tick(
+    database, monkeypatch, policy, *, interval=10, start_mode="create", retain=10
+):
     # Standard library imports
     import json
 
@@ -1209,8 +1212,54 @@ def due_on_first_tick(database, monkeypatch, policy, *, interval=10):
         checkpoint_store=database,
         tick_interval=interval,
         continuity_enabled=True,
-        automatic=dict(recovery.AUTO, start_mode="create", save_interval_seconds=30),
+        automatic=dict(
+            recovery.AUTO,
+            start_mode=start_mode,
+            save_interval_seconds=30,
+            retain_checkpoints=retain,
+        ),
     )
+
+
+@pytest.mark.asyncio
+async def test_repeated_stop_preserves_concluded_retention_denial(
+    database, monkeypatch, policy
+):
+    recovery.seed(database, 2)
+    submitted = []
+    controls = []
+    submit = database._submit_checkpoint_stream
+
+    def record_submission(**job):
+        submitted.append(job["operation"])
+        controls.append(job["control"])
+        return submit(**job)
+
+    monkeypatch.setattr(database, "_submit_checkpoint_stream", record_submission)
+    owned = due_on_first_tick(
+        database, monkeypatch, policy, start_mode="resume", retain=2
+    )
+    owned.start()
+    try:
+        status = await until(
+            owned, lambda s: s["continuity"]["state"] == "retention_blocked"
+        )
+        denied = status["continuity"]
+        assert denied["last_error_code"] == "denied"
+        assert denied["retention_needed"] and not denied["outstanding"]
+        assert denied["saved_generation"] == 3
+        assert denied["saved_trigger"] == "periodic"
+        assert denied["last_save_acceptance"] == "acknowledged"
+        assert denied["saved_record_id"] and denied["saved_operation_id"]
+        assert submitted == ["acquire", "advance", "prune"]
+        await owned.stop(save_checkpoint=True)
+        assert not owned.get_runtime_status()["thread_alive"]
+        assert not controls[-1].cancelled.is_set()
+    finally:
+        await owned.stop()
+    assert all(control.cancelled.is_set() for control in controls)
+    assert submitted == ["acquire", "advance", "prune"]
+    assert owned.get_runtime_status()["continuity"] == denied
 
 
 def hold_periodic_boundary(monkeypatch, stage):
