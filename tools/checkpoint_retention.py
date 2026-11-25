@@ -24,7 +24,7 @@ from Aetherra.aetherra_core.memory.lifecycle_checkpoint import (
     LifecycleCheckpointWorker,
     _stream_intent,
 )
-from Aetherra.consciousness.checkpoint import OWNER, SCOPE
+from Aetherra.consciousness.checkpoint import OWNER, SCOPE, _unique_keys
 from Aetherra.consciousness.checkpoint_session import recovery_descriptor
 from Aetherra.guardian.approval import (
     approval_status,
@@ -61,7 +61,8 @@ def _inputs(args):
         if len(data) > 8192:
             raise CheckpointError("invalid_descriptor")
         attempt = recovery_descriptor(
-            json.loads(data), {"start_mode": "resume", "stream_id": key.stream_id}
+            json.loads(data, object_pairs_hook=_unique_keys),
+            {"start_mode": "resume", "stream_id": key.stream_id},
         )
     return database, key, attempt
 

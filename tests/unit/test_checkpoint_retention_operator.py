@@ -339,3 +339,28 @@ def test_denied_prior_inspection_does_not_request_prune(governed, tmp_path):
     assert events[-1]["reason"] == "denied"
     assert approval.list_approval_events() == []
     assert rows(governed) == before
+
+
+@pytest.mark.parametrize("field", ["operation_id", "stream_id"])
+def test_duplicate_attempt_identifier_blocks_before_resume(governed, tmp_path, field):
+    # Aetherra imports
+    from tools import checkpoint_retention as operator
+
+    attempt, _, _ = seed(governed)
+    raw = json.dumps(asdict(attempt))
+    member = json.dumps(field) + ":"
+    assert raw.count(member) == 1
+    descriptor = tmp_path / "ambiguous.json"
+    other = json.dumps("f" * 32)
+    descriptor.write_text(raw.replace(member, f"{member} {other}, {member}"))
+
+    events = []
+    rc = operator.main(
+        arguments(tmp_path, "--prior-attempt", str(descriptor)), emit=events.append
+    )
+    assert rc != 0
+    assert events == [{"status": "blocked", "reason": "invalid_inputs"}]
+    assert governed.conn.execute(
+        "SELECT writer_epoch FROM checkpoint_stream_heads"
+    ).fetchone() == (attempt.token.writer_epoch,)
+    assert approval.list_approval_events() == []
