@@ -1,17 +1,72 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.13 (2026-11-25)
+
+### Chores
+
+- Sync main after C1 release
+  ([`28a7dee`](https://github.com/AetherraLabs/Aetherra/commit/28a7dee5b440bd6520d3301e4977bc948d648c52))
+
+### Testing
+
+- **consciousness**: Yield CPU while waiting for observer ticks
+  ([`01fe35c`](https://github.com/AetherraLabs/Aetherra/commit/01fe35cefdee4b963ac06d48949d80e67e641473))
+
+
 ## v0.5.0-beta.12 (2026-11-25)
+
+### Bug Fixes
+
+- **consciousness**: Fence abandoned checkpoint work and preserve rows
+  ([`26a28ef`](https://github.com/AetherraLabs/Aetherra/commit/26a28efeeb30b1babdf8c80d5f2d97abfcaa5078))
+
+- **consciousness**: Save checkpoints on Windows CLI interrupt
+  ([`5d8ccec`](https://github.com/AetherraLabs/Aetherra/commit/5d8ccecba5ef9f3b9177bbf64063c572f5cf0142))
+
+- **homeostasis**: Keep CPU sampling off the lifecycle loop
+  ([`06feac5`](https://github.com/AetherraLabs/Aetherra/commit/06feac58e81c663919b9d8935c70978aed4f888e))
+
+- **registry**: Yield between governed broadcast recipients
+  ([`a10b734`](https://github.com/AetherraLabs/Aetherra/commit/a10b734eb276ae2469b8fbeded0489e01ab45e4c))
+
+### Continuous Integration
+
+- **consciousness**: Run observer restart acceptance offline
+  ([`515010f`](https://github.com/AetherraLabs/Aetherra/commit/515010fa35f501fa2fbd9a2a2ef6543d1dd763e4))
 
 ### Documentation
 
 - **consciousness**: Prepare governed C2 checkpoint milestone
   ([`0b22686`](https://github.com/AetherraLabs/Aetherra/commit/0b226864c5de728c7c0572d74ce0db2a80c182e2))
 
+- **consciousness**: Record checkpoint publication review evidence
+  ([`21974e4`](https://github.com/AetherraLabs/Aetherra/commit/21974e44cb89330409f45c12390582232d530a02))
+
+- **consciousness**: Record verified C2a checkpoint acceptance
+  ([`4373736`](https://github.com/AetherraLabs/Aetherra/commit/43737366598a8da131b1dea443081fc9d585c1ba))
+
 ### Features
 
 - **consciousness**: Integrate governed runtime observer
   ([`b8719fa`](https://github.com/AetherraLabs/Aetherra/commit/b8719fa22b8bd21ea77b3c4aa721522e312e86ea))
+
+- **consciousness**: Restore and save governed observer checkpoints
+  ([`5d10935`](https://github.com/AetherraLabs/Aetherra/commit/5d10935a8fda9511d735f793abf82399d0e11635))
+
+- **consciousness**: Validate aggregate checkpoints and restore exact trust
+  ([`011fcd2`](https://github.com/AetherraLabs/Aetherra/commit/011fcd248d79536518684c2f9ccf9b41af2deece))
+
+- **memory**: Own bounded governed lifecycle checkpoint I/O
+  ([`b786a21`](https://github.com/AetherraLabs/Aetherra/commit/b786a216051745a22a6ec1b71de8c6a751c9b8aa))
+
+- **observatory**: Display observer checkpoint evidence
+  ([`736ecd8`](https://github.com/AetherraLabs/Aetherra/commit/736ecd80cd092beac3ea2598f7ed818372395caf))
+
+### Testing
+
+- **consciousness**: Prove checkpoint restart through normal launch
+  ([`e6e24e2`](https://github.com/AetherraLabs/Aetherra/commit/e6e24e251b2e857e5f62b9dac17f178cce5f0a93))
 
 
 ## v0.5.0-beta.11 (2026-11-24)
