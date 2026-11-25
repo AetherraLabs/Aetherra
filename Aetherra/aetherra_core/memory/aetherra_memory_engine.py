@@ -398,6 +398,7 @@ class AetherraMemoryEngineAdvanced:
         )
 
     def _submit_checkpoint_stream(self, *, adapter_owned=None, **job):
+        # Local imports
         from .checkpoint_stream import StreamJob
 
         core = self.core_memory

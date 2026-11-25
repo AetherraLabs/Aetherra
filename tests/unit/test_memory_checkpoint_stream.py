@@ -507,11 +507,13 @@ def test_invalid_retention_is_not_admitted(governed, monkeypatch, n):
 
 @pytest.fixture
 def backends(governed, tmp_path, monkeypatch):
+    # Aetherra imports
     from Aetherra.aetherra_core.memory.aetherra_memory_engine import (
         AetherraMemoryEngineAdvanced,
     )
 
     monkeypatch.chdir(tmp_path)
+    # Aetherra imports
     from aetherra_os_launcher import MemoryAdapter
 
     engine = AetherraMemoryEngineAdvanced()

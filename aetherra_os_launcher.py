@@ -30,6 +30,7 @@ from threading import Thread
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    # Aetherra imports
     from Aetherra.aetherra_core.memory.checkpoint_stream import (
         AcquiredStream,
         AdvanceReceipt,
@@ -191,6 +192,7 @@ class MemoryAdapter:
         )
 
     def _submit_checkpoint_stream(self, **job):
+        # Aetherra imports
         from Aetherra.aetherra_core.memory.checkpoint_stream import StreamJob
 
         try:
