@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    # Local imports
     from .checkpoint_stream import AdvanceRequest, StreamJob, StreamKey
 
 _OWNER = "consciousness:observer"
@@ -306,6 +307,7 @@ def _authorize_stream(job):
 
 
 def _authorize_intent(operation, caps, metadata):
+    # Aetherra imports
     from Aetherra.guardian import IntentDeclaration, evaluate_intent
     from Aetherra.security.capabilities import has_capability
 
@@ -405,6 +407,7 @@ class LifecycleCheckpointWorker:
         request=None,
         backend_owned=None,
     ):
+        # Local imports
         from .checkpoint_stream import AdvanceRequest, StreamJob, StreamKey
 
         try:
@@ -518,6 +521,7 @@ class LifecycleCheckpointWorker:
                     _recheck_policy(intent)
                     job.check()
                     if stream:
+                        # Local imports
                         from . import checkpoint_stream
 
                         connection.execute("BEGIN IMMEDIATE")

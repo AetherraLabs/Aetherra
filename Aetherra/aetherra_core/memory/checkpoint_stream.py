@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+# Standard library imports
 import hashlib
 import json
 import re
@@ -13,8 +14,10 @@ from dataclasses import asdict, astuple, dataclass, field
 from threading import RLock
 from typing import Generic, TypeVar
 
+# Aetherra imports
 from Aetherra.consciousness.checkpoint import OWNER, SCOPE, load_checkpoint_json
 
+# Local imports
 from .lifecycle_checkpoint import (
     CheckpointError,
     CheckpointJobControl,
@@ -296,8 +299,6 @@ class StreamJob(Generic[T]):
             self._outstanding = False
 
 
-_KEY = "owner=? AND scope=? AND stream_id=?"
-_HEAD = "generation, checkpoint_id, record_id, payload_digest, metadata_digest"
 _HEADS = "checkpoint_stream_heads"
 _COMMITS = "checkpoint_stream_commits"
 _SCHEMA = {
@@ -350,7 +351,8 @@ def _schema(db, *, create):
 
 def _catalog_head(db, key, generation):
     row = db.execute(
-        f"SELECT {_HEAD} FROM {_COMMITS} WHERE {_KEY} AND generation=?",
+        "SELECT generation, checkpoint_id, record_id, payload_digest, metadata_digest "
+        "FROM checkpoint_stream_commits WHERE owner=? AND scope=? AND stream_id=? AND generation=?",
         (*astuple(key), generation),
     ).fetchone()
     _require(row is not None, "corrupt")
@@ -361,10 +363,10 @@ def _selected(db, key, head, epoch):
     if head.generation == 0:
         return None, None
     row = db.execute(
-        f"""SELECT {_HEAD}, operation_id, writer_epoch, predecessor_generation,
+        """SELECT generation, checkpoint_id, record_id, payload_digest, metadata_digest, operation_id, writer_epoch, predecessor_generation,
         predecessor_head_digest, CASE WHEN length(metadata_bytes)<=4096 THEN metadata_bytes END,
-        CASE WHEN length(CAST(audit_id AS BLOB))<=256 THEN audit_id END FROM {_COMMITS}
-        WHERE {_KEY} AND generation=?""",
+        CASE WHEN length(CAST(audit_id AS BLOB))<=256 THEN audit_id END FROM checkpoint_stream_commits
+        WHERE owner=? AND scope=? AND stream_id=? AND generation=?""",
         (*astuple(key), head.generation),
     ).fetchone()
     _require(row is not None and StreamHead(*row[:5]) == head, "corrupt")
@@ -397,8 +399,8 @@ def _selected(db, key, head, epoch):
 def _current(db, key, *, expected_epoch=None):
     params = astuple(key)
     row = db.execute(
-        f"""SELECT {_HEAD}, schema,writer_epoch,restore_pin_generation,retain_checkpoints,pruned_through
-                         FROM {_HEADS} WHERE {_KEY}""",
+        """SELECT generation, checkpoint_id, record_id, payload_digest, metadata_digest, schema,writer_epoch,restore_pin_generation,retain_checkpoints,pruned_through
+                         FROM checkpoint_stream_heads WHERE owner=? AND scope=? AND stream_id=?""",
         params,
     ).fetchone()
     if row is not None and expected_epoch is not None:
@@ -408,7 +410,8 @@ def _current(db, key, *, expected_epoch=None):
     generations = [
         r[0]
         for r in db.execute(
-            f"SELECT generation FROM {_COMMITS} WHERE {_KEY} ORDER BY generation LIMIT 103",
+            "SELECT generation FROM checkpoint_stream_commits "
+            "WHERE owner=? AND scope=? AND stream_id=? ORDER BY generation LIMIT 103",
             params,
         )
     ]
@@ -445,7 +448,7 @@ def _acquire(db, key, start_mode, retain):
     if start_mode == "create":
         _require(current is None, "conflict")
         inserted = db.execute(
-            f"""INSERT INTO {_HEADS} (owner,scope,stream_id,schema,writer_epoch,generation,restore_pin_generation,
+            """INSERT INTO checkpoint_stream_heads (owner,scope,stream_id,schema,writer_epoch,generation,restore_pin_generation,
                     retain_checkpoints,pruned_through) VALUES (?,?,?,1,1,0,0,?,0)""",
             (*params, retain),
         )
@@ -455,8 +458,8 @@ def _acquire(db, key, start_mode, retain):
     head, epoch, _, _, count, record, meta = current
     token = StreamToken(key, epoch + 1)
     changed = db.execute(
-        f"""UPDATE {_HEADS} SET writer_epoch=?,restore_pin_generation=?,retain_checkpoints=?
-                              WHERE {_KEY} AND writer_epoch=?""",
+        """UPDATE checkpoint_stream_heads SET writer_epoch=?,restore_pin_generation=?,retain_checkpoints=?
+                              WHERE owner=? AND scope=? AND stream_id=? AND writer_epoch=?""",
         (token.writer_epoch, head.generation, retain, *params, epoch),
     )
     _require(changed.rowcount == 1, "conflict")
@@ -496,7 +499,7 @@ def _advance(db, request, audit):
         )
         _require(inserted == 1, "conflict")
         catalog = db.execute(
-            f"""INSERT INTO {_COMMITS} (owner,scope,stream_id,{_HEAD},operation_id,writer_epoch,
+            """INSERT INTO checkpoint_stream_commits (owner,scope,stream_id,generation, checkpoint_id, record_id, payload_digest, metadata_digest,operation_id,writer_epoch,
                    predecessor_generation,predecessor_head_digest,metadata_bytes,audit_id)
                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             (
@@ -514,8 +517,8 @@ def _advance(db, request, audit):
     except sqlite3.IntegrityError:
         raise CheckpointError("conflict") from None
     changed = db.execute(
-        f"""UPDATE {_HEADS} SET generation=?,checkpoint_id=?,record_id=?,payload_digest=?,metadata_digest=?
-                              WHERE {_KEY} AND writer_epoch=? AND generation=? AND checkpoint_id IS ? AND record_id IS ?
+        """UPDATE checkpoint_stream_heads SET generation=?,checkpoint_id=?,record_id=?,payload_digest=?,metadata_digest=?
+                              WHERE owner=? AND scope=? AND stream_id=? AND writer_epoch=? AND generation=? AND checkpoint_id IS ? AND record_id IS ?
                               AND payload_digest IS ? AND metadata_digest IS ?""",
         (*astuple(next_head), *params, epoch, *astuple(head)),
     )
