@@ -236,3 +236,28 @@ def test_restore_evidence_requires_published_live_state(
         }
     else:
         assert not artifact.exists()
+
+
+@pytest.mark.parametrize(
+    ("flags", "seconds", "accepted"),
+    [
+        ([], "300", True),
+        (["--continuity"], "301", False),
+        (["--automatic-stream"], "5", False),
+        (["--continuity", "--automatic-stream"], "4", False),
+        (["--continuity", "--automatic-stream"], "1800", True),
+        (["--continuity", "--automatic-stream"], "1801", False),
+        (["--continuity", "--live"], "5", False),
+    ],
+)
+def test_mode_specific_bounds(smoke, flags, seconds, accepted):
+    # Third party imports
+    import alpha_consciousness_smoke as cli
+
+    argv = ["--output", "unused", "--observe-seconds", seconds, *flags]
+    if accepted:
+        assert cli.parse_args(argv).observe_seconds == float(seconds)
+    else:
+        with pytest.raises(SystemExit) as error:
+            cli.parse_args(argv)
+        assert error.value.code == 2

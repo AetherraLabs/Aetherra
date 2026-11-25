@@ -69,6 +69,10 @@ SOURCES = (
     "aetherra_hub/blueprints/consciousness.py",
     "tools/alpha_consciousness_smoke.py",
     "tools/alpha_consciousness_continuity_smoke.py",
+    "tools/alpha_consciousness_automatic_smoke.py",
+    "tools/alpha_consciousness_stream_probe.py",
+    "Aetherra/aetherra_core/memory/checkpoint_stream.py",
+    "Aetherra/consciousness/checkpoint_session.py",
     "tools/alpha_integration_smoke.py",
     "tests/acceptance/continuity_runtime.py",
 )
@@ -80,8 +84,8 @@ def hashes():
     }
 
 
-def prepare_observer_profile(profile, *, allowed):
-    prepare_profile(profile)
+def prepare_observer_profile(profile, *, allowed, live=False):
+    prepare_profile(profile, live=live)
     config_path = profile / "launcher.json"
     config = json.loads(config_path.read_text(encoding="utf-8"))
     config.update(
@@ -631,7 +635,7 @@ def trace(profile, record):
     }
 
 
-def main():
+def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, help="New disposable artifact directory")
     parser.add_argument("--observe-seconds", type=float, default=20)
@@ -643,19 +647,56 @@ def main():
     )
     parser.add_argument("--artifacts", type=Path, help=argparse.SUPPRESS)
     parser.add_argument("--phase", choices=("a", "b", "c"), help=argparse.SUPPRESS)
-    args = parser.parse_args()
+    parser.add_argument(
+        "--automatic-stream",
+        action="store_true",
+        help="Verify automatic stream creation and exact durable-head recovery",
+    )
+    parser.add_argument(
+        "--live",
+        action="store_true",
+        help="Use the configured OpenAI provider for automatic stream chat",
+    )
+    args = parser.parse_args(argv)
+    if args.automatic_stream and not args.continuity:
+        parser.error("--automatic-stream requires --continuity")
+    if args.live and not args.automatic_stream:
+        parser.error("--live requires --automatic-stream")
+    maximum = 1800 if args.automatic_stream else 300
+    if not args.worker and (
+        args.output is None or not 5 <= args.observe_seconds <= maximum
+    ):
+        parser.error(f"--output is required and --observe-seconds must be 5..{maximum}")
+    if (
+        args.worker
+        and args.continuity
+        and (args.artifacts is None or args.phase is None)
+    ):
+        parser.error("Continuity workers require --artifacts and --phase")
+    return args
+
+
+def main():
+    args = parse_args()
     if args.worker:
         if args.continuity:
-            if args.artifacts is None or args.phase is None:
-                parser.error("Continuity workers require --artifacts and --phase")
             # Third party imports
             from alpha_consciousness_continuity_smoke import worker as continuity_worker
 
-            return continuity_worker(args.worker, args.artifacts, args.phase)
+            return continuity_worker(
+                args.worker,
+                args.artifacts,
+                args.phase,
+                automatic=args.automatic_stream,
+                live=args.live,
+            )
         return worker(args.worker)
-    if args.output is None or not 5 <= args.observe_seconds <= 300:
-        parser.error("--output is required and --observe-seconds must be 5..300")
     output = args.output.resolve()
+    if args.automatic_stream:
+        # Third party imports
+        from alpha_consciousness_automatic_smoke import run
+
+        return run(output, args.observe_seconds, live=args.live)
     if args.continuity:
         # Third party imports
         from alpha_consciousness_continuity_smoke import run as continuity_run

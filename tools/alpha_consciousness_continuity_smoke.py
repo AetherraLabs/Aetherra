@@ -68,9 +68,11 @@ def aggregate(payload):
     return {"qualia": payload["qualia"], "trust": payload["trust"]}
 
 
-def configure(profile, handle=None, *, fresh=False):
+def configure(
+    profile, handle=None, *, fresh=False, live=False, operations=("save", "restore")
+):
     if fresh:
-        prepare_observer_profile(profile, allowed=True)
+        prepare_observer_profile(profile, allowed=True, live=live)
         path = profile / "policy" / "guardian.json"
         policy = json.loads(path.read_text(encoding="utf-8"))
         policy["allow"].extend(
@@ -80,7 +82,7 @@ def configure(profile, handle=None, *, fresh=False):
                 "action": f"consciousness.continuity_{operation}",
                 "target": "memory:core",
             }
-            for operation in ("save", "restore")
+            for operation in operations
         )
         write_json(path, policy)
         path = profile / "policy" / "capabilities.json"
@@ -138,7 +140,7 @@ def wait_file(path, process, seconds=180):
         time.sleep(0.1)
 
 
-async def _run_commands(launcher, profile, artifacts):
+async def _run_commands(launcher, profile, artifacts, probe=None):
     """Keep each harness failure distinguishable from a missing stop receipt."""
     stage = "settle"
     try:
@@ -163,6 +165,8 @@ async def _run_commands(launcher, profile, artifacts):
                 return
             await asyncio.sleep(0.05)
         while True:
+            if probe is not None:
+                probe.sample(launcher.systems["consciousness_core"])
             if (artifacts / "stop-observer").exists() and not (
                 artifacts / "observer-stopped.json"
             ).exists():
@@ -222,7 +226,7 @@ def _observe_restore(restore_checkpoint, artifacts):
     return observed_restore
 
 
-def worker(profile, artifacts, phase):
+def worker(profile, artifacts, phase, *, automatic=False, live=False):
     """Observe actual owner-thread work without providing a restore oracle."""
     # Standard library imports
     import _thread
@@ -238,6 +242,8 @@ def worker(profile, artifacts, phase):
         ):
             legacy_access.append("continuity_json_access")
             raise PermissionError("continuity_smoke_legacy_file_denied")
+        if live and event in {"socket.connect", "socket.bind", "socket.getaddrinfo"}:
+            return
         if event in {"socket.connect", "socket.bind"}:
             address = args[1]
             if not isinstance(address, tuple) or address[0] not in {
@@ -350,12 +356,26 @@ def worker(profile, artifacts, phase):
                 return
 
     with ExitStack() as stack:
-        stack.enter_context(
-            patch(
-                "Aetherra.core.multi_llm_manager.get_llm_manager",
-                return_value=responder,
+        if live:
+            # Aetherra imports
+            from Aetherra.core.multi_llm_manager import MultiLLMManager
+
+            generate = MultiLLMManager.generate_response
+
+            async def observed_generate(manager, prompt, **kwargs):
+                responder.prompts.append(prompt)
+                return await generate(manager, prompt, **kwargs)
+
+            stack.enter_context(
+                patch.object(MultiLLMManager, "generate_response", observed_generate)
             )
-        )
+        else:
+            stack.enter_context(
+                patch(
+                    "Aetherra.core.multi_llm_manager.get_llm_manager",
+                    return_value=responder,
+                )
+            )
         stack.enter_context(
             patch.object(
                 AetherraServiceRegistry, "update_service_status", observed_status
@@ -373,6 +393,14 @@ def worker(profile, artifacts, phase):
         # Aetherra imports
         import aetherra_os_launcher as launcher_module
 
+        probe = None
+        if automatic:
+            # Third party imports
+            from alpha_consciousness_stream_probe import StreamProbe
+
+            probe = StreamProbe(artifacts)
+            probe.install(stack, launcher_module)
+
         original_announcement = launcher_module.AetherraOSLauncher._announce_os_online
 
         async def observed_announcement(launcher):
@@ -381,8 +409,18 @@ def worker(profile, artifacts, phase):
             result = await original_announcement(launcher)
             launcher_seen = launcher
             engine = launcher.systems["aetherra"].impl
+            if probe and probe.options.get("history_fixture"):
+                history_id = await launcher.systems[
+                    "memory"
+                ].impl.core_memory.store_memory(
+                    {"content": "temporal_only_sentinel40"},
+                    memory_type="synthetic_temporal_history",
+                )
+                write_json(
+                    artifacts / "history-fixture.json", {"record_id": history_id}
+                )
             command_task = asyncio.create_task(
-                _run_commands(launcher, profile, artifacts)
+                _run_commands(launcher, profile, artifacts, probe)
             )
             # The sanitized receipt carries the failure to the parent; consume
             # the task exception so asyncio never logs its private payload.
@@ -393,6 +431,18 @@ def worker(profile, artifacts, phase):
                 artifacts / "boot.json",
                 {
                     "pid": os.getpid(),
+                    **(
+                        {
+                            "interpreter": {
+                                "version": list(sys.version_info[:3]),
+                                "prefix": sys.prefix,
+                                "executable": sys.executable,
+                                "argv": sys.argv[:],
+                            }
+                        }
+                        if probe
+                        else {}
+                    ),
                     "readiness": launcher.readiness_report,
                     "session_id": engine.session_id,
                     "initial_context": engine._public_conversation_context(),
@@ -443,6 +493,7 @@ def worker(profile, artifacts, phase):
                 artifacts / "provider.json",
                 {
                     "exit_code": exit_code,
+                    **({"submissions": probe.submissions} if probe else {}),
                     "legacy_access_attempts": legacy_access,
                     "final_side_effects": side_effect_snapshot(profile),
                     "final_observer": (
@@ -472,16 +523,17 @@ def checkpoint_rows(profile):
         ]
 
 
-def chat(base, message):
+def chat(base, message, *, live=False):
     turn = request_json(
         base, "/api/ai/ask", message=message, token=CHAT_TOKEN, timeout=120
     )
     assert turn["body"]["ok"] is True
-    validate_turn(turn["body"]["result"])
-    assert turn["body"]["result"]["llm"]["model"] == {
-        "provider": "deterministic",
-        "model": "context-responder",
-    }
+    validate_turn(turn["body"]["result"], live=live)
+    if not live:
+        assert turn["body"]["result"]["llm"]["model"] == {
+            "provider": "deterministic",
+            "model": "context-responder",
+        }
     return turn
 
 
@@ -664,14 +716,33 @@ def run_process(profile, artifacts, phase, observe_seconds):
     return record
 
 
-def check_chat(record, artifacts, saved_fact_id, forbidden):
+def check_chat(record, artifacts, saved_fact_id, forbidden, *, live=False):
     prompts = json.loads(
         (artifacts / "private-provider.json").read_text(encoding="utf-8")
     )["prompts"]
     prompt_text = json.dumps(prompts)
     assert all(value not in prompt_text for value in forbidden)
-    for turn in record["turns"]:
+    for message, turn in zip(
+        record.get("messages", [None] * len(record["turns"])),
+        record["turns"],
+        strict=True,
+    ):
         result = turn["body"]["result"]
+        if message is not None:
+            actual = [p for p in prompts if f"User: {message}\n" in p]
+            assert len(actual) == 1
+            provider_ids = [
+                json.loads(line[2:])["id"]
+                for line in actual[0].splitlines()
+                if line.startswith("- ")
+            ]
+            assert (
+                provider_ids
+                == result["llm"]["evidence_ids"]
+                == result["recall"]["record_ids"]
+            )
+            assert provider_ids == [item["id"] for item in result["evidence"]]
+            assert len(provider_ids) <= 3
         supplied = json.dumps(
             {key: result[key] for key in ("evidence", "recall", "llm")}
         )
@@ -694,8 +765,25 @@ def check_chat(record, artifacts, saved_fact_id, forbidden):
     else:
         assert ids == []
         assert "Leona" not in recalled["response"]
-        assert "don't have" in recalled["response"].lower()
-    assert "don't know" in record["turns"][-1]["body"]["result"]["response"].lower()
+        if not live:
+            assert "don't have" in recalled["response"].lower()
+    unknown = record["turns"][-1]["body"]["result"]["response"].lower()
+    if live:
+        uncertainty = (
+            "don't know",
+            "haven't",
+            "not told",
+            "didn't",
+            "do not know",
+            "don't have",
+            "not mentioned",
+            "no information",
+        )
+        assert any(term in unknown for term in uncertainty)
+        if not saved_fact_id:
+            assert any(term in recalled["response"].lower() for term in uncertainty)
+    else:
+        assert "don't know" in unknown
     return {
         "record_ids": ids,
         "provider_evidence_ids": recalled["llm"]["evidence_ids"],
