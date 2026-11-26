@@ -258,6 +258,7 @@ def _strict_policy():
 
 def _recheck_policy(intent):
     # Aetherra imports
+    from Aetherra.guardian.containment import find_active_containment
     from Aetherra.guardian.policy import evaluate_guardian_policy
     from Aetherra.security.capabilities import has_capability
 
@@ -268,6 +269,12 @@ def _recheck_policy(intent):
         or not evaluate_guardian_policy(intent, require_valid_policy=True).allowed
         or not all(has_capability(intent.requester, cap) for cap in intent.capabilities)
     ):
+        raise CheckpointError("denied")
+    try:
+        active_containment = find_active_containment(intent, require_valid_state=True)
+    except Exception:
+        raise CheckpointError("denied") from None
+    if active_containment is not None:
         raise CheckpointError("denied")
 
 

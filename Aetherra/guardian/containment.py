@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+# Standard library imports
 import secrets
 from datetime import UTC, datetime
 from typing import Any
 
+# Local imports
 from .models import ContainmentAction, ContainmentResult, IntentDeclaration
 from .paths import guardian_state_dir
 from .state import append_jsonl, read_jsonl
@@ -98,11 +100,29 @@ def list_containment_statuses() -> list[dict[str, Any]]:
     return [containment_status(containment_id) for containment_id in ids]
 
 
-def find_active_containment(intent: IntentDeclaration) -> dict[str, Any] | None:
+def find_active_containment(
+    intent: IntentDeclaration, *, require_valid_state: bool = False
+) -> dict[str, Any] | None:
     """Return the first active containment record matching an intent."""
 
-    for status in active_containments_for_intent(intent):
-        return status
+    if not require_valid_state:
+        return next(iter(active_containments_for_intent(intent)), None)
+
+    created, cleared = {}, set()
+    for event in read_jsonl(_containment_log_path(), require_objects=True):
+        record_id, kind = event.get("containment_id"), event.get("event")
+        if not isinstance(record_id, str) or not record_id.strip():
+            raise ValueError("Invalid containment ID")
+        if kind == "cleared":
+            cleared.add(record_id)
+        elif kind == "created":
+            IntentDeclaration(**event["intent"])
+            created.setdefault(record_id, event)
+        else:
+            raise ValueError("Invalid containment event")
+    for record_id, event in created.items():
+        if record_id not in cleared and _intent_matches(event["intent"], intent):
+            return {**event, "state": "active"}
     return None
 
 
@@ -114,7 +134,9 @@ def active_containments_for_intent(intent: IntentDeclaration) -> list[dict[str, 
         if status.get("state") != "active":
             continue
         contained_intent = status.get("intent")
-        if isinstance(contained_intent, dict) and _intent_matches(contained_intent, intent):
+        if isinstance(contained_intent, dict) and _intent_matches(
+            contained_intent, intent
+        ):
             matches.append(status)
     return matches
 
