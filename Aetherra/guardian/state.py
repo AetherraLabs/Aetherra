@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import os
 import threading
@@ -39,18 +40,22 @@ def append_jsonl(path: Path, record: Mapping[str, Any]) -> None:
             os.fsync(handle.fileno())
 
 
-def read_jsonl(path: Path) -> list[dict[str, Any]]:
+def read_jsonl(path: Path, *, require_objects: bool = False) -> list[dict[str, Any]]:
     """Read all valid JSON object records from a state log."""
 
     path = path.expanduser().resolve()
-    if not path.exists():
-        return []
     with _path_lock(path):
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+        except FileNotFoundError:
+            return []
         records: list[dict[str, Any]] = []
-        for raw_line in path.read_text(encoding="utf-8").splitlines():
+        for raw_line in lines:
             if not raw_line.strip():
                 continue
             data = json.loads(raw_line)
             if isinstance(data, dict):
                 records.append(data)
+            elif require_objects:
+                raise ValueError("Guardian state record must be a JSON object")
         return records
