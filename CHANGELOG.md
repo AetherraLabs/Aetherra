@@ -1,6 +1,27 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.17 (2026-11-26)
+
+### Bug Fixes
+
+- **smoke**: Capture applied observer checkpoint before the first tick
+  ([`9b33291`](https://github.com/AetherraLabs/Aetherra/commit/9b33291fe35887b63ea6f0eb1a6010d4805b479a))
+
+### Chores
+
+- Align C2b restore with verified main
+  ([`87a6c10`](https://github.com/AetherraLabs/Aetherra/commit/87a6c10654f8cbca04cc07f1cb9cb927513beec1))
+
+- Integrate reviewed C2b dependency #359
+  ([`24c5e3e`](https://github.com/AetherraLabs/Aetherra/commit/24c5e3e82b19cf541fa4eacf71429e15044374fc))
+
+### Features
+
+- **consciousness**: Restore configured checkpoint heads before ticks
+  ([`f670b25`](https://github.com/AetherraLabs/Aetherra/commit/f670b25d7e06ef0d9811a51603bb6dabb60785ab))
+
+
 ## v0.5.0-beta.16 (2026-11-26)
 
 ### Bug Fixes
