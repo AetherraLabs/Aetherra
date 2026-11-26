@@ -166,3 +166,111 @@ def test_embedded_noncallable_signal_disposition_is_preserved(
     # Do not deliver SIG_DFL: its process-termination policy must stay intact.
     assert active_handlers == [disposition]
     assert signal.getsignal(signal.SIGINT) is disposition
+
+
+memory = continuity_tests.memory
+policy = continuity_tests.policy
+governed = continuity_tests.governed
+database = continuity_tests.database
+
+
+def test_second_sigint_cancels_periodic_work_inside_orderly_stop(
+    monkeypatch, cli_operation, database, policy
+):
+    owned = continuity_tests.due_on_first_tick(database, monkeypatch, policy)
+    entered, release = continuity_tests.hold_periodic_boundary(
+        monkeypatch, "after_policy"
+    )
+    observed = []
+
+    async def operation(launcher, config):
+        owned.start()
+        try:
+            assert await asyncio.to_thread(entered.wait, 1.5)
+            launcher.running = True
+            asyncio.get_running_loop().call_soon(signal.raise_signal, signal.SIGINT)
+            assert await launcher._main_operation_loop()
+            asyncio.get_running_loop().call_later(
+                0.05, signal.raise_signal, signal.SIGINT
+            )
+            await owned.stop(save_checkpoint=True)
+        finally:
+            release.set()
+            await owned.stop()
+            await continuity_tests.until(owned, lambda s: not s["thread_alive"])
+            observed.append(owned.get_runtime_status()["continuity"])
+
+    monkeypatch.setattr(launcher_module.AetherraOSLauncher, "launch_full_os", operation)
+    with pytest.raises(KeyboardInterrupt):
+        asyncio.run(launcher_module.main())
+    assert observed[0]["last_save_acceptance"] == "unacknowledged"
+    assert observed[0]["saved_record_id"] is None
+    assert len(continuity_tests.recovery.stream.legacy.rows(database)) == 1
+
+
+writing = continuity_tests.recovery.writing
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("pending", [False, True])
+async def test_delayed_launcher_stop_propagates_absolute_cutoff(
+    writing, database, monkeypatch, pending
+):
+    # Aetherra imports
+    from Aetherra.aetherra_core.memory import lifecycle_checkpoint
+    from Aetherra.consciousness import runtime_observer as runtime
+
+    session, clock, tick = writing
+    launcher = launcher_module.AetherraOSLauncher()
+    owned = continuity_tests.observer(
+        database, automatic=dict(continuity_tests.recovery.AUTO, start_mode="create")
+    )
+    owned._session = session
+    launcher.systems["consciousness_core"] = owned
+    clock[0] = session.started_monotonic + 28.75
+    cutoff = clock[0] + 2
+    real_time = runtime.time.time
+    simulated = SimpleNamespace(monotonic=lambda: clock[0], time=real_time)
+    monkeypatch.setattr(launcher_module, "time", simulated)
+    monkeypatch.setattr(runtime, "time", simulated)
+    monkeypatch.setattr(lifecycle_checkpoint, "time", simulated)
+    stop = owned.stop
+    observed = []
+
+    async def delayed_stop(**kwargs):
+        if observed:
+            await stop(**kwargs)
+            return
+        # Event-loop delivery is delayed after the launcher records its deadline.
+        # Memory can seal a periodic receipt during this part of the original budget.
+        tick(30)
+        if pending:
+            session.poll(local_owned=True)
+            continuity_tests.recovery.stream.wait_for_worker(session._write_job)
+        tick(30.25)
+        await stop(**kwargs)
+        clock[0] = cutoff
+        open_at_cutoff = session._write_control.active() if pending else None
+        session.poll(local_owned=True)
+        if session._write_job is not None:
+            continuity_tests.recovery.stream.wait_for_worker(session._write_job)
+            session.poll(local_owned=True)
+        observed.append(
+            (owned._save_deadline, open_at_cutoff, session.get_cached_status())
+        )
+        assert database.drain_lifecycle_checkpoints(0.5)
+
+    monkeypatch.setattr(owned, "stop", delayed_stop)
+    await launcher._stop_consciousness_observer(save_checkpoint=True)
+    await launcher._stop_consciousness_observer()
+    deadline, open_at_cutoff, status = observed[0]
+    assert deadline == cutoff
+    assert session._stop_deadline == cutoff
+    if pending:
+        assert open_at_cutoff is False
+        assert status["last_save_acceptance"] == "unacknowledged"
+    else:
+        assert status["last_save_acceptance"] == "none"
+    assert status["saved_record_id"] is None
+    assert not status["stop_save_submitted"]
+    assert len(continuity_tests.recovery.stream.legacy.rows(database)) == int(pending)
