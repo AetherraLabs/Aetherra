@@ -723,9 +723,14 @@ class ConsciousnessObserver:
             self._checkpoint_failed = True
             if self._checkpoint_control is not None:
                 self._checkpoint_control.cancelled.set()
+            # A latched failure with no outstanding work already has an outcome.
             if (
                 self._continuity_enabled
                 and self._continuity.get("ownership_state") != "lost"
+                and (
+                    self._continuity["outstanding"]
+                    or self._continuity["last_error_code"] is None
+                )
             ):
                 self._continuity.update(state="uncertain", last_error_code="uncertain")
 
