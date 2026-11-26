@@ -1,6 +1,35 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.21 (2026-11-26)
+
+### Bug Fixes
+
+- **observatory**: Report stop checkpoint submission
+  ([`4ded856`](https://github.com/AetherraLabs/Aetherra/commit/4ded8562b1ee1cc7c52f9b62a989a508aaf43116))
+
+- **observer**: Preserve concluded checkpoint failure during cleanup
+  ([`cd3cef2`](https://github.com/AetherraLabs/Aetherra/commit/cd3cef2a09d1ac4f45d43577436633d0549e9613))
+
+### Chores
+
+- Integrate reviewed C2b dependency #364
+  ([`d5f5261`](https://github.com/AetherraLabs/Aetherra/commit/d5f526172884448eb65090e2e55267988d73f6b0))
+
+- Integrate reviewed C2b dependency #365
+  ([`631e235`](https://github.com/AetherraLabs/Aetherra/commit/631e23538566e98122869510a8d473be5d7de08c))
+
+### Features
+
+- **observatory**: Report checkpoint continuity evidence
+  ([`9f345e5`](https://github.com/AetherraLabs/Aetherra/commit/9f345e522055b0e386ec38bf2f84b57de58bad74))
+
+### Testing
+
+- **observer**: Split cleanup provenance assertions
+  ([`4924a7d`](https://github.com/AetherraLabs/Aetherra/commit/4924a7d2ba157ae0ce6b3ead0adca6f16c9bf4ba))
+
+
 ## v0.5.0-beta.20 (2026-11-26)
 
 ### Bug Fixes
