@@ -24,6 +24,7 @@ from .lifecycle_checkpoint import (
     LifecycleCheckpoint,
     LifecycleCheckpointWorker,
     _insert_checkpoint,
+    _recheck_policy,
 )
 
 _ID = re.compile(r"[0-9a-f]{32}")
@@ -231,6 +232,30 @@ class AdvanceReceipt:
 
 
 @dataclass(frozen=True, slots=True)
+class InspectionResult:
+    outcome: str
+    head: StreamHead
+    matched_record_id: str | None
+
+    def __post_init__(self):
+        _require(
+            self.outcome
+            in (
+                "committed_current",
+                "committed_superseded",
+                "conflict",
+                "not_committed",
+                "history_expired",
+            )
+        )
+        _require(type(self.head) is StreamHead)
+        if self.outcome.startswith("committed_"):
+            _require(_hex(self.matched_record_id))
+        else:
+            _require(self.matched_record_id is None)
+
+
+@dataclass(frozen=True, slots=True)
 class StreamCompletion(Generic[T]):
     value: T | None
     error_code: str | None
@@ -247,6 +272,7 @@ class StreamJob(Generic[T]):
         self._lock = control._lock if control is not None else RLock()
         self._admitted = refusal is None
         self._outstanding = self._admitted
+        self._restore_authority = None
         self._sealed = None
         self._closed = None if refusal is None else StreamCompletion(None, refusal)
 
@@ -286,7 +312,23 @@ class StreamJob(Generic[T]):
                     self._closed = self._sealed
             return self._closed
 
-    def _seal(self, value, error):
+    def check_restore_policy(self):
+        """Explicit before-apply check, separate from local receipt consumption."""
+        with self._lock:
+            accepted = self._closed is not None and self._closed.value is not None
+            _require(accepted and self._restore_authority is not None, "uncertain")
+            intent, backend_owned = self._restore_authority
+        _recheck_policy(intent)
+        _require(self._control.active(), "uncertain")
+        if backend_owned is not None:
+            _require(self._control._active_if_owned(backend_owned), "uncertain")
+
+    def restore_window_open(self):
+        """Local cancellation and effective deadline, after the external apply checks."""
+        with self._lock:
+            return self._restore_authority is not None and self._control._open_locked()
+
+    def _seal(self, value, error, *, restore_authority=None):
         # Called inside the worker admission condition, after all external I/O.
         with self._lock:
             if self._closed is None:
@@ -295,6 +337,7 @@ class StreamJob(Generic[T]):
                 elif error is not None:
                     self._closed = StreamCompletion(None, error)
                 else:
+                    self._restore_authority = restore_authority
                     self._sealed = StreamCompletion(value, None)
             self._outstanding = False
 
@@ -349,17 +392,19 @@ def _schema(db, *, create):
         _require(actual == _SCHEMA, "corrupt")
 
 
-def _catalog_head(db, key, generation):
+def _catalog_head(db, key, generation, *, pruned_through=0):
     row = db.execute(
         "SELECT generation, checkpoint_id, record_id, payload_digest, metadata_digest "
         "FROM checkpoint_stream_commits WHERE owner=? AND scope=? AND stream_id=? AND generation=?",
         (*astuple(key), generation),
     ).fetchone()
+    if row is None and generation <= pruned_through:
+        return None
     _require(row is not None, "corrupt")
     return StreamHead(*row)
 
 
-def _selected(db, key, head, epoch):
+def _selected(db, key, head, epoch, *, pruned_through=0):
     if head.generation == 0:
         return None, None
     row = db.execute(
@@ -380,9 +425,14 @@ def _selected(db, key, head, epoch):
         "corrupt",
     )
     _require(type(audit) is str and audit.strip(), "corrupt")
-    # The latest predecessor is protected by retention (N >= 2).
-    predecessor = _EMPTY if prev == 0 else _catalog_head(db, key, prev)
-    _require(predecessor.digest() == prev_digest, "corrupt")
+    # Only historical entries can have a legitimately pruned predecessor.
+    predecessor = (
+        _EMPTY
+        if prev == 0
+        else _catalog_head(db, key, prev, pruned_through=pruned_through)
+    )
+    if predecessor is not None:
+        _require(predecessor.digest() == prev_digest, "corrupt")
     meta = SnapshotMetadata.from_bytes(raw_meta)
     _require(_digest(raw_meta) == head.metadata_digest, "corrupt")
     record, text = LifecycleCheckpointWorker._read_checkpoint(db, head.checkpoint_id)
@@ -524,3 +574,55 @@ def _advance(db, request, audit):
     )
     _require(changed.rowcount == 1, "conflict")
     return AdvanceReceipt(attempt, next_head, audit)
+
+
+def _inspect(db, token, attempt):
+    _schema(db, create=False)
+    key = token.key
+    current = _current(db, key, expected_epoch=token.writer_epoch)
+    _require(current is not None, "missing")
+    head = current[0]
+    params = astuple(key)
+    watermark = db.execute(
+        "SELECT pruned_through FROM checkpoint_stream_heads WHERE owner=? AND scope=? AND stream_id=?",
+        params,
+    ).fetchone()[0]
+    generation = attempt.proposed_generation
+    # A reused retained ID at a different location is contradictory evidence.
+    identities = db.execute(
+        "SELECT owner,scope,stream_id,generation FROM checkpoint_stream_commits WHERE operation_id=? OR checkpoint_id=?",
+        (attempt.operation_id, attempt.checkpoint_id),
+    ).fetchall()
+    _require(all(row == (*params, generation) for row in identities), "corrupt")
+    row = db.execute(
+        """SELECT generation,checkpoint_id,record_id,payload_digest,metadata_digest,
+                   operation_id,writer_epoch,predecessor_head_digest
+            FROM checkpoint_stream_commits WHERE owner=? AND scope=? AND stream_id=? AND generation=?""",
+        (*params, generation),
+    ).fetchone()
+    if row is None:
+        _require(not identities, "corrupt")
+        if generation > head.generation:
+            return InspectionResult("not_committed", head, None)
+        _require(generation <= watermark, "corrupt")
+        return InspectionResult("history_expired", head, None)
+    try:
+        member = StreamHead(*row[:5])
+        _selected(db, key, member, token.writer_epoch, pruned_through=watermark)
+    except CheckpointError:
+        raise CheckpointError("corrupt") from None
+    operation, writer, predecessor_digest = row[5:]
+    if operation != attempt.operation_id:
+        return InspectionResult("conflict", head, None)
+    _require(
+        writer == attempt.token.writer_epoch
+        and member.checkpoint_id == attempt.checkpoint_id
+        and member.payload_digest == attempt.payload_digest
+        and member.metadata_digest == attempt.metadata_digest
+        and predecessor_digest == attempt.expected_head.digest(),
+        "corrupt",
+    )
+    outcome = (
+        "committed_current" if generation == head.generation else "committed_superseded"
+    )
+    return InspectionResult(outcome, head, member.record_id)

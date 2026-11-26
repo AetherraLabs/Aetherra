@@ -31,8 +31,11 @@ if TYPE_CHECKING:
         AcquiredStream,
         AdvanceReceipt,
         AdvanceRequest,
+        AttemptDescriptor,
+        InspectionResult,
         StreamJob,
         StreamKey,
+        StreamToken,
     )
     from .lifecycle_checkpoint import CheckpointJobControl
 
@@ -388,6 +391,17 @@ class AetherraMemoryEngineAdvanced:
             start_mode=start_mode,
             retain_checkpoints=retain_checkpoints,
             control=control,
+        )
+
+    def submit_inspect_checkpoint_stream(
+        self,
+        *,
+        token: "StreamToken",
+        attempt: "AttemptDescriptor",
+        control: "CheckpointJobControl",
+    ) -> "StreamJob[InspectionResult]":
+        return self._submit_checkpoint_stream(
+            operation="inspect", token=token, attempt=attempt, control=control
         )
 
     def submit_advance_checkpoint_stream(
