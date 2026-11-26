@@ -2885,14 +2885,15 @@ class AetherraOSLauncher:
         info = registry.get_service_info("consciousness_core") if registry else None
         remaining = stop_deadline - time.monotonic()
         if info is not None and info.instance is observer and remaining > 0:
-            with contextlib.suppress(Exception), asyncio.timeout(remaining):
-                await registry.update_service_status(
-                    "consciousness_core",
-                    ServiceStatus.STOPPING,
-                    expected_instance=observer,
-                    nonblocking_preflight=True,
-                    preflight_timeout=min(1.0, remaining),
-                )
+            with contextlib.suppress(Exception):
+                async with asyncio.timeout(remaining):
+                    await registry.update_service_status(
+                        "consciousness_core",
+                        ServiceStatus.STOPPING,
+                        expected_instance=observer,
+                        nonblocking_preflight=True,
+                        preflight_timeout=min(1.0, remaining),
+                    )
 
     async def _start_consciousness_core(self):
         """Start Phase 1 ConsciousnessCore with ThinkStream for UI visualization.

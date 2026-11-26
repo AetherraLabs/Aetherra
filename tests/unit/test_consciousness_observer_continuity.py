@@ -1874,6 +1874,72 @@ async def test_repeated_launcher_checkpoint_drain_uses_original_deadline(monkeyp
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("case", ["owned", "expired", "replaced"])
+async def test_launcher_stop_publishes_stopping_within_original_budget(
+    monkeypatch, observer_profile, case
+):
+    # Standard library imports
+    import json
+    from unittest.mock import AsyncMock
+
+    # Aetherra imports
+    import aetherra_os_launcher as launcher_module
+    from aetherra_service_registry import AetherraServiceRegistry, ServiceStatus
+
+    rules = json.loads(observer_profile.read_text())
+    rules["allow"].append(
+        {
+            "requester": "service_registry",
+            "subsystem": "service_registry",
+            "action": ["service_registry.register", "service_registry.status_update"],
+        }
+    )
+    observer_profile.write_text(json.dumps(rules))
+    elapsed = 100.0
+
+    class Observer:
+        async def stop(self, *, save_checkpoint, deadline):
+            nonlocal elapsed
+            assert deadline == 102.0
+            await asyncio.sleep(0)
+            elapsed += 2.0 if case == "expired" else 1.25
+
+        def get_runtime_status(self):
+            return {"thread_alive": False}
+
+    observer = Observer()
+    registry = AetherraServiceRegistry()
+    name = "consciousness_core"
+    registered = object() if case == "replaced" else observer
+    assert await registry.register_service(name, registered)
+    update_status = AsyncMock(wraps=registry.update_service_status)
+    monkeypatch.setattr(registry, "update_service_status", update_status)
+    monkeypatch.setattr(
+        launcher_module, "time", SimpleNamespace(monotonic=lambda: elapsed)
+    )
+    launcher = launcher_module.AetherraOSLauncher()
+    launcher.systems[name] = observer
+    launcher.service_registry = registry
+
+    await launcher._stop_consciousness_observer()
+
+    info = registry.get_service_info(name)
+    assert info.instance is registered
+    if case == "owned":
+        assert info.status is ServiceStatus.STOPPING
+        update_status.assert_awaited_once_with(
+            name,
+            ServiceStatus.STOPPING,
+            expected_instance=observer,
+            nonblocking_preflight=True,
+            preflight_timeout=0.75,
+        )
+    else:
+        assert info.status is ServiceStatus.HEALTHY
+        update_status.assert_not_awaited()
+
+
+@pytest.mark.asyncio
 async def test_consumed_periodic_receipt_survives_stop_before_status_publication(
     database, monkeypatch, policy
 ):
