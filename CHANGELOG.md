@@ -1,6 +1,30 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.16 (2026-11-26)
+
+### Bug Fixes
+
+- **memory**: Add forwarding import headings
+  ([`de700f8`](https://github.com/AetherraLabs/Aetherra/commit/de700f838d54d8930f730dad6224bd1df7a2d713))
+
+### Chores
+
+- Integrate reviewed C2b dependency #357
+  ([`332fa3f`](https://github.com/AetherraLabs/Aetherra/commit/332fa3f21c4f92267936ee640f409b41f37821b5))
+
+- Integrate reviewed C2b dependency #358
+  ([`1f775aa`](https://github.com/AetherraLabs/Aetherra/commit/1f775aab254750a6f2159bb269f1d49768816e0c))
+
+### Features
+
+- **memory**: Inspect checkpoint attempts after fencing
+  ([`e9a744c`](https://github.com/AetherraLabs/Aetherra/commit/e9a744cc18b6fbf276ea8423514740f96e40eb6c))
+
+- **runtime**: Forward checkpoint streams through owned Memory
+  ([`4d6e28e`](https://github.com/AetherraLabs/Aetherra/commit/4d6e28e198a0c6551f496017d80bda62d78a57ec))
+
+
 ## v0.5.0-beta.15 (2026-11-26)
 
 ### Bug Fixes
