@@ -1,9 +1,52 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.22 (2026-11-26)
+
+
 ## v0.5.0-beta.21 (2026-11-26)
 
+
+## v0.5.0-beta.20 (2026-11-26)
+
+
+## v0.5.0-beta.19 (2026-11-26)
+
+
+## v0.5.0-beta.18 (2026-11-26)
+
+### Chores
+
+- Align C2b periodic checkpoints with verified main
+  ([`a546f04`](https://github.com/AetherraLabs/Aetherra/commit/a546f0453240fc4a9b87d9726b11a31dba6860f4))
+
+
+## v0.5.0-beta.17 (2026-11-26)
+
+### Chores
+
+- Align C2b restore with verified main
+  ([`87a6c10`](https://github.com/AetherraLabs/Aetherra/commit/87a6c10654f8cbca04cc07f1cb9cb927513beec1))
+
+
+## v0.5.0-beta.16 (2026-11-26)
+
+
+## v0.5.0-beta.15 (2026-11-26)
+
 ### Bug Fixes
+
+- **guardian**: Claim one-use approvals atomically across processes
+  ([`7f1fc6e`](https://github.com/AetherraLabs/Aetherra/commit/7f1fc6e19f8f82885c54512d60f960b1d318f767))
+
+- **memory**: Add forwarding import headings
+  ([`de700f8`](https://github.com/AetherraLabs/Aetherra/commit/de700f838d54d8930f730dad6224bd1df7a2d713))
+
+- **memory**: Recheck Guardian containment at checkpoint boundaries
+  ([`8fd8bdf`](https://github.com/AetherraLabs/Aetherra/commit/8fd8bdfb8c574a08284fb6311bd625898541f3cb))
+
+- **memory**: Satisfy root Python quality checks
+  ([`1c686ca`](https://github.com/AetherraLabs/Aetherra/commit/1c686caae6d9599a90720420e69bc36b50237b30))
 
 - **observatory**: Report stop checkpoint submission
   ([`4ded856`](https://github.com/AetherraLabs/Aetherra/commit/4ded8562b1ee1cc7c52f9b62a989a508aaf43116))
@@ -11,116 +54,20 @@
 - **observer**: Preserve concluded checkpoint failure during cleanup
   ([`cd3cef2`](https://github.com/AetherraLabs/Aetherra/commit/cd3cef2a09d1ac4f45d43577436633d0549e9613))
 
-### Chores
-
-- Integrate reviewed C2b dependency #364
-  ([`d5f5261`](https://github.com/AetherraLabs/Aetherra/commit/d5f526172884448eb65090e2e55267988d73f6b0))
-
-- Integrate reviewed C2b dependency #365
-  ([`631e235`](https://github.com/AetherraLabs/Aetherra/commit/631e23538566e98122869510a8d473be5d7de08c))
-
-### Features
-
-- **observatory**: Report checkpoint continuity evidence
-  ([`9f345e5`](https://github.com/AetherraLabs/Aetherra/commit/9f345e522055b0e386ec38bf2f84b57de58bad74))
-
-### Testing
-
-- **observer**: Split cleanup provenance assertions
-  ([`4924a7d`](https://github.com/AetherraLabs/Aetherra/commit/4924a7d2ba157ae0ce6b3ead0adca6f16c9bf4ba))
-
-
-## v0.5.0-beta.20 (2026-11-26)
-
-### Bug Fixes
-
-- **tools**: Reject duplicate checkpoint recovery fields
-  ([`4894274`](https://github.com/AetherraLabs/Aetherra/commit/4894274d1ccf9f61048f5fc9c44503569dae6a3f))
-
-### Chores
-
-- Integrate reviewed C2b dependency #363
-  ([`2485ced`](https://github.com/AetherraLabs/Aetherra/commit/2485ced84c4c0b17892a2430f45a978b00d56593))
-
-### Features
-
-- **tools**: Add supervised one-use checkpoint retention
-  ([`a743bcb`](https://github.com/AetherraLabs/Aetherra/commit/a743bcb61190228d44d2573f32868ee9777c03ea))
-
-
-## v0.5.0-beta.19 (2026-11-26)
-
-### Bug Fixes
-
-- **guardian**: Claim one-use approvals atomically across processes
-  ([`7f1fc6e`](https://github.com/AetherraLabs/Aetherra/commit/7f1fc6e19f8f82885c54512d60f960b1d318f767))
-
-### Chores
-
-- Integrate reviewed C2b dependency #362
-  ([`b42fc9b`](https://github.com/AetherraLabs/Aetherra/commit/b42fc9b9d2210ade857cf5efac0539fa8b0eccc2))
-
-# Conflicts: #	Aetherra/guardian/state.py
-
-### Features
-
-- **memory**: Prune checkpoints with exact Guardian approval
-  ([`7fafe7b`](https://github.com/AetherraLabs/Aetherra/commit/7fafe7bdae0888193058146c30881b58e51ba0fb))
-
-
-## v0.5.0-beta.18 (2026-11-26)
-
-### Bug Fixes
+- **observer**: Preserve progress after status preflight timeout
+  ([`32d93be`](https://github.com/AetherraLabs/Aetherra/commit/32d93be25225ec2ff3bfbc4fa637e3d0d6414bf4))
 
 - **observer**: Publish stopping within the original shutdown budget
   ([`cfee6f3`](https://github.com/AetherraLabs/Aetherra/commit/cfee6f37f15f8f474e30b50b7efe08b99c610da7))
 
-### Chores
-
-- Align C2b periodic checkpoints with verified main
-  ([`a546f04`](https://github.com/AetherraLabs/Aetherra/commit/a546f0453240fc4a9b87d9726b11a31dba6860f4))
-
-- Integrate reviewed C2b dependency #360
-  ([`6dcf049`](https://github.com/AetherraLabs/Aetherra/commit/6dcf049b56ceac377c90a8e0cce3871caf6ac37b))
-
-### Features
-
-- **consciousness**: Save periodic checkpoints within one stop budget
-  ([`9e32c1f`](https://github.com/AetherraLabs/Aetherra/commit/9e32c1f8b0a1df0d0da3de04f70609d10896e204))
-
-### Testing
-
-- **consciousness**: Measure simulated tick uptime from the clock
-  ([`bdcca31`](https://github.com/AetherraLabs/Aetherra/commit/bdcca31555da5a268f4421b8ffa7c2d3d4148cca))
-
-
-## v0.5.0-beta.17 (2026-11-26)
-
-### Bug Fixes
+- **observer**: Service open receipts before ticking
+  ([`a3da0f0`](https://github.com/AetherraLabs/Aetherra/commit/a3da0f0060358b68c0c1992b7c312ebf810176bd))
 
 - **smoke**: Capture applied observer checkpoint before the first tick
   ([`9b33291`](https://github.com/AetherraLabs/Aetherra/commit/9b33291fe35887b63ea6f0eb1a6010d4805b479a))
 
-### Chores
-
-- Align C2b restore with verified main
-  ([`87a6c10`](https://github.com/AetherraLabs/Aetherra/commit/87a6c10654f8cbca04cc07f1cb9cb927513beec1))
-
-- Integrate reviewed C2b dependency #359
-  ([`24c5e3e`](https://github.com/AetherraLabs/Aetherra/commit/24c5e3e82b19cf541fa4eacf71429e15044374fc))
-
-### Features
-
-- **consciousness**: Restore configured checkpoint heads before ticks
-  ([`f670b25`](https://github.com/AetherraLabs/Aetherra/commit/f670b25d7e06ef0d9811a51603bb6dabb60785ab))
-
-
-## v0.5.0-beta.16 (2026-11-26)
-
-### Bug Fixes
-
-- **memory**: Add forwarding import headings
-  ([`de700f8`](https://github.com/AetherraLabs/Aetherra/commit/de700f838d54d8930f730dad6224bd1df7a2d713))
+- **tools**: Reject duplicate checkpoint recovery fields
+  ([`4894274`](https://github.com/AetherraLabs/Aetherra/commit/4894274d1ccf9f61048f5fc9c44503569dae6a3f))
 
 ### Chores
 
@@ -130,34 +77,90 @@
 - Integrate reviewed C2b dependency #358
   ([`1f775aa`](https://github.com/AetherraLabs/Aetherra/commit/1f775aab254750a6f2159bb269f1d49768816e0c))
 
-### Features
+- Integrate reviewed C2b dependency #359
+  ([`24c5e3e`](https://github.com/AetherraLabs/Aetherra/commit/24c5e3e82b19cf541fa4eacf71429e15044374fc))
 
-- **memory**: Inspect checkpoint attempts after fencing
-  ([`e9a744c`](https://github.com/AetherraLabs/Aetherra/commit/e9a744cc18b6fbf276ea8423514740f96e40eb6c))
+- Integrate reviewed C2b dependency #360
+  ([`6dcf049`](https://github.com/AetherraLabs/Aetherra/commit/6dcf049b56ceac377c90a8e0cce3871caf6ac37b))
 
-- **runtime**: Forward checkpoint streams through owned Memory
-  ([`4d6e28e`](https://github.com/AetherraLabs/Aetherra/commit/4d6e28e198a0c6551f496017d80bda62d78a57ec))
+- Integrate reviewed C2b dependency #362
+  ([`b42fc9b`](https://github.com/AetherraLabs/Aetherra/commit/b42fc9b9d2210ade857cf5efac0539fa8b0eccc2))
 
+# Conflicts: #	Aetherra/guardian/state.py
 
-## v0.5.0-beta.15 (2026-11-26)
+- Integrate reviewed C2b dependency #363
+  ([`2485ced`](https://github.com/AetherraLabs/Aetherra/commit/2485ced84c4c0b17892a2430f45a978b00d56593))
 
-### Bug Fixes
+- Integrate reviewed C2b dependency #364
+  ([`d5f5261`](https://github.com/AetherraLabs/Aetherra/commit/d5f526172884448eb65090e2e55267988d73f6b0))
 
-- **memory**: Recheck Guardian containment at checkpoint boundaries
-  ([`8fd8bdf`](https://github.com/AetherraLabs/Aetherra/commit/8fd8bdfb8c574a08284fb6311bd625898541f3cb))
+- Integrate reviewed C2b dependency #365
+  ([`631e235`](https://github.com/AetherraLabs/Aetherra/commit/631e23538566e98122869510a8d473be5d7de08c))
 
-- **memory**: Satisfy root Python quality checks
-  ([`1c686ca`](https://github.com/AetherraLabs/Aetherra/commit/1c686caae6d9599a90720420e69bc36b50237b30))
+- Integrate reviewed C2b dependency #366
+  ([`a48ad4e`](https://github.com/AetherraLabs/Aetherra/commit/a48ad4e84c379174b747f45f0ff02c84bd36fce6))
+
+- Integrate reviewed C2b dependency #367
+  ([`c3dc94e`](https://github.com/AetherraLabs/Aetherra/commit/c3dc94e075ae19534624ee9152be5d1bfafcd908))
 
 ### Documentation
+
+- Record DEV-CKPT-001 verification and remaining limits
+  ([`7e230a4`](https://github.com/AetherraLabs/Aetherra/commit/7e230a44d5c7bbad85f79f58845091491bab1e3d))
 
 - **continuity**: Record C2b contract and verified prerequisites
   ([`34b28a9`](https://github.com/AetherraLabs/Aetherra/commit/34b28a9ccd5a7e39e023f306429ff0f6ac228d0d))
 
 ### Features
 
+- **consciousness**: Restore configured checkpoint heads before ticks
+  ([`f670b25`](https://github.com/AetherraLabs/Aetherra/commit/f670b25d7e06ef0d9811a51603bb6dabb60785ab))
+
+- **consciousness**: Save periodic checkpoints within one stop budget
+  ([`9e32c1f`](https://github.com/AetherraLabs/Aetherra/commit/9e32c1f8b0a1df0d0da3de04f70609d10896e204))
+
 - **memory**: Add governed atomic checkpoint stream operations
   ([`666e17c`](https://github.com/AetherraLabs/Aetherra/commit/666e17c777a0be96f7e408000694507ad256b60d))
+
+- **memory**: Inspect checkpoint attempts after fencing
+  ([`e9a744c`](https://github.com/AetherraLabs/Aetherra/commit/e9a744cc18b6fbf276ea8423514740f96e40eb6c))
+
+- **memory**: Prune checkpoints with exact Guardian approval
+  ([`7fafe7b`](https://github.com/AetherraLabs/Aetherra/commit/7fafe7bdae0888193058146c30881b58e51ba0fb))
+
+- **observatory**: Report checkpoint continuity evidence
+  ([`9f345e5`](https://github.com/AetherraLabs/Aetherra/commit/9f345e522055b0e386ec38bf2f84b57de58bad74))
+
+- **runtime**: Forward checkpoint streams through owned Memory
+  ([`4d6e28e`](https://github.com/AetherraLabs/Aetherra/commit/4d6e28e198a0c6551f496017d80bda62d78a57ec))
+
+- **tools**: Add supervised one-use checkpoint retention
+  ([`a743bcb`](https://github.com/AetherraLabs/Aetherra/commit/a743bcb61190228d44d2573f32868ee9777c03ea))
+
+### Performance Improvements
+
+- **security**: Reuse verified signed audit prefixes on append
+  ([`4d9c8f8`](https://github.com/AetherraLabs/Aetherra/commit/4d9c8f8e455b87624e6918dbcc784577950af4fb))
+
+### Testing
+
+- Bind automatic cadence proof to the observed child window
+  ([`c53cc55`](https://github.com/AetherraLabs/Aetherra/commit/c53cc5524304a6a43688bb683b07f9aa6b467390))
+
+- Exercise automatic checkpoint continuity through the full launcher
+  ([`435c56a`](https://github.com/AetherraLabs/Aetherra/commit/435c56ac8f9b3e989cf25124eb56fe4e50f70996))
+
+- **consciousness**: Measure simulated tick uptime from the clock
+  ([`bdcca31`](https://github.com/AetherraLabs/Aetherra/commit/bdcca31555da5a268f4421b8ffa7c2d3d4148cca))
+
+- **observer**: Gate stop receipt wait on delivery
+  ([`3897c5a`](https://github.com/AetherraLabs/Aetherra/commit/3897c5a65f7893f7035314451014799bd74f2093))
+
+- **observer**: Split cleanup provenance assertions
+  ([`4924a7d`](https://github.com/AetherraLabs/Aetherra/commit/4924a7d2ba157ae0ce6b3ead0adca6f16c9bf4ba))
+
+- **observer**: Synchronize receipt wait and stop wake
+  ([`151ab04`](https://github.com/AetherraLabs/Aetherra/commit/151ab041fc7f3a947c1d6ecaf2bfca39eec14538))
 
 
 ## v0.5.0-beta.14 (2026-11-25)
