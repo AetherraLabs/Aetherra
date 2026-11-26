@@ -2,15 +2,22 @@
 
 from __future__ import annotations
 
+# Standard library imports
 import hashlib
 import json
 import os
 import secrets
 from datetime import UTC, datetime, timedelta
 
-from .models import ApprovalRequest, ApprovalValidationResult, IntentDeclaration, RiskAssessment
+# Local imports
+from .models import (
+    ApprovalRequest,
+    ApprovalValidationResult,
+    IntentDeclaration,
+    RiskAssessment,
+)
 from .paths import guardian_state_dir
-from .state import append_jsonl, read_jsonl
+from .state import append_jsonl, locked_jsonl, read_jsonl
 
 
 def _approval_log_path():
@@ -35,7 +42,8 @@ def create_approval_request(
         expires_at=expires_at.isoformat().replace("+00:00", "Z"),
         required_approvers=required_approvers,
     )
-    append_jsonl(_approval_log_path(), {"event": "created", **request.to_record()})
+    with locked_jsonl(_approval_log_path()) as path:
+        append_jsonl(path, {"event": "created", **request.to_record()})
     return request
 
 
@@ -55,34 +63,35 @@ def intent_fingerprint(intent: IntentDeclaration) -> str:
 def resolve_approval(request_id: str, *, approved: bool, approver: str) -> dict:
     """Append an approval resolution event."""
 
-    current = get_approval_request(request_id)
-    if current is None:
-        return {
-            "event": "resolve_failed",
-            "request_id": request_id,
-            "state": "not_found",
-            "approver": approver,
-            "resolved_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-        }
-    if _is_expired(current):
-        return {
-            "event": "resolve_failed",
-            "request_id": request_id,
-            "state": "expired",
-            "approver": approver,
-            "resolved_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-        }
+    with locked_jsonl(_approval_log_path()) as path:
+        current = _creation_record(read_jsonl(path, require_objects=True), request_id)
+        if current is None:
+            return {
+                "event": "resolve_failed",
+                "request_id": request_id,
+                "state": "not_found",
+                "approver": approver,
+                "resolved_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            }
+        if _is_expired(current):
+            return {
+                "event": "resolve_failed",
+                "request_id": request_id,
+                "state": "expired",
+                "approver": approver,
+                "resolved_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            }
 
-    status = "approved" if approved else "denied"
-    record = {
-        "event": "resolved",
-        "request_id": request_id,
-        "state": status,
-        "approver": approver,
-        "resolved_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-    }
-    append_jsonl(_approval_log_path(), record)
-    return record
+        status = "approved" if approved else "denied"
+        record = {
+            "event": "resolved",
+            "request_id": request_id,
+            "state": status,
+            "approver": approver,
+            "resolved_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+        }
+        append_jsonl(path, record)
+        return record
 
 
 def get_approval_request(request_id: str | None) -> dict | None:
@@ -90,24 +99,11 @@ def get_approval_request(request_id: str | None) -> dict | None:
 
     if not request_id:
         return None
+    return _creation_record(list_approval_events(), request_id)
+
+
+def _creation_record(events: list[dict], request_id: str) -> dict | None:
     return next(
-        (
-            event
-            for event in list_approval_events()
-            if event.get("event") == "created" and event.get("request_id") == request_id
-        ),
-        None,
-    )
-
-
-def validate_approval(request_id: str | None, intent: IntentDeclaration) -> ApprovalValidationResult:
-    """Validate that an approval exists, is approved, unused, and matches intent."""
-
-    if not request_id:
-        return ApprovalValidationResult(valid=False, reason="approval_id_required")
-
-    events = list_approval_events()
-    created = next(
         (
             event
             for event in events
@@ -115,6 +111,23 @@ def validate_approval(request_id: str | None, intent: IntentDeclaration) -> Appr
         ),
         None,
     )
+
+
+def validate_approval(
+    request_id: str | None, intent: IntentDeclaration
+) -> ApprovalValidationResult:
+    """Validate that an approval exists, is approved, unused, and matches intent."""
+
+    if not request_id:
+        return ApprovalValidationResult(valid=False, reason="approval_id_required")
+
+    return _validate_approval(list_approval_events(), request_id, intent)
+
+
+def _validate_approval(
+    events: list[dict], request_id: str, intent: IntentDeclaration
+) -> ApprovalValidationResult:
+    created = _creation_record(events, request_id)
     if created is None:
         return ApprovalValidationResult(
             valid=False,
@@ -183,20 +196,28 @@ def validate_approval(request_id: str | None, intent: IntentDeclaration) -> Appr
     )
 
 
-def consume_approval(request_id: str, intent: IntentDeclaration) -> ApprovalValidationResult:
+def consume_approval(
+    request_id: str, intent: IntentDeclaration
+) -> ApprovalValidationResult:
     """Validate and consume one approval for one matching intent."""
 
-    result = validate_approval(request_id, intent)
-    if not result.valid:
+    if not request_id:
+        return ApprovalValidationResult(valid=False, reason="approval_id_required")
+
+    with locked_jsonl(_approval_log_path()) as path:
+        result = _validate_approval(
+            read_jsonl(path, require_objects=True), request_id, intent
+        )
+        if not result.valid:
+            return result
+        record = {
+            "event": "consumed",
+            "request_id": request_id,
+            "intent_fingerprint": intent_fingerprint(intent),
+            "consumed_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+        }
+        append_jsonl(path, record)
         return result
-    record = {
-        "event": "consumed",
-        "request_id": request_id,
-        "intent_fingerprint": intent_fingerprint(intent),
-        "consumed_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-    }
-    append_jsonl(_approval_log_path(), record)
-    return result
 
 
 def list_approval_events() -> list[dict]:
@@ -210,7 +231,9 @@ def approval_status(request_id: str) -> dict:
     if created is None:
         return {"request_id": request_id, "state": "not_found"}
     events = [
-        event for event in list_approval_events() if event.get("request_id") == request_id
+        event
+        for event in list_approval_events()
+        if event.get("request_id") == request_id
     ]
     if any(event.get("event") == "consumed" for event in events):
         return {**created, "state": "consumed"}
