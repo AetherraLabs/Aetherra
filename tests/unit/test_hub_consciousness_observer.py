@@ -326,3 +326,103 @@ def test_checkpoint_status_survives_offline_observer_without_payload(setup):
         assert body["runtime"]["continuity_state"] == "saved"
         assert "private" not in str(body)
         assert "payload" not in str(body)
+
+
+def test_live_think_stream_exposes_cached_ownership_loss_without_side_effects(
+    setup, monkeypatch
+):
+    # Standard library imports
+    import sqlite3
+
+    # Aetherra imports
+    from Aetherra.consciousness import runtime_observer
+    from Aetherra.consciousness.checkpoint_session import ObserverCheckpointSession
+    from Aetherra.consciousness.self_trust import SelfTrust
+    from Aetherra.guardian import core as guardian
+
+    registry, client = setup
+    instance = _register(registry)
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("Consciousness GET must only read cached status and ThinkStream")
+
+    observer = runtime_observer.ConsciousnessObserver(
+        readiness=forbidden,
+        observations=forbidden,
+        continuity_enabled=True,
+        checkpoint_store=SimpleNamespace(
+            submit_acquire_checkpoint_stream=forbidden,
+            submit_advance_checkpoint_stream=forbidden,
+            submit_prune_checkpoint_stream=forbidden,
+        ),
+    )
+    observer._state = "running"
+    observer._thread = SimpleNamespace(is_alive=lambda: True)
+    observer._last_tick = time.time()
+    observer._attempted = observer._completed = 4
+    observer._snapshot = instance.get_think_stream()
+    observer._continuity.update(
+        state="blocked",
+        ownership_state="lost",
+        ownership_lost_at_unix_s=123,
+        last_error_code="writer_fenced",
+        last_save_trigger="periodic",
+        last_save_acceptance="acknowledged",
+        saved_record_id="row-history",
+    )
+    registry._services["consciousness_core"].instance = observer
+    monkeypatch.setattr(sqlite3, "connect", forbidden)
+    monkeypatch.setattr(guardian, "append_guardian_decision", forbidden)
+    monkeypatch.setattr(runtime_observer, "observer_policy_ready", forbidden)
+    monkeypatch.setattr(SelfTrust, "_decay", forbidden)
+    monkeypatch.setattr(ObserverCheckpointSession, "poll", forbidden)
+    before = observer.get_runtime_status()["continuity"]
+    for _ in range(3):
+        response = client.get("/api/consciousness/state")
+        assert response.status_code == 200
+        body = response.get_json()
+        assert body["tick_id"] == 4
+        assert body["runtime"]["available"] is True
+        assert body["runtime"]["continuity_health"] == "degraded"
+        assert body["runtime"]["continuity_ownership_state"] == "lost"
+        assert body["runtime"]["continuity_ownership_lost_at_unix_s"] == 123
+        assert body["runtime"]["continuity_saved_record_id"] == "row-history"
+    assert observer.get_runtime_status()["continuity"] == before
+
+
+def test_offline_orderly_stop_receipt_keeps_prior_acceptance_unknown(setup):
+    registry, client = setup
+    _register(
+        registry,
+        runtime_state="stopped",
+        running=False,
+        thread_alive=False,
+        continuity={
+            "enabled": True,
+            "state": "saved",
+            "last_save_trigger": "orderly_stop",
+            "last_save_acceptance": "acknowledged",
+            "saved_trigger": "orderly_stop",
+            "saved_checkpoint_id": "d" * 32,
+            "saved_record_id": "row-final",
+            "saved_generation": 7,
+            "saved_operation_id": "e" * 32,
+            "restored_save_trigger": "orderly_stop",
+            "previous_save_acceptance": "unknown",
+            "previous_shutdown_evidence": "unknown",
+        },
+    )
+    response = client.get("/api/consciousness/state")
+    assert response.status_code == 503
+    metrics = response.get_json()["runtime"]
+    assert metrics["available"] is False
+    assert metrics["continuity_last_save_trigger"] == "orderly_stop"
+    assert metrics["continuity_last_save_acceptance"] == "acknowledged"
+    assert metrics["continuity_saved_trigger"] == "orderly_stop"
+    assert metrics["continuity_saved_record_id"] == "row-final"
+    assert metrics["continuity_saved_checkpoint_id"] == "d" * 32
+    assert metrics["continuity_saved_operation_id"] == "e" * 32
+    assert metrics["continuity_saved_generation"] == 7
+    assert metrics["continuity_restored_save_trigger"] == "orderly_stop"
+    assert metrics["continuity_previous_save_acceptance"] == "unknown"
+    assert metrics["continuity_previous_shutdown_evidence"] == "unknown"

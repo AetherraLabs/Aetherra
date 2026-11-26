@@ -218,3 +218,156 @@ test('Consciousness ignores stale evidence and never renders unvalidated payload
     assert.doesNotMatch(invalid, /private|script|>Yes<\/dd>|>-1<\/dd>/)
     assert.match(invalid, /Unknown/)
 })
+
+
+
+test('Consciousness renders ownership loss alongside live ticks and a historical receipt', async () => {
+    const html = await renderEvidence('consciousness', {
+        runtime_state: 'running', ticks_completed: 8, continuity_enabled: true,
+        continuity_state: 'blocked', continuity_health: 'degraded',
+        continuity_ownership_state: 'lost', continuity_saved_record_id: 'row-still-verified',
+    })
+    assert.match(html, /Persistence ownership lost — checkpoint writes stopped\./)
+    assert.match(html, /Continuity health<\/dt><dd>Degraded<\/dd>/)
+    assert.match(html, /Current session ticks<\/dt><dd>8<\/dd>/)
+    assert.match(html, /Saved record<\/dt><dd>row-still-verified<\/dd>/)
+    assert.doesNotMatch(html, /<button|<a\s/)
+})
+
+test('Consciousness shows a pending periodic checkpoint alongside healthy live observation', async () => {
+    const html = await renderEvidence('consciousness', {
+        runtime_state: 'running', ticks_completed: 8, continuity_enabled: true,
+        continuity_state: 'saving', continuity_health: 'ok',
+        continuity_ownership_state: 'last_observed_owned', continuity_observed_writer_epoch: 2,
+        continuity_last_save_trigger: 'periodic', continuity_last_save_acceptance: 'pending',
+    })
+    assert.match(html, /Current runtime<\/dt><dd>Running<\/dd>/)
+    assert.match(html, /Continuity health<\/dt><dd>OK<\/dd>/)
+    assert.match(html, /Last observed writer epoch<\/dt><dd>2<\/dd>/)
+    assert.match(html, /Last save trigger<\/dt><dd>Periodic<\/dd>/)
+    assert.match(html, /Last save acceptance<\/dt><dd>Pending<\/dd>/)
+    assert.doesNotMatch(html, /Final checkpoint acknowledged/)
+})
+
+test('Consciousness distinguishes final receipt, prior request, and unknown prior acceptance', async () => {
+    const html = await renderEvidence('consciousness', {
+        runtime_state: 'stopped', continuity_enabled: true, continuity_health: 'ok',
+        continuity_state: 'saved', continuity_last_save_trigger: 'orderly_stop',
+        continuity_last_save_acceptance: 'acknowledged', continuity_saved_trigger: 'orderly_stop',
+        continuity_saved_record_id: 'row-exact-final', continuity_saved_checkpoint_id: 'c'.repeat(32),
+        continuity_recovery_method: 'durable_head', continuity_recovery_outcome: 'restored',
+        continuity_restored_record_id: 'row-restored', continuity_restored_save_trigger: 'orderly_stop',
+        continuity_previous_save_acceptance: 'unknown',
+        continuity_previous_shutdown_evidence: 'unknown',
+    })
+    assert.match(html, /Final checkpoint acknowledged/)
+    assert.match(html, /Saved record<\/dt><dd>row-exact-final<\/dd>/)
+    assert.match(html, new RegExp('Saved checkpoint</dt><dd>' + 'c'.repeat(32) + '</dd>'))
+    assert.match(html, /Restored snapshot trigger<\/dt><dd>Orderly stop<\/dd>/)
+    assert.match(html, /Previous save acceptance<\/dt><dd>Unknown<\/dd>/)
+    assert.match(html, /Previous termination<\/dt><dd>Unknown<\/dd>/)
+    assert.doesNotMatch(html, /exited cleanly|crash|interrupted/i)
+})
+
+test('Consciousness displays verified head recovery and labels the observation gap as estimated', async () => {
+    const recovery = {
+        continuity_enabled: true, continuity_state: 'restored',
+        continuity_recovery_method: 'durable_head', continuity_recovery_outcome: 'restored',
+        continuity_previous_shutdown_evidence: 'unknown',
+        continuity_observation_gap_state: 'host_wall_clock_estimate',
+        continuity_observation_gap_seconds: 345600, continuity_offline_duration_state: 'unknown',
+        continuity_restored_observation_uptime_s: 7, continuity_session_uptime_seconds: 2,
+    }
+    const html = await renderEvidence('consciousness', recovery)
+    assert.match(html, /Previous termination unknown; restored verified durable head/)
+    assert.match(html, /Observation gap \(host-wall-clock estimate\)<\/dt><dd>345600 s<\/dd>/)
+    assert.match(html, /Offline duration<\/dt><dd>Unknown<\/dd>/)
+    assert.match(html, /Restored observation uptime<\/dt><dd>7 s<\/dd>/)
+    assert.match(html, /Current session uptime<\/dt><dd>2 s<\/dd>/)
+    const inconsistent = await renderEvidence('consciousness', {
+        ...recovery, continuity_observation_gap_state: 'clock_inconsistent',
+    })
+    assert.match(inconsistent, /Observation gap \(host-wall-clock estimate\)<\/dt><dd>Clock inconsistent<\/dd>/)
+    assert.doesNotMatch(inconsistent, /345600 s|crash|downtime/i)
+})
+
+test('Consciousness distinguishes corrupt blocked recovery and unavailable legacy provenance', async () => {
+    const corrupt = await renderEvidence('consciousness', {
+        continuity_enabled: true, continuity_health: 'degraded', continuity_state: 'blocked',
+        continuity_recovery_method: 'exact_inspection', continuity_recovery_outcome: 'blocked',
+        continuity_error_code: 'corrupt',
+    })
+    assert.match(corrupt, /Exact inspection/)
+    assert.match(corrupt, /Checkpoint error<\/dt><dd>Corrupt<\/dd>/)
+    assert.doesNotMatch(corrupt, /restored verified|Final checkpoint acknowledged/)
+    const legacy = await renderEvidence('consciousness', {
+        continuity_enabled: true, continuity_state: 'restored', continuity_restored_record_id: 'row-c2a',
+    })
+    assert.match(legacy, /Restored snapshot provenance<\/dt><dd>Unavailable<\/dd>/)
+    assert.doesNotMatch(legacy, /restored verified|crash|interrupted/i)
+})
+
+test('Exact inspection reports the matched operation separately from the restored head', async () => {
+    const html = await renderEvidence('consciousness', {
+        continuity_enabled: true, continuity_state: 'restored', continuity_health: 'ok',
+        continuity_recovery_method: 'exact_inspection', continuity_recovery_outcome: 'committed_superseded',
+        continuity_restored_record_id: 'row-head', continuity_matched_record_id: 'row-old-attempt',
+        continuity_previous_shutdown_evidence: 'unknown', continuity_previous_save_acceptance: 'unknown',
+        continuity_last_save_acceptance: 'none',
+    })
+    assert.match(html, /Recovery method<\/dt><dd>Exact inspection<\/dd>/)
+    assert.match(html, /Recovery outcome<\/dt><dd>Committed superseded<\/dd>/)
+    assert.match(html, /Inspected operation record<\/dt><dd>row-old-attempt<\/dd>/)
+    assert.match(html, /Restored record<\/dt><dd>row-head<\/dd>/)
+    assert.match(html, /Previous termination unknown; restored verified durable head/)
+    assert.match(html, /Previous save acceptance<\/dt><dd>Unknown<\/dd>/)
+    assert.doesNotMatch(html, /Final checkpoint acknowledged|crash|interrupted/i)
+})
+
+test('Consciousness reports a stopped runtime’s stop-save disposition from explicit evidence', async () => {
+    const savedPeriodic = {
+        runtime_state: 'stopped', continuity_enabled: true, continuity_state: 'saved',
+        continuity_saved_record_id: 'row-periodic', continuity_saved_checkpoint_id: 'e'.repeat(32),
+        continuity_last_save_trigger: 'periodic', continuity_saved_trigger: 'periodic',
+        continuity_last_save_acceptance: 'acknowledged',
+    }
+    const unchanged = await renderEvidence('consciousness', {
+        ...savedPeriodic, continuity_stop_save_submitted: false,
+    })
+    assert.match(unchanged, /Stop save<\/dt><dd>No additional stop save submitted<\/dd>/)
+    assert.match(unchanged, /Saved record<\/dt><dd>row-periodic<\/dd>/)
+    assert.doesNotMatch(unchanged, /Final checkpoint acknowledged/)
+    for (const missing of [undefined, null, 0, 'false']) {
+        const html = await renderEvidence('consciousness', {
+            ...savedPeriodic, continuity_stop_save_submitted: missing,
+        })
+        assert.match(html, /Stop save<\/dt><dd>Unknown<\/dd>/)
+        assert.doesNotMatch(html, /No additional stop save submitted/)
+    }
+    const running = await renderEvidence('consciousness', {
+        ...savedPeriodic, runtime_state: 'running', continuity_stop_save_submitted: false,
+    })
+    assert.doesNotMatch(running, /No additional stop save submitted/)
+    const missingReceipt = await renderEvidence('consciousness', {
+        ...savedPeriodic, continuity_saved_checkpoint_id: null, continuity_stop_save_submitted: false,
+    })
+    assert.match(missingReceipt, /Stop save<\/dt><dd>Unknown<\/dd>/)
+})
+
+test('Consciousness distinguishes an admitted final attempt from the previous periodic receipt', async () => {
+    for (const [runtimeState, acceptance, label] of [
+        ['stopping', 'pending', 'Pending'],
+        ['stopped', 'unacknowledged', 'Unacknowledged'],
+    ]) {
+        const html = await renderEvidence('consciousness', {
+            runtime_state: runtimeState, continuity_enabled: true, continuity_stop_save_submitted: true,
+            continuity_last_save_trigger: 'orderly_stop', continuity_last_save_acceptance: acceptance,
+            continuity_saved_trigger: 'periodic', continuity_saved_record_id: 'row-periodic',
+            continuity_saved_checkpoint_id: 'e'.repeat(32),
+        })
+        assert.ok(html.includes(`Stop save</dt><dd>${label}</dd>`))
+        assert.match(html, /Saved record<\/dt><dd>row-periodic<\/dd>/)
+        assert.match(html, /Saved record evidence<\/dt><dd>Historical receipt<\/dd>/)
+        assert.doesNotMatch(html, /No additional stop save submitted|Final checkpoint acknowledged/)
+    }
+})

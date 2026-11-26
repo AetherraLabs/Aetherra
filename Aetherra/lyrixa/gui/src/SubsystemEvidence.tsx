@@ -29,6 +29,154 @@ function checkpointReference(value: EvidenceValue): string {
     return typeof value === "string" && /^[a-f0-9]{32}$/.test(value) ? value : "Unknown";
 }
 
+function recordReference(value: EvidenceValue): string {
+    return typeof value === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(value) ? value : "Unknown";
+}
+
+function duration(value: EvidenceValue): string {
+    return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER
+        ? `${Number(value.toFixed(3))} s` : "Unknown";
+}
+
+function hostTime(value: EvidenceValue): string {
+    if (typeof value !== "number" || !Number.isFinite(value) || value < 0 || value > 8.64e12) return "Unknown";
+    return new Date(value * 1000).toISOString();
+}
+
+function consciousnessEvidence(observed: EvidenceMetrics): Array<[string, string]> {
+    const restoredRecord = recordReference(observed.continuity_restored_record_id);
+    const rows: Array<[string, string]> = [
+        ["Current runtime", status(observed.runtime_state, ["starting", "running", "stopping", "stopped", "blocked", "failed", "stale"])],
+        ["Current session ticks", count(observed.ticks_completed)],
+        ["Checkpointing requested", flag(observed.continuity_enabled)],
+        ["Continuity health", observed.continuity_health === "ok" ? "OK" : status(observed.continuity_health, ["disabled", "pending", "degraded"])],
+        ["Checkpoint state", status(observed.continuity_state, ["disabled", "fresh", "restoring", "selected", "restored", "saving", "saved", "blocked", "failed", "uncertain", "retention_blocked"])],
+        ["Checkpoint pending", flag(observed.continuity_outstanding)],
+        ["Restored record", restoredRecord],
+        ["Saved record", recordReference(observed.continuity_saved_record_id)],
+        ["Action execution", flag(observed.action_execution_enabled, "Enabled", "Disabled")],
+    ];
+    if (observed.continuity_enabled !== true) return rows;
+
+    const ownership = observed.continuity_ownership_state;
+    rows.push(
+        ["Persistence ownership", ownership === "lost"
+            ? "Persistence ownership lost — checkpoint writes stopped."
+            : status(ownership, ["disabled", "not_acquired", "last_observed_owned", "uncertain"])],
+    );
+    if (typeof observed.continuity_observed_writer_epoch === "number") {
+        rows.push(
+            ["Last observed writer epoch", count(observed.continuity_observed_writer_epoch)],
+            ["Last observed head generation", count(observed.continuity_observed_generation)],
+            ["Last ownership check (UTC)", hostTime(observed.continuity_ownership_checked_at_unix_s)],
+        );
+    }
+    if (ownership === "lost") {
+        rows.push(["Ownership loss observed (UTC)", hostTime(observed.continuity_ownership_lost_at_unix_s)]);
+    }
+    if (typeof observed.continuity_retention_needed === "boolean") {
+        rows.push(["Retention required", flag(observed.continuity_retention_needed)]);
+    }
+    if (observed.continuity_error_code) {
+        rows.push(["Checkpoint error", status(observed.continuity_error_code, [
+            "busy", "denied", "audit_failed", "missing", "ambiguous", "invalid", "unavailable",
+            "cancelled", "uncertain", "policy_not_ready", "core_not_ready", "tick_failed",
+            "reflection_denied", "config_invalid", "stale", "corrupt", "conflict", "capacity", "writer_fenced",
+        ])]);
+    }
+
+    const method = observed.continuity_recovery_method;
+    const outcome = observed.continuity_recovery_outcome;
+    const previousTerminationUnknown = observed.continuity_previous_shutdown_evidence === "unknown";
+    const headRestoration = "Previous termination unknown; restored verified durable head";
+    const recoveryOutcome = method === "durable_head" && outcome === "restored"
+        && previousTerminationUnknown
+        ? headRestoration
+        : status(outcome, [
+            "not_attempted", "fresh", "restored", "blocked", "corrupt", "committed_current",
+            "committed_superseded", "conflict", "not_committed", "history_expired",
+        ]);
+    rows.push(
+        ["Recovery method", status(method, ["none", "new_stream", "explicit_checkpoint", "durable_head", "exact_inspection"])],
+        ["Recovery outcome", recoveryOutcome],
+        ["Previous termination", status(observed.continuity_previous_shutdown_evidence, ["unknown"])],
+        ["Previous save acceptance", status(observed.continuity_previous_save_acceptance, ["unknown"])],
+    );
+    if (method === "exact_inspection") {
+        if (observed.continuity_matched_record_id) {
+            rows.push(["Inspected operation record", recordReference(observed.continuity_matched_record_id)]);
+        }
+        if (restoredRecord !== "Unknown" && previousTerminationUnknown) {
+            rows.push(["Head restoration", headRestoration]);
+        }
+    }
+
+    const triggers = ["periodic", "orderly_stop"];
+    const savedRecord = recordReference(observed.continuity_saved_record_id);
+    const savedCheckpoint = checkpointReference(observed.continuity_saved_checkpoint_id);
+    const trigger = observed.continuity_last_save_trigger;
+    const acceptance = observed.continuity_last_save_acceptance;
+    const savedTrigger = observed.continuity_saved_trigger;
+    rows.push(
+        ["Last save trigger", status(trigger, triggers)],
+        ["Last save acceptance", status(acceptance, ["none", "pending", "acknowledged", "unacknowledged", "unknown"])],
+    );
+    const hasSavedReceipt = savedRecord !== "Unknown" && savedCheckpoint !== "Unknown";
+    const finalAcknowledged = hasSavedReceipt && trigger === "orderly_stop"
+        && acceptance === "acknowledged" && savedTrigger === "orderly_stop";
+    const submitted = observed.continuity_stop_save_submitted;
+    const finalAdmitted = submitted === true && trigger === "orderly_stop";
+    if (finalAdmitted || observed.runtime_state === "stopped") {
+        let disposition = "Unknown";
+        if (finalAdmitted) {
+            disposition = finalAcknowledged ? "Acknowledged" : status(acceptance, ["pending", "unacknowledged"]);
+        } else if (submitted === false && hasSavedReceipt && acceptance === "acknowledged"
+            && trigger === "periodic" && savedTrigger === "periodic") {
+            disposition = "No additional stop save submitted";
+        }
+        rows.push(["Stop save", disposition]);
+    }
+    if (hasSavedReceipt) {
+        const receipt = finalAcknowledged ? "Final checkpoint acknowledged" : "Historical receipt";
+        rows.push(["Saved checkpoint", savedCheckpoint], ["Saved record evidence", receipt]);
+        if (savedTrigger) rows.push(["Saved checkpoint trigger", status(savedTrigger, triggers)]);
+        if (typeof observed.continuity_saved_generation === "number") {
+            rows.push(["Saved generation", count(observed.continuity_saved_generation)]);
+        }
+    }
+
+    rows.push(["Current session uptime", duration(observed.continuity_session_uptime_seconds)]);
+    if (observed.continuity_session_started_at_unix_s != null) {
+        rows.push(["Current session start (UTC)", hostTime(observed.continuity_session_started_at_unix_s)]);
+    }
+    const restored = observed.continuity_state === "restored" || outcome === "restored"
+        || restoredRecord !== "Unknown";
+    if (restored) {
+        const restoredStart = hostTime(observed.continuity_restored_session_started_at_unix_s);
+        const lastObservation = hostTime(observed.continuity_last_verified_observation_at_unix_s);
+        const captured = hostTime(observed.continuity_captured_at_unix_s);
+        if (lastObservation === "Unknown") {
+            rows.push(["Restored snapshot provenance", "Unavailable"]);
+        } else {
+            rows.push(
+                ["Restored session start (UTC)", restoredStart],
+                ["Restored observation (UTC)", lastObservation],
+                ["Restored capture (UTC)", captured],
+            );
+        }
+        rows.push(
+            ["Restored snapshot trigger", status(observed.continuity_restored_save_trigger, triggers)],
+            ["Restored observation uptime", duration(observed.continuity_restored_observation_uptime_s)],
+            ["Restored capture uptime", duration(observed.continuity_restored_capture_uptime_s)],
+        );
+    }
+    const gapState = observed.continuity_observation_gap_state;
+    const gap = gapState === "host_wall_clock_estimate" ? duration(observed.continuity_observation_gap_seconds)
+        : gapState === "clock_inconsistent" ? "Clock inconsistent" : "Unknown";
+    rows.push(["Observation gap (host-wall-clock estimate)", gap], ["Offline duration", "Unknown"]);
+    return rows;
+}
+
 function persistence(value: EvidenceValue): string {
     switch (value) {
         case "error": return "Error; durability unknown";
@@ -78,17 +226,8 @@ export default function SubsystemEvidence({ name, metrics, live }: Props) {
         }
         note = "Current in-process records only; store configuration does not verify durability. Guardian decides; Security enforces; Maintenance records. References identify related records without exposing their contents.";
     } else if (name === "consciousness") {
-        rows = [
-            ["Current runtime", status(observed.runtime_state, ["starting", "running", "stopping", "stopped", "blocked", "failed", "stale"])],
-            ["Current session ticks", count(observed.ticks_completed)],
-            ["Checkpointing requested", flag(observed.continuity_enabled)],
-            ["Checkpoint state", status(observed.continuity_state, ["disabled", "fresh", "restoring", "restored", "saving", "saved", "blocked", "failed", "uncertain"])],
-            ["Checkpoint pending", flag(observed.continuity_outstanding)],
-            ["Restored record", checkpointReference(observed.continuity_restored_record_id)],
-            ["Saved record", checkpointReference(observed.continuity_saved_record_id)],
-            ["Action execution", flag(observed.action_execution_enabled, "Enabled", "Disabled")],
-        ];
-        note = "Restored state is historical. Current ticks describe this session. An uncertain save has no confirmed receipt; checkpointing grants no action authority.";
+        rows = consciousnessEvidence(observed);
+        note = "Current ticks describe this session. Restored observations and save receipts are historical. Checkpoints grant no action authority.";
     } else if (name === "guardian") {
         rows = [
             ["Enabled", flag(observed.enabled)],

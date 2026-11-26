@@ -194,6 +194,11 @@ class ObserverCheckpointSession:
             "session_uptime_seconds": 0.0,
             "last_verified_observation_at_unix_s": None,
             "captured_at_unix_s": None,
+            "restored_session_id": None,
+            "restored_session_started_at_unix_s": None,
+            "restored_observation_uptime_s": None,
+            "restored_capture_uptime_s": None,
+            "restored_save_trigger": None,
             "observation_gap_seconds": None,
             "observation_gap_state": "unknown",
             "offline_duration_seconds": None,
@@ -257,6 +262,8 @@ class ObserverCheckpointSession:
             "unavailable",
         }:
             code = "unavailable"
+        if code == "writer_fenced" and self._status["ownership_lost_at_unix_s"] is None:
+            self._status["ownership_lost_at_unix_s"] = self._wall_clock()
         self._status.update(
             state="uncertain" if code == "uncertain" else "blocked",
             last_error_code=code,
@@ -354,6 +361,11 @@ class ObserverCheckpointSession:
             gap_state = "host_wall_clock_estimate" if gap >= 0 else "clock_inconsistent"
             self._status.update(
                 captured_at_unix_s=metadata.captured_at_unix_s,
+                restored_session_id=metadata.session_id,
+                restored_session_started_at_unix_s=metadata.session_started_at_unix_s,
+                restored_observation_uptime_s=metadata.observation_uptime_s,
+                restored_capture_uptime_s=metadata.capture_uptime_s,
+                restored_save_trigger=metadata.save_trigger,
                 last_verified_observation_at_unix_s=metadata.last_verified_observation_at_unix_s,
                 observation_gap_seconds=gap if gap >= 0 else None,
                 observation_gap_state=gap_state,
