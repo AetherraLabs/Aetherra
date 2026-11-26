@@ -83,6 +83,7 @@ from aetherra_hub.errors import HubRequestDrainTimeoutError
 from aetherra_kernel_loop import get_kernel
 from aetherra_service_registry import (
     ServiceStatus,
+    ServiceStatusPreflightTimeoutError,
     get_service_registry,
     register_service,
 )
@@ -2773,7 +2774,8 @@ class AetherraOSLauncher:
 
     async def _monitor_consciousness_observer(self, observer):
         """Refresh only the exact owned worker; failed/blocked loops never stay healthy."""
-        refreshed_at = 0.0
+        last_refresh_attempt_at = 0.0
+        last_timed_out_status = None
         try:
             while True:
                 registry = self.service_registry
@@ -2796,18 +2798,29 @@ class AetherraOSLauncher:
                 # Status transitions are immediate; unchanged live heartbeats are
                 # coalesced. Guardian ledger I/O must never run on the chat loop.
                 heartbeat_interval = min(30.0, max(1.0, registry._stale_sec / 3))
+                publish_transition = (
+                    info.status != status and status is not last_timed_out_status
+                )
                 if (
-                    info.status != status
-                    or time.monotonic() - refreshed_at >= heartbeat_interval
+                    publish_transition
+                    or time.monotonic() - last_refresh_attempt_at >= heartbeat_interval
                 ):
-                    await registry.update_service_status(
-                        "consciousness_core",
-                        status,
-                        expected_instance=observer,
-                        nonblocking_preflight=True,
-                        preflight_timeout=1.0,
-                    )
-                    refreshed_at = time.monotonic()
+                    try:
+                        await registry.update_service_status(
+                            "consciousness_core",
+                            status,
+                            expected_instance=observer,
+                            nonblocking_preflight=True,
+                            preflight_timeout=1.0,
+                        )
+                    except ServiceStatusPreflightTimeoutError:
+                        last_timed_out_status = status
+                        logger.warning(
+                            "[CONSCIOUSNESS] Observer registry status publication timed out"
+                        )
+                    else:
+                        last_timed_out_status = None
+                    last_refresh_attempt_at = time.monotonic()
                 if state in {"blocked", "failed", "stopped"}:
                     return
                 await asyncio.sleep(1)

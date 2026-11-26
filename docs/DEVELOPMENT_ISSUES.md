@@ -93,6 +93,7 @@ this document establishes development practice only.
 | ID | Status | Owner | Current question |
 | --- | --- | --- | --- |
 | [ALPHA-CKPT-001](#alpha-ckpt-001--checkpoint-stop-delay) | OPEN | Runtime/Memory maintainers | Which operation caused the original checkpoint-stop delay? |
+| [DEV-CKPT-001](#dev-ckpt-001--extended-run-observer-and-checkpoint-progress-gap) | OPEN | Runtime/Memory maintainers | What caused the original extended-run progress gap? |
 
 ## ALPHA-CKPT-001 — Checkpoint stop delay
 
@@ -167,3 +168,109 @@ relevant conditions and update the readiness decision with source-bound evidence
 Passing reruns alone, relaxing a timeout, or equating the fixed reporting defect
 with the unknown runtime delay does **not** meet these criteria. If the cause
 cannot be established, leave this issue open with the supervised operating limits.
+
+## DEV-CKPT-001 — Extended-run observer and checkpoint progress gap
+
+**Status: OPEN — historical causal chain unproven.**
+Owner role: Runtime/Memory maintainers. Opened and reviewed: 2026-11-25
+(America/Denver). Review gate: supervised full-launch continuity verification.
+The [delivery receipt](evidence/dev_ckpt_001_delivery_2026-11-25.json) records
+source revisions, failed and passing observations, exact IDs and archive hashes.
+Its archive identifiers name retained material outside Git, not repository links.
+
+### Original observation and expected behavior
+
+At `c53cc5524304a6a43688bb683b07f9aa6b467390`, the Windows x64,
+Python 3.13.7 full launcher used isolated synthetic data, a 300-second interval
+and N=10 retention. Earlier samples showed fresh ticks and generation 7
+acknowledged. Inspection after the reported closure found ten contiguous valid
+periodic members, no orderly-stop member and no prune decision. Generation 10
+advanced at 18:44:05 UTC; 121 more microreflection decisions followed through
+18:46:08 UTC, and registry audit activity continued to about 19:02 UTC.
+
+At generation 10, capacity still permitted the next advance and retention was
+not needed. Neither the anticipated eleventh submission nor its retention
+boundary was observed. Final observer state, process exit, receipt acceptance
+and why periodic progress ended remain unknown. Fresh eligible completed ticks
+should permit subsequent periodic attempts. This observation establishes no
+retention block, corruption, deadline failure or audit-cost attribution.
+[ALPHA-CKPT-001](#alpha-ckpt-001--checkpoint-stop-delay) separately remains OPEN
+for its original unexplained stop delay.
+
+### Established mechanisms and bounded corrections
+
+A real-component reproduction on `c53cc552` showed that a registry-owned
+status-wait expiry could stop an otherwise healthy observer without a final
+save. `32d93be2` tolerates only that owned expiry, preserves normal refresh
+coalescing and refuses late heartbeat application. Worker-delivered timeout
+errors still propagate; owner replacement and authorization failures still
+follow their existing failure paths. The original session lacks the exception
+and terminal state needed to attribute its gap to this mechanism.
+
+Controlled signed Core/Memory testing on `32d93be2` separately showed a due
+synchronous tick delaying consumption of a timely sealed receipt beyond its
+cutoff. The owner correction (`a3da0f00`, fixture updates through `3897c5a6`)
+services an already-open receipt window before the next due tick. It preserves
+the one-second attempt and two-second stop bounds, stop interruption, timely
+acceptance, single-worker capacity and ownership until drain. The failed live
+generation-10 seal and decisive owner poll were not captured.
+
+At `4d9c8f8e`, audit append can reuse a verified signed prefix only when the
+actual prefix bytes and effective signing-key digest match. Every signed suffix
+record is validated. The process-local cache holds at most 64 resolved paths
+and expires absolutely 600 seconds after cold validation. Independent integrity
+checks always verify from genesis. Every append still reads the complete file
+and hashes bytes; cold starts, expiry, eviction, replacement and key changes
+can require full validation. Neither constant latency, cross-process ledger
+serialization nor arbitrary large-ledger performance is established.
+
+### Retained failures and final verification
+
+| Run and source | Actual result and remaining limit |
+| --- | --- |
+| Extended-01, `32d93be2` | Failed at 50.5 minutes: generation 10 committed, last acknowledgment 9, continuity uncertain. Observer remained running; no retention or restart gate reached. Harness runtime exited zero; supervisor separately terminated and drained a job with an unidentified remaining process. |
+| Extended-02, `3897c5a6` | Create phase passed: 11 acknowledgments over 65 minutes and continued ticks after retention needed approval. Full run failed independent closed-port readback after zero runtime exit; restart did not run. A reproduced Windows probe false negative does not establish the original cause. |
+| Extended-03, `3897c5a6` | Create phase and drain passed. Epoch-2 restart selected intact generation 11 but blocked before Core apply with `continuity_restore_failed` and zero attempted ticks. Original refusing guard remains unknown. |
+| Disposable recovery probe, `3897c5a6` | Separate copied profile acquired epoch 3, prepared state, then measured deadline expiry during policy recheck; apply and ticks remained blocked. It does not diagnose the original epoch-2 guard. |
+| Extended-04, `4d9c8f8e` | Passed at 300-second cadence: 11 timely acknowledgments in 65 minutes; 564 ticks after the retention latch; exact generation-11 restore at epoch 2 before a Core tick or event. Both harness SIGINT stops drained, exited zero and closed listeners; retention blocked both stop saves. |
+| Physical-01, `4d9c8f8e` | Uninstrumented real Ctrl+C committed generation 1, verified signed audits and exited zero with a closed listener. Last direct sample was pending; terminal acknowledgment unknown. Strict gate failed and session two was skipped. |
+| R3 physical pair, `4d9c8f8e` | Separately instrumented full CLI: two genuine operator Ctrl+C events acknowledged generations 1 and 2, with exact same-store restore at epoch 2, signed/durable joins, zero exits and closed listeners. |
+
+R3 reads existing cached owner state after real stop and Memory drain, before
+Hub teardown, and publishes bounded packets after CLI unwind. It establishes
+acknowledgment for those new processes only. The same browser tab reconnected
+automatically, displayed the restored row, advanced ticks and cleared current
+evidence after both stops; actions stayed disabled. Its 54.23-second gap is a
+host-clock observation estimate. Durable prior acceptance, prior termination
+and offline duration remain unknown; aggregate runtime status is incomplete.
+Cleanup found zero owned processes or listeners, without forced runtime cleanup.
+
+Final source `4d9c8f8e455b87624e6918dbcc784577950af4fb`, product tree
+`de52a848d9e410e5829d4406c8527cd71263e92d`, passed 4,136 tests with 38 skips,
+45.29% coverage against 22%, and quality, boot and integration checks. Ten
+actual GPT-4o turns used zero fallback; synthetic record IDs joined write,
+restart retrieval and provider input. Two separate local data directories
+verified empty retrieval/provider evidence in the other profile, not account
+isolation. Checkpoint data stayed outside chat evidence.
+
+### Disposition, next action and closure
+
+Source and final independent reviews found no outstanding Critical or Important
+issue. Two Minor findings remain deferred: ambient signing variables can mask
+a key-source test fixture (the recorded runner cleared them), and malformed
+submissions can omit final observer/shutdown fields in the legacy helper's
+failure summary (raw evidence is retained and verification fails closed).
+
+Runtime/Memory maintainers must capture cached observer, ownership and retention
+state plus scheduling, admission, authorization, commit, receipt and drain
+timings on recurrence. Close only with a supported historical explanation and
+source-bound verification, or a separately reviewed bounded disposition.
+Passing reruns do not meet that gate. DEV-AUDIT-001 remains OPEN for cold and
+linear audit costs; DEV-OBS-001 remains OPEN for aggregate status reporting.
+These are separate tracked items, not sections added by this delivery.
+
+Strict Guardian, Security, signing, existing deadlines, N=10 retention approval,
+64 KiB payload cap and single-worker Memory authority remain unchanged. No late
+receipt acceptance, automatic checkpoint retry, reacquisition or pruning approval
+is introduced. C2b remains unmerged. The existing supervised internal-alpha
+boundary stands; unattended and production operation remain NO-GO.

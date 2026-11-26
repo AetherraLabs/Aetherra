@@ -602,13 +602,18 @@ class ConsciousnessObserver:
             # Clear before observing condition/result so racing signals are kept.
             self._wake.clear()
             self._poll_stream()
-            remaining = next_tick - time.monotonic()
-            if remaining <= 0 or self._stop.is_set():
+            if self._stop.is_set():
                 return
+            remaining = next_tick - time.monotonic()
             acceptance = self._session.wait_timeout()
-            self._wake.wait(
-                remaining if acceptance is None else min(remaining, acceptance)
-            )
+            if acceptance is None:
+                if remaining <= 0:
+                    return
+            else:
+                # Service the existing receipt window before entering another
+                # synchronous tick. Zero forces a poll of the settled result.
+                remaining = min(remaining, acceptance) if remaining > 0 else acceptance
+            self._wake.wait(remaining)
 
     def _drain_stream(self):
         session = self._session

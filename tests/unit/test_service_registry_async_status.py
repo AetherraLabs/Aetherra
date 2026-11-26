@@ -223,6 +223,20 @@ def test_contended_audit_times_out_without_worker_accumulation_or_late_update(
         asyncio.run(scenario(release))
 
 
+@pytest.mark.asyncio
+async def test_status_preflight_preserves_worker_timeout_identity():
+    registry = AetherraServiceRegistry()
+    worker_error = TimeoutError("synthetic authorization failure")
+
+    def authorize():
+        raise worker_error
+
+    with pytest.raises(TimeoutError) as caught:
+        await registry._bounded_status_preflight(authorize, 1)
+
+    assert caught.value is worker_error
+
+
 def test_cancellation_exits_loop_before_audit_unlock_and_never_mutates_later(
     monkeypatch, registry_env
 ):

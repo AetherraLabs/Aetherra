@@ -819,6 +819,68 @@ database = recovery.database
 
 
 @pytest.mark.asyncio
+async def test_resume_with_grown_signed_history_reaches_first_tick(
+    database, policy, tmp_path, monkeypatch
+):
+    # Standard library imports
+    import json
+
+    # Aetherra imports
+    from Aetherra.aetherra_core.memory import lifecycle_checkpoint
+    from Aetherra.security import audit_ledger
+
+    _, commits = recovery.seed(database, 1)
+    rules_path = policy / "guardian.json"
+    rules = json.loads(rules_path.read_text())
+    rules["allow"].append(
+        {
+            "requester": "consciousness:core",
+            "subsystem": "consciousness",
+            "action": "consciousness.micro_reflection_update",
+        }
+    )
+    rules_path.write_text(json.dumps(rules))
+    ledger = audit_ledger.SecurityAuditLedger(
+        tmp_path / ".aetherra/security/audit.jsonl"
+    )
+    for _ in range(32):
+        ledger.append(actor="fixture", event_type="signed_history")
+
+    # Charge 1/16 simulated second per historical canonical hash. A repeated
+    # 32-record scan exhausts the real one-second admission window by itself.
+    elapsed = 0.0
+    epoch = time.monotonic()
+    record_hash = audit_ledger._record_hash
+
+    def charge_history(record):
+        nonlocal elapsed
+        if record.get("event_type") == "signed_history":
+            elapsed += 1 / 16
+        return record_hash(record)
+
+    clock = SimpleNamespace(
+        monotonic=lambda: epoch + elapsed, time=time.time, sleep=time.sleep
+    )
+    with monkeypatch.context() as mp:
+        mp.setattr(runtime, "time", clock)
+        mp.setattr(lifecycle_checkpoint, "time", clock)
+        mp.setattr(audit_ledger, "_record_hash", charge_history)
+        owned = observer(database, automatic=recovery.AUTO)
+        owned.start()
+        try:
+            status = await until(
+                owned, lambda s: s["ticks_completed"] or not s["thread_alive"]
+            )
+            assert status["ticks_completed"] == 1, status["continuity"]
+            assert (
+                status["continuity"]["restored_record_id"] == commits[0].head.record_id
+            )
+        finally:
+            await owned.stop()
+    assert ledger.verify_integrity(require_signed_records=True)
+
+
+@pytest.mark.asyncio
 async def test_resume_restores_exact_state_before_tick_zero(database, monkeypatch):
     # Aetherra imports
     from Aetherra.consciousness.checkpoint import encode_checkpoint
@@ -1167,7 +1229,14 @@ async def test_core_import_preparation_never_blocks_status_or_publishes_after_cu
 
 
 def due_on_first_tick(
-    database, monkeypatch, policy, *, interval=10, start_mode="create", retain=10
+    database,
+    monkeypatch,
+    policy,
+    *,
+    interval=10,
+    start_mode="create",
+    retain=10,
+    save_interval=30,
 ):
     # Standard library imports
     import json
@@ -1202,7 +1271,7 @@ def due_on_first_tick(
 
     def advance_clock(session):
         selection = take(session)
-        offset[0] = 30
+        offset[0] = save_interval
         return selection
 
     monkeypatch.setattr(ObserverCheckpointSession, "take_restore", advance_clock)
@@ -1215,7 +1284,7 @@ def due_on_first_tick(
         automatic=dict(
             recovery.AUTO,
             start_mode=start_mode,
-            save_interval_seconds=30,
+            save_interval_seconds=save_interval,
             retain_checkpoints=retain,
         ),
     )
@@ -1264,7 +1333,7 @@ async def test_repeated_stop_preserves_concluded_retention_denial(
     assert owned.get_runtime_status()["continuity"] == denied
 
 
-def hold_periodic_boundary(monkeypatch, stage):
+def hold_periodic_boundary(monkeypatch, stage, *, release_timeout=5):
     # Standard library imports
     import sqlite3
 
@@ -1275,7 +1344,7 @@ def hold_periodic_boundary(monkeypatch, stage):
 
     def pause():
         entered.set()
-        assert release.wait(5)
+        assert release.wait(release_timeout)
 
     # Aetherra imports
     import Aetherra.guardian.core as guardian
@@ -1348,6 +1417,155 @@ async def heartbeat_launcher(policy):
 
 
 @pytest.mark.asyncio
+async def test_status_publication_timeout_preserves_observer_and_periodic_saves(
+    database, monkeypatch, policy, tmp_path
+):
+    # Aetherra imports
+    import aetherra_os_launcher as launcher_module
+    from Aetherra.security.audit_ledger import SecurityAuditLedger
+    from aetherra_service_registry import ServiceStatus
+
+    launcher = await heartbeat_launcher(policy)
+    registry = launcher.service_registry
+    owned = due_on_first_tick(
+        database, monkeypatch, policy, interval=0.2, save_interval=300
+    )
+    launcher.systems["consciousness_core"] = owned
+    assert await registry.register_service("consciousness_core", owned)
+    info = registry.get_service_info("consciousness_core")
+    before = info.last_heartbeat
+
+    loop = asyncio.get_running_loop()
+    entered, expired, polled_degraded, published = (asyncio.Event() for _ in range(4))
+    release = threading.Event()
+    worker = None
+    append = SecurityAuditLedger.append
+    update = registry.update_service_status
+    get_service_info = registry.get_service_info
+    refresh_attempts = 0
+    next_refresh = False
+    next_checkpoint = False
+    observer_clock = runtime.time.monotonic
+
+    monkeypatch.setattr(
+        launcher_module,
+        "time",
+        SimpleNamespace(
+            monotonic=lambda: time.monotonic() + (30 if next_refresh else 0)
+        ),
+    )
+    monkeypatch.setattr(
+        runtime.time,
+        "monotonic",
+        lambda: observer_clock() + (300 if next_checkpoint else 0),
+    )
+
+    def hold_signed_status_receipt(ledger, **kwargs):
+        nonlocal worker
+        record = append(ledger, **kwargs)
+        if (
+            threading.current_thread().name == "registry-status-preflight"
+            and worker is None
+        ):
+            worker = threading.current_thread()
+            loop.call_soon_threadsafe(entered.set)
+            assert release.wait(3)
+        return record
+
+    async def observe_publication(*args, **kwargs):
+        nonlocal refresh_attempts
+        if kwargs.get("nonblocking_preflight"):
+            refresh_attempts += 1
+        try:
+            applied = await update(*args, **kwargs)
+        except TimeoutError:
+            expired.set()
+            raise
+        if applied:
+            published.set()
+        return applied
+
+    def observe_registry_poll(name):
+        value = get_service_info(name)
+        if name == "consciousness_core" and value.status is ServiceStatus.DEGRADED:
+            polled_degraded.set()
+        return value
+
+    def reached_generation_or_stopped(status, generation):
+        return (
+            status["continuity"].get("saved_generation") == generation
+            or not status["thread_alive"]
+        )
+
+    monkeypatch.setattr(SecurityAuditLedger, "append", hold_signed_status_receipt)
+    monkeypatch.setattr(registry, "update_service_status", observe_publication)
+    monkeypatch.setattr(registry, "get_service_info", observe_registry_poll)
+    monitor = None
+    assert owned.start()
+    try:
+        first = await until(
+            owned, lambda status: reached_generation_or_stopped(status, 1)
+        )
+        assert first["continuity"].get("saved_generation") == 1, first
+        assert first["continuity"]["last_save_acceptance"] == "acknowledged"
+        monitor = asyncio.create_task(launcher._monitor_consciousness_observer(owned))
+        await asyncio.wait_for(entered.wait(), 1)
+        await asyncio.wait_for(expired.wait(), 1.5)
+        after_expiry = owned.get_runtime_status()
+        assert after_expiry["runtime_state"] == "running", after_expiry
+        assert info.last_heartbeat == before
+        assert worker is not None
+        assert worker.is_alive()
+
+        release.set()
+        await asyncio.to_thread(worker.join, 1)
+        assert not worker.is_alive()
+        await registry.update_heartbeat("kernel_loop")
+        assert info.last_heartbeat == before
+
+        # The registry can independently mark a service degraded after a missed
+        # heartbeat. Repeating the same desired status still waits its interval.
+        await registry.update_service_status(
+            "consciousness_core", ServiceStatus.DEGRADED
+        )
+        degraded_at = info.last_heartbeat
+        await asyncio.wait_for(polled_degraded.wait(), 2)
+        assert refresh_attempts == 1
+        assert info.last_heartbeat == degraded_at
+
+        next_checkpoint = True
+        owned._wake.set()
+        second = await until(
+            owned, lambda status: reached_generation_or_stopped(status, 2)
+        )
+        continuity = second["continuity"]
+        assert second["ticks_completed"] > after_expiry["ticks_completed"]
+        assert continuity["saved_generation"] == 2
+        assert continuity["last_save_acceptance"] == "acknowledged"
+        assert continuity["saved_trigger"] == "periodic"
+        assert database.conn.execute(
+            "SELECT generation, record_id FROM checkpoint_stream_heads"
+        ).fetchone() == (2, continuity["saved_record_id"])
+
+        next_refresh = True
+        await asyncio.wait_for(published.wait(), 2)
+        assert refresh_attempts == 2
+        assert info.status is ServiceStatus.HEALTHY
+        assert info.last_heartbeat > degraded_at
+        assert SecurityAuditLedger(
+            tmp_path / ".aetherra/security/audit.jsonl"
+        ).verify_integrity(require_signed_records=True)
+    finally:
+        release.set()
+        if monitor is not None:
+            monitor.cancel()
+            await asyncio.gather(monitor, return_exceptions=True)
+        await owned.stop()
+        if worker is not None and worker.is_alive():
+            await asyncio.to_thread(worker.join, 1)
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("stage", ["audit", "commit", "after_policy"])
 async def test_blocked_periodic_work_keeps_ticks_heartbeat_status_and_bounded_stop(
     database, monkeypatch, policy, stage
@@ -1417,6 +1635,209 @@ async def test_owner_wakes_inside_ten_second_tick_wait(
     finally:
         release.set()
         await owned.stop()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("cut", ["receipt", "expiry", "stop"])
+async def test_due_tick_honors_open_receipt_window(
+    database, monkeypatch, policy, tmp_path, cut
+):
+    # Aetherra imports
+    from Aetherra.aetherra_core.memory import lifecycle_checkpoint
+    from Aetherra.aetherra_core.memory.checkpoint_stream import (
+        AdvanceReceipt,
+        StreamJob,
+    )
+    from Aetherra.consciousness.checkpoint_session import ObserverCheckpointSession
+    from Aetherra.consciousness.core.consciousness_core import ConsciousnessCore
+    from Aetherra.security.audit_ledger import SecurityAuditLedger
+
+    owned = due_on_first_tick(
+        database, monkeypatch, policy, interval=1, save_interval=300
+    )
+    committed, release = hold_periodic_boundary(
+        monkeypatch, "after_policy", release_timeout=None if cut == "stop" else 5
+    )
+    decision, sealed, draining = (threading.Event() for _ in range(3))
+    pre_due_wait, clock_advanced = threading.Event(), threading.Event()
+    stop_delivered, receipt_wait_started = threading.Event(), threading.Event()
+    clock = None
+    next_tick = None
+    choices = []
+    receipt_wait_signals = []
+    second_tick = []
+    seal_times = []
+    running_clock = runtime.time.monotonic
+    applied = ObserverCheckpointSession.mark_applied
+    tick = ConsciousnessCore.tick
+    seal = StreamJob._seal
+    wait = owned._wake.wait
+    drain = owned._drain_stream
+
+    def start_clock(session):
+        nonlocal clock, next_tick
+        applied(session)
+        # Preserve normal startup validation. After apply the owner and worker
+        # share a controlled clock for their unchanged production budgets.
+        clock = running_clock()
+        next_tick = clock + 1
+        monkeypatch.setattr(lifecycle_checkpoint, "time", runtime.time)
+
+    def signed_tick(core):
+        nonlocal clock
+        first = core.tick_count == 0
+        early = False
+        if core.tick_count == 1:
+            continuity = owned.get_runtime_status()["continuity"]
+            second_tick.append(continuity["last_save_acceptance"])
+            if not decision.is_set():
+                choices.append("tick")
+                decision.set()
+            early = cut == "receipt" and second_tick[-1] == "pending"
+            if early:
+                assert sealed.wait(2), "the committed advance did not seal"
+        tick(core)
+        if first:
+            clock += 0.5
+        if early:
+            # Model a synchronous signed tick crossing the unchanged deadline
+            # after the worker already delivered a valid receipt.
+            clock = owned._session._write_control.deadline
+
+    def observe_seal(job, value, error, **kwargs):
+        seal(job, value, error, **kwargs)
+        if type(value) is AdvanceReceipt and job._sealed is not None:
+            seal_times.append(runtime.time.monotonic())
+            sealed.set()
+
+    def observe_wait(timeout):
+        if next_tick is None:
+            return wait(timeout)
+        if not pre_due_wait.is_set():
+            assert clock < next_tick
+            assert (
+                owned.get_runtime_status()["continuity"]["last_save_acceptance"]
+                == "pending"
+            )
+            pre_due_wait.set()
+            # Keep the first pre-due wait at this boundary until the test clock
+            # moves. Only a subsequent poll can select the due-tick behavior.
+            assert clock_advanced.wait(2)
+        elif clock >= next_tick and not decision.is_set():
+            choices.append("wait")
+            decision.set()
+            if cut == "stop":
+                # Start the real timeout after the controller delivers stop.
+                # The original wake event retains its signal across this handoff.
+                stop_delivered.wait()
+            receipt_wait_started.set()
+            signaled = wait(timeout)
+            receipt_wait_signals.append(signaled)
+            return signaled
+        return wait(timeout)
+
+    def observe_drain():
+        draining.set()
+        drain()
+
+    def tick_and_receipt_resolved(status):
+        return (
+            status["ticks_completed"] >= 2
+            and status["continuity"]["last_save_acceptance"] != "pending"
+        )
+
+    monkeypatch.setattr(
+        runtime.time, "monotonic", lambda: running_clock() if clock is None else clock
+    )
+    monkeypatch.setattr(ObserverCheckpointSession, "mark_applied", start_clock)
+    monkeypatch.setattr(ConsciousnessCore, "tick", signed_tick)
+    monkeypatch.setattr(StreamJob, "_seal", observe_seal)
+    monkeypatch.setattr(owned._wake, "wait", observe_wait)
+    monkeypatch.setattr(owned, "_drain_stream", observe_drain)
+
+    assert owned.start()
+    try:
+        assert await asyncio.to_thread(committed.wait, 2)
+        pending = await until(owned, lambda s: s["continuity"].get("outstanding"))
+        assert pending["ticks_completed"] == 1
+        assert pending["continuity"]["last_save_acceptance"] == "pending"
+        head = database.conn.execute(
+            "SELECT generation, record_id FROM checkpoint_stream_heads"
+        ).fetchone()
+        assert head[0] == 1
+
+        deadline = owned._session._write_control.deadline
+        assert 0 < deadline - next_tick < 1
+        assert await asyncio.to_thread(pre_due_wait.wait, 2)
+        clock = next_tick
+        owned._wake.set()
+        clock_advanced.set()
+        assert await asyncio.to_thread(decision.wait, 2)
+
+        if cut == "receipt":
+            release.set()
+            assert await asyncio.to_thread(sealed.wait, 2)
+            assert seal_times == [next_tick]
+            assert seal_times[0] < deadline
+            result = await until(owned, tick_and_receipt_resolved)
+            continuity = result["continuity"]
+            assert continuity["last_save_acceptance"] == "acknowledged"
+            assert choices == ["wait"]
+            assert second_tick == ["acknowledged"]
+            assert head == (
+                continuity["saved_generation"],
+                continuity["saved_record_id"],
+            )
+        elif cut == "expiry":
+            assert choices == ["wait"]
+            clock = deadline
+            owned._wake.set()
+            result = await until(owned, lambda s: s["ticks_completed"] >= 2)
+            continuity = result["continuity"]
+            assert second_tick == ["unacknowledged"]
+            assert continuity["last_error_code"] == "uncertain"
+            assert continuity["outstanding"]
+            assert continuity["saved_record_id"] is None
+            release.set()
+            drained = await until(owned, lambda s: not s["continuity"]["outstanding"])
+            assert drained["continuity"]["last_save_acceptance"] == "unacknowledged"
+            assert not sealed.is_set()
+        else:
+            assert choices == ["wait"]
+            assert not receipt_wait_started.is_set()
+            assert not owned._wake.is_set()
+            await owned.stop(timeout=0)
+            stop_delivered.set()
+            assert await asyncio.to_thread(draining.wait, 1)
+            assert receipt_wait_signals == [True]
+            assert clock == next_tick
+            assert not second_tick
+            assert owned.get_runtime_status()["continuity"]["outstanding"]
+            release.set()
+            stopped = await until(owned, lambda s: not s["thread_alive"])
+            continuity = stopped["continuity"]
+            assert stopped["runtime_state"] == "stopped"
+            assert continuity["last_save_acceptance"] == "unacknowledged"
+            assert not continuity["stop_save_submitted"]
+            assert not continuity["outstanding"]
+
+        assert (
+            database.conn.execute(
+                "SELECT generation, record_id FROM checkpoint_stream_heads"
+            ).fetchone()
+            == head
+        )
+        assert SecurityAuditLedger(
+            tmp_path / ".aetherra/security/audit.jsonl"
+        ).verify_integrity(require_signed_records=True)
+    finally:
+        clock_advanced.set()
+        release.set()
+        try:
+            await owned.stop(timeout=0)
+        finally:
+            stop_delivered.set()
+        await until(owned, lambda s: not s["thread_alive"])
 
 
 @pytest.mark.asyncio

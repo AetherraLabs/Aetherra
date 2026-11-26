@@ -1,0 +1,352 @@
+{
+  "schema": "dev_ckpt_001_delivery_summary_v1",
+  "date": "2026-11-25",
+  "timezone": "America/Denver",
+  "issue_status": "OPEN; scoped corrections verified, historical causality unproven",
+  "archive_convention": "archive_id is relative to the retained .codex-c2b-execution-20261125 archive root outside Git; it is not a repository path or URL. SHA-256 authenticates those original bytes, not this new summary. Private logs, prompts, databases and keys are not published.",
+  "source": {
+    "base_head": "c53cc5524304a6a43688bb683b07f9aa6b467390",
+    "product_head": "4d9c8f8e455b87624e6918dbcc784577950af4fb",
+    "product_tree": "de52a848d9e410e5829d4406c8527cd71263e92d",
+    "profile": "Windows x64, Python 3.13.7, full source launcher; synthetic conversations"
+  },
+  "safety_unchanged": "Strict Guardian, Security, signing and authorization; one-second attempt/two-second stop bounds; timely receipts; ownership until drain; single-worker Memory authority; 300-second cadence; N=10 retention approval; 64 KiB cap. No automatic retry, reacquisition or pruning approval.",
+  "historical_c53_gap": {
+    "source_head": "c53cc5524304a6a43688bb683b07f9aa6b467390",
+    "durable_periodic_generations": 10,
+    "last_observed_acknowledged_generation": 7,
+    "prune_decisions": 0,
+    "last_advance_utc": "2026-11-25T18:44:05.360884Z",
+    "later_microreflection_decisions": 121,
+    "registry_activity_through_utc": "2026-11-25T19:01:59.896336Z",
+    "unknown": "Final observer state, next submission, authorization, receipt acceptance, process exit and causal attribution; no retention block established.",
+    "archive_id": "dev-ckpt-001-original-timeline.json",
+    "last_signed_audit_record_utc": "2026-11-25T19:02:03.804830Z",
+    "storage_archive_id": "evidence/task5-postclose-storage-20261125-verified.json"
+  },
+  "regressions": {
+    "registry_owned_expiry": {
+      "scope": "Owned status-wait expiry tolerated; worker errors still propagate; no late heartbeat; 350 green tests.",
+      "red": {
+        "source_head": "c53cc5524304a6a43688bb683b07f9aa6b467390",
+        "exit_code": 1,
+        "receipt_archive_id": "evidence/dev-ckpt-001-regression-red-02.json"
+      },
+      "green": {
+        "source_head": "32d93be25225ec2ff3bfbc4fa637e3d0d6414bf4",
+        "exit_code": 0,
+        "receipt_archive_id": "evidence/dev-ckpt-001-commit-green-01.json"
+      }
+    },
+    "owner_receipt_priority": {
+      "scope": "Three expected baseline failures; three committed passes at 3897c5a6. Service an open receipt window before a due synchronous tick, within original cutoff.",
+      "red": {
+        "source_head": "32d93be25225ec2ff3bfbc4fa637e3d0d6414bf4",
+        "exit_code": 1,
+        "receipt_archive_id": "evidence/dev-ckpt-001-owner-fix2-baseline-red.json"
+      },
+      "green": {
+        "source_head": "3897c5a65f7893f7035314451014799bd74f2093",
+        "exit_code": 0,
+        "receipt_archive_id": "evidence/dev-ckpt-001-owner-fix2-commit-green-3.json"
+      }
+    },
+    "audit_prefix_reuse": {
+      "scope": "Two expected parent assertion failures; 30 committed focused passes. Precommit candidate edits separately passed 537 affected tests.",
+      "red": {
+        "source_head": "3897c5a65f7893f7035314451014799bd74f2093",
+        "exit_code": 1,
+        "receipt_archive_id": "evidence/dev-ckpt-001-r2-audit-red-02.json"
+      },
+      "green": {
+        "source_head": "4d9c8f8e455b87624e6918dbcc784577950af4fb",
+        "exit_code": 0,
+        "receipt_archive_id": "evidence/dev-ckpt-001-r2-audit-commit-green.json"
+      }
+    }
+  },
+  "audit_cache_limits": {
+    "max_resolved_paths": 64,
+    "absolute_expiry_seconds": 600,
+    "reuse": "Effective-key digest and actual full-prefix byte hash must match; every signed suffix record is validated.",
+    "full_integrity_check": "Cold verification from genesis, independent of cache.",
+    "remaining_cost": "Every append still reads the complete file and hashes bytes. Restart, expiry, eviction, replacement and key changes may require cold validation.",
+    "unproven": "Cross-process serialization, constant latency, arbitrary large-ledger guarantees and attribution of historical CPU/I/O costs."
+  },
+  "retained_failed_verifications": {
+    "extended_01": {
+      "source_head": "32d93be25225ec2ff3bfbc4fa637e3d0d6414bf4",
+      "status": "failed",
+      "observation_seconds": 3030.2542046,
+      "durable_generation": 10,
+      "last_acknowledged_generation": 9,
+      "durable_record_id": "240056fbf3b647c085b32d161cc1ecf5",
+      "outcome": "Observer running at 2979 ticks; continuity uncertain. No retention/restart gate reached. Harness runtime exit 0; supervisor terminated/drained a job with unidentified remaining process. Actual seal/decisive owner poll unobserved.",
+      "archive_id": "evidence/dev-ckpt-001-extended-01-forensics.json"
+    },
+    "extended_02": {
+      "source_head": "3897c5a65f7893f7035314451014799bd74f2093",
+      "status": "failed",
+      "outcome": "65-minute create phase: 11 acknowledgments and continued ticks after approval-required retention. Runtime exited 0; independent closed-port gate failed. Restart not started. Separate reproduced probe false negative does not establish original cause.",
+      "archive_id": "evidence/dev-ckpt-001-extended-02-forensics.json"
+    },
+    "extended_03": {
+      "source_head": "3897c5a65f7893f7035314451014799bd74f2093",
+      "status": "failed",
+      "outcome": "Create phase: 11 acknowledgments. Epoch 2 selected intact generation 11, then continuity_restore_failed before Core apply; zero attempted ticks. Both runtimes exited 0 with closed ports. Original refusing guard unknown.",
+      "archive_id": "evidence/dev-ckpt-001-extended-03-recovery-diagnosis.json"
+    },
+    "disposable_epoch_3_probe": {
+      "source_head": "3897c5a65f7893f7035314451014799bd74f2093",
+      "recovery_outcome": "blocked",
+      "outcome": "Copied profile acquired epoch 3 and prepared Core state; original deadline expired during policy recheck. No apply or tick. Acquire signed-tail verification measured 287.729 ms; cause of policy elapsed time unproven; original epoch-2 guard unknown.",
+      "archive_id": "evidence/dev-ckpt-001-recovery-probe-diagnosis.json"
+    },
+    "uninstrumented_physical_01": {
+      "source_head": "4d9c8f8e455b87624e6918dbcc784577950af4fb",
+      "status": "failed",
+      "operator_ctrl_c_count": 1,
+      "generation": 1,
+      "record_id": "760c4669fde7458eb725eadb7c9d1f87",
+      "outcome": "Signed durable orderly-stop member, runtime/redirector exit 0, closed listener. Last direct sample stopping/saving/pending; terminal owner acceptance unknown. Second session skipped. Initial browser live display needed manual refresh; exit clearing passed, reconnect unverified.",
+      "archive_id": "dev-ckpt-001-physical-01-diagnosis.md"
+    }
+  },
+  "final_checks": {
+    "source_head": "4d9c8f8e455b87624e6918dbcc784577950af4fb",
+    "full_passed": 4136,
+    "full_skipped": 38,
+    "coverage_percent": 45.29,
+    "coverage_floor_percent": 22,
+    "full_exit_code": 0,
+    "quality_boot_integration": "passed; exit 0",
+    "recorded_commands": [
+      "python -m pytest -q --no-showlocals",
+      "python tools/alpha_boot_validation.py",
+      "python -m Aetherra.integration_validation"
+    ],
+    "receipt_archive_ids": [
+      "evidence/dev-ckpt-001-r2-full.json",
+      "evidence/dev-ckpt-001-r2-quality.json",
+      "evidence/dev-ckpt-001-r2-boot.json",
+      "evidence/dev-ckpt-001-r2-integration.json"
+    ]
+  },
+  "extended_04": {
+    "source_head": "4d9c8f8e455b87624e6918dbcc784577950af4fb",
+    "status": "passed",
+    "mode": "instrumented full CLI; harness SIGINT",
+    "cadence_seconds": 300,
+    "observation_seconds": 3900.379,
+    "samples": 131,
+    "periodic_acknowledgments": 11,
+    "ticks_after_retention_latch": 564,
+    "retention": "Approval required; no deleted members or post-latch advances; both stop saves skipped_retention_blocked.",
+    "restored_generation": 11,
+    "writer_epoch": 2,
+    "checkpoint_id": "750fdc42c1ad41c5844c62f88d225425",
+    "record_id": "3ba675882f1f47afa5f175020f3ca07f",
+    "payload_sha256": "a6555afbc01876ae2cdac4a3f29d53c62274c934ad56ec55347749d972051ab7",
+    "metadata_sha256": "b42a285f1f4ea6079a043b3f2f829423adc47c40cb86f9573b3bf53e075010df",
+    "exact_restore_before_core_ticks_or_events": true,
+    "shutdown": "Both runtimes exit 0, orderly drain, independently closed listeners, empty supervisor job, no forced cleanup.",
+    "cold_security_records": 8359,
+    "cold_plugin_records": 10,
+    "archive_id": "evidence/dev-ckpt-001-extended-04-forensics.json"
+  },
+  "live_02": {
+    "source_head": "4d9c8f8e455b87624e6918dbcc784577950af4fb",
+    "status": "passed",
+    "model": "gpt-4o",
+    "actual_turns": 10,
+    "fallback_turns": 0,
+    "local_data_directory_count": 2,
+    "write_retrieval_provider_record_id": "33fa8abc206627c629119463a50edf10",
+    "restored_checkpoint_record_id": "ca3200235f464b3da1875ed6d2d1a0a8",
+    "outcome": "Correct synthetic person/skill recalled after restart; absent bicycle color unknown. Other directory had empty retrieval/provider evidence. Checkpoint excluded from chat; signed audits verified. No account isolation claim.",
+    "archive_id": "evidence/dev-ckpt-001-r2-live-review.json"
+  },
+  "r3_physical_pair": {
+    "source_head": "4d9c8f8e455b87624e6918dbcc784577950af4fb",
+    "status": "passed",
+    "operator_ctrl_c_count": 2,
+    "instrumentation": "Reviewed external wrapper delegates to original launcher/signal handling; reads cached owner status after real stop and Memory drain before Hub teardown; bounded packets published after CLI unwind. Does not resolve uninstrumented physical-01.",
+    "stream_id": "3dd9563fa4b143fd8fa2cfdbbb7a1160",
+    "phases": [
+      {
+        "phase": "first",
+        "generation": 1,
+        "writer_epoch": 1,
+        "session_id": "0532a1779d5e445480395f091c128145",
+        "operation_id": "e1927c9be77d4ed0b2f0c0518c9fc262",
+        "checkpoint_id": "412988525ac74e678c25d400188cd0b6",
+        "record_id": "3f1ffbc4edce4003b8ddd7215536c1b9",
+        "payload_sha256": "cddb06568a380f4bd933f055bca556111adf09e322d6753ff9b16b8c2e7d9cba",
+        "metadata_sha256": "11a509388bb12d1c47d7e30b1b89b8df921e4fd52dade4dffd792e372563f227",
+        "signed_advance_sequence": 222,
+        "direct_owner_acceptance": "acknowledged; two post-drain samples, stopped thread, no outstanding work"
+      },
+      {
+        "phase": "second",
+        "generation": 2,
+        "writer_epoch": 2,
+        "session_id": "22a796ce8d77402e8e523ec212111c0f",
+        "operation_id": "98cb2fd09d9e49bfbdcf7d241f097e86",
+        "checkpoint_id": "33cb43df98a64c0f97f0060503f5cf9d",
+        "record_id": "fe6574bad8fc4d98b48d9ef3245fac14",
+        "payload_sha256": "30e1cb6383097e6f4f777250d433687fe1158570b2c78be932f4ba9e7e6130e9",
+        "metadata_sha256": "749151a5dfee369d836382b73ab0c529a05959f93cd9a99c5a05df2ecc5686f4",
+        "signed_advance_sequence": 448,
+        "direct_owner_acceptance": "acknowledged; two post-drain samples, stopped thread, no outstanding work"
+      }
+    ],
+    "restart": "Exact first-phase row/payload/metadata restored and generation 1 pinned at epoch 2 before second save.",
+    "cold_security_records": 449,
+    "cold_plugin_records": 10,
+    "all_exit_codes_zero_and_listeners_closed": true,
+    "helper_review": "0 findings; 8 new and 19 existing dry checks passed.",
+    "helper_review_archive_id": "dev-ckpt-001-terminal-helpers-review.md",
+    "forensics_archive_id": "evidence/dev-ckpt-001-physical-terminal-01-forensics.json",
+    "browser": "Same tab reconnected automatically, displayed restored row, advanced ticks 6 to 21, cleared current evidence after both stops; action execution disabled.",
+    "browser_observation_gap_seconds": 54.23,
+    "browser_limits": "Host-clock estimate only; durable prior acceptance, termination and offline duration unknown; aggregate status incomplete.",
+    "browser_archive_id": "evidence/dev-ckpt-001-physical-terminal-01-browser.json",
+    "cleanup": "Zero owned processes/listeners; no forced runtime cleanup.",
+    "cleanup_archive_id": "evidence/dev-ckpt-001-final-process-cleanup.json"
+  },
+  "review_and_disposition": {
+    "critical": 0,
+    "important_outstanding": 0,
+    "deferred_minors": [
+      "Ambient signing variables can mask key-source fixture behavior; recorded suite clears both variables. Portable fixture follow-up remains deferred.",
+      "Legacy malformed-submission helper can omit final observer/shutdown summary fields; private raw evidence retained and verification fails closed."
+    ],
+    "issues_open": {
+      "ALPHA-CKPT-001": "Original checkpoint-stop cause unknown.",
+      "DEV-CKPT-001": "Original progress-gap causal chain unproven.",
+      "DEV-AUDIT-001": "Cold and linear audit cost limits unresolved.",
+      "DEV-OBS-001": "Aggregate status reporting incomplete."
+    },
+    "boundary": "Existing supervised internal alpha only; C2b unmerged; unattended and production NO-GO.",
+    "delivery_limits": "Archived local checks bind to product source above. Hosted PR checks require delivered-revision evidence. No new main verification, production signing, merge or release claim. Pending Temporal work, release controls and original drafts preserved.",
+    "source_review_archive_id": "dev-ckpt-001-whole-source-review.md",
+    "legacy_helper_review_archive_id": "dev-ckpt-001-helpers-fix4-review.md",
+    "final_review_archive_id": "dev-ckpt-001-final-review.md",
+    "final_verification_archive_id": "evidence/dev-ckpt-001-final-verification.json",
+    "original_followup_archive_id": "final-docs/docs/evidence/dev_ckpt_001_2026-11-25.json"
+  },
+  "archives": [
+    {
+      "archive_id": "dev-ckpt-001-original-timeline.json",
+      "sha256": "b22391427a9123ee9105fb5ae8ac477256b9ece087e3a6e69e4eac5c24712fc9"
+    },
+    {
+      "archive_id": "evidence/dev-ckpt-001-regression-red-02.json",
+      "sha256": "380906b3ee2039cbd38424cb50a1fd24c11ca5c95eba35c8a1902dffb38c6261"
+    },
+    {
+      "archive_id": "evidence/dev-ckpt-001-commit-green-01.json",
+      "sha256": "9c8c3472794228d31623a40ea2e39a1359c3d6ff91f63a1fd81a5759fcbde9b4"
+    },
+    {
+      "archive_id": "evidence/dev-ckpt-001-owner-fix2-baseline-red.json",
+      "sha256": "4afedccd591cff990480a17b8c046db06e7e16dd2e048e98265741a61d0ec7a9"
+    },
+    {
+      "archive_id": "evidence/dev-ckpt-001-owner-fix2-commit-green-3.json",
+      "sha256": "88ee872fddc928ca5ba7d2f17eb393518b9bd397f53228e03bb1563c5f56a8c8"
+    },
+    {
+      "archive_id": "evidence/dev-ckpt-001-r2-audit-red-02.json",
+      "sha256": "efcda1772b6235af2edc7a7ebf7de2ddc6c907d860f8122287207d284429de9a"
+    },
+    {
+      "archive_id": "evidence/dev-ckpt-001-r2-audit-commit-green.json",
+      "sha256": "a868733c9506cc3ff8a5c06058bb24e58511a97ee666839c38d81d3b18ffa234"
+    },
+    {
+      "archive_id": "evidence/dev-ckpt-001-extended-01-forensics.json",
+      "sha256": "87c7ac1e564a00174edcf38688f752fdfd259309b16806afd36f92582326e4bb"
+    },
+    {
+      "archive_id": "evidence/dev-ckpt-001-extended-02-forensics.json",
+      "sha256": "1f3346614bc3c590b66a6d07e1d21151fcda8f30ae14b715ef26823081940121"
+    },
+    {
+      "archive_id": "evidence/dev-ckpt-001-extended-03-recovery-diagnosis.json",
+      "sha256": "b39258d9bce32f53435037439c28c68d995e41e6e1caaffbba59d281d224489a"
+    },
+    {
+      "archive_id": "evidence/dev-ckpt-001-recovery-probe-diagnosis.json",
+      "sha256": "58d84a8a742616e2834e4e0d60e6c731a1b39f812ebc6ae3258de0fffe854090"
+    },
+    {
+      "archive_id": "dev-ckpt-001-physical-01-diagnosis.md",
+      "sha256": "7c6715144b9f4600d7d1666d278df40afea9a26548e681555a8bc46da5ada579"
+    },
+    {
+      "archive_id": "evidence/dev-ckpt-001-r2-full.json",
+      "sha256": "81f10e326482a7907a0b652fdab4e1b8eb0440e31beb382f6d4cbefc01b9a960"
+    },
+    {
+      "archive_id": "evidence/dev-ckpt-001-r2-quality.json",
+      "sha256": "ed63df215d80cf6a6eda01730fa3a36f21145c23097916f3e7ea522e7ce67a21"
+    },
+    {
+      "archive_id": "evidence/dev-ckpt-001-r2-boot.json",
+      "sha256": "929317ee269826a25a8eed5832fdbadedcb6a8d03bb0bb7bc173682f2911ebdd"
+    },
+    {
+      "archive_id": "evidence/dev-ckpt-001-r2-integration.json",
+      "sha256": "853e911245c2184b85241b380969aa9a1976ec224ea3f74afc25bdbffe914921"
+    },
+    {
+      "archive_id": "evidence/dev-ckpt-001-extended-04-forensics.json",
+      "sha256": "6ac1dbd2bfd2e5db79433a6507247ca41dee1d88b04ee5bf1ae351ddba854979"
+    },
+    {
+      "archive_id": "evidence/dev-ckpt-001-r2-live-review.json",
+      "sha256": "45e93a5b184c7b3ee8422819c3754413455768d59ead713216e4ad2598179edb"
+    },
+    {
+      "archive_id": "dev-ckpt-001-terminal-helpers-review.md",
+      "sha256": "24568a6576f20092872d368471111a86af4ed40bcb0995dd6bc1596e6627f295"
+    },
+    {
+      "archive_id": "evidence/dev-ckpt-001-physical-terminal-01-forensics.json",
+      "sha256": "c6923eb6d0a253e0dc69b09342e069149d637b43487e9b507150d620e66c3116"
+    },
+    {
+      "archive_id": "evidence/dev-ckpt-001-physical-terminal-01-browser.json",
+      "sha256": "f9f1b70aac74b885a78751f5bc785e1f538ca1dcb20b37effc4e62ba2c2fc895"
+    },
+    {
+      "archive_id": "evidence/dev-ckpt-001-final-process-cleanup.json",
+      "sha256": "2ae2374a6d71c8aa71f684ba444bb826d8d0e827feb27330b2e458b50b3c86df"
+    },
+    {
+      "archive_id": "dev-ckpt-001-whole-source-review.md",
+      "sha256": "30404c6b9e51a6d3bce2c14b9bc7af47d21cbf2d22e2975b7cc53f167c9c4d70"
+    },
+    {
+      "archive_id": "dev-ckpt-001-helpers-fix4-review.md",
+      "sha256": "96a8dbaaa6f38b8a7714608ebe074df4d1e9341bd8aa6d28fb3962ecb9e04596"
+    },
+    {
+      "archive_id": "dev-ckpt-001-final-review.md",
+      "sha256": "9bf4c1f9e62742d829c5ee9bd1199b3d603561b374730fcdb8ef28c57d142460"
+    },
+    {
+      "archive_id": "evidence/dev-ckpt-001-final-verification.json",
+      "sha256": "bbfe154e482d15d6788a6c8c91629ca3637729391167ae4b5b56a26d9d4c1315"
+    },
+    {
+      "archive_id": "final-docs/docs/evidence/dev_ckpt_001_2026-11-25.json",
+      "sha256": "1b433e4ac69e2fc2b7b10098c9ae532c7d96ddc726dac7dbcb27e8f059a6f24a"
+    },
+    {
+      "archive_id": "evidence/task5-postclose-storage-20261125-verified.json",
+      "sha256": "038b327f37703492af006ecfa911c882f520c548dd00bf1c1210078b0614d4a3"
+    }
+  ]
+}
