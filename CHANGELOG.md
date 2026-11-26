@@ -1,6 +1,32 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.18 (2026-11-26)
+
+### Bug Fixes
+
+- **observer**: Publish stopping within the original shutdown budget
+  ([`cfee6f3`](https://github.com/AetherraLabs/Aetherra/commit/cfee6f37f15f8f474e30b50b7efe08b99c610da7))
+
+### Chores
+
+- Align C2b periodic checkpoints with verified main
+  ([`a546f04`](https://github.com/AetherraLabs/Aetherra/commit/a546f0453240fc4a9b87d9726b11a31dba6860f4))
+
+- Integrate reviewed C2b dependency #360
+  ([`6dcf049`](https://github.com/AetherraLabs/Aetherra/commit/6dcf049b56ceac377c90a8e0cce3871caf6ac37b))
+
+### Features
+
+- **consciousness**: Save periodic checkpoints within one stop budget
+  ([`9e32c1f`](https://github.com/AetherraLabs/Aetherra/commit/9e32c1f8b0a1df0d0da3de04f70609d10896e204))
+
+### Testing
+
+- **consciousness**: Measure simulated tick uptime from the clock
+  ([`bdcca31`](https://github.com/AetherraLabs/Aetherra/commit/bdcca31555da5a268f4421b8ffa7c2d3d4148cca))
+
+
 ## v0.5.0-beta.17 (2026-11-26)
 
 ### Bug Fixes
