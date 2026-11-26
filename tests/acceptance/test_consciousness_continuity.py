@@ -221,3 +221,21 @@ def test_windows_cli_sigint_saves_and_restores_without_observer_stop(
                 == first_row["payload"]["checkpoint_id"]
             )
     assert len(set(pids)) == 2
+
+
+def test_automatic_restart_records_exact_stop_and_excludes_checkpoint(
+    tmp_path, monkeypatch
+):
+    monkeypatch.syspath_prepend(str(ROOT / "tools"))
+    # Third party imports
+    import alpha_consciousness_automatic_smoke as automatic
+
+    output = tmp_path / "automatic"
+    assert automatic.run(output, 5) == 0
+    summary = json.loads((output / "summary.json").read_text(encoding="utf-8"))
+    assert summary["passed"]
+    assert summary["source_unchanged"]
+    assert summary["periodic_acknowledgments"] == []
+    assert summary["restored_record_id"] == summary["stops"][0]["saved_record_id"]
+    assert summary["foreign_error"] == "missing"
+    assert summary["live_provider_verified"] is False
