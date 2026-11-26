@@ -1,6 +1,24 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.20 (2026-11-26)
+
+### Bug Fixes
+
+- **tools**: Reject duplicate checkpoint recovery fields
+  ([`4894274`](https://github.com/AetherraLabs/Aetherra/commit/4894274d1ccf9f61048f5fc9c44503569dae6a3f))
+
+### Chores
+
+- Integrate reviewed C2b dependency #363
+  ([`2485ced`](https://github.com/AetherraLabs/Aetherra/commit/2485ced84c4c0b17892a2430f45a978b00d56593))
+
+### Features
+
+- **tools**: Add supervised one-use checkpoint retention
+  ([`a743bcb`](https://github.com/AetherraLabs/Aetherra/commit/a743bcb61190228d44d2573f32868ee9777c03ea))
+
+
 ## v0.5.0-beta.19 (2026-11-26)
 
 ### Bug Fixes
