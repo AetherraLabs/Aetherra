@@ -5,6 +5,7 @@ This is the canonical contributor guide for Aetherra.
 Quick links:
 
 - Docs consistency gate: `docs/contributing/docs-consistency.md`
+- [Development issue register and evidence practice](docs/DEVELOPMENT_ISSUES.md)
 
 ## Governance & Compliance Expectations
 
@@ -20,6 +21,15 @@ When submitting PRs that affect dependencies, licensing, or release engineering:
 
 - Place license governance tests under `tests/tools`.
 - Use failure injection patterns in `tests/failure_injection` for resilience scenarios.
+
+## Development Issues and Evidence
+
+Track unresolved defects, recurring failures and readiness limitations in the
+[Development Issue Register](docs/DEVELOPMENT_ISSUES.md), and link affected PRs to
+the stable record. Preserve source-bound failures and separate verified findings
+from hypotheses. Passing reruns or improved diagnostics do not close an unknown
+cause; use the record's closure criteria or an explicitly reviewed disposition.
+Keep future runtime incident records separate from development issues.
 
 ## Version Badge Drift
 
