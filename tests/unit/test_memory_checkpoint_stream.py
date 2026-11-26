@@ -409,6 +409,90 @@ def test_final_governance_observation_and_worker_wake(
     ).fetchone() == (1,)
 
 
+@pytest.mark.parametrize(
+    ("phase", "generation", "error"),
+    [
+        ("precommit", 0, "denied"),
+        ("postcommit", 1, "uncertain"),
+    ],
+)
+@pytest.mark.parametrize(
+    "ledger",
+    [
+        pytest.param(None, id="active"),
+        pytest.param("{", id="invalid-json"),
+        pytest.param("[]", id="non-object"),
+        pytest.param('{"event":"created"}', id="missing-id"),
+        pytest.param(
+            '{"event":"created","containment_id":"cnt_bad","intent":[]}',
+            id="invalid-intent",
+        ),
+        pytest.param("", id="read-error"),
+    ],
+)
+def test_advance_resamples_containment_at_commit_boundaries(
+    governed, tmp_path, monkeypatch, phase, generation, error, ledger
+):
+    # Aetherra imports
+    from Aetherra.guardian import ContainmentAction, IntentDeclaration
+    from Aetherra.guardian.containment import record_containment
+
+    def change_containment():
+        if ledger is not None:
+            state = tmp_path / "guardian" / "containment.jsonl"
+            state.parent.mkdir(exist_ok=True)
+            if ledger:
+                state.write_text(ledger, encoding="utf-8")
+            else:
+                state.mkdir()
+            return
+        record_containment(
+            IntentDeclaration(
+                requester="consciousness:core",
+                subsystem="consciousness",
+                action="consciousness.continuity_advance",
+                target="memory:core",
+                purpose="Pause checkpoint advances",
+            ),
+            ContainmentAction.BLOCK_ACTION,
+            reason="test_containment",
+        )
+
+    connect = sqlite3.connect
+    armed = False
+
+    class ObservedConnection(sqlite3.Connection):
+        def commit(self):
+            super().commit()
+            if armed and phase == "postcommit":
+                change_containment()
+
+    monkeypatch.setattr(
+        sqlite3,
+        "connect",
+        lambda *a, **kw: connect(*a, **kw, factory=ObservedConnection),
+    )
+    acquired = acquire(governed)
+    first = done(acquired)
+    armed = True
+    original_advance = api()._advance
+
+    def advance_before_recheck(*args):
+        receipt = original_advance(*args)
+        if phase == "precommit":
+            change_containment()
+        return receipt
+
+    monkeypatch.setattr(api(), "_advance", advance_before_recheck)
+    assert done(advance(governed, request(first.token, first.head, 1)), error) is None
+    assert len(legacy.rows(governed)) == generation
+    assert governed.conn.execute(
+        "SELECT generation, (SELECT COUNT(*) FROM checkpoint_stream_commits) "
+        "FROM checkpoint_stream_heads"
+    ).fetchone() == (generation, generation)
+    assert acquired.poll(local_owned=True).value is first
+
+
 def test_cancelled_worker_owns_slot_until_real_completion(governed, monkeypatch):
     entered, release = legacy.blocked_audit(monkeypatch)
     job = acquire(governed)
