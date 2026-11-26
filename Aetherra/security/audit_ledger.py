@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+# Standard library imports
 import contextlib
 import hashlib
 import hmac
@@ -9,9 +10,12 @@ import json
 import os
 import secrets
 import threading
+from collections import OrderedDict
 from collections.abc import Mapping
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
+from time import monotonic
 from typing import Any
 
 AUDIT_VERSION = 1
@@ -28,6 +32,22 @@ class AuditIntegrityError(AuditLedgerError):
 
 _LOCKS_GUARD = threading.Lock()
 _LOCKS: dict[Path, threading.RLock] = {}
+
+
+@dataclass(frozen=True, slots=True)
+class _VerifiedPrefix:
+    size: int
+    digest: bytes
+    key_digest: bytes
+    line_count: int
+    sequence: int
+    tail_hash: str
+    expires_at: float
+
+
+_PREFIX_LIMIT = 64
+_PREFIX_LIFETIME = 600.0
+_PREFIXES: OrderedDict[Path, _VerifiedPrefix] = OrderedDict()
 
 
 def _path_lock(path: Path) -> threading.RLock:
@@ -47,7 +67,9 @@ def _canonical(value: Mapping[str, Any]) -> bytes:
 
 
 def _record_hash(record: Mapping[str, Any]) -> str:
-    body = {key: value for key, value in record.items() if key not in {"hash", "signature"}}
+    body = {
+        key: value for key, value in record.items() if key not in {"hash", "signature"}
+    }
     return hashlib.sha256(_canonical(body)).hexdigest()
 
 
@@ -84,7 +106,9 @@ class SecurityAuditLedger:
 
         with self._lock:
             secret = self._load_or_create_secret()
-            sequence, previous_hash = self._verified_tail(secret)
+            sequence, previous_hash, prefix = self._verified_tail(
+                secret, for_append=True
+            )
             record: dict[str, Any] = {
                 "audit_version": AUDIT_VERSION,
                 "sequence": sequence + 1,
@@ -101,6 +125,12 @@ class SecurityAuditLedger:
             record["hash"] = _record_hash(record)
             record["signature"] = _signature(secret, record["hash"])
             self._append_bytes(_canonical(record) + b"\n")
+            if prefix is not None:
+                # Only the bytes read and validated before this write are trusted.
+                with _LOCKS_GUARD:
+                    _PREFIXES[self.path] = prefix
+                    if len(_PREFIXES) > _PREFIX_LIMIT:
+                        _PREFIXES.popitem(last=False)
             return record
 
     def verify_integrity(
@@ -116,24 +146,81 @@ class SecurityAuditLedger:
                     return not require_signed_records and (
                         not self.path.exists() or self.path.stat().st_size == 0
                     )
-                sequence, _ = self._verified_tail(secret)
+                sequence, _, _ = self._verified_tail(secret)
                 return sequence > 0 if require_signed_records else True
             except (AuditLedgerError, OSError, ValueError, json.JSONDecodeError):
                 return False
 
-    def _verified_tail(self, secret: bytes) -> tuple[int, str]:
+    def _verified_tail(
+        self, secret: bytes, *, for_append: bool = False
+    ) -> tuple[int, str, _VerifiedPrefix | None]:
+        # The caller holds the path lock. Taking the entry out here means a
+        # failed validation or write cannot publish an updated cache entry.
+        cached = None
+        if for_append:
+            with _LOCKS_GUARD:
+                cached = _PREFIXES.pop(self.path, None)
         if not self.path.exists():
-            return 0, GENESIS_HASH
+            return 0, GENESIS_HASH, None
         try:
-            lines = self.path.read_bytes().splitlines()
+            data = self.path.read_bytes()
         except OSError as exc:
             raise AuditLedgerError(f"unable to read audit ledger: {exc}") from exc
+        if not for_append:
+            sequence, previous_hash = self._validate_lines(secret, data.splitlines())
+            return sequence, previous_hash, None
 
-        sequence = 0
+        now = monotonic()
+        key_digest = hashlib.sha256(secret).digest()
+        expires_at = now + _PREFIX_LIFETIME
+        offset = line_offset = sequence = 0
         previous_hash = GENESIS_HASH
+        digest = hashlib.sha256()
+        if (
+            cached is not None
+            and now < cached.expires_at
+            and len(data) >= cached.size
+            and hmac.compare_digest(key_digest, cached.key_digest)
+        ):
+            prefix_digest = hashlib.sha256(memoryview(data)[: cached.size])
+            if hmac.compare_digest(prefix_digest.digest(), cached.digest):
+                digest = prefix_digest
+                offset, line_offset = cached.size, cached.line_count
+                sequence, previous_hash = cached.sequence, cached.tail_hash
+                expires_at = cached.expires_at
+
+        suffix = data[offset:]
+        lines = suffix.splitlines()
+        sequence, previous_hash = self._validate_lines(
+            secret, lines, sequence, previous_hash, line_offset
+        )
+        # LF (including CRLF) is an unambiguous splitlines boundary when more
+        # bytes arrive. Cold validation retains the original legacy/EOF rules.
+        prefix = None
+        if sequence and data.endswith(b"\n"):
+            digest.update(suffix)
+            prefix = _VerifiedPrefix(
+                len(data),
+                digest.digest(),
+                key_digest,
+                line_offset + len(lines),
+                sequence,
+                previous_hash,
+                expires_at,
+            )
+        return sequence, previous_hash, prefix
+
+    @staticmethod
+    def _validate_lines(
+        secret: bytes,
+        lines: list[bytes],
+        sequence: int = 0,
+        previous_hash: str = GENESIS_HASH,
+        line_offset: int = 0,
+    ) -> tuple[int, str]:
         legacy_digest = hashlib.sha256()
-        signed_records_started = False
-        for line_number, raw_line in enumerate(lines, start=1):
+        signed_records_started = sequence > 0
+        for line_number, raw_line in enumerate(lines, start=line_offset + 1):
             if not raw_line.strip():
                 continue
             try:
@@ -146,7 +233,9 @@ class SecurityAuditLedger:
                 raise AuditIntegrityError(f"invalid record at audit line {line_number}")
             if record.get("audit_version") != AUDIT_VERSION:
                 if signed_records_started:
-                    raise AuditIntegrityError("legacy record found after signed records")
+                    raise AuditIntegrityError(
+                        "legacy record found after signed records"
+                    )
                 legacy_digest.update(raw_line.strip())
                 legacy_digest.update(b"\n")
                 continue
@@ -157,7 +246,9 @@ class SecurityAuditLedger:
                     previous_hash = f"legacy:{legacy_digest.hexdigest()}"
             sequence += 1
             if record.get("sequence") != sequence:
-                raise AuditIntegrityError(f"invalid sequence at audit line {line_number}")
+                raise AuditIntegrityError(
+                    f"invalid sequence at audit line {line_number}"
+                )
             if record.get("prev_hash") != previous_hash:
                 raise AuditIntegrityError(f"broken chain at audit line {line_number}")
             actual_hash = record.get("hash")
@@ -169,10 +260,15 @@ class SecurityAuditLedger:
             if not isinstance(actual_signature, str) or not hmac.compare_digest(
                 actual_signature, _signature(secret, actual_hash)
             ):
-                raise AuditIntegrityError(f"invalid signature at audit line {line_number}")
+                raise AuditIntegrityError(
+                    f"invalid signature at audit line {line_number}"
+                )
             previous_hash = actual_hash
 
-        if not signed_records_started and legacy_digest.digest() != hashlib.sha256().digest():
+        if (
+            not signed_records_started
+            and legacy_digest.digest() != hashlib.sha256().digest()
+        ):
             previous_hash = f"legacy:{legacy_digest.hexdigest()}"
         return sequence, previous_hash
 

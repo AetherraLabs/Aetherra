@@ -819,6 +819,68 @@ database = recovery.database
 
 
 @pytest.mark.asyncio
+async def test_resume_with_grown_signed_history_reaches_first_tick(
+    database, policy, tmp_path, monkeypatch
+):
+    # Standard library imports
+    import json
+
+    # Aetherra imports
+    from Aetherra.aetherra_core.memory import lifecycle_checkpoint
+    from Aetherra.security import audit_ledger
+
+    _, commits = recovery.seed(database, 1)
+    rules_path = policy / "guardian.json"
+    rules = json.loads(rules_path.read_text())
+    rules["allow"].append(
+        {
+            "requester": "consciousness:core",
+            "subsystem": "consciousness",
+            "action": "consciousness.micro_reflection_update",
+        }
+    )
+    rules_path.write_text(json.dumps(rules))
+    ledger = audit_ledger.SecurityAuditLedger(
+        tmp_path / ".aetherra/security/audit.jsonl"
+    )
+    for _ in range(32):
+        ledger.append(actor="fixture", event_type="signed_history")
+
+    # Charge 1/16 simulated second per historical canonical hash. A repeated
+    # 32-record scan exhausts the real one-second admission window by itself.
+    elapsed = 0.0
+    epoch = time.monotonic()
+    record_hash = audit_ledger._record_hash
+
+    def charge_history(record):
+        nonlocal elapsed
+        if record.get("event_type") == "signed_history":
+            elapsed += 1 / 16
+        return record_hash(record)
+
+    clock = SimpleNamespace(
+        monotonic=lambda: epoch + elapsed, time=time.time, sleep=time.sleep
+    )
+    with monkeypatch.context() as mp:
+        mp.setattr(runtime, "time", clock)
+        mp.setattr(lifecycle_checkpoint, "time", clock)
+        mp.setattr(audit_ledger, "_record_hash", charge_history)
+        owned = observer(database, automatic=recovery.AUTO)
+        owned.start()
+        try:
+            status = await until(
+                owned, lambda s: s["ticks_completed"] or not s["thread_alive"]
+            )
+            assert status["ticks_completed"] == 1, status["continuity"]
+            assert (
+                status["continuity"]["restored_record_id"] == commits[0].head.record_id
+            )
+        finally:
+            await owned.stop()
+    assert ledger.verify_integrity(require_signed_records=True)
+
+
+@pytest.mark.asyncio
 async def test_resume_restores_exact_state_before_tick_zero(database, monkeypatch):
     # Aetherra imports
     from Aetherra.consciousness.checkpoint import encode_checkpoint
