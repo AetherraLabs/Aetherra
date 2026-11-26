@@ -1,6 +1,26 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.19 (2026-11-26)
+
+### Bug Fixes
+
+- **guardian**: Claim one-use approvals atomically across processes
+  ([`7f1fc6e`](https://github.com/AetherraLabs/Aetherra/commit/7f1fc6e19f8f82885c54512d60f960b1d318f767))
+
+### Chores
+
+- Integrate reviewed C2b dependency #362
+  ([`b42fc9b`](https://github.com/AetherraLabs/Aetherra/commit/b42fc9b9d2210ade857cf5efac0539fa8b0eccc2))
+
+# Conflicts: #	Aetherra/guardian/state.py
+
+### Features
+
+- **memory**: Prune checkpoints with exact Guardian approval
+  ([`7fafe7b`](https://github.com/AetherraLabs/Aetherra/commit/7fafe7bdae0888193058146c30881b58e51ba0fb))
+
+
 ## v0.5.0-beta.18 (2026-11-26)
 
 ### Bug Fixes
