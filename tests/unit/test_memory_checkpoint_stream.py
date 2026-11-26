@@ -589,6 +589,86 @@ def test_invalid_retention_is_not_admitted(governed, monkeypatch, n):
     done(job, "invalid")
 
 
+@pytest.fixture
+def backends(governed, tmp_path, monkeypatch):
+    # Aetherra imports
+    from Aetherra.aetherra_core.memory.aetherra_memory_engine import (
+        AetherraMemoryEngineAdvanced,
+    )
+
+    monkeypatch.chdir(tmp_path)
+    # Aetherra imports
+    from aetherra_os_launcher import MemoryAdapter
+
+    engine = AetherraMemoryEngineAdvanced()
+    original = engine.core_memory
+    try:
+        yield MemoryAdapter(engine), engine, original
+    finally:
+        assert original.close()
+
+
+def test_adapter_uses_only_original_advanced_core(governed, backends):
+    adapter, engine, original = backends
+    first = done(acquire(adapter))
+    receipt = done(advance(adapter, request(first.token, first.head, 1)))
+    assert [r[0] for r in legacy.rows(original)] == [receipt.head.record_id]
+    engine.core_memory = governed
+    for backend in (adapter, engine):
+        refusal = acquire(backend)
+        assert not refusal.admitted
+        done(refusal, "unavailable")
+    assert not legacy.rows(governed)
+
+
+@pytest.mark.parametrize("target", ["adapter", "advanced"])
+@pytest.mark.parametrize("operation", ["acquire", "advance"])
+@pytest.mark.parametrize("phase", ["audit", "committed"])
+def test_forwarding_chain_checked_through_handoff(
+    governed, backends, monkeypatch, target, operation, phase
+):
+    adapter, engine, original = backends
+    backend = adapter if target == "adapter" else engine
+    reached, release, armed = (threading.Event() for _ in range(3))
+    connect = sqlite3.connect
+
+    class PausedCommit(sqlite3.Connection):
+        def commit(self):
+            super().commit()
+            if armed.is_set():
+                reached.set()
+                assert release.wait(2)
+
+    monkeypatch.setattr(
+        sqlite3, "connect", lambda *a, **kw: connect(*a, **kw, factory=PausedCommit)
+    )
+    first = done(acquire(backend))
+    if phase == "audit":
+        reached, release = legacy.blocked_audit(monkeypatch)
+    else:
+        armed.set()
+    job = (
+        acquire(backend, "resume")
+        if operation == "acquire"
+        else advance(backend, request(first.token, first.head, 1))
+    )
+    try:
+        assert reached.wait(1)
+        if target == "adapter":
+            adapter.impl = object()
+        else:
+            engine.core_memory = governed
+        assert job.outstanding
+    finally:
+        release.set()
+    done(job, "uncertain")
+    expected = (2, 0) if operation == "acquire" else (1, 1)
+    assert original.conn.execute(
+        "SELECT writer_epoch,generation FROM checkpoint_stream_heads"
+    ).fetchone() == (expected if phase == "committed" else (1, 0))
+    assert not legacy.rows(governed)
+
+
 @pytest.mark.parametrize(
     "table", ["memories", "checkpoint_stream_commits", "checkpoint_stream_heads"]
 )
