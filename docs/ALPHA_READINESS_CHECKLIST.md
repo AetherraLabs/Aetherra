@@ -2,6 +2,41 @@
 
 Updated: 2026-11-25
 
+## DEV-CKPT-001 Candidate Follow-Up (2026-11-25)
+
+These checks are bound to product commit
+`4d9c8f8e455b87624e6918dbcc784577950af4fb` and tree
+`de52a848d9e410e5829d4406c8527cd71263e92d`. C2b remains unmerged.
+See the [issue](DEVELOPMENT_ISSUES.md#dev-ckpt-001--extended-run-observer-and-checkpoint-progress-gap),
+[candidate decision](ALPHA_READINESS_DECISION.md#dev-ckpt-001-candidate-follow-up-2026-11-25)
+and [delivery receipt](evidence/dev_ckpt_001_delivery_2026-11-25.json).
+
+- [x] Registry-owned status-wait expiry, owner receipt priority and bounded signed
+  audit-prefix reuse have source-bound red/green evidence; safety controls stay
+  enforced. Worker exceptions, late results and expired receipts remain distinct.
+- [x] Full suite: 4,136 passed, 38 skipped, 45.29% coverage against the unchanged
+  22% floor. Python quality, boot and integration passed.
+- [x] Extended-04: 65 minutes, 300-second cadence, 11 timely acknowledgments,
+  continued ticks after retention needed approval, exact generation-11 restore
+  at epoch 2 before Core work, orderly harness drains and independent port closure.
+- [x] Ten genuine GPT-4o turns, zero fallback, joined synthetic write/retrieval/
+  provider IDs and isolation between two local data directories.
+- [x] Separately instrumented R3: two genuine operator Ctrl+C events, direct
+  generation-1/2 acknowledgments, exact restart, signed audits and zero exits.
+  Browser reconnect and unavailable-state clearing passed; actions stayed disabled.
+- [x] Preserve failed Extended-01/02/03 and uninstrumented physical-01 outcomes;
+  later passes do not resolve their missing causal or terminal observations.
+- [ ] Close ALPHA-CKPT-001 and DEV-CKPT-001: original causes remain unknown.
+- [ ] Close DEV-AUDIT-001 and DEV-OBS-001: cold/linear costs and aggregate status
+  remain open; two deferred Minor review findings are recorded in the issue.
+- [ ] Establish delivered-revision hosted CI, merged-main verification and actual
+  production signing separately. Local passes and historical release signatures
+  do not certify those gates for this candidate.
+
+The existing supervised internal-alpha scope is unchanged. Unattended and
+production operation remain NO-GO. Pending Temporal work and release controls
+remain separate from this focused delivery.
+
 ## C2b Prerequisite Checkpoint (2026-11-25)
 
 - [x] [PR #355](https://github.com/AetherraLabs/Aetherra/pull/355) merged and

@@ -25,6 +25,61 @@ See [the checklist](ALPHA_READINESS_CHECKLIST.md),
 [fresh-install evidence](evidence/desktop_alpha_2026-11-22.json) and
 [clean-main acceptance](evidence/desktop_alpha_main_2026-11-22.json).
 
+## DEV-CKPT-001 Candidate Follow-Up (2026-11-25)
+
+**Scoped corrections verified for the candidate; operational authority unchanged.**
+The product source is `4d9c8f8e455b87624e6918dbcc784577950af4fb`, tree
+`de52a848d9e410e5829d4406c8527cd71263e92d`, stacked on the unmerged C2b
+candidate `c53cc5524304a6a43688bb683b07f9aa6b467390`. The
+[issue record](DEVELOPMENT_ISSUES.md#dev-ckpt-001--extended-run-observer-and-checkpoint-progress-gap)
+and [delivery receipt](evidence/dev_ckpt_001_delivery_2026-11-25.json) retain
+the original gap, source-specific failures, controlled mechanisms and archive hashes.
+
+The final source passed 4,136 tests with 38 skips and 45.29% coverage against
+22%; quality, boot and integration passed. Extended-04 acknowledged 11 periodic
+checkpoints in 65 minutes at the default 300-second cadence, continued after
+retention needed approval and restored the exact generation-11 head at epoch 2
+before any Core tick or event. Both harness SIGINT stops drained, exited zero
+and independently closed listeners; retention blocked their stop saves. Ten
+actual GPT-4o turns used no fallback. Synthetic write, retrieval and provider
+input joined by record ID, and the separate local data directory disclosed no
+corresponding fact. This establishes local storage isolation only.
+
+The earlier uninstrumented physical-01 run committed generation 1 and exited
+zero, but its last direct owner sample was pending. Its strict gate remains
+failed, terminal acknowledgment unknown and second session skipped. R3 is a
+separate, reviewed instrumentation result on the same product source: it reads
+cached owner status after real stop and Memory drain, before Hub teardown, then
+publishes bounded metadata after CLI unwind. Two genuine operator Ctrl+C events
+acknowledged generations 1 and 2 around exact same-store restart at epoch 2.
+Both phases verified signed/durable joins, zero runtime/redirector exits and
+closed listeners. No equivalence claim supplies the missing original decision.
+
+The same browser tab reconnected automatically, displayed the restored row,
+advanced from 6 to 21 ticks and cleared current evidence after both exits.
+Actions stayed disabled. The 54.23-second host-clock observation gap does not
+establish offline duration. Durable prior acceptance and termination remain
+unknown, and aggregate status remains incomplete. Cleanup found zero owned
+processes and listeners without forced runtime cleanup.
+
+Source and final independent review found zero outstanding Critical or Important
+issues. Deferred Minor findings cover ambient signing-key test isolation and
+legacy malformed-submission failure-summary completeness; the recorded runner
+cleared signing variables, and raw helper evidence remains available with
+fail-closed verification. ALPHA-CKPT-001 and DEV-CKPT-001 remain OPEN for their
+historical causes. DEV-AUDIT-001 remains OPEN for cold/linear audit limits;
+DEV-OBS-001 remains OPEN for aggregate status. The append cache is bounded to
+64 paths and 600 seconds, requires matching bytes and effective key, validates
+signed suffixes and leaves independent integrity checks cold from genesis.
+It does not establish cross-process coordination or large-ledger latency bounds.
+
+Strict Guardian, Security, signing, receipt deadlines, ownership, single-worker
+Memory authority and retention approval remain unchanged. C2b remains unmerged;
+the existing supervised internal-alpha boundary stands, and unattended or
+production operation remains NO-GO. Hosted PR checks belong to the delivered
+revision. Production bundle signing and signed-manifest enforcement require a
+main push; no new production-signing pass, merge or release is claimed here.
+
 ## C2b Prerequisite Checkpoint (2026-11-25)
 
 Independent review found no merge blockers. The PR had 33 successful workflow
