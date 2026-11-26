@@ -1,6 +1,72 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.17 (2026-11-26)
+
+### Bug Fixes
+
+- **smoke**: Capture applied observer checkpoint before the first tick
+  ([`9b33291`](https://github.com/AetherraLabs/Aetherra/commit/9b33291fe35887b63ea6f0eb1a6010d4805b479a))
+
+### Chores
+
+- Align C2b restore with verified main
+  ([`87a6c10`](https://github.com/AetherraLabs/Aetherra/commit/87a6c10654f8cbca04cc07f1cb9cb927513beec1))
+
+- Integrate reviewed C2b dependency #359
+  ([`24c5e3e`](https://github.com/AetherraLabs/Aetherra/commit/24c5e3e82b19cf541fa4eacf71429e15044374fc))
+
+### Features
+
+- **consciousness**: Restore configured checkpoint heads before ticks
+  ([`f670b25`](https://github.com/AetherraLabs/Aetherra/commit/f670b25d7e06ef0d9811a51603bb6dabb60785ab))
+
+
+## v0.5.0-beta.16 (2026-11-26)
+
+### Bug Fixes
+
+- **memory**: Add forwarding import headings
+  ([`de700f8`](https://github.com/AetherraLabs/Aetherra/commit/de700f838d54d8930f730dad6224bd1df7a2d713))
+
+### Chores
+
+- Integrate reviewed C2b dependency #357
+  ([`332fa3f`](https://github.com/AetherraLabs/Aetherra/commit/332fa3f21c4f92267936ee640f409b41f37821b5))
+
+- Integrate reviewed C2b dependency #358
+  ([`1f775aa`](https://github.com/AetherraLabs/Aetherra/commit/1f775aab254750a6f2159bb269f1d49768816e0c))
+
+### Features
+
+- **memory**: Inspect checkpoint attempts after fencing
+  ([`e9a744c`](https://github.com/AetherraLabs/Aetherra/commit/e9a744cc18b6fbf276ea8423514740f96e40eb6c))
+
+- **runtime**: Forward checkpoint streams through owned Memory
+  ([`4d6e28e`](https://github.com/AetherraLabs/Aetherra/commit/4d6e28e198a0c6551f496017d80bda62d78a57ec))
+
+
+## v0.5.0-beta.15 (2026-11-26)
+
+### Bug Fixes
+
+- **memory**: Recheck Guardian containment at checkpoint boundaries
+  ([`8fd8bdf`](https://github.com/AetherraLabs/Aetherra/commit/8fd8bdfb8c574a08284fb6311bd625898541f3cb))
+
+- **memory**: Satisfy root Python quality checks
+  ([`1c686ca`](https://github.com/AetherraLabs/Aetherra/commit/1c686caae6d9599a90720420e69bc36b50237b30))
+
+### Documentation
+
+- **continuity**: Record C2b contract and verified prerequisites
+  ([`34b28a9`](https://github.com/AetherraLabs/Aetherra/commit/34b28a9ccd5a7e39e023f306429ff0f6ac228d0d))
+
+### Features
+
+- **memory**: Add governed atomic checkpoint stream operations
+  ([`666e17c`](https://github.com/AetherraLabs/Aetherra/commit/666e17c777a0be96f7e408000694507ad256b60d))
+
+
 ## v0.5.0-beta.14 (2026-11-25)
 
 ### Bug Fixes
