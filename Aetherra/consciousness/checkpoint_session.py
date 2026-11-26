@@ -17,6 +17,7 @@ from Aetherra.aetherra_core.memory.checkpoint_stream import (
     AdvanceRequest,
     AttemptDescriptor,
     InspectionResult,
+    PruneResult,
     SnapshotMetadata,
     StreamHead,
     StreamKey,
@@ -169,6 +170,8 @@ class ObserverCheckpointSession:
         self._inspect_job = None
         self._acquired: AcquiredStream | None = None
         self._taken = False
+        self._applied = False
+        self._pruning = False
         self._status = {
             "state": "restoring",
             "last_save_trigger": None,
@@ -374,6 +377,7 @@ class ObserverCheckpointSession:
         )
 
     def mark_applied(self):
+        self._applied = True
         state = "restored" if self._acquired.head.generation else "fresh"
         self._status["state"] = state
         if state == "restored" and self._attempt is None:
@@ -399,6 +403,8 @@ class ObserverCheckpointSession:
             self.startup_cancelled.set()
             if self._write_control is not None:
                 self._write_control.limit_deadline(self._stop_deadline)
+                if self._pruning:
+                    self._write_control.close_admission()
             if not save_checkpoint:
                 self._cancel_writes()
         self.wake_event.set()
@@ -451,7 +457,67 @@ class ObserverCheckpointSession:
             and local_owned
             and not self._cancelled.is_set()
         ):
-            self._schedule_write()
+            if self._status["retention_needed"]:
+                if self._applied and self._stop_deadline is None:
+                    self._schedule_prune()
+            else:
+                self._schedule_write()
+
+    def _schedule_prune(self):
+        with self._stop_lock:
+            if self._cancelled.is_set() or self._stop_deadline is not None:
+                return
+            self._write_control = CheckpointJobControl(
+                self._cancelled,
+                self._monotonic_clock() + 1.0,
+                self._still_owned,
+                self.wake_event,
+            )
+            self._pruning = True
+        try:
+            self._write_job = self._memory.submit_prune_checkpoint_stream(
+                token=self._acquired.token,
+                expected_head=self._head,
+                retain_checkpoints=self._config["retain_checkpoints"],
+                control=self._write_control,
+            )
+            self._status["outstanding"] = self._write_job.admitted
+            if not self._write_job.admitted:
+                refusal = self._write_job.poll(local_owned=True)
+                self._write_job = None
+                self._pruning = False
+                if refusal.error_code != "cancelled" or self._stop_deadline is None:
+                    self._retention_failure(refusal.error_code)
+        except Exception:
+            self._pruning = False
+            self._retention_failure("unavailable")
+
+    def _retention_failure(self, code):
+        self._write_failure(code)
+        if code not in ("uncertain", "writer_fenced"):
+            self._status["state"] = "retention_blocked"
+
+    def _consume_prune(self, result):
+        if self._status["last_error_code"] is not None:
+            return
+        if result.error_code is not None:
+            self._retention_failure(result.error_code)
+            return
+        receipt = result.value
+        retain = self._config["retain_checkpoints"]
+        pin = self._acquired.head.generation
+        older_pin = 0 < pin <= self._head.generation - retain
+        if (
+            type(receipt) is not PruneResult
+            or receipt.head != self._head
+            or receipt.retained_count > retain + int(older_pin)
+            or receipt.retained_count < self._head.generation - receipt.pruned_through
+        ):
+            self._retention_failure("corrupt")
+            return
+        self._status.update(
+            retention_needed=False, ownership_checked_at_unix_s=self._wall_clock()
+        )
 
     def _schedule_write(self):
         now = self._monotonic_clock()
@@ -576,6 +642,12 @@ class ObserverCheckpointSession:
         self._status["outstanding"] = outstanding
         if not outstanding:
             self._write_job = None
+        if self._pruning:
+            self._consume_prune(result)
+            if not outstanding:
+                self._pruning = False
+            return
+        if not outstanding:
             self._next_due = (
                 self._monotonic_clock() + self._config["save_interval_seconds"]
             )
@@ -590,6 +662,7 @@ class ObserverCheckpointSession:
             type(receipt) is not AdvanceReceipt
             or receipt.attempt != attempt
             or type(receipt.head) is not StreamHead
+            or type(receipt.retention_needed) is not bool
             or type(receipt.audit_id) is not str
             or not receipt.audit_id.strip()
             or receipt.head.generation != attempt.proposed_generation
@@ -602,6 +675,7 @@ class ObserverCheckpointSession:
         self._head = receipt.head
         self._status.update(
             state="saved",
+            retention_needed=receipt.retention_needed,
             saved_record_id=receipt.head.record_id,
             saved_operation_id=attempt.operation_id,
             saved_generation=receipt.head.generation,

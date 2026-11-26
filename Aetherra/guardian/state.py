@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 # Standard library imports
+import errno
 import json
 import os
 import threading
+import time
 from collections.abc import Mapping
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +21,44 @@ def _path_lock(path: Path) -> threading.RLock:
     resolved = path.resolve()
     with _LOCKS_GUARD:
         return _LOCKS.setdefault(resolved, threading.RLock())
+
+
+@contextmanager
+def locked_jsonl(path: Path):
+    """Serialize a state transition across independent callers sharing this log."""
+    path = path.expanduser().resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    # Keep the empty sidecar at a stable inode. Closing its descriptor releases
+    # the OS lock, including when the holder exits unexpectedly.
+    fd = os.open(path.with_suffix(path.suffix + ".lock"), os.O_RDWR | os.O_CREAT, 0o600)
+    try:
+        deadline = time.monotonic() + 0.25
+        while True:
+            try:
+                _lock_descriptor(fd)
+                break
+            except OSError as exc:
+                if exc.errno not in {errno.EACCES, errno.EAGAIN, errno.EDEADLK}:
+                    raise
+                if time.monotonic() >= deadline:
+                    raise TimeoutError("Guardian state log is busy") from exc
+                time.sleep(0.01)
+        yield path
+    finally:
+        os.close(fd)
+
+
+def _lock_descriptor(fd: int) -> None:
+    if os.name == "nt":
+        # Standard library imports
+        import msvcrt
+
+        msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+    else:
+        # Standard library imports
+        import fcntl
+
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
 
 
 def append_jsonl(path: Path, record: Mapping[str, Any]) -> None:

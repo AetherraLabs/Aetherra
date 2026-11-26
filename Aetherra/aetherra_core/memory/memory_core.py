@@ -25,6 +25,8 @@ if TYPE_CHECKING:
         AdvanceRequest,
         AttemptDescriptor,
         InspectionResult,
+        PruneResult,
+        StreamHead,
         StreamJob,
         StreamKey,
         StreamToken,
@@ -222,6 +224,22 @@ class LyrixaMemorySystem:
     ) -> "StreamJob[InspectionResult]":
         return self._submit_checkpoint_stream(
             operation="inspect", token=token, attempt=attempt, control=control
+        )
+
+    def submit_prune_checkpoint_stream(
+        self,
+        *,
+        token: "StreamToken",
+        expected_head: "StreamHead",
+        retain_checkpoints: int,
+        control: "CheckpointJobControl",
+    ) -> "StreamJob[PruneResult]":
+        return self._submit_checkpoint_stream(
+            operation="prune",
+            token=token,
+            expected_head=expected_head,
+            retain_checkpoints=retain_checkpoints,
+            control=control,
         )
 
     def submit_advance_checkpoint_stream(

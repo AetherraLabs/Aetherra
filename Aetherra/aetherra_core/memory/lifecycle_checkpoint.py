@@ -36,6 +36,17 @@ _OWNER = "consciousness:observer"
 _SCOPE = "observer_continuity:v1"
 _HANDLE = re.compile(r"[0-9a-f]{32}\Z")
 _MAX_BYTES = 65536
+# CASE prevents materializing oversized content/context in Python.
+_CHECKPOINT_COLUMNS = (
+    "SELECT id, length(CAST(content AS BLOB)), "
+    "CASE WHEN length(CAST(content AS BLOB))<=? THEN content END, "
+    "length(CAST(context AS BLOB)), "
+    "CASE WHEN length(CAST(context AS BLOB))<=? THEN context END "
+)
+_READ_CHECKPOINT = _CHECKPOINT_COLUMNS + "FROM memories WHERE memory_type=? LIMIT 2"
+_READ_INDEXED_CHECKPOINT = _CHECKPOINT_COLUMNS + (
+    "FROM memories INDEXED BY idx_memory_type WHERE memory_type=? COLLATE BINARY LIMIT 2"
+)
 
 
 class CheckpointError(Exception):
@@ -64,6 +75,7 @@ class CheckpointJobControl:
     )
     _closed: bool = field(default=False, init=False, repr=False)
     _bound_deadline: float | None = field(default=None, init=False, repr=False)
+    _admission_closed: bool = field(default=False, init=False, repr=False)
 
     def __post_init__(self):
         if (
@@ -83,6 +95,11 @@ class CheckpointJobControl:
         with self._lock:
             object.__setattr__(self, "_closed", True)
             self.cancelled.set()
+
+    def close_admission(self) -> None:
+        """Close new submissions while preserving a job that already owns the slot."""
+        with self._lock:
+            object.__setattr__(self, "_admission_closed", True)
 
     def limit_deadline(self, deadline: float) -> None:
         """Shorten an admitted attempt to the original orderly-stop budget."""
@@ -296,20 +313,30 @@ def _authorize(operation: str, checkpoint_id: str):
     caps = ("consciousness:write", "memory:read", "fs:read")
     if operation == "save":
         caps = ("consciousness:write", "memory:write", "fs:read", "fs:write")
-    intent, _ = _authorize_intent(operation, caps, {"checkpoint_id": checkpoint_id})
+    intent = _checkpoint_intent(operation, caps, {"checkpoint_id": checkpoint_id})
+    _authorize_intent(intent)
     return intent
 
 
-def _authorize_stream(job):
-    if job.operation == "acquire":
-        key, mode, retain = job.data
+def _stream_intent(operation, data):
+    if operation == "acquire":
+        key, mode, retain = data
         metadata = {
             "stream_id": key.stream_id,
             "start_mode": mode,
             "retain_checkpoints": retain,
         }
+    elif operation == "prune":
+        token, head, retain = data
+        metadata = {
+            "stream_id": token.key.stream_id,
+            "writer_epoch": token.writer_epoch,
+            "generation": head.generation,
+            "expected_head_digest": head.digest(),
+            "retain_checkpoints": retain,
+        }
     else:
-        attempt = job.data[1] if job.operation == "inspect" else job.data.attempt
+        attempt = data[1] if operation == "inspect" else data.attempt
         metadata = {
             "stream_id": attempt.token.key.stream_id,
             "writer_epoch": attempt.token.writer_epoch,
@@ -321,36 +348,61 @@ def _authorize_stream(job):
             "predecessor_head_digest": attempt.expected_head.digest(),
         }
     caps = ("consciousness:write", "memory:read", "memory:write", "fs:read", "fs:write")
-    if job.operation == "inspect":
+    if operation == "inspect":
         caps = ("consciousness:write", "memory:read", "fs:read")
-        metadata["inspecting_epoch"] = job.data[0].writer_epoch
-    intent, audit = _authorize_intent(job.operation, caps, metadata)
+        metadata["inspecting_epoch"] = data[0].writer_epoch
+    return _checkpoint_intent(operation, caps, metadata)
+
+
+def _authorize_stream(job):
+    intent = _stream_intent(job.operation, job.data)
+    approval_id = (
+        os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID") if job.operation == "prune" else None
+    )
+    audit = _authorize_intent(intent, approval_id=approval_id)
     if len(audit.encode("utf-8")) > 256:
         raise CheckpointError("audit_failed")
     return intent, audit
 
 
-def _authorize_intent(operation, caps, metadata):
+def _checkpoint_intent(operation, caps, metadata):
     # Aetherra imports
-    from Aetherra.guardian import IntentDeclaration, evaluate_intent
-    from Aetherra.security.capabilities import has_capability
+    from Aetherra.guardian import IntentDeclaration
 
-    _strict_policy()
-    intent = IntentDeclaration(
+    pruning = operation == "prune"
+    return IntentDeclaration(
         requester=os.getenv("AETHERRA_PRINCIPAL", "").strip() or "consciousness:core",
         subsystem="consciousness",
         action=f"consciousness.continuity_{operation}",
         target="memory:core",
         purpose="Bounded exact observer continuity checkpoint",
         capabilities=caps,
-        reversible=True,
-        rollback_plan="Rollback uncommitted transaction; preserve immutable committed rows on uncertainty.",
+        expected_outcome=(
+            "Eligible checkpoint payload and catalog members are permanently deleted at commit."
+            if pruning
+            else None
+        ),
+        reversible=not pruning,
+        rollback_plan=(
+            None
+            if pruning
+            else "Rollback uncommitted transaction; preserve immutable committed rows on uncertainty."
+        ),
         evidence=("observer_continuity:v1",),
         metadata={**metadata, "operation": operation, "schema": 1},
     )
+
+
+def _authorize_intent(intent, *, approval_id=None):
+    # Aetherra imports
+    from Aetherra.guardian import evaluate_intent
+    from Aetherra.security.capabilities import has_capability
+
+    _strict_policy()
     try:
         decision = evaluate_intent(
             intent,
+            approval_id=approval_id,
             capability_checker=has_capability,
             require_valid_policy=True,
         )
@@ -360,7 +412,7 @@ def _authorize_intent(operation, caps, metadata):
         raise CheckpointError("denied")
     if not isinstance(decision.audit_id, str) or not decision.audit_id.strip():
         raise CheckpointError("audit_failed")
-    return intent, decision.audit_id
+    return decision.audit_id
 
 
 @dataclass(frozen=True)
@@ -436,6 +488,7 @@ class LifecycleCheckpointWorker:
         retain_checkpoints=None,
         request=None,
         token=None,
+        expected_head=None,
         attempt=None,
         backend_owned=None,
     ):
@@ -443,6 +496,7 @@ class LifecycleCheckpointWorker:
         from .checkpoint_stream import (
             AdvanceRequest,
             AttemptDescriptor,
+            StreamHead,
             StreamJob,
             StreamKey,
             StreamToken,
@@ -474,6 +528,15 @@ class LifecycleCheckpointWorker:
             ):
                 data = (token, attempt)
                 handle = attempt.checkpoint_id
+            elif (
+                operation == "prune"
+                and type(token) is StreamToken
+                and type(expected_head) is StreamHead
+                and type(retain_checkpoints) is int
+                and 2 <= retain_checkpoints <= 100
+            ):
+                data = (token, expected_head, retain_checkpoints)
+                handle = token.key.stream_id
             elif operation == "advance" and type(request) is AdvanceRequest:
                 data = request
                 handle = request.attempt.checkpoint_id
@@ -505,9 +568,9 @@ class LifecycleCheckpointWorker:
             # Admission checks only internal cancellation/deadline state.
             # External readiness and policy run on the owned worker.
             with control._lock:
-                if not control._open_locked():
+                if control._admission_closed or not control._open_locked():
                     raise CheckpointError("cancelled")
-            self._job = job
+                self._job = job
             if self._thread is None:
                 self._thread = threading.Thread(
                     target=self._run,
@@ -550,7 +613,7 @@ class LifecycleCheckpointWorker:
                 failure = None
                 committing = False
                 intent = None
-                stream = job.operation in ("acquire", "advance", "inspect")
+                stream = job.operation in ("acquire", "advance", "inspect", "prune")
                 try:
                     job.check()
                     if stream:
@@ -581,12 +644,14 @@ class LifecycleCheckpointWorker:
                         with checkpoint_stream._bounded_rows(connection):
                             if job.operation == "acquire":
                                 result = checkpoint_stream._acquire(
-                                    connection, *job.data
+                                    connection, *job.data, job.control
                                 )
                             elif job.operation == "inspect":
                                 result = checkpoint_stream._inspect(
                                     connection, *job.data
                                 )
+                            elif job.operation == "prune":
+                                result = checkpoint_stream._prune(connection, *job.data)
                             else:
                                 result = checkpoint_stream._advance(
                                     connection, job.data, audit
@@ -681,14 +746,9 @@ class LifecycleCheckpointWorker:
         return checkpoint
 
     @staticmethod
-    def _read_checkpoint(connection, checkpoint_id):
-        # CASE prevents materializing oversized content/context in Python.
+    def _read_checkpoint(connection, checkpoint_id, *, indexed=False):
         records = connection.execute(
-            "SELECT id, length(CAST(content AS BLOB)), "
-            "CASE WHEN length(CAST(content AS BLOB))<=? THEN content END, "
-            "length(CAST(context AS BLOB)), "
-            "CASE WHEN length(CAST(context AS BLOB))<=? THEN context END "
-            "FROM memories WHERE memory_type=? LIMIT 2",
+            _READ_INDEXED_CHECKPOINT if indexed else _READ_CHECKPOINT,
             (
                 _MAX_BYTES,
                 _MAX_BYTES,

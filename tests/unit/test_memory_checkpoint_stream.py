@@ -7,6 +7,7 @@ import sqlite3
 import threading
 import time
 from dataclasses import asdict, replace
+from datetime import datetime, timedelta
 
 # Third party imports
 import pytest
@@ -34,7 +35,7 @@ def api():
 def governed(memory, policy):
     guardian = policy / "guardian.json"
     rules = json.loads(guardian.read_text())
-    for operation in ("acquire", "advance"):
+    for operation in ("acquire", "advance", "prune"):
         rules["allow"].append(
             dict(rules["allow"][0], action="consciousness.continuity_" + operation)
         )
@@ -622,10 +623,10 @@ def test_adapter_uses_only_original_advanced_core(governed, backends):
 
 
 @pytest.mark.parametrize("target", ["adapter", "advanced"])
-@pytest.mark.parametrize("operation", ["acquire", "advance"])
+@pytest.mark.parametrize("operation", ["acquire", "advance", "prune"])
 @pytest.mark.parametrize("phase", ["audit", "committed"])
 def test_forwarding_chain_checked_through_handoff(
-    governed, backends, monkeypatch, target, operation, phase
+    governed, backends, monkeypatch, target, operation, phase, approved_prune
 ):
     adapter, engine, original = backends
     backend = adapter if target == "adapter" else engine
@@ -647,11 +648,12 @@ def test_forwarding_chain_checked_through_handoff(
         reached, release = legacy.blocked_audit(monkeypatch)
     else:
         armed.set()
-    job = (
-        acquire(backend, "resume")
-        if operation == "acquire"
-        else advance(backend, request(first.token, first.head, 1))
-    )
+    if operation == "acquire":
+        job = acquire(backend, "resume")
+    elif operation == "advance":
+        job = advance(backend, request(first.token, first.head, 1))
+    else:
+        job = approved_prune(backend, first, first.head, 10)
     try:
         assert reached.wait(1)
         if target == "adapter":
@@ -662,7 +664,7 @@ def test_forwarding_chain_checked_through_handoff(
     finally:
         release.set()
     done(job, "uncertain")
-    expected = (2, 0) if operation == "acquire" else (1, 1)
+    expected = {"acquire": (2, 0), "advance": (1, 1), "prune": (1, 0)}[operation]
     assert original.conn.execute(
         "SELECT writer_epoch,generation FROM checkpoint_stream_heads"
     ).fetchone() == (expected if phase == "committed" else (1, 0))
@@ -739,3 +741,550 @@ def test_capture_time_preserves_raw_integer_precision(governed, stage):
     assert governed.conn.execute(
         "SELECT writer_epoch FROM checkpoint_stream_heads"
     ).fetchone() == (1,)
+
+
+def prune(db, acquired, head, retain=2, **kwargs):
+    return db.submit_prune_checkpoint_stream(
+        token=acquired.token,
+        expected_head=head,
+        retain_checkpoints=retain,
+        control=legacy.control(**kwargs),
+    )
+
+
+@pytest.fixture
+def approve_prune(monkeypatch):
+    # Aetherra imports
+    from Aetherra.guardian.approval import create_approval_request, resolve_approval
+    from Aetherra.guardian.risk import assess_risk
+
+    def approve(acquired, head, retain=2):
+        intent = legacy.api()._stream_intent("prune", (acquired.token, head, retain))
+        request = create_approval_request(intent, assess_risk(intent))
+        resolution = resolve_approval(
+            request.request_id, approved=True, approver="checkpoint-test"
+        )
+        assert resolution["state"] == "approved"
+        monkeypatch.setenv("AETHERRA_GUARDIAN_APPROVAL_ID", request.request_id)
+
+    return approve
+
+
+@pytest.fixture
+def approved_prune(approve_prune):
+    def submit(db, acquired, head, retain=2, **kwargs):
+        approve_prune(acquired, head, retain)
+        return prune(db, acquired, head, retain, **kwargs)
+
+    return submit
+
+
+def members(db):
+    return db.conn.execute(
+        "SELECT generation FROM checkpoint_stream_commits WHERE stream_id=? ORDER BY generation",
+        ("b" * 32,),
+    ).fetchall()
+
+
+def fill(db, acquired, numbers):
+    head = acquired.head
+    for n in numbers:
+        head = done(advance(db, request(acquired.token, head, n))).head
+    return head
+
+
+def test_prune_only_exact_members_and_preserve_restore_pin(governed, approved_prune):
+    db = governed
+    first = done(acquire(db, retain=2))
+    pinned = fill(db, first, [1])
+    restored = done(acquire(db, "resume", retain=2))
+    head = fill(db, restored, [2, 3, 4])
+    gone = db.conn.execute(
+        "SELECT record_id FROM checkpoint_stream_commits WHERE generation=2"
+    ).fetchone()[0]
+    c2a = legacy.save(db).result(2)
+    other = done(
+        db.submit_acquire_checkpoint_stream(
+            key=replace(first.token.key, stream_id="c" * 32),
+            start_mode="create",
+            retain_checkpoints=2,
+            control=legacy.control(),
+        )
+    )
+    foreign = fill(db, other, [500])
+    for kind in ["temporal_history", "conversation"]:
+        db.conn.execute(
+            "INSERT INTO memories (id,content,importance,created_at,last_accessed,memory_type) "
+            "VALUES (?,?,0,'t','t',?)",
+            (kind, gone, kind),
+        )
+    db.conn.commit()
+    before = legacy.rows(db)
+    result = done(approved_prune(db, restored, head))
+    assert result == api().PruneResult(head, 1, 2, 3)
+    assert members(db) == [(1,), (3,), (4,)]
+    assert legacy.rows(db) == [row for row in before if row[0] != gone]
+    for kept in (pinned, head, foreign, c2a):
+        assert legacy.load(db, kept.checkpoint_id).result(2).record_id == kept.record_id
+    assert restored.checkpoint.payload == legacy.payload(pinned.checkpoint_id)
+    assert done(approved_prune(db, restored, head)).deleted_count == 0
+    fresh = done(acquire(db, "resume", retain=100))
+    assert members(db) == [(1,), (3,), (4,)]
+    assert done(approved_prune(db, fresh, head, 100)).pruned_through == 2
+
+
+@pytest.mark.parametrize(
+    "damage", ["metadata", "reference", "unlink", "watermark", "gap"]
+)
+def test_prune_preserves_all_rows_on_inconsistency(governed, damage, approved_prune):
+    db = governed
+    old = done(acquire(db))
+    head = fill(db, old, range(1, 6))
+    current = done(acquire(db, "resume", retain=2))
+    if damage == "metadata":
+        db.conn.execute(
+            "UPDATE checkpoint_stream_commits SET metadata_bytes=? WHERE generation=2",
+            (b"{}",),
+        )
+    elif damage == "reference":
+        db.conn.execute(
+            "UPDATE checkpoint_stream_commits SET record_id=? WHERE generation=2",
+            ("e" * 32,),
+        )
+    elif damage == "unlink":
+        db.conn.execute(
+            "CREATE TRIGGER keep_row BEFORE DELETE ON checkpoint_stream_commits WHEN OLD.generation=2 BEGIN SELECT RAISE(IGNORE); END"
+        )
+    elif damage == "watermark":
+        db.conn.execute(
+            "CREATE TRIGGER keep_mark BEFORE UPDATE OF pruned_through ON checkpoint_stream_heads BEGIN SELECT RAISE(IGNORE); END"
+        )
+    else:
+        db.conn.execute("DELETE FROM checkpoint_stream_commits WHERE generation=1")
+    db.conn.commit()
+    before = list(db.conn.iterdump())
+    done(approved_prune(db, current, head), "corrupt")
+    assert list(db.conn.iterdump()) == before
+
+
+@pytest.mark.parametrize("fault", ["size", "head", "revoke", "unsigned", "takeover"])
+def test_prune_checks_epoch_head_policy_and_audit(
+    governed, policy, monkeypatch, fault, approved_prune
+):
+    # Aetherra imports
+    import Aetherra.guardian.core as guardian
+
+    db = governed
+    old = done(acquire(db, retain=2))
+    head = fill(db, old, range(1, 4))
+    before = legacy.rows(db)
+    if fault == "takeover":
+        reached, release = threading.Event(), threading.Event()
+
+        def held():
+            reached.set()
+            return release.wait(2)
+
+        with LyrixaMemorySystem(db.db_path) as other:
+            job = approved_prune(db, old, head, owned=held)
+            try:
+                assert reached.wait(1)
+                done(acquire(other, "resume", retain=2))
+            finally:
+                release.set()
+            done(job, "writer_fenced")
+    else:
+        if fault == "revoke":
+            caps = policy / "capabilities.json"
+            value = json.loads(caps.read_text())
+            value["allow"]["consciousness:core"].remove("memory:write")
+            caps.write_text(json.dumps(value))
+        elif fault == "unsigned":
+            monkeypatch.setattr(guardian, "append_guardian_decision", lambda *args: "")
+        done(
+            approved_prune(
+                db,
+                old,
+                old.head if fault == "head" else head,
+                3 if fault == "size" else 2,
+            ),
+            {
+                "size": "conflict",
+                "head": "conflict",
+                "revoke": "denied",
+                "unsigned": "audit_failed",
+            }[fault],
+        )
+    assert members(db) == [(1,), (2,), (3,)]
+    assert legacy.rows(db) == before
+
+
+def test_prune_revoked_after_deletion_before_commit(
+    governed, policy, monkeypatch, approved_prune
+):
+    db = governed
+    current = done(acquire(db, retain=2))
+    head = fill(db, current, [1, 2, 3])
+    before = list(db.conn.iterdump())
+    original = api()._prune
+
+    def revoke(*args):
+        receipt = original(*args)
+        (policy / "capabilities.json").write_text('{"allow":{}}')
+        return receipt
+
+    monkeypatch.setattr(api(), "_prune", revoke)
+    done(approved_prune(db, current, head), "denied")
+    assert list(db.conn.iterdump()) == before
+
+
+def test_increasing_retention_still_releases_obsolete_prior_pin(
+    governed, approved_prune
+):
+    db = governed
+    first = done(acquire(db, retain=2))
+    fill(db, first, [1])
+    current = done(acquire(db, "resume", retain=2))
+    head = fill(db, current, [2, 3, 4])
+    for n in range(5, 8):
+        done(approved_prune(db, current, head))
+        head = done(advance(db, request(current.token, head, n))).head
+    done(approved_prune(db, current, head))
+    assert members(db) == [(1,), (6,), (7,)]
+    # The new epoch pins 7. Generation 1 lies outside the larger window.
+    acquired = done(acquire(db, "resume", retain=3))
+    assert acquired.retention_needed
+    assert done(approved_prune(db, acquired, head, 3)).pruned_through == 5
+    assert members(db) == [(6,), (7,)]
+
+
+def test_prune_refuses_oversized_catalog_before_deleting(governed, approved_prune):
+    db = governed
+    current = done(acquire(db, retain=2))
+    head = fill(db, current, [1, 2, 3])
+    for generation in range(4, 132):
+        db.conn.execute(
+            "INSERT INTO checkpoint_stream_commits SELECT owner,scope,stream_id,?,?,?,?,?,"
+            "?,writer_epoch,?,predecessor_head_digest,metadata_bytes,audit_id "
+            "FROM checkpoint_stream_commits WHERE generation=1",
+            (
+                generation,
+                f"{generation:032x}",
+                f"{generation + 200:032x}",
+                "a" * 64,
+                "b" * 64,
+                f"{generation + 3000:032x}",
+                generation - 1,
+            ),
+        )
+    db.conn.commit()
+    before = list(db.conn.iterdump())
+    done(approved_prune(db, current, head), "corrupt")
+    assert list(db.conn.iterdump()) == before
+
+
+@pytest.mark.parametrize("column", ["checkpoint_id", "record_id"])
+def test_prune_preserves_member_aliased_by_damaged_foreign_head(
+    governed, column, approved_prune
+):
+    db = governed
+    current = done(acquire(db, retain=2))
+    head = fill(db, current, [1, 2, 3])
+    other = done(
+        db.submit_acquire_checkpoint_stream(
+            key=replace(current.token.key, stream_id="c" * 32),
+            start_mode="create",
+            retain_checkpoints=2,
+            control=legacy.control(),
+        )
+    )
+    foreign = fill(db, other, [500])
+    db.conn.execute(
+        "DELETE FROM checkpoint_stream_commits WHERE record_id=?", (foreign.record_id,)
+    )
+    if column == "record_id":
+        db.conn.execute(
+            "UPDATE checkpoint_stream_heads SET record_id=(SELECT record_id FROM checkpoint_stream_commits WHERE generation=1) WHERE stream_id=?",
+            (other.token.key.stream_id,),
+        )
+    else:
+        db.conn.execute(
+            "UPDATE checkpoint_stream_heads SET checkpoint_id=(SELECT checkpoint_id FROM checkpoint_stream_commits WHERE generation=1) WHERE stream_id=?",
+            (other.token.key.stream_id,),
+        )
+    db.conn.commit()
+    before = list(db.conn.iterdump())
+    done(approved_prune(db, current, head), "corrupt")
+    assert list(db.conn.iterdump()) == before
+
+
+def test_acquisition_installs_only_missing_head_indexes_on_v1_stream(governed):
+    db = governed
+    old = done(acquire(db))
+    head = fill(db, old, [1, 2, 3])
+    db.conn.execute("DROP INDEX IF EXISTS checkpoint_stream_heads_record_id")
+    db.conn.execute("DROP INDEX IF EXISTS checkpoint_stream_heads_checkpoint_id")
+    db.conn.commit()
+    before = legacy.rows(db)
+    acquired = done(acquire(db, "resume", retain=2))
+    assert head == acquired.head
+    # Inspect the durable schema on a fresh connection after the worker commits.
+    with sqlite3.connect(db.db_path) as reader:
+        plan = reader.execute(
+            "EXPLAIN QUERY PLAN SELECT 1 FROM checkpoint_stream_heads INDEXED BY checkpoint_stream_heads_record_id "
+            "WHERE record_id=? UNION ALL SELECT 1 FROM checkpoint_stream_heads "
+            "INDEXED BY checkpoint_stream_heads_checkpoint_id WHERE checkpoint_id=? LIMIT 1",
+            (head.record_id, head.checkpoint_id),
+        ).fetchall()
+    assert any(
+        "SEARCH" in row[-1] and "checkpoint_stream_heads_record_id" in row[-1]
+        for row in plan
+    )
+    assert any(
+        "SEARCH" in row[-1] and "checkpoint_stream_heads_checkpoint_id" in row[-1]
+        for row in plan
+    )
+    assert before == legacy.rows(db)
+
+
+def test_prune_rejects_impossible_epoch_capacity_below_absolute_limit(
+    governed, approved_prune
+):
+    db = governed
+    current = done(acquire(db, retain=10))
+    head = fill(db, current, range(1, 6))
+    db.conn.execute("UPDATE checkpoint_stream_heads SET retain_checkpoints=2")
+    db.conn.commit()
+    before = list(db.conn.iterdump())
+    done(approved_prune(db, current, head), "corrupt")
+    assert list(db.conn.iterdump()) == before
+
+
+@pytest.mark.parametrize("claimed_pin", [0, 2, 4])
+def test_prune_refuses_pin_contradicting_catalog_epochs(
+    governed, claimed_pin, approved_prune
+):
+    db = governed
+    old = done(acquire(db, retain=2))
+    fill(db, old, [1])
+    current = done(acquire(db, "resume", retain=2))
+    head = fill(db, current, [2, 3, 4])
+    db.conn.execute(
+        "UPDATE checkpoint_stream_heads SET restore_pin_generation=?", (claimed_pin,)
+    )
+    db.conn.commit()
+    before = list(db.conn.iterdump())
+    done(approved_prune(db, current, head), "corrupt")
+    assert list(db.conn.iterdump()) == before
+
+
+@pytest.mark.parametrize("index", ["missing", "wrong_column", "partial", "collation"])
+def test_prune_requires_payload_equality_index_before_lookup(
+    governed, monkeypatch, index, approved_prune
+):
+    db = governed
+    current = done(acquire(db, retain=2))
+    head = fill(db, current, [1, 2, 3])
+    db.conn.execute("DROP INDEX idx_memory_type")
+    if index == "wrong_column":
+        db.conn.execute("CREATE INDEX idx_memory_type ON memories(access_count)")
+    elif index == "partial":
+        db.conn.execute(
+            "CREATE INDEX idx_memory_type ON memories(memory_type) WHERE importance>0"
+        )
+    elif index == "collation":
+        db.conn.execute(
+            "CREATE INDEX idx_memory_type ON memories(memory_type COLLATE NOCASE)"
+        )
+    db.conn.commit()
+    before = list(db.conn.iterdump())
+    reads = []
+    worker = legacy.api().LifecycleCheckpointWorker
+    original = worker._read_checkpoint
+
+    def observe(*args, **kwargs):
+        reads.append(True)
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(worker, "_read_checkpoint", staticmethod(observe))
+    done(approved_prune(db, current, head), "corrupt")
+    assert reads == []
+    assert list(db.conn.iterdump()) == before
+
+
+def test_indexed_prune_refuses_duplicate_payload_handle(governed, approved_prune):
+    db = governed
+    current = done(acquire(db, retain=2))
+    head = fill(db, current, [1, 2, 3])
+    db.conn.execute(
+        "INSERT INTO memories SELECT ?,content,context,tags,importance,created_at,last_accessed,access_count,memory_type "
+        "FROM memories WHERE memory_type=?",
+        ("d" * 32, "consciousness_observer_checkpoint:" + f"{1:032x}"),
+    )
+    db.conn.commit()
+    before = list(db.conn.iterdump())
+    done(approved_prune(db, current, head), "corrupt")
+    assert list(db.conn.iterdump()) == before
+
+
+@pytest.mark.parametrize(
+    "approval_state",
+    [
+        "approved",
+        "different_n",
+        "different_epoch",
+        "different_head",
+        "expired",
+        "revoked",
+    ],
+)
+def test_irreversible_prune_requires_single_exact_signed_approval(
+    governed, tmp_path, monkeypatch, approval_state
+):
+    # Aetherra imports
+    from Aetherra.guardian import approval
+    from Aetherra.guardian.approval import list_approval_statuses, resolve_approval
+    from Aetherra.guardian.audit import list_guardian_audit_records
+
+    db = governed
+    current = done(acquire(db, retain=2))
+    head = fill(db, current, [1, 2, 3])
+    before = list(db.conn.iterdump())
+    done(prune(db, current, head), "denied")
+    assert list(db.conn.iterdump()) == before
+    details = list_guardian_audit_records(limit=1)[0]["details"]
+    intent = details["intent"]
+    assert intent["action"] == "consciousness.continuity_prune"
+    assert intent["reversible"] is False
+    assert intent["rollback_plan"] is None
+    assert "permanently" in intent["expected_outcome"]
+    expected_metadata = {
+        "stream_id": current.token.key.stream_id,
+        "writer_epoch": current.token.writer_epoch,
+        "generation": head.generation,
+        "expected_head_digest": head.digest(),
+        "retain_checkpoints": 2,
+        "operation": "prune",
+        "schema": 1,
+    }
+    assert intent["metadata"] == {
+        **expected_metadata,
+        "expected_head_digest": "***REDACTED***",
+    }
+    decision = details["decision"]
+    assert decision["status"] == "require_approval"
+    assert decision["reason"] == "rollback_required"
+    assert decision["details"]["approval_request_id"] == "***REDACTED***"
+    (pending,) = list_approval_statuses()
+    assert pending["state"] == "pending_user"
+    assert pending["intent"]["metadata"] == expected_metadata
+    reference = pending["request_id"]
+    assert (
+        resolve_approval(reference, approved=True, approver="checkpoint-test")["state"]
+        == "approved"
+    )
+    monkeypatch.setenv("AETHERRA_GUARDIAN_APPROVAL_ID", reference)
+    if approval_state == "revoked":
+        assert (
+            resolve_approval(reference, approved=False, approver="checkpoint-test")[
+                "state"
+            ]
+            == "denied"
+        )
+    elif approval_state == "expired":
+        after_expiry = datetime.fromisoformat(pending["expires_at"]) + timedelta(
+            seconds=1
+        )
+
+        class ExpiredClock(datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return after_expiry.astimezone(tz)
+
+        monkeypatch.setattr(approval, "datetime", ExpiredClock)
+    if approval_state == "approved":
+        assert done(prune(db, current, head)).deleted_count == 1
+        accepted = list_guardian_audit_records(limit=1)[0]["details"]["decision"]
+        assert accepted["status"] == "allow_limited"
+        assert accepted["details"]["approval_request_id"] == "***REDACTED***"
+        assert list_approval_statuses()[0]["state"] == "consumed"
+        assert set(accepted["constraints"]) == {
+            "guardian_approval_consumed",
+            "rollback_missing_user_approved",
+        }
+        before = list(db.conn.iterdump())
+    target = (
+        replace(
+            current,
+            token=replace(current.token, writer_epoch=current.token.writer_epoch + 1),
+        )
+        if approval_state == "different_epoch"
+        else current
+    )
+    expected_head = (
+        replace(head, record_id="f" * 32)
+        if approval_state == "different_head"
+        else head
+    )
+    done(
+        prune(db, target, expected_head, 3 if approval_state == "different_n" else 2),
+        "denied",
+    )
+    assert list(db.conn.iterdump()) == before
+    assert (
+        list_guardian_audit_records(limit=1)[0]["details"]["decision"]["status"]
+        == "require_approval"
+    )
+    ledger = SecurityAuditLedger(tmp_path / ".aetherra/security/audit.jsonl")
+    assert ledger.verify_integrity(require_signed_records=True)
+
+
+def test_advance_reports_sparse_retained_pin_then_expired_gap(governed, approved_prune):
+    db = governed
+    first = done(acquire(db))
+    fill(db, first, [1, 2, 3, 4])
+    pinned = done(acquire(db, "resume", retain=2))
+    done(approved_prune(db, pinned, pinned.head))
+    head = pinned.head
+    for generation in range(5, 12):
+        receipt = done(advance(db, request(pinned.token, head, generation)))
+        head = receipt.head
+        if receipt.retention_needed:
+            done(approved_prune(db, pinned, head))
+    assert members(db) == [(4,), (10,), (11,)]
+    current = done(acquire(db, "resume", retain=8))
+    assert not current.retention_needed
+    receipt = done(advance(db, request(current.token, head, 12)))
+    assert receipt.retention_needed is True
+    assert done(approved_prune(db, current, receipt.head, 8)).deleted_count == 1
+    next_receipt = done(advance(db, request(current.token, receipt.head, 13)))
+    assert next_receipt.retention_needed is False
+    assert members(db) == [(10,), (11,), (12,), (13,)]
+
+
+def test_prune_uses_indexed_duplicate_checked_lookup_for_every_member(
+    governed, approved_prune, monkeypatch
+):
+    db = governed
+    current = done(acquire(db, retain=2))
+    head = fill(db, current, [1, 2, 3])
+    module = legacy.api()
+    original = module.LifecycleCheckpointWorker._read_checkpoint
+    plans = []
+
+    def observed(connection, checkpoint_id, *, indexed=False):
+        assert indexed
+        rows = connection.execute(
+            "EXPLAIN QUERY PLAN " + module._READ_INDEXED_CHECKPOINT,
+            (65536, 65536, "consciousness_observer_checkpoint:" + checkpoint_id),
+        ).fetchall()
+        plans.append([row[-1] for row in rows])
+        return original(connection, checkpoint_id, indexed=indexed)
+
+    monkeypatch.setattr(
+        module.LifecycleCheckpointWorker, "_read_checkpoint", staticmethod(observed)
+    )
+    assert done(approved_prune(db, current, head)).deleted_count == 1
+    assert (
+        plans == [["SEARCH memories USING INDEX idx_memory_type (memory_type=?)"]] * 3
+    )

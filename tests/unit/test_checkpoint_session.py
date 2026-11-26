@@ -18,6 +18,8 @@ from . import test_memory_checkpoint_stream as stream
 memory = stream.memory
 policy = stream.policy
 governed = stream.governed
+approve_prune = stream.approve_prune
+approved_prune = stream.approved_prune
 done = stream.done
 
 
@@ -301,14 +303,20 @@ def test_config_decodes_only_exact_opaque_same_stream_resume_descriptor(database
 
 
 def make_session(
-    db, *, mode="resume", attempt=None, wall=lambda: 345726, owned=lambda: True
+    db,
+    *,
+    mode="resume",
+    attempt=None,
+    wall=lambda: 345726,
+    owned=lambda: True,
+    retain=10,
 ):
     # Aetherra imports
     from Aetherra.consciousness.checkpoint_session import ObserverCheckpointSession
 
     return ObserverCheckpointSession(
         db,
-        dict(AUTO, start_mode=mode),
+        dict(AUTO, start_mode=mode, retain_checkpoints=retain),
         recovery_attempt=attempt,
         wall_clock=wall,
         monotonic_clock=time.monotonic,
@@ -842,3 +850,245 @@ def test_tightened_stop_during_final_encoding(
         assert status["last_save_acceptance"] == "acknowledged"
         assert status["saved_trigger"] == "orderly_stop"
         assert status["saved_generation"] == historical["observed_generation"] + 1
+
+
+@pytest.mark.parametrize("lower", [False, True])
+def test_recovery_prunes_after_exact_inspection_without_a_save(
+    database, lower, approve_prune
+):
+    db = database
+    first = done(stream.acquire(db, retain=100 if lower else 2))
+    stream.fill(db, first, [1])
+    selected = done(stream.acquire(db, "resume", retain=100 if lower else 2))
+    req = stream.request(selected.token, selected.head, 2)
+    evidence = done(stream.advance(db, req))
+    head = evidence.head
+    for n in range(3, 103 if lower else 5):
+        head = done(stream.advance(db, stream.request(selected.token, head, n))).head
+    assert len(stream.members(db)) == (102 if lower else 4)
+    session = make_session(db, retain=2, attempt=asdict(req.attempt))
+    session.begin_start()
+    assert finish(session)["recovery_outcome"] == "committed_superseded"
+    restored = session.take_restore()
+    assert restored.head == head
+    approve_prune(restored, head)
+    session.check_before_apply()
+    session.mark_applied()
+    status = finish(session)
+    assert status["retention_needed"] is False
+    assert status["matched_record_id"] == evidence.head.record_id
+    assert status["saved_record_id"] is None
+    assert stream.members(db) == [(head.generation - 1,), (head.generation,)]
+    current = done(stream.acquire(db, "resume", retain=100))
+    assert done(inspect(db, current.token, req.attempt)).outcome == "history_expired"
+    assert len(stream.members(db)) == 2
+
+
+def test_denied_retention_preserves_acknowledged_save(database, policy):
+    db = database
+    seed(db, 2)
+    session = make_session(db, retain=2)
+    session.begin_start()
+    assert finish(session)["state"] == "selected"
+    selected = session.take_restore()
+    session.mark_applied()
+    rule_file = policy / "guardian.json"
+    rules = json.loads(rule_file.read_text())
+    rules["allow"] = [
+        rule
+        for rule in rules["allow"]
+        if rule["action"] != "consciousness.continuity_prune"
+    ]
+    rule_file.write_text(json.dumps(rules))
+    # Aetherra imports
+    from Aetherra.consciousness.checkpoint import decode_checkpoint
+
+    session._next_due = time.monotonic()
+    session.on_completed_tick(
+        decode_checkpoint(selected.checkpoint.payload),
+        observation_wall=123,
+        observation_uptime=0,
+        capture_uptime=0,
+    )
+    status = finish(session)
+    assert status["state"] == "retention_blocked"
+    assert status["last_error_code"] == "denied"
+    assert status["last_save_acceptance"] == "acknowledged"
+    assert status["saved_generation"] == 3
+    assert status["retention_needed"]
+    before = list(db.conn.iterdump())
+    session.get_cached_status()
+    session.begin_stop(deadline=time.monotonic() + 2, save_checkpoint=True)
+    assert finish(session)["saved_record_id"] == status["saved_record_id"]
+    assert list(db.conn.iterdump()) == before
+
+
+@pytest.mark.parametrize("cut", ["uncertain", "shutdown", "before_apply"])
+def test_pending_startup_retention_requires_applied_owned_session(database, cut):
+    db = database
+    seed(db, 3)
+    session = make_session(db, retain=2)
+    session.begin_start()
+    stream.wait_for_worker(session._acquire_job)
+    status = finish(session, local=cut != "uncertain")
+    if cut == "uncertain":
+        assert status["state"] == "uncertain"
+    else:
+        assert session.take_restore() is not None
+        if cut == "shutdown":
+            session.mark_applied()
+            session.begin_stop(deadline=time.monotonic() + 2, save_checkpoint=True)
+    before = list(db.conn.iterdump())
+    for _ in range(3):
+        session.get_cached_status()
+        session.poll(local_owned=True)
+    assert not session.get_cached_status()["outstanding"]
+    assert stream.members(db) == [(1,), (2,), (3,)]
+    assert list(db.conn.iterdump()) == before
+
+
+def test_real_prune_retains_inspectable_operation_below_watermark(
+    database, approved_prune
+):
+    db = database
+    old, commits = seed(db, 1)
+    current = done(stream.acquire(db, "resume", retain=2))
+    head = stream.fill(db, current, [2, 3, 4])
+    assert done(approved_prune(db, current, head)).pruned_through == 2
+    proof = done(inspect(db, current.token, commits[0].attempt))
+    assert proof.outcome == "committed_superseded"
+    assert proof.matched_record_id == commits[0].head.record_id
+    db.conn.execute("DELETE FROM checkpoint_stream_commits WHERE generation=3")
+    db.conn.commit()
+    done(inspect(db, current.token, commits[0].attempt), "corrupt")
+
+
+@pytest.mark.parametrize("already_admitted", [False, True])
+def test_stop_racing_prune_submission_keeps_only_admitted_maintenance(
+    database, monkeypatch, already_admitted, approve_prune
+):
+    db = database
+    seed(db, 3)
+    session = make_session(db, retain=2)
+    session.begin_start()
+    assert finish(session)["state"] == "selected"
+    restored = session.take_restore()
+    approve_prune(restored, restored.head)
+    session.mark_applied()
+    submit = db.submit_prune_checkpoint_stream
+    submitted = []
+
+    def stop_during_submission(**kwargs):
+        if already_admitted:
+            job = submit(**kwargs)
+        session.begin_stop(deadline=time.monotonic() + 2, save_checkpoint=True)
+        if not already_admitted:
+            job = submit(**kwargs)
+        submitted.append(job)
+        return job
+
+    monkeypatch.setattr(db, "submit_prune_checkpoint_stream", stop_during_submission)
+    status = finish(session)
+    assert len(submitted) == 1
+    assert submitted[0].admitted is already_admitted
+    assert not status["outstanding"]
+    assert not status["stop_save_submitted"]
+    assert stream.members(db) == (
+        [(2,), (3,)] if already_admitted else [(1,), (2,), (3,)]
+    )
+
+
+def test_crossing_restore_pin_does_not_require_prune_grant(database, policy):
+    db = database
+    seed(db, 1)
+    session = make_session(db, retain=2)
+    session.begin_start()
+    assert finish(session)["state"] == "selected"
+    selected = session.take_restore()
+    session.mark_applied()
+    path = policy / "guardian.json"
+    rules = json.loads(path.read_text())
+    rules["allow"] = [
+        rule
+        for rule in rules["allow"]
+        if rule["action"] != "consciousness.continuity_prune"
+    ]
+    path.write_text(json.dumps(rules))
+    # Aetherra imports
+    from Aetherra.consciousness.checkpoint import decode_checkpoint
+
+    for generation in (2, 3, 4):
+        session._next_due = time.monotonic()
+        session.on_completed_tick(
+            decode_checkpoint(selected.checkpoint.payload),
+            observation_wall=123,
+            observation_uptime=0,
+            capture_uptime=0,
+        )
+        status = finish(session)
+        assert status["saved_generation"] == generation
+        if generation < 4:
+            assert status["last_error_code"] is None
+            assert not status["retention_needed"]
+        else:
+            assert status["last_error_code"] == "denied"
+            assert status["last_save_acceptance"] == "acknowledged"
+    assert stream.members(db) == [(1,), (2,), (3,), (4,)]
+
+
+def test_increased_retention_requests_pruning_only_for_retained_members(
+    database, policy, approved_prune
+):
+    db = database
+    current = done(stream.acquire(db, retain=2))
+    head = current.head
+    for generation in range(1, 11):
+        head = done(
+            stream.advance(db, stream.request(current.token, head, generation))
+        ).head
+        if generation > 2:
+            done(approved_prune(db, current, head))
+    assert stream.members(db) == [(9,), (10,)]
+    session = make_session(db, retain=5)
+    session.begin_start()
+    assert finish(session)["state"] == "selected"
+    selected = session.take_restore()
+    session.mark_applied()
+    path = policy / "guardian.json"
+    rules = json.loads(path.read_text())
+    rules["allow"] = [
+        r for r in rules["allow"] if r["action"] != "consciousness.continuity_prune"
+    ]
+    path.write_text(json.dumps(rules))
+    # Aetherra imports
+    from Aetherra.consciousness.checkpoint import decode_checkpoint
+
+    for generation in range(11, 15):
+        session._next_due = time.monotonic()
+        session.on_completed_tick(
+            decode_checkpoint(selected.checkpoint.payload),
+            observation_wall=123,
+            observation_uptime=0,
+            capture_uptime=0,
+        )
+        status = finish(session)
+        assert status["saved_generation"] == generation
+        assert status["last_save_acceptance"] == "acknowledged"
+        assert status["last_error_code"] == ("denied" if generation == 14 else None)
+        assert status["retention_needed"] is (generation == 14)
+    assert stream.members(db) == [(9,), (10,), (11,), (12,), (13,), (14,)]
+
+
+def test_malformed_advance_retention_flag_refuses_receipt(writing, monkeypatch):
+    session, _, tick = writing
+    original = stream.api()._advance
+
+    def invalid(*args):
+        return replace(original(*args), retention_needed=1)
+
+    monkeypatch.setattr(stream.api(), "_advance", invalid)
+    tick(30)
+    status = finish(session)
+    assert status["last_error_code"] == "corrupt"
+    assert status["saved_generation"] is None
+    assert status["last_save_acceptance"] == "unacknowledged"
