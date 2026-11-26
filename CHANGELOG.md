@@ -1,6 +1,27 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.15 (2026-11-26)
+
+### Bug Fixes
+
+- **memory**: Recheck Guardian containment at checkpoint boundaries
+  ([`8fd8bdf`](https://github.com/AetherraLabs/Aetherra/commit/8fd8bdfb8c574a08284fb6311bd625898541f3cb))
+
+- **memory**: Satisfy root Python quality checks
+  ([`1c686ca`](https://github.com/AetherraLabs/Aetherra/commit/1c686caae6d9599a90720420e69bc36b50237b30))
+
+### Documentation
+
+- **continuity**: Record C2b contract and verified prerequisites
+  ([`34b28a9`](https://github.com/AetherraLabs/Aetherra/commit/34b28a9ccd5a7e39e023f306429ff0f6ac228d0d))
+
+### Features
+
+- **memory**: Add governed atomic checkpoint stream operations
+  ([`666e17c`](https://github.com/AetherraLabs/Aetherra/commit/666e17c777a0be96f7e408000694507ad256b60d))
+
+
 ## v0.5.0-beta.14 (2026-11-25)
 
 ### Bug Fixes
