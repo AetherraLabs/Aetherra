@@ -85,11 +85,13 @@ def read_jsonl(path: Path, *, require_objects: bool = False) -> list[dict[str, A
     """Read all valid JSON object records from a state log."""
 
     path = path.expanduser().resolve()
-    if not path.exists():
-        return []
     with _path_lock(path):
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+        except FileNotFoundError:
+            return []
         records: list[dict[str, Any]] = []
-        for raw_line in path.read_text(encoding="utf-8").splitlines():
+        for raw_line in lines:
             if not raw_line.strip():
                 continue
             data = json.loads(raw_line)
