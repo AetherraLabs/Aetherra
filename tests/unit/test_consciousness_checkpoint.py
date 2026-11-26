@@ -413,3 +413,27 @@ def test_oversized_dictionary_rejected_before_key_copy(section):
     finally:
         tracemalloc.stop()
     assert peak < 200000
+
+
+@pytest.mark.parametrize("boundary", ["other_thread", "after_tick"])
+def test_prepared_restore_still_requires_unticked_owner_at_application(boundary):
+    # Standard library imports
+    from concurrent.futures import ThreadPoolExecutor
+
+    core = ConsciousnessCore(PerceptionBus(), observer_only=True)
+    original = core.qualia, core.self_trust.subsystems
+    apply = core.prepare_observer_checkpoint_restore(
+        codec().decode_checkpoint(payload())
+    )
+    if boundary == "other_thread":
+        with (
+            ThreadPoolExecutor(max_workers=1) as pool,
+            pytest.raises(RuntimeError, match="checkpoint_wrong_thread"),
+        ):
+            pool.submit(apply).result(timeout=2)
+    else:
+        core.tick_count = 1
+        with pytest.raises(RuntimeError, match="checkpoint_restore_after_tick"):
+            apply()
+    assert core.qualia is original[0]
+    assert core.self_trust.subsystems is original[1]

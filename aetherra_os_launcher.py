@@ -2690,17 +2690,31 @@ class AetherraOSLauncher:
             except Exception:
                 error = error or "core_not_ready"
 
-        def owned_readiness():
+        def local_owned():
+            if (
+                self.service_registry is not registry
+                or self.systems.get("consciousness_core") is not observer
+            ):
+                return False
             info = registry.get_service_info("consciousness_core") if registry else None
             if info is None or info.instance is not observer:
-                return "core_not_ready"
+                return False
             if continuity["enabled"]:
-                if self.systems.get("memory") is not memory:
-                    return "core_not_ready"
-                try:
-                    memory._checkpoint_backend()
-                except Exception:
-                    return "core_not_ready"
+                if checkpoint_store is None or self.systems.get("memory") is not memory:
+                    return False
+                registered = registry.get_service_info("memory_system")
+                return (
+                    registered is not None
+                    and registered.instance is memory._checkpoint_impl
+                    and memory.impl is memory._checkpoint_impl
+                    and memory.impl.core_memory is memory._checkpoint_core
+                    and memory._checkpoint_core.conn is not None
+                )
+            return True
+
+        def owned_readiness():
+            if not local_owned():
+                return "core_not_ready"
             return self._consciousness_core_readiness()
 
         observer = ConsciousnessObserver(
@@ -2710,6 +2724,9 @@ class AetherraOSLauncher:
             checkpoint_store=checkpoint_store,
             continuity_enabled=continuity["enabled"],
             restore_checkpoint_id=continuity["restore_checkpoint_id"],
+            automatic=continuity.get("automatic"),
+            recovery_attempt=continuity.get("recovery_attempt"),
+            local_owned=local_owned,
         )
         if error:
             observer.block(error)

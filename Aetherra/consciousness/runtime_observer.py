@@ -12,7 +12,11 @@ import threading
 import time
 import uuid
 from collections.abc import Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    # Aetherra imports
+    from Aetherra.aetherra_core.memory.checkpoint_stream import AttemptDescriptor
 
 
 def observer_settings(config: dict[str, Any]) -> float | None:
@@ -50,6 +54,8 @@ def continuity_settings(config: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(settings, dict) or set(settings) - {
         "enabled",
         "restore_checkpoint_id",
+        "automatic",
+        "recovery_attempt",
     }:
         raise ValueError("consciousness_config_invalid")
     enabled = settings.get("enabled", False)
@@ -63,7 +69,28 @@ def continuity_settings(config: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("consciousness_config_invalid")
     if enabled and observer_settings(config) is None:
         raise ValueError("consciousness_config_invalid")
-    return {"enabled": enabled, "restore_checkpoint_id": handle}
+    selected = {"enabled": enabled, "restore_checkpoint_id": handle}
+    if "automatic" in settings or "recovery_attempt" in settings:
+        # Aetherra imports
+        from Aetherra.consciousness.checkpoint_session import (
+            automatic_settings,
+            recovery_descriptor,
+        )
+
+        automatic = (
+            automatic_settings(settings["automatic"])
+            if "automatic" in settings
+            else None
+        )
+        if automatic is not None:
+            if not enabled or handle is not None:
+                raise ValueError("consciousness_config_invalid")
+            selected["automatic"] = automatic
+        if "recovery_attempt" in settings:
+            selected["recovery_attempt"] = recovery_descriptor(
+                settings["recovery_attempt"], automatic
+            )
+    return selected
 
 
 def observer_policy_ready() -> bool:
@@ -108,6 +135,9 @@ class ConsciousnessObserver:
         checkpoint_store: Any = None,
         continuity_enabled: bool = False,
         restore_checkpoint_id: str | None = None,
+        automatic: dict | None = None,
+        recovery_attempt: AttemptDescriptor | None = None,
+        local_owned: Callable[[], bool] | None = None,
     ):
         if not math.isfinite(tick_interval) or not 0.2 <= tick_interval <= 10:
             raise ValueError("consciousness_config_invalid")
@@ -119,11 +149,41 @@ class ConsciousnessObserver:
             )
         ):
             raise ValueError("consciousness_config_invalid")
+        self._automatic = None
+        self._recovery_attempt = None
+        if automatic is not None or recovery_attempt is not None:
+            # Aetherra imports
+            from Aetherra.consciousness.checkpoint_session import (
+                automatic_settings,
+                recovery_descriptor,
+            )
+
+            self._automatic = (
+                None if automatic is None else automatic_settings(automatic)
+            )
+            if self._automatic is not None and (
+                not continuity_enabled or restore_checkpoint_id is not None
+            ):
+                raise ValueError("consciousness_config_invalid")
+            if recovery_attempt is not None:
+                self._recovery_attempt = recovery_descriptor(
+                    recovery_attempt, self._automatic
+                )
+        self._local_owned = local_owned if local_owned is not None else lambda: True
+        self._session = None
+        self._startup_cancelled = None
         self._checkpoint_store = checkpoint_store
         self._continuity_enabled = continuity_enabled
+        initial_state = "fresh" if continuity_enabled else "disabled"
         self._continuity = {
             "enabled": continuity_enabled,
-            "state": "fresh" if continuity_enabled else "disabled",
+            "state": "restoring" if self._automatic else initial_state,
+            "last_verified_observation_at_unix_s": None,
+            "captured_at_unix_s": None,
+            "observation_gap_seconds": None,
+            "observation_gap_state": "unknown",
+            "offline_duration_seconds": None,
+            "offline_duration_state": "unknown",
             "selected_checkpoint_id": restore_checkpoint_id,
             "restored_record_id": None,
             "saved_checkpoint_id": None,
@@ -210,6 +270,9 @@ class ConsciousnessObserver:
             "reflection_denied",
             "config_invalid",
             "stale",
+            "writer_fenced",
+            "corrupt",
+            "conflict",
         }
         with self._lock:
             self._checkpoint_failed = True
@@ -315,12 +378,107 @@ class ConsciousnessObserver:
             self._continuity["outstanding"] = False
             self._checkpoint_control = None
 
+    def _startup_local_owned(self):
+        try:
+            return (
+                not self._stop.is_set()
+                and not self._checkpoint_failed
+                and self._local_owned() is True
+            )
+        except Exception:
+            return False
+
+    def _restore_stream(self, core):
+        # Aetherra imports
+        from Aetherra.aetherra_core.memory.lifecycle_checkpoint import CheckpointError
+        from Aetherra.consciousness.checkpoint import decode_checkpoint
+        from Aetherra.consciousness.checkpoint_session import ObserverCheckpointSession
+
+        session = ObserverCheckpointSession(
+            self._checkpoint_store,
+            self._automatic,
+            recovery_attempt=self._recovery_attempt,
+            wall_clock=time.time,
+            monotonic_clock=time.monotonic,
+            still_owned=lambda: (
+                self._startup_local_owned() and self._checkpoint_owned()
+            ),
+        )
+        self._session = session
+        # Stop can arrive after a local identity check but before StreamJob.poll.
+        with self._lock:
+            self._startup_cancelled = session.startup_cancelled
+            if self._stop.is_set():
+                self._startup_cancelled.set()
+        session.begin_start()
+        while True:
+            session.poll(local_owned=self._startup_local_owned())
+            status = session.get_cached_status()
+            with self._lock:
+                if self._checkpoint_failed:
+                    self._continuity["outstanding"] = status["outstanding"]
+                else:
+                    self._continuity.update(status)
+            if status["state"] != "restoring" and not status["outstanding"]:
+                break
+            time.sleep(0.005)
+        acquired = session.take_restore()
+        if acquired is None:
+            self._checkpoint_failure(
+                status["last_error_code"],
+                blocked=True,
+                uncertain=status["state"] == "uncertain",
+            )
+            return False
+        try:
+            record = acquired.checkpoint
+            state = None if record is None else decode_checkpoint(record.payload)
+            if state is not None and state.checkpoint_id != acquired.head.checkpoint_id:
+                raise CheckpointError("corrupt")
+            apply = (
+                None
+                if state is None
+                else core.prepare_observer_checkpoint_restore(state)
+            )
+            # The explicitly gated before-apply boundary may load current policy.
+            # Ordinary receipt polling above invokes only the local identity predicate.
+            session.check_before_apply()
+            local = self._startup_local_owned()
+            with self._lock:
+                if (
+                    not local
+                    or self._stop.is_set()
+                    or self._checkpoint_failed
+                    or not session.apply_window_open()
+                ):
+                    raise CheckpointError("uncertain")
+                if apply is not None:
+                    apply()
+                self._continuity.update(
+                    state="restored" if record else "fresh",
+                    selected_checkpoint_id=acquired.head.checkpoint_id,
+                    restored_record_id=acquired.head.record_id,
+                )
+                if record and self._recovery_attempt is None:
+                    self._continuity["recovery_outcome"] = "restored"
+            return True
+        except Exception as exc:
+            code = getattr(exc, "code", "invalid")
+            self._checkpoint_failure(code, uncertain=code == "uncertain", blocked=True)
+            with self._lock:
+                self._continuity.update(
+                    recovery_outcome="blocked", ownership_state="uncertain"
+                )
+            return False
+
     def _restore_checkpoint(self, core) -> bool:
         if not self._continuity_enabled:
             return True
         if self._checkpoint_store is None:
             self._checkpoint_failure("unavailable", blocked=True)
             return False
+        if self._automatic is not None:
+            return self._restore_stream(core)
         if self._continuity["selected_checkpoint_id"] is None:
             return True
         result = self._checkpoint_exchange(save=False)
@@ -335,6 +493,7 @@ class ConsciousnessObserver:
             state = decode_checkpoint(receipt.payload)
             if state.checkpoint_id != self._continuity["selected_checkpoint_id"]:
                 raise ValueError("invalid_checkpoint_receipt")
+            apply = core.prepare_observer_checkpoint_restore(state)
             # Policy may perform filesystem reads; keep it off the cached-status
             # lock. Recheck deadline/cancellation after all external validation.
             accepted = control.active()
@@ -349,9 +508,7 @@ class ConsciousnessObserver:
                     and time.monotonic() < control.deadline
                 )
                 if accepted:
-                    # Core does bounded pure validation and an owner-thread swap;
-                    # no policy, audit, dependency callbacks or disk I/O occur here.
-                    core.restore_observer_checkpoint(state)
+                    apply()
                     self._continuity.update(
                         state="restored", restored_record_id=receipt.record_id
                     )
@@ -368,6 +525,7 @@ class ConsciousnessObserver:
     def _save_checkpoint(self) -> None:
         if (
             not self._continuity_enabled
+            or self._automatic is not None
             or not self._save_requested
             or self._checkpoint_failed
             or self._last_completed_checkpoint is None
@@ -474,6 +632,10 @@ class ConsciousnessObserver:
                         break
                     self._last_completed_checkpoint = frozen
                     self._completed += 1
+                    if self._session is not None:
+                        self._continuity["session_uptime_seconds"] = (
+                            time.monotonic() - self._session.started_monotonic
+                        )
                     self._events = core.total_events_perceived
                     self._last_tick = time.time()
                     self._snapshot = self._pending_snapshot
@@ -525,6 +687,8 @@ class ConsciousnessObserver:
                 self._save_requested = save_checkpoint is True
                 self._save_deadline = deadline
             self._stop.set()
+            if self._startup_cancelled is not None:
+                self._startup_cancelled.set()
             if (
                 self._checkpoint_control is not None
                 and self._continuity["state"] != "saving"

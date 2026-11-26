@@ -18,6 +18,7 @@ import logging
 import os
 import threading
 import time
+from collections.abc import Callable
 from typing import List, Optional
 
 # Aetherra imports
@@ -179,14 +180,29 @@ class ConsciousnessCore:
 
     def restore_observer_checkpoint(self, state: ObserverCheckpoint) -> None:
         """Apply a fully validated aggregate before ticks; never replay lifecycle."""
+        apply = self.prepare_observer_checkpoint_restore(state)
+        apply()
+
+    def _require_restore_owner(self) -> None:
         self._require_checkpoint_owner()
         if self.tick_count:
             raise RuntimeError("checkpoint_restore_after_tick")
+
+    def prepare_observer_checkpoint_restore(
+        self, state: ObserverCheckpoint
+    ) -> Callable[[], None]:
+        """Prepare on the owner thread, leaving only guarded reference swaps to apply."""
+        self._require_restore_owner()
         state = decode_checkpoint(encode_checkpoint(state))
         qualia = QualiaVector(**dict(state.qualia))
-        # Trust validates/builds its replacement before mutation; no event/decay.
-        self.self_trust.restore_checkpoint(state.trust)
-        self.qualia = qualia
+        apply_trust = self.self_trust.prepare_checkpoint_restore(state.trust)
+
+        def apply() -> None:
+            self._require_restore_owner()
+            apply_trust()
+            self.qualia = qualia
+
+        return apply
 
     def tick(self) -> None:
         """Single consciousness cycle: perceive → appraise → attend → intend → reflect."""

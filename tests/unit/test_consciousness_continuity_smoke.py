@@ -5,11 +5,18 @@ from __future__ import annotations
 # Standard library imports
 import asyncio
 import json
+import threading
 from pathlib import Path
 from types import SimpleNamespace
 
 # Third party imports
 import pytest
+
+# Aetherra imports
+from tests.unit import test_memory_lifecycle_checkpoint as checkpoints
+
+policy = checkpoints.policy
+memory = checkpoints.memory
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -173,3 +180,59 @@ def test_malformed_error_receipt_fails_safely(smoke, tmp_path, malformed):
             tmp_path / "observer-stopped.json", SimpleNamespace(poll=lambda: None)
         )
     assert str(error.value) == "Continuity command failed (unknown/command_failed)"
+
+
+@pytest.mark.parametrize("outcome", ["restored", "cancelled_after_prepare", "fresh"])
+def test_restore_evidence_requires_published_live_state(
+    smoke, memory, tmp_path, monkeypatch, outcome
+):
+    # Aetherra imports
+    from Aetherra.consciousness.core.consciousness_core import ConsciousnessCore
+    from Aetherra.consciousness.runtime_observer import ConsciousnessObserver
+    from Aetherra.perception_bus.bus import PerceptionBus
+
+    checkpoint = checkpoints.save(memory).result(timeout=2)
+    observer = ConsciousnessObserver(
+        readiness=lambda: None,
+        observations=lambda: [],
+        checkpoint_store=memory,
+        continuity_enabled=True,
+        restore_checkpoint_id=None if outcome == "fresh" else checkpoint.checkpoint_id,
+    )
+    core = ConsciousnessCore(PerceptionBus(), observer_only=True)
+    if outcome == "cancelled_after_prepare":
+        prepare = core.prepare_observer_checkpoint_restore
+
+        def cancel_prepared(state):
+            apply = prepare(state)
+            observer._stop.set()
+            return apply
+
+        monkeypatch.setattr(
+            core, "prepare_observer_checkpoint_restore", cancel_prepared
+        )
+    write = smoke.write_json
+
+    def write_outside_lock(path, data):
+        assert observer._lock.acquire(blocking=False), "restore evidence held lock"
+        observer._lock.release()
+        write(path, data)
+
+    monkeypatch.setattr(smoke, "write_json", write_outside_lock)
+    restore = smoke._observe_restore(
+        ConsciousnessObserver._restore_checkpoint, tmp_path
+    )
+    assert restore(observer, core) is (outcome != "cancelled_after_prepare")
+    artifact = tmp_path / "private-restored.json"
+    if outcome == "restored":
+        evidence = json.loads(artifact.read_text(encoding="utf-8"))
+        assert evidence == {
+            "thread": threading.current_thread().name,
+            "checkpoint_id": checkpoint.checkpoint_id,
+            "record_id": checkpoint.record_id,
+            "tick_count": 0,
+            "events_processed": 0,
+            "aggregate": smoke.aggregate(checkpoints.payload()),
+        }
+    else:
+        assert not artifact.exists()

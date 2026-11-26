@@ -79,6 +79,11 @@ class SelfTrust:
 
     def restore_checkpoint(self, state: TrustCheckpoint) -> None:
         """Validate fully before replacing the trust map; import performs no decay."""
+        apply = self.prepare_checkpoint_restore(state)
+        apply()
+
+    def prepare_checkpoint_restore(self, state: TrustCheckpoint) -> Callable[[], None]:
+        """Build a replacement map without touching this tracker's live state."""
         state = validate_trust_checkpoint(state)
         restored = {
             item.name: SubsystemTrust(
@@ -86,8 +91,12 @@ class SelfTrust:
             )
             for item in state.subsystems
         }
-        self.subsystems = restored
-        self.half_life = state.half_life_s
+
+        def apply() -> None:
+            self.subsystems = restored
+            self.half_life = state.half_life_s
+
+        return apply
 
     def _decay(self, s: SubsystemTrust) -> None:
         """Apply exponential decay toward baseline 90.0.

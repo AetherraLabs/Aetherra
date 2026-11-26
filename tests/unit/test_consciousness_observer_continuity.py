@@ -13,6 +13,7 @@ import pytest
 
 # Aetherra imports
 from Aetherra.consciousness import runtime_observer as runtime
+from tests.unit import test_checkpoint_session as recovery
 from tests.unit import test_consciousness_observer_lifecycle as lifecycle_tests
 
 observer_profile = lifecycle_tests.observer_profile
@@ -808,3 +809,346 @@ async def test_unsupported_checkpoint_backend_does_not_abort_shutdown(
     assert owned.get_runtime_status()["runtime_state"] == "blocked"
     await getattr(launcher, method)()
     assert owned._checkpoint_store is None
+
+
+memory = recovery.memory
+policy = recovery.policy
+governed = recovery.governed
+database = recovery.database
+
+
+@pytest.mark.asyncio
+async def test_resume_restores_exact_state_before_tick_zero(database, monkeypatch):
+    # Aetherra imports
+    from Aetherra.consciousness.checkpoint import encode_checkpoint
+    from Aetherra.consciousness.core.consciousness_core import ConsciousnessCore
+
+    _, commits = recovery.seed(database, 2)
+    entered, release = threading.Event(), threading.Event()
+    at_first_tick = []
+
+    def first_tick(core):
+        at_first_tick.append(
+            (
+                core.tick_count,
+                core.total_events_perceived,
+                encode_checkpoint(core.export_observer_checkpoint(HANDLE)),
+            )
+        )
+        entered.set()
+        assert release.wait(5)
+
+    monkeypatch.setattr(ConsciousnessCore, "tick", first_tick)
+    owned = observer(
+        database, automatic=recovery.AUTO, recovery_attempt=commits[0].attempt
+    )
+    owned.start()
+    try:
+        assert await asyncio.to_thread(entered.wait, 3), owned.get_runtime_status()
+        ticks, events, state = at_first_tick[0]
+        assert (ticks, events) == (0, 0)
+        assert state["qualia"] == recovery.stream.legacy.payload()["qualia"]
+        assert state["trust"] == recovery.stream.legacy.payload()["trust"]
+        status = owned.get_runtime_status()
+        assert status["ticks_completed"] == 0
+        continuity = status["continuity"]
+        assert continuity["recovery_outcome"] == "committed_superseded"
+        assert continuity["selected_checkpoint_id"] == commits[1].head.checkpoint_id
+        assert continuity["restored_record_id"] == commits[1].head.record_id
+        assert continuity["saved_record_id"] is None
+        assert continuity["last_verified_observation_at_unix_s"] == 126
+    finally:
+        await owned.stop(timeout=0)
+        release.set()
+        await owned.stop()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("damage", ["missing", "metadata", "denied_inspect"])
+async def test_invalid_automatic_recovery_blocks_ticks_and_stop_writes(
+    database, policy, damage
+):
+    _, commits = recovery.seed(database, 1)
+    if damage == "missing":
+        database.conn.execute("DELETE FROM memories")
+    elif damage == "metadata":
+        database.conn.execute(
+            "UPDATE checkpoint_stream_commits SET metadata_bytes=x'7b7d'"
+        )
+    else:
+        # Standard library imports
+        import json
+
+        path = policy / "guardian.json"
+        rules = json.loads(path.read_text())
+        rules["allow"] = [
+            r
+            for r in rules["allow"]
+            if r["action"] != "consciousness.continuity_inspect"
+        ]
+        path.write_text(json.dumps(rules))
+    database.conn.commit()
+    before = recovery.stream.legacy.rows(database)
+    owned = observer(
+        database, automatic=recovery.AUTO, recovery_attempt=commits[0].attempt
+    )
+    owned.start()
+    status = await until(owned, lambda s: not s["thread_alive"])
+    assert status["ticks_attempted"] == 0
+    assert status["runtime_state"] == "blocked"
+    assert status["continuity"]["last_error_code"] == (
+        "denied" if damage == "denied_inspect" else "corrupt"
+    )
+    await owned.stop(save_checkpoint=True)
+    assert recovery.stream.legacy.rows(database) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("loss", ["policy", "ownership", "deadline"])
+async def test_automatic_before_apply_rechecks_after_detached_decode(
+    database, policy, monkeypatch, loss
+):
+    # Aetherra imports
+    from Aetherra.consciousness import checkpoint
+
+    recovery.seed(database, 1)
+    entered, release = threading.Event(), threading.Event()
+    original = checkpoint.decode_checkpoint
+
+    def gated(value):
+        state = original(value)
+        if threading.current_thread().name == "consciousness-observer":
+            entered.set()
+            assert release.wait(5)
+        return state
+
+    monkeypatch.setattr(checkpoint, "decode_checkpoint", gated)
+    local = [True]
+    owned = observer(database, automatic=recovery.AUTO, local_owned=lambda: local[0])
+    owned.start()
+    try:
+        assert await asyncio.to_thread(entered.wait, 3), owned.get_runtime_status()
+        if loss == "policy":
+            (policy / "capabilities.json").write_text('{"allow":{}}')
+        elif loss == "ownership":
+            local[0] = False
+        else:
+            # Expire the controlled monotonic deadline while detached validation is held.
+            now = time.monotonic() + 2
+            monkeypatch.setattr(time, "monotonic", lambda: now)
+        release.set()
+        await asyncio.to_thread(owned._thread.join, 3)
+        status = owned.get_runtime_status()
+        assert not status["thread_alive"]
+        assert status["ticks_attempted"] == 0
+        assert status["continuity"]["restored_record_id"] is None
+    finally:
+        release.set()
+        await owned.stop()
+
+
+@pytest.mark.asyncio
+async def test_c2a_restore_has_unknown_verified_time(observer_profile):
+    owned = observer(CheckpointStore(), restore_checkpoint_id=HANDLE)
+    owned.start()
+    try:
+        status = await until(owned, lambda s: s["ticks_completed"] == 1)
+        assert status["continuity"]["last_verified_observation_at_unix_s"] is None
+        assert status["continuity"]["observation_gap_state"] == "unknown"
+        assert status["continuity"]["offline_duration_seconds"] is None
+    finally:
+        await owned.stop()
+
+
+backends = recovery.backends
+
+
+@pytest.mark.asyncio
+async def test_launcher_resumes_configured_descriptor_through_registered_memory(
+    database, backends, policy
+):
+    # Standard library imports
+    import json
+    from dataclasses import asdict
+
+    # Aetherra imports
+    from aetherra_os_launcher import AetherraOSLauncher
+    from aetherra_service_registry import AetherraServiceRegistry
+
+    adapter, engine, original = backends
+    _, commits = recovery.seed(adapter, 1)
+    path = policy / "guardian.json"
+    rules = json.loads(path.read_text())
+    rules["allow"].extend(
+        [
+            {
+                "requester": "service_registry",
+                "subsystem": "service_registry",
+                "action": "service_registry.*",
+            },
+            {
+                "requester": "consciousness:core",
+                "subsystem": "consciousness",
+                "action": "consciousness.micro_reflection_update",
+            },
+        ]
+    )
+    path.write_text(json.dumps(rules))
+    registry = AetherraServiceRegistry()
+    registry._running = True
+    launcher = AetherraOSLauncher()
+    launcher.service_registry = registry
+    hub = SimpleNamespace(is_running=lambda: True)
+    kernel = SimpleNamespace(get_status=lambda: {"running": True})
+    chat = object()
+    launcher.kernel_loop = kernel
+    launcher._presence_owned_hub = hub
+    launcher.systems.update(memory=adapter, aetherra=chat, aetherra_hub=hub)
+    for name, instance in [
+        ("memory_system", engine),
+        ("aetherra_engine", chat),
+        ("kernel_loop", kernel),
+        ("aetherra_hub", hub),
+    ]:
+        assert await registry.register_service(name, instance)
+    cfg = {
+        "consciousness_enabled": True,
+        "consciousness_continuity": {
+            "enabled": True,
+            "automatic": recovery.AUTO,
+            "recovery_attempt": asdict(commits[0].attempt),
+        },
+    }
+    try:
+        await launcher._start_consciousness_observer(cfg)
+        owned = launcher.systems["consciousness_core"]
+        status = await until(
+            owned, lambda s: s["ticks_completed"] > 0 or not s["thread_alive"]
+        )
+        assert status["ticks_completed"] == 1, status
+        assert status["continuity"]["recovery_outcome"] == "committed_current"
+        assert status["continuity"]["restored_record_id"] == commits[0].head.record_id
+        # The receipt predicate compares cached identities without running policy.
+        assert owned._local_owned()
+        engine.core_memory = database
+        assert not owned._local_owned()
+        engine.core_memory = original
+        assert owned._local_owned()
+    finally:
+        engine.core_memory = original
+        await launcher._stop_consciousness_observer(save_checkpoint=True)
+    assert recovery.stream.legacy.rows(original)[0][0] == commits[0].head.record_id
+    assert len(recovery.stream.legacy.rows(original)) == 1
+
+
+@pytest.mark.asyncio
+async def test_stop_between_local_check_and_sealed_startup_poll_refuses_receipt(
+    database, monkeypatch
+):
+    # Aetherra imports
+    from Aetherra.aetherra_core.memory.checkpoint_stream import StreamJob
+
+    _, commits = recovery.seed(database, 1)
+    entered, release = threading.Event(), threading.Event()
+    consumed = []
+    real_poll = StreamJob.poll
+
+    def gated(job, *, local_owned):
+        if not job.outstanding and local_owned and not entered.is_set():
+            entered.set()
+            assert release.wait(3)
+            result = real_poll(job, local_owned=local_owned)
+            consumed.append(result)
+            return result
+        return real_poll(job, local_owned=local_owned)
+
+    monkeypatch.setattr(StreamJob, "poll", gated)
+    owned = observer(
+        database, automatic=recovery.AUTO, recovery_attempt=commits[0].attempt
+    )
+    owned.start()
+    try:
+        assert await asyncio.to_thread(entered.wait, 3)
+        await owned.stop(timeout=0)
+        release.set()
+        await owned.stop()
+        assert len(consumed) == 1
+        assert consumed[0].value is None
+        assert consumed[0].error_code == "uncertain"
+        assert owned.get_runtime_status()["ticks_attempted"] == 0
+    finally:
+        release.set()
+        await owned.stop()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("automatic", [True, False], ids=["automatic", "explicit"])
+@pytest.mark.parametrize("cut", ["stop", "deadline"])
+async def test_core_import_preparation_never_blocks_status_or_publishes_after_cut(
+    database, monkeypatch, automatic, cut
+):
+    # Aetherra imports
+    from Aetherra.aetherra_core.memory import lifecycle_checkpoint
+    from Aetherra.consciousness import self_trust
+    from Aetherra.consciousness.core import consciousness_core
+
+    # Save with real governed Memory, then pause the real trust-map construction.
+    if automatic:
+        recovery.seed(database, 1)
+        owned = observer(database, automatic=recovery.AUTO)
+    else:
+        recovery.stream.legacy.save(database).result(2)
+        owned = observer(database, restore_checkpoint_id=HANDLE)
+    entered, release = threading.Event(), threading.Event()
+    cores = []
+    create_core = consciousness_core.ConsciousnessCore
+    create_record = self_trust.SubsystemTrust
+
+    def track_core(*args, **kwargs):
+        core = create_core(*args, **kwargs)
+        cores.append((core, core.qualia, core.self_trust.subsystems))
+        return core
+
+    def gated_trust_record(*args, **kwargs):
+        record = create_record(*args, **kwargs)
+        entered.set()
+        assert release.wait(4)
+        return record
+
+    monkeypatch.setattr(consciousness_core, "ConsciousnessCore", track_core)
+    monkeypatch.setattr(self_trust, "SubsystemTrust", gated_trust_record)
+    owned.start()
+    try:
+        assert await asyncio.to_thread(entered.wait, 3)
+        if cut == "stop":
+            # Use an independent event loop so a lock-blocked stop cannot stall
+            # this test's watchdog or depend on release to satisfy its deadline.
+            await asyncio.wait_for(
+                asyncio.to_thread(lambda: asyncio.run(owned.stop(timeout=0.05))), 0.75
+            )
+            pending = await asyncio.wait_for(
+                asyncio.to_thread(owned.get_runtime_status), 0.5
+            )
+            assert pending["thread_alive"]
+        else:
+            pending = await asyncio.wait_for(
+                asyncio.to_thread(owned.get_runtime_status), 0.5
+            )
+            assert pending["continuity"]["restored_record_id"] is None
+            expired = SimpleNamespace(
+                monotonic=lambda: time.monotonic() + 2, time=time.time, sleep=time.sleep
+            )
+            monkeypatch.setattr(lifecycle_checkpoint, "time", expired)
+            monkeypatch.setattr(runtime, "time", expired)
+        release.set()
+        status = await until(
+            owned, lambda s: not s["thread_alive"] or s["ticks_attempted"] > 0
+        )
+        assert status["ticks_attempted"] == 0
+        assert status["continuity"]["restored_record_id"] is None
+        core, original_qualia, original_subsystems = cores[0]
+        assert core.qualia is original_qualia
+        assert core.self_trust.subsystems is original_subsystems
+    finally:
+        release.set()
+        await owned.stop()
