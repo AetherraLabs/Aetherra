@@ -20,6 +20,11 @@ from concurrent.futures import Future, TimeoutError
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    # Local imports
+    from .checkpoint_stream import AdvanceRequest, StreamJob, StreamKey
 
 _OWNER = "consciousness:observer"
 _SCOPE = "observer_continuity:v1"
@@ -47,6 +52,7 @@ class CheckpointJobControl:
     cancelled: threading.Event
     deadline: float
     still_owned: Callable[[], bool]
+    wake_event: threading.Event | None = None
     _lock: threading.RLock = field(
         default_factory=threading.RLock, init=False, repr=False
     )
@@ -60,6 +66,10 @@ class CheckpointJobControl:
             or not isinstance(self.deadline, (int, float))
             or not math.isfinite(self.deadline)
             or not callable(self.still_owned)
+            or (
+                self.wake_event is not None
+                and type(self.wake_event) is not threading.Event
+            )
         ):
             raise CheckpointError("invalid")
 
@@ -87,6 +97,9 @@ class CheckpointJobControl:
         )
 
     def active(self) -> bool:
+        return self._active_if_owned(self.still_owned)
+
+    def _active_if_owned(self, owned_check: Callable[[], bool]) -> bool:
         with self._lock:
             if not self._open_locked():
                 object.__setattr__(self, "_closed", True)
@@ -94,7 +107,7 @@ class CheckpointJobControl:
         # This callback can perform policy/ownership I/O. Never hold a lock
         # needed by cancellation, admission, status or shutdown while calling it.
         try:
-            owned = self.still_owned() is True
+            owned = owned_check() is True
         except Exception:
             owned = False
         with self._lock:
@@ -189,6 +202,32 @@ def _freeze(payload: dict, checkpoint_id: str) -> bytes:
         raise CheckpointError("invalid") from None
 
 
+def _insert_checkpoint(connection, record_id, checkpoint_id, data):
+    context = {
+        "owner": _OWNER,
+        "scope": _SCOPE,
+        "schema": 1,
+        "checkpoint_id": checkpoint_id,
+        "record_id": record_id,
+    }
+    now = datetime.now(UTC).isoformat()
+    inserted = connection.execute(
+        "INSERT INTO memories (id,content,context,tags,importance,created_at,last_accessed,access_count,memory_type) VALUES (?,?,?,?,?,?,?,?,?)",
+        (
+            record_id,
+            data.decode("utf-8"),
+            json.dumps(context),
+            "[]",
+            0.0,
+            now,
+            now,
+            0,
+            "consciousness_observer_checkpoint:" + checkpoint_id,
+        ),
+    )
+    return inserted.rowcount
+
+
 def _strict_policy():
     # Aetherra imports
     from Aetherra.guardian import guardian_enabled, guardian_mode, load_guardian_policy
@@ -219,6 +258,7 @@ def _strict_policy():
 
 def _recheck_policy(intent):
     # Aetherra imports
+    from Aetherra.guardian.containment import find_active_containment
     from Aetherra.guardian.policy import evaluate_guardian_policy
     from Aetherra.security.capabilities import has_capability
 
@@ -230,17 +270,55 @@ def _recheck_policy(intent):
         or not all(has_capability(intent.requester, cap) for cap in intent.capabilities)
     ):
         raise CheckpointError("denied")
+    try:
+        active_containment = find_active_containment(intent, require_valid_state=True)
+    except Exception:
+        raise CheckpointError("denied") from None
+    if active_containment is not None:
+        raise CheckpointError("denied")
 
 
 def _authorize(operation: str, checkpoint_id: str):
+    caps = ("consciousness:write", "memory:read", "fs:read")
+    if operation == "save":
+        caps = ("consciousness:write", "memory:write", "fs:read", "fs:write")
+    intent, _ = _authorize_intent(operation, caps, {"checkpoint_id": checkpoint_id})
+    return intent
+
+
+def _authorize_stream(job):
+    if job.operation == "acquire":
+        key, mode, retain = job.data
+        metadata = {
+            "stream_id": key.stream_id,
+            "start_mode": mode,
+            "retain_checkpoints": retain,
+        }
+    else:
+        attempt = job.data.attempt
+        metadata = {
+            "stream_id": attempt.token.key.stream_id,
+            "writer_epoch": attempt.token.writer_epoch,
+            "generation": attempt.proposed_generation,
+            "operation_id": attempt.operation_id,
+            "checkpoint_id": attempt.checkpoint_id,
+            "payload_digest": attempt.payload_digest,
+            "metadata_digest": attempt.metadata_digest,
+            "predecessor_head_digest": attempt.expected_head.digest(),
+        }
+    caps = ("consciousness:write", "memory:read", "memory:write", "fs:read", "fs:write")
+    intent, audit = _authorize_intent(job.operation, caps, metadata)
+    if len(audit.encode("utf-8")) > 256:
+        raise CheckpointError("audit_failed")
+    return intent, audit
+
+
+def _authorize_intent(operation, caps, metadata):
     # Aetherra imports
     from Aetherra.guardian import IntentDeclaration, evaluate_intent
     from Aetherra.security.capabilities import has_capability
 
     _strict_policy()
-    caps = ("consciousness:write", "memory:read", "fs:read")
-    if operation == "save":
-        caps = ("consciousness:write", "memory:write", "fs:read", "fs:write")
     intent = IntentDeclaration(
         requester=os.getenv("AETHERRA_PRINCIPAL", "").strip() or "consciousness:core",
         subsystem="consciousness",
@@ -251,7 +329,7 @@ def _authorize(operation: str, checkpoint_id: str):
         reversible=True,
         rollback_plan="Rollback uncommitted transaction; preserve immutable committed rows on uncertainty.",
         evidence=("observer_continuity:v1",),
-        metadata={"checkpoint_id": checkpoint_id, "operation": operation, "schema": 1},
+        metadata={**metadata, "operation": operation, "schema": 1},
     )
     try:
         decision = evaluate_intent(
@@ -265,16 +343,27 @@ def _authorize(operation: str, checkpoint_id: str):
         raise CheckpointError("denied")
     if not isinstance(decision.audit_id, str) or not decision.audit_id.strip():
         raise CheckpointError("audit_failed")
-    return intent
+    return intent, decision.audit_id
 
 
 @dataclass(frozen=True)
 class _Job:
     operation: str
     checkpoint_id: str
-    data: bytes | None
+    data: bytes | tuple[StreamKey, str, int] | AdvanceRequest | None
     control: CheckpointJobControl
-    future: _CheckpointFuture
+    future: _CheckpointFuture | StreamJob
+    backend_owned: Callable[[], bool] | None = None
+
+    def backend_active(self):
+        return self.backend_owned is None or self.control._active_if_owned(
+            self.backend_owned
+        )
+
+    def check(self):
+        self.control.check()
+        if not self.backend_active():
+            raise CheckpointError("cancelled")
 
 
 class LifecycleCheckpointWorker:
@@ -307,44 +396,92 @@ class LifecycleCheckpointWorker:
             control._bind()
             # Freeze before admission, never authorize a caller-owned dictionary.
             data = _freeze(payload, checkpoint_id) if operation == "save" else None
-            path = self._database_path
-            if (
-                not isinstance(path, (str, os.PathLike))
-                or not str(path)
-                or str(path) == ":memory:"
-                or str(path).lower().startswith("file:")
-            ):
-                raise CheckpointError("unavailable")
-            with self._condition:
-                if self._closing:
-                    raise CheckpointError("unavailable")
-                if self._job is not None:
-                    raise CheckpointError("busy")
-                # Admission checks only internal cancellation/deadline state.
-                # External readiness and policy run on the owned worker.
-                with control._lock:
-                    if not control._open_locked():
-                        raise CheckpointError("cancelled")
-                future = _CheckpointFuture(control, writing=operation == "save")
-                self._job = _Job(operation, checkpoint_id, data, control, future)
-                if self._thread is None:
-                    self._thread = threading.Thread(
-                        target=self._run,
-                        name="memory-lifecycle-checkpoint",
-                        daemon=True,
-                    )
-                    try:
-                        self._thread.start()
-                    except Exception:
-                        self._job = None
-                        self._closing = True
-                        raise CheckpointError("unavailable") from None
-                self._condition.notify_all()
-                return future
+            future = _CheckpointFuture(control, writing=operation == "save")
+            return self._admit(_Job(operation, checkpoint_id, data, control, future))
         except CheckpointError as exc:
             return failed_checkpoint_future(exc.code)
         except Exception:
             return failed_checkpoint_future("invalid")
+
+    def submit_stream(
+        self,
+        *,
+        operation,
+        control,
+        key=None,
+        start_mode=None,
+        retain_checkpoints=None,
+        request=None,
+        backend_owned=None,
+    ):
+        # Local imports
+        from .checkpoint_stream import AdvanceRequest, StreamJob, StreamKey
+
+        try:
+            if (
+                type(control) is not CheckpointJobControl
+                or type(control.cancelled) is not threading.Event
+            ):
+                raise CheckpointError("invalid")
+            control._bind()
+            if (
+                operation == "acquire"
+                and type(key) is StreamKey
+                and type(start_mode) is str
+                and start_mode in ("create", "resume")
+                and type(retain_checkpoints) is int
+                and 2 <= retain_checkpoints <= 100
+            ):
+                data = (key, start_mode, retain_checkpoints)
+                handle = key.stream_id
+            elif operation == "advance" and type(request) is AdvanceRequest:
+                data = request
+                handle = request.attempt.checkpoint_id
+            else:
+                raise CheckpointError("invalid")
+            return self._admit(
+                _Job(
+                    operation, handle, data, control, StreamJob(control), backend_owned
+                )
+            )
+        except CheckpointError as exc:
+            return StreamJob.refused(exc.code)
+
+    def _admit(self, job):
+        control = job.control
+        path = self._database_path
+        if (
+            not isinstance(path, (str, os.PathLike))
+            or not str(path)
+            or str(path) == ":memory:"
+            or str(path).lower().startswith("file:")
+        ):
+            raise CheckpointError("unavailable")
+        with self._condition:
+            if self._closing:
+                raise CheckpointError("unavailable")
+            if self._job is not None:
+                raise CheckpointError("busy")
+            # Admission checks only internal cancellation/deadline state.
+            # External readiness and policy run on the owned worker.
+            with control._lock:
+                if not control._open_locked():
+                    raise CheckpointError("cancelled")
+            self._job = job
+            if self._thread is None:
+                self._thread = threading.Thread(
+                    target=self._run,
+                    name="memory-lifecycle-checkpoint",
+                    daemon=True,
+                )
+                try:
+                    self._thread.start()
+                except Exception:
+                    self._job = None
+                    self._closing = True
+                    raise CheckpointError("unavailable") from None
+            self._condition.notify_all()
+            return job.future
 
     def shutdown(self, timeout: float = 1.0) -> bool:
         with self._condition:
@@ -372,24 +509,51 @@ class LifecycleCheckpointWorker:
                 result = None
                 failure = None
                 committing = False
+                stream = job.operation in ("acquire", "advance")
                 try:
-                    job.control.check()
-                    intent = _authorize(job.operation, job.checkpoint_id)
-                    job.future._intent = intent
-                    job.control.check()
+                    job.check()
+                    if stream:
+                        intent, audit = _authorize_stream(job)
+                    else:
+                        intent = _authorize(job.operation, job.checkpoint_id)
+                        job.future._intent = intent
+                    job.check()
                     _recheck_policy(intent)
-                    job.control.check()
+                    job.check()
                     if connection is None:
                         uri = Path(self._database_path).resolve().as_uri() + "?mode=rw"
                         connection = sqlite3.connect(uri, uri=True, timeout=0.25)
                         connection.execute("PRAGMA busy_timeout=250")
-                    job.control.check()
+                    job.check()
                     _recheck_policy(intent)
-                    job.control.check()
-                    if job.operation == "save":
+                    job.check()
+                    if stream:
+                        # Local imports
+                        from . import checkpoint_stream
+
+                        connection.execute("BEGIN IMMEDIATE")
+                        job.check()
+                        _recheck_policy(intent)
+                        job.check()
+                        with checkpoint_stream._bounded_rows(connection):
+                            if job.operation == "acquire":
+                                result = checkpoint_stream._acquire(
+                                    connection, *job.data
+                                )
+                            else:
+                                result = checkpoint_stream._advance(
+                                    connection, job.data, audit
+                                )
+                        job.check()
+                        _recheck_policy(intent)
+                        job.check()
+                        committing = True
+                        connection.commit()
+                        _recheck_policy(intent)
+                    elif job.operation == "save":
                         payload = _decode(job.data, job.checkpoint_id)
                         connection.execute("BEGIN IMMEDIATE")
-                        job.control.check()
+                        job.check()
                         _recheck_policy(intent)
                         existing = connection.execute(
                             "SELECT id FROM memories WHERE memory_type=? LIMIT 1",
@@ -400,32 +564,14 @@ class LifecycleCheckpointWorker:
                         record_id = uuid.uuid4().hex
                         while record_id == job.checkpoint_id:
                             record_id = uuid.uuid4().hex
-                        context = {
-                            "owner": _OWNER,
-                            "scope": _SCOPE,
-                            "schema": 1,
-                            "checkpoint_id": job.checkpoint_id,
-                            "record_id": record_id,
-                        }
-                        now = datetime.now(UTC).isoformat()
-                        connection.execute(
-                            "INSERT INTO memories (id,content,context,tags,importance,created_at,last_accessed,access_count,memory_type) VALUES (?,?,?,?,?,?,?,?,?)",
-                            (
-                                record_id,
-                                job.data.decode("utf-8"),
-                                json.dumps(context),
-                                "[]",
-                                0.0,
-                                now,
-                                now,
-                                0,
-                                "consciousness_observer_checkpoint:"
-                                + job.checkpoint_id,
-                            ),
+                        inserted = _insert_checkpoint(
+                            connection, record_id, job.checkpoint_id, job.data
                         )
-                        job.control.check()
+                        if inserted != 1:
+                            raise CheckpointError("unavailable")
+                        job.check()
                         _recheck_policy(intent)
-                        job.control.check()
+                        job.check()
                         committing = True
                         connection.commit()
                         result = LifecycleCheckpoint(
@@ -448,7 +594,7 @@ class LifecycleCheckpointWorker:
                             connection = None
                 # Policy/ownership callbacks and Future callbacks may block.
                 # Keep them outside the admission condition and cancellation lock.
-                active = job.control.active()
+                active = job.control.active() and job.backend_active()
                 with job.control._lock:
                     if not active or not job.control._open_locked():
                         failure = CheckpointError(
@@ -456,7 +602,13 @@ class LifecycleCheckpointWorker:
                         )
                 with self._condition:
                     self._job = None
+                    if stream:
+                        job.future._seal(result, failure.code if failure else None)
                     self._condition.notify_all()
+                if stream:
+                    if job.control.wake_event is not None:
+                        job.control.wake_event.set()
+                    continue
                 # I/O is complete and the slot is released; result() still rechecks
                 # policy/deadline/cancellation before a receipt can be accepted.
                 if failure is None:
@@ -469,6 +621,13 @@ class LifecycleCheckpointWorker:
 
     @staticmethod
     def _load(connection, checkpoint_id):
+        checkpoint, _ = LifecycleCheckpointWorker._read_checkpoint(
+            connection, checkpoint_id
+        )
+        return checkpoint
+
+    @staticmethod
+    def _read_checkpoint(connection, checkpoint_id):
         # CASE prevents materializing oversized content/context in Python.
         records = connection.execute(
             "SELECT id, length(CAST(content AS BLOB)), "
@@ -521,6 +680,9 @@ class LifecycleCheckpointWorker:
                 raise ValueError
         except Exception:
             raise CheckpointError("invalid") from None
-        return LifecycleCheckpoint(
-            record_id, checkpoint_id, _decode(content, checkpoint_id)
+        return (
+            LifecycleCheckpoint(
+                record_id, checkpoint_id, _decode(content, checkpoint_id)
+            ),
+            content,
         )
