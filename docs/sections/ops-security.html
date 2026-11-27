@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ops & Security • Aetherra Docs</title>
+    <title>Historical Ops & Security Notes • Aetherra Docs</title>
+    <meta name="robots" content="noindex,follow" />
+    <meta name="description" content="Historical Aetherra security and deployment notes from 2025, not current production guidance." />
     <link rel="icon" type="image/svg+xml" href="/sections/documentation-icon.svg" />
     <link rel="stylesheet" crossorigin href="/sections/documentation-base.css">
     <link rel="stylesheet" href="/sections/section-theme.css">
@@ -12,12 +14,16 @@
 
 <body class="bg-bg text-white">
     <main class="container prose prose-invert" style="max-width: 900px; margin: 40px auto; padding: 0 16px;">
+        <aside role="note" aria-label="Historical documentation notice" style="padding:1.2rem; margin-bottom:1.5rem; border:2px solid #22d3ee; border-radius:.5rem; background:#101926; color:#fff; line-height:1.6;">
+            <strong>Historical deployment notes — not current production guidance.</strong>
+            This preserved page describes an older configuration concept. Aetherra is currently a supervised internal-alpha research system; this page does not establish production readiness or safe public exposure. For the current status consult the <a href="https://github.com/AetherraLabs/Aetherra/blob/main/docs/ALPHA_READINESS_DECISION.md">Alpha Readiness Decision</a>, the <a href="https://github.com/AetherraLabs/Aetherra/blob/main/SECURITY.md">Security Policy</a>, and <a href="/security/">Responsible Disclosure</a>. Do not expose privileged endpoints based on this historical guide.
+        </aside>
         <section class="sec-hero" style="--sec-accent:#22d3ee; --sec-accent-2:#7c3aed">
-            <div class="sec-badge">Secure by default • Production ready</div>
+            <div class="sec-badge">Archived reference • Not production ready</div>
             <h1>Ops & Security</h1>
-            <p>Deploy, configure, and harden the Aetherra Hub and Kernel for production.</p>
+            <p>Historical configuration examples for the Aetherra Hub and Kernel; not validated for current production deployment.</p>
             <div class="sec-actions">
-                <a class="btn primary" href="#quickstart">Production quickstart</a>
+                <a class="btn primary" href="#quickstart">Historical checklist</a>
                 <a class="btn" href="#cors-pna">CORS / PNA</a>
                 <a class="btn" href="#hardening">Hardening</a>
                 <a class="btn" href="#troubleshooting">Troubleshoot</a>
@@ -34,7 +40,7 @@
             <a href="#troubleshooting">Troubleshooting</a>
         </nav>
 
-        <h2 id="quickstart">Quick start (prod-ready)</h2>
+        <h2 id="quickstart">Historical deployment checklist (not approved for production)</h2>
         <ol>
             <li>Run the Hub behind a reverse proxy with TLS (e.g., NGINX, Traefik).</li>
             <li>Set strict CORS and Private Network Access headers.</li>
