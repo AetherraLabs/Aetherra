@@ -440,3 +440,271 @@ async def test_readiness_matches_normal_launcher_adapter_registration(
     assert launcher._consciousness_core_readiness() == (
         None if shape == "real_adapters" else "core_not_ready"
     )
+
+
+@pytest.mark.asyncio
+async def test_temporal_projection_is_opt_in_and_absent_before_completed_tick(
+    observer_profile,
+):
+    observer = _module().ConsciousnessObserver(
+        readiness=lambda: None, observations=lambda: [], tick_interval=0.2
+    )
+    assert hasattr(observer, "get_temporal_observation")
+    assert observer.get_temporal_observation() is None
+    try:
+        observer.start()
+        await _until(observer, lambda s: s["ticks_completed"] >= 1)
+        assert observer.get_temporal_observation() is None
+    finally:
+        await observer.stop()
+
+
+@pytest.mark.asyncio
+async def test_temporal_projection_contains_only_detached_completed_counts(
+    observer_profile,
+):
+    observer = _module().ConsciousnessObserver(
+        readiness=lambda: None,
+        observations=lambda: [
+            Event("svc.health", {"service": "private-service", "restarts_1h": 6})
+        ],
+        tick_interval=10,
+        temporal_observation_enabled=True,
+    )
+    assert observer.get_temporal_observation() is None
+    try:
+        observer.start()
+        await _until(observer, lambda s: s["ticks_completed"] == 1)
+        value = observer.get_temporal_observation()
+        assert set(value) == {
+            "session_id",
+            "session_started_at_unix_s",
+            "sequence",
+            "observed_at_unix_s",
+            "observed_uptime_s",
+            "working_memory_count",
+            "active_intention_count",
+            "focus_count",
+        }
+        assert value["sequence"] == 1
+        assert value["working_memory_count"] == 1
+        assert value["active_intention_count"] == 1
+        assert value["focus_count"] == 1
+        assert len(value["session_id"]) == 32
+        assert value["observed_at_unix_s"] >= value["session_started_at_unix_s"]
+        assert value["observed_uptime_s"] >= 0
+        assert "private" not in json.dumps(value)
+        value["working_memory_count"] = 999
+        assert observer.get_temporal_observation()["working_memory_count"] == 1
+    finally:
+        await observer.stop()
+    assert observer.get_temporal_observation() is None
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("outcome", ["failed", "stopped", "readiness_lost"])
+async def test_temporal_projection_never_publishes_an_unaccepted_tick(
+    observer_profile, monkeypatch, outcome
+):
+    # Aetherra imports
+    from Aetherra.consciousness.core.consciousness_core import ConsciousnessCore
+
+    entered, release = threading.Event(), threading.Event()
+    ready = [True]
+    original = ConsciousnessCore.tick
+
+    def interrupted_tick(core):
+        original(core)
+        entered.set()
+        release.wait(5)
+        if outcome == "failed":
+            raise RuntimeError("private-failure")
+        if outcome == "readiness_lost":
+            ready[0] = False
+
+    monkeypatch.setattr(ConsciousnessCore, "tick", interrupted_tick)
+    observer = _module().ConsciousnessObserver(
+        readiness=lambda: None if ready[0] else "core_not_ready",
+        observations=lambda: [],
+        tick_interval=0.2,
+        temporal_observation_enabled=True,
+    )
+    try:
+        observer.start()
+        await _until(observer, lambda s: entered.is_set())
+        assert observer.get_temporal_observation() is None
+        if outcome == "stopped":
+            await observer.stop(timeout=0.01)
+        release.set()
+        await _until(observer, lambda s: not s["thread_alive"])
+        assert observer.get_temporal_observation() is None
+        assert observer.get_runtime_status()["ticks_completed"] == 0
+    finally:
+        release.set()
+        await observer.stop()
+
+
+@pytest.mark.asyncio
+async def test_temporal_projection_uses_monotonic_source_freshness(
+    observer_profile, monkeypatch
+):
+    # Standard library imports
+    from types import SimpleNamespace
+
+    observer = _module().ConsciousnessObserver(
+        readiness=lambda: None,
+        observations=lambda: [],
+        tick_interval=10,
+        temporal_observation_enabled=True,
+    )
+    try:
+        observer.start()
+        await _until(observer, lambda s: s["ticks_completed"] == 1)
+        value = observer.get_temporal_observation()
+        clock = time.monotonic()
+        with monkeypatch.context() as patch:
+            patch.setattr(
+                _module(),
+                "time",
+                SimpleNamespace(
+                    monotonic=lambda: clock + 31,
+                    time=lambda: value["observed_at_unix_s"],
+                ),
+            )
+            assert observer.get_temporal_observation() is None
+        # A backwards wall clock cannot make a fresh monotonic observation stale.
+        with monkeypatch.context() as patch:
+            patch.setattr(
+                _module(),
+                "time",
+                SimpleNamespace(
+                    monotonic=time.monotonic,
+                    time=lambda: 0.0,
+                ),
+            )
+            assert observer.get_temporal_observation() == value
+    finally:
+        await observer.stop()
+
+
+@pytest.mark.parametrize("enabled", [1, "1", None])
+def test_temporal_projection_configuration_rejects_non_boolean(enabled):
+    with pytest.raises(ValueError, match="consciousness_config_invalid"):
+        _module().ConsciousnessObserver(
+            readiness=lambda: None,
+            observations=lambda: [],
+            temporal_observation_enabled=enabled,
+        )
+
+
+@pytest.mark.asyncio
+async def test_temporal_projection_rechecks_readiness_after_checkpoint_freeze(
+    observer_profile, monkeypatch
+):
+    # Aetherra imports
+    from Aetherra.consciousness.core.consciousness_core import ConsciousnessCore
+
+    ready = [True]
+    original = ConsciousnessCore.export_observer_checkpoint
+
+    def revoke_after_freeze(core, handle):
+        result = original(core, handle)
+        ready[0] = False
+        return result
+
+    monkeypatch.setattr(
+        ConsciousnessCore, "export_observer_checkpoint", revoke_after_freeze
+    )
+    observer = _module().ConsciousnessObserver(
+        readiness=lambda: None if ready[0] else "core_not_ready",
+        observations=lambda: [],
+        tick_interval=10,
+        continuity_enabled=True,
+        checkpoint_store=object(),
+        temporal_observation_enabled=True,
+    )
+    try:
+        observer.start()
+        await _until(observer, lambda s: s["runtime_state"] in {"blocked", "running"})
+        assert observer.get_temporal_observation() is None
+        assert observer.get_runtime_status()["ticks_completed"] == 0
+    finally:
+        await observer.stop()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("delay", [5, 31])
+async def test_temporal_projection_does_not_refresh_timestamp_after_slow_freeze(
+    observer_profile, monkeypatch, delay
+):
+    # Standard library imports
+    from types import SimpleNamespace
+
+    # Aetherra imports
+    from Aetherra.consciousness.core.consciousness_core import ConsciousnessCore
+
+    offset = [0.0]
+    original = ConsciousnessCore.export_observer_checkpoint
+
+    def delayed_freeze(core, handle):
+        result = original(core, handle)
+        offset[0] = delay
+        return result
+
+    monkeypatch.setattr(ConsciousnessCore, "export_observer_checkpoint", delayed_freeze)
+    monkeypatch.setattr(
+        _module(),
+        "time",
+        SimpleNamespace(
+            time=time.time,
+            monotonic=lambda: time.monotonic() + offset[0],
+        ),
+    )
+    # Freeze scheduling after one real tick/export so the evidence cannot be
+    # replaced by a second observation during the simulated delay.
+    monkeypatch.setattr(
+        _module().ConsciousnessObserver,
+        "_wait_for_tick",
+        lambda observer, deadline: observer._stop.wait(5),
+    )
+    observer = _module().ConsciousnessObserver(
+        readiness=lambda: None,
+        observations=lambda: [],
+        tick_interval=10,
+        continuity_enabled=True,
+        checkpoint_store=object(),
+        temporal_observation_enabled=True,
+    )
+    try:
+        observer.start()
+        await _until(observer, lambda s: s["ticks_completed"] == 1)
+        value = observer.get_temporal_observation()
+        if delay == 31:
+            assert value is None
+        else:
+            assert value is not None
+            wall_elapsed = (
+                value["observed_at_unix_s"] - value["session_started_at_unix_s"]
+            )
+            assert abs(value["observed_uptime_s"] - wall_elapsed) < 1
+    finally:
+        await observer.stop()
+
+
+@pytest.mark.asyncio
+async def test_temporal_projection_refuses_explicitly_lost_local_ownership(
+    observer_profile,
+):
+    observer = _module().ConsciousnessObserver(
+        readiness=lambda: None,
+        local_owned=lambda: False,
+        observations=lambda: [],
+        tick_interval=10,
+        temporal_observation_enabled=True,
+    )
+    try:
+        observer.start()
+        await _until(observer, lambda s: s["runtime_state"] in {"blocked", "running"})
+        assert observer.get_temporal_observation() is None
+    finally:
+        await observer.stop()

@@ -1,5 +1,5 @@
 ---
-name: Feature request
+name: Aether script / cognitive pattern proposal
 about: Suggest a new Aetherra feature or cognitive pattern
 title: '[FEATURE] '
 labels: enhancement, cognitive-pattern

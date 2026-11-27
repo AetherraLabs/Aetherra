@@ -50,7 +50,8 @@ jobs:
         # also runs retrieval unit tests and appends this coverage.
         run: >-
           python -m pytest tests/acceptance/test_personal_continuity.py
-          tests/acceptance/test_consciousness_continuity.py -q -o addopts=
+          tests/acceptance/test_consciousness_continuity.py
+          tests/acceptance/test_temporal_runtime_launch.py -q -o addopts=
           --cov=. --cov-report= --cov-fail-under=0
       - name: Release signing and bundle regression tests
         run: >-

@@ -426,3 +426,90 @@ def test_offline_orderly_stop_receipt_keeps_prior_acceptance_unknown(setup):
     assert metrics["continuity_restored_save_trigger"] == "orderly_stop"
     assert metrics["continuity_previous_save_acceptance"] == "unknown"
     assert metrics["continuity_previous_shutdown_evidence"] == "unknown"
+
+
+def test_temporal_status_binding_ownership():
+    # Aetherra imports
+    from aetherra_hub.services.state import HubState
+
+    class Owner:
+        def status(self):
+            return {}
+
+    state = HubState()
+    old, new, registry, replacement = (Owner() for _ in range(4))
+    assert state.bind_temporal_status(owner=old, registry=registry, provider=old.status)
+    assert not state.bind_temporal_status(
+        owner=new, registry=registry, provider=new.status
+    )
+    assert state.bind_temporal_status(
+        owner=new, registry=replacement, provider=new.status
+    )
+    assert not state.clear_temporal_status(owner=old, registry=registry)
+    assert state.temporal_status_provider(replacement) == new.status
+
+
+def test_temporal_binding_is_weak_and_bound_method_only():
+    # Standard library imports
+    import gc
+    import weakref
+
+    # Aetherra imports
+    from aetherra_hub.services.state import HubState
+
+    class Owner:
+        def status(self):
+            return {}
+
+    state, owner, registry = HubState(), Owner(), Owner()
+    assert not state.bind_temporal_status(
+        owner=owner, registry=registry, provider=registry.status
+    )
+    assert state.bind_temporal_status(
+        owner=owner, registry=registry, provider=owner.status
+    )
+    refs = weakref.ref(owner), weakref.ref(registry)
+    del owner, registry
+    gc.collect()
+    assert all(ref() is None for ref in refs)
+
+
+def test_temporal_http_scalar_projection_and_transport_loss(setup):
+    registry, client = setup
+
+    class Owner:
+        def status(self):
+            return {
+                "runtime_state": "blocked",
+                "ownership_state": "fenced",
+                "enabled": False,
+                "last_error_code": "writer_fenced",
+                "restored_record_id": "a" * 32,
+                "saved_record_id": "/private/path",
+                "selected_head_record_id": [],
+                "accepted_observations": True,
+                "private": "confidential",
+            }
+
+    owner = Owner()
+    assert hub_state.bind_temporal_status(
+        owner=owner, registry=registry, provider=owner.status
+    )
+    response = client.get("/api/consciousness/state")
+    body = response.get_json()
+    assert response.status_code == 503
+    assert "stale legacy" not in str(body)
+    assert "private" not in str(body)
+    metrics = body["runtime"]
+    assert metrics["temporal_restored_record_id"] == "a" * 32
+    assert metrics["temporal_saved_record_id"] is None
+    assert metrics["temporal_accepted_observations"] is None
+    assert metrics["temporal_ownership_state"] == "fenced"
+    _register(registry)
+    response = client.get("/api/consciousness/state")
+    assert response.status_code == 200
+    assert response.get_json()["runtime"]["temporal_runtime_state"] == "blocked"
+    registry._running = False
+    metrics = client.get("/api/consciousness/state").get_json()["runtime"]
+    assert metrics["temporal_runtime_state"] == "unavailable"
+    assert metrics["temporal_restored_record_id"] is None

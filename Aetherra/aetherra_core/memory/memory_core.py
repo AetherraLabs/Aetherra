@@ -7,12 +7,14 @@ All memory operations are delegated to the canonical engine.
 """
 
 # Standard library imports
+import asyncio
 import hashlib
 import json
 import logging
 import os
 import re
 import sqlite3
+import time
 from contextlib import contextmanager, suppress
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -32,6 +34,16 @@ if TYPE_CHECKING:
         StreamToken,
     )
     from .lifecycle_checkpoint import CheckpointJobControl
+    from .temporal_history import (
+        AppendInspection,
+        AppendReceipt,
+        AppendRequest,
+        HistoryHead,
+        HistoryKey,
+        HistoryPage,
+        HistorySelection,
+        HistoryToken,
+    )
 
 
 # Local imports
@@ -176,6 +188,7 @@ class LyrixaMemorySystem:
         self.db_path = memory_db_path
         # Local imports
         from .lifecycle_checkpoint import LifecycleCheckpointWorker
+        from .temporal_history_worker import TemporalHistoryWorker
 
         self._lifecycle_checkpoints = LifecycleCheckpointWorker(memory_db_path)
         self._transaction_failed = False
@@ -183,6 +196,8 @@ class LyrixaMemorySystem:
             self.db_path,
             check_same_thread=False,
         )  # Initialize connection
+        self._temporal_history_connection = self.conn
+        self._temporal_history = TemporalHistoryWorker(memory_db_path)
         self.memory_cache: Dict[str, Any] = {}
         self.consolidation_interval = 3600  # 1 hour in seconds
         # Webhook manager disabled - not currently available
@@ -198,6 +213,68 @@ class LyrixaMemorySystem:
         else:
             # Fallback to basic quantum engine if advanced not available
             self.engine = QuantumEnhancedMemoryEngine()
+
+    def submit_acquire_temporal_history(
+        self, *, key: "HistoryKey", start_mode: str, control: "CheckpointJobControl"
+    ) -> "StreamJob[HistorySelection]":
+        return self._submit_temporal_history(
+            operation="acquire", key=key, start_mode=start_mode, control=control
+        )
+
+    def submit_append_temporal_history(
+        self, *, request: "AppendRequest", control: "CheckpointJobControl"
+    ) -> "StreamJob[AppendReceipt]":
+        return self._submit_temporal_history(
+            operation="append", request=request, control=control
+        )
+
+    def submit_read_temporal_history(
+        self,
+        *,
+        token: "HistoryToken",
+        selected_head: "HistoryHead",
+        after_ordinal: int,
+        limit: int,
+        control: "CheckpointJobControl",
+    ) -> "StreamJob[HistoryPage]":
+        return self._submit_temporal_history(
+            operation="read",
+            token=token,
+            selected_head=selected_head,
+            after_ordinal=after_ordinal,
+            limit=limit,
+            control=control,
+        )
+
+    def submit_inspect_temporal_append(
+        self,
+        *,
+        token: "HistoryToken",
+        request: "AppendRequest",
+        control: "CheckpointJobControl",
+    ) -> "StreamJob[AppendInspection]":
+        return self._submit_temporal_history(
+            operation="inspect", token=token, request=request, control=control
+        )
+
+    def _submit_temporal_history(self, *, backend_owned=None, **job):
+        # Local imports
+        from .checkpoint_stream import StreamJob
+
+        original = self._temporal_history_connection
+        if type(self) is not LyrixaMemorySystem or self.conn is not original:
+            return StreamJob.refused("unavailable")
+
+        def owned():
+            return self.conn is original and (backend_owned is None or backend_owned())
+
+        return self._temporal_history.submit(backend_owned=owned, **job)
+
+    def temporal_history_pending(self) -> bool:
+        return self._temporal_history.pending()
+
+    def drain_temporal_history(self, timeout: float = 1.0) -> bool:
+        return self._temporal_history.shutdown(timeout)
 
     def submit_acquire_checkpoint_stream(
         self,
@@ -280,20 +357,18 @@ class LyrixaMemorySystem:
         return self._lifecycle_checkpoints.shutdown(timeout)
 
     def close(self) -> bool:
-        """Close only after owned checkpoint I/O drains; false retains ownership.
-
-        Existing no-argument callers remain valid. The checkpoint worker closes
-        its own connection; an uninterruptible audit/commit never loses its slot.
-        """
-        if not self.drain_lifecycle_checkpoints(timeout=1.0):
+        """Close after both owned lanes settle within the shared drain budget."""
+        deadline = time.monotonic() + 1.0
+        self._temporal_history.close_admission()
+        checkpoints_drained = self.drain_lifecycle_checkpoints(
+            timeout=max(0.0, deadline - time.monotonic())
+        )
+        history_drained = self.drain_temporal_history(
+            timeout=max(0.0, deadline - time.monotonic())
+        )
+        if not checkpoints_drained or not history_drained:
             return False
-        if self.conn is not None:
-            try:
-                self.conn.close()
-            except Exception:
-                return False
-            self.conn = None
-        return True
+        return self._close_database_connection()
 
     def __del__(self):  # pragma: no cover - best effort GC finalizer
         with suppress(Exception):
@@ -549,15 +624,12 @@ class LyrixaMemorySystem:
 
         if not query_text.strip() or limit <= 0:
             return []
-        rows = (
-            self.ensure_connection()
-            .execute(
-                "SELECT id, content, context, tags, importance, created_at, last_accessed, "
-                "access_count, memory_type FROM memories WHERE memory_type = ? AND id != ?",
-                ("conversation", exclude_id or ""),
-            )
-            .fetchall()
-        )
+        connection = self.ensure_connection()
+        rows = connection.execute(
+            "SELECT id, content, context, tags, importance, created_at, last_accessed, "
+            "access_count, memory_type FROM memories WHERE memory_type = ? AND id != ?",
+            ("conversation", exclude_id or ""),
+        ).fetchall()
         candidates = {}
         texts = []
         for row in rows:
@@ -576,8 +648,18 @@ class LyrixaMemorySystem:
                 continue
             candidates[row[0]] = (row, content)
             texts.append((row[0], statements))
+        # Ranking can cold-load a model or wait for its shared lock. Only the
+        # immutable text snapshot crosses threads; SQLite stays with the caller.
+        ranked = await asyncio.to_thread(rank, query_text, texts, min(limit, 3))
+        # A suspended recall must not reopen a closed/replaced connection or
+        # apply access updates to a different Memory lifetime. Cancellation also
+        # leaves the pure ranking worker with no database side effects.
+        if self.conn is not connection:
+            raise RuntimeError("chat_recall_connection_changed")
+        if self._transaction_failed:
+            raise RuntimeError("memory_transaction_unavailable")
         memories = []
-        for record_id, score in rank(query_text, texts, min(limit, 3)):
+        for record_id, score in ranked:
             row, content = candidates[record_id]
             memories.append(
                 Memory(
@@ -1042,15 +1124,21 @@ class LyrixaMemorySystem:
             logger.exception("Memory delete failed")
             return False
 
-    def close_connection(self):
-        """Closes the database connection if open."""
+    def close_connection(self) -> bool:
+        """Drain both owned lanes before closing the database connection."""
+        return self.close()
+
+    def _close_database_connection(self) -> bool:
+        if self.conn is None:
+            return True
         try:
-            if self.conn:
-                self.conn.close()
-                self.conn = None
-                logger.debug("Memory database connection closed")
+            self.conn.close()
         except Exception:
             logger.exception("Failed to close memory database connection")
+            return False
+        self.conn = None
+        logger.debug("Memory database connection closed")
+        return True
 
     @contextmanager
     def db_session(self):
@@ -1071,7 +1159,7 @@ class LyrixaMemorySystem:
                 except Exception:
                     self._transaction_failed = True
                     logger.error("Memory rollback failed; closing failed transaction")
-                    self.close_connection()
+                    self._close_database_connection()
             raise
         finally:
             if cursor:

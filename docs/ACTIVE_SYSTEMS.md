@@ -28,24 +28,29 @@ Offline and live competing-fact/profile checks and core recall are recorded
 in [PERSONAL_CONTINUITY.md](PERSONAL_CONTINUITY.md). This establishes local storage
 isolation, not account isolation or full-runtime readiness.
 
-Integrated alpha baseline (2026-11-24): Phase A/B, C1
-[PR #354](https://github.com/AetherraLabs/Aetherra/pull/354) and C2a
-[PR #353](https://github.com/AetherraLabs/Aetherra/pull/353) are merged, released
-as `v0.5.0-beta.13` at `949312c3f842283b8b25a8da6babff4e66b0c764`.
-Hosted main CI and production/release signing passed. The command-error
-correction passes local regressions and the full suite; review/publication and
-hosted follow-up CI remain pending. The original clean-main stop-receipt failure
-is retained, and its slow operation remains unproven.
+Integrated alpha baseline (updated 2026-11-26): Phase A/B, C1, C2a,
+C2b (PRs #356-#360 and #362-#367), and progress follow-up #368 are merged.
+Released main is `56623003675bc99f9e3dfadf15b6254beb183b59`
+(`v0.5.0-beta.22`). The preceding merge `592c46224425` passed its full suite
+(4,158 passed, 38 skipped), GUI checks and enforced production signing;
+released-main boot/integration and the bounded automated continuity/restart
+checks passed. These distinct revision bindings and limitations are recorded
+in the [resumption evidence](evidence/temporal_resumption_2026-11-26.json).
 
-See the [current decision](ALPHA_READINESS_DECISION.md#checkpoint-stop-follow-up),
-[C1 contract](AETHERRA_CONSCIOUSNESS_SYSTEM.md#phase-c1-normal-runtime-contract)
-and [checkpoint operator procedure](ALPHA_OPERATOR_RUNBOOK.md#consciousness-checkpoints-phase-c2a).
-Historical local, browser and live-model evidence retains its source revision.
-Fresh Python installation, current browser/live-model checks and physical keyboard
-shutdown remain unverified. The earlier scoped supervised GO is not expanded.
-C2b automatic selection, periodic saves and retention remain deferred; pending
-Temporal work is preserved. No unattended readiness, account isolation or action
-authority is claimed.
+The local opt-in Temporal observer samples completed Core ticks every five seconds.
+It saves changes and session/gap markers through typed Memory, restores up to 256
+records into the existing engine, and publishes cached evidence in the
+Consciousness inspector. See the [operator guide](TEMPORAL_HISTORY.md) and
+[local runtime receipt](evidence/temporal_runtime_integration_2026-11-26.json)
+for the commands, source hashes and scope. Local final-source verification recorded 4,319 passed, 38 skipped and 45.29% coverage against the unchanged 22% floor.
+
+The existing supervised-alpha GO is unchanged. ALPHA-CKPT-001 and DEV-CKPT-001
+remain OPEN; the original slow operation remains unexplained. Normal shutdown
+also retains the pre-existing Homeostasis watchdog error, with no claim that
+every outstanding operation settled. Fresh Python installation, current browser,
+live-model and physical keyboard checks were not rerun for released main;
+earlier evidence retains its own source revision. No unattended readiness,
+production readiness, account isolation or new action authority is claimed.
 
 | System | Status | Primary Reference |
 | --- | --- | --- |

@@ -6,12 +6,12 @@
 > A safety-first cognitive operating layer for agentic AI systems.
 
 [![License](https://img.shields.io/badge/License-GPLv3-0891b2)](LICENSE)
-![Version](https://img.shields.io/badge/Version-0.5.0--beta.22-0f766e)
+![Version](https://img.shields.io/badge/Version-0.5.0--beta.23-0f766e)
 ![Language](https://img.shields.io/badge/Language-Python%20%2B%20Aetherra-8b5cf6)
 ![Status](https://img.shields.io/badge/Status-Internal%20Alpha%20Foundation-2563eb)
 ![Safety](https://img.shields.io/badge/Safety-Guardian%20Mediated-22c55e)
 
-Version: **0.5.0-beta.22**
+Version: **0.5.0-beta.23**
 
 Aetherra is an experimental AI operating layer for modular agents, persistent
 memory, policy-mediated execution, auditable decisions, and controlled
@@ -36,6 +36,13 @@ active internal alpha-stage research and engineering codebase.
 - Do not connect it to sensitive systems without explicit review.
 - Expect some systems to be functional foundations rather than final products.
 - Prefer manual approval, rollback plans, and audit review for risky actions.
+
+## Start here
+
+- [Project identity](docs/WHO_IS_AETHERRA.md) and [Master Roadmap](docs/MASTER_ROADMAP.md)
+- [Supported Windows alpha installation](docs/DESKTOP_INSTALLATION.md) and [operator runbook](docs/ALPHA_OPERATOR_RUNBOOK.md)
+- [Contributor guide](CONTRIBUTING.md) and [current contribution opportunities](https://github.com/AetherraLabs/Aetherra/issues/375)
+- [Development issue register](docs/DEVELOPMENT_ISSUES.md)
 
 ## Current Priorities
 

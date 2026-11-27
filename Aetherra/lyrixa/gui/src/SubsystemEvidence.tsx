@@ -56,6 +56,26 @@ function consciousnessEvidence(observed: EvidenceMetrics): Array<[string, string
         ["Saved record", recordReference(observed.continuity_saved_record_id)],
         ["Action execution", flag(observed.action_execution_enabled, "Enabled", "Disabled")],
     ];
+    rows.push(["Temporal runtime", status(observed.temporal_runtime_state, ["disabled", "absent", "missing", "unavailable", "starting", "running", "stopping", "stopped", "blocked"])]);
+    if (observed.temporal_enabled === true || observed.temporal_runtime_state === "blocked" || observed.temporal_last_error_code) {
+        rows.push(
+            ["Temporal ownership", status(observed.temporal_ownership_state, ["unverified", "last_verified", "lost", "fenced", "uncertain"])],
+            ["Temporal persistence", status(observed.temporal_persistence_state, ["idle", "restoring", "ready", "saved", "closed", "blocked", "uncertain"])],
+            ["Temporal error", status(observed.temporal_last_error_code, ["invalid", "missing", "unchanged", "conflict", "corrupt", "busy", "denied", "audit_failed", "unavailable", "cancelled", "uncertain", "writer_fenced", "ownership_lost", "temporal_config_invalid", "config_invalid", "core_not_ready", "memory_not_ready", "policy_not_ready", "service_conflict"])],
+            ["Temporal source fresh", flag(observed.temporal_source_fresh)],
+            ["Temporal observations accepted", count(observed.temporal_accepted_observations)],
+            ["Temporal observations skipped", count(observed.temporal_skipped_observations)],
+            ["Temporal operation pending", flag(observed.temporal_outstanding)],
+            ["Temporal writer epoch last verified", count(observed.temporal_writer_epoch)],
+            ["Selected Temporal head record", checkpointReference(observed.temporal_selected_head_record_id)],
+            ["Restored Temporal head record", checkpointReference(observed.temporal_restored_record_id)],
+            ["Saved Temporal head record", checkpointReference(observed.temporal_saved_record_id)],
+            ["Last verified Temporal observation (UTC)", hostTime(observed.temporal_last_verified_observation_at_unix_s)],
+            ["Temporal observation gap", status(observed.temporal_observation_gap_state, ["unknown", "estimated", "inconsistent"])],
+            ["Estimated Temporal gap", duration(observed.temporal_observation_gap_seconds)],
+            ["Offline duration", status(observed.temporal_offline_duration_state, ["unknown"])],
+        );
+    }
     if (observed.continuity_enabled !== true) return rows;
 
     const ownership = observed.continuity_ownership_state;

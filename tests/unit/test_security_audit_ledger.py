@@ -3,8 +3,12 @@
 from __future__ import annotations
 
 # Standard library imports
+import contextlib
 import json
+import multiprocessing
 import os
+import threading
+import time
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 
@@ -320,3 +324,113 @@ def test_bounded_cache_evicts_the_least_recently_used_path(tmp_path, monkeypatch
     seen.clear()
     b.append(actor="security", event_type="evicted")
     assert seen == [record["hash"] for record in _records(b.path)]
+
+
+def _overlapping_append(path, ready, before_write, receipts):
+    class OverlappingLedger(SecurityAuditLedger):
+        def _append_bytes(self, encoded):
+            # Give an independent writer a chance to sign against this same tail.
+            with contextlib.suppress(threading.BrokenBarrierError):
+                before_write.wait(timeout=0.12)
+            super()._append_bytes(encoded)
+
+    ledger = OverlappingLedger(path)
+    ready.wait(timeout=10)
+    record = ledger.append(actor=str(os.getpid()), event_type="overlap")
+    receipts.put(record["hash"])
+
+
+def test_process_appends_acknowledge_one_verifiable_chain(tmp_path):
+    ledger = _signed_history(tmp_path, count=1)
+    original_key = ledger.key_path.read_bytes()
+    context = multiprocessing.get_context("spawn")
+    receipts = context.Queue()
+    args = (ledger.path, context.Barrier(2), context.Barrier(2), receipts)
+    writers = [context.Process(target=_overlapping_append, args=args) for _ in range(2)]
+    try:
+        for writer in writers:
+            writer.start()
+        for writer in writers:
+            writer.join(15)
+            assert writer.exitcode == 0
+        records = _records(ledger.path)
+        assert {receipts.get(timeout=2) for _ in writers} == {
+            record["hash"] for record in records[1:]
+        }
+        assert [record["sequence"] for record in records] == [1, 2, 3]
+        assert ledger.verify_integrity(require_signed_records=True)
+        assert ledger.key_path.read_bytes() == original_key
+    finally:
+        for writer in writers:
+            if writer.is_alive():
+                writer.terminate()
+                writer.join(5)
+        receipts.close()
+
+
+def _pause_signed_write(path, entered, resume, split):
+    class PausedLedger(SecurityAuditLedger):
+        def _append_bytes(self, encoded):
+            if split:
+                super()._append_bytes(encoded[:20])
+                encoded = encoded[20:]
+            entered.set()
+            if not split:
+                os._exit(23)
+            assert resume.wait(10)
+            # Let the verifier encounter the in-progress write.
+            time.sleep(0.08)
+            super()._append_bytes(encoded)
+
+    PausedLedger(path).append(actor="writer", event_type="change")
+
+
+@pytest.mark.parametrize("crash", [False, True], ids=["verify_snapshot", "holder_exit"])
+def test_process_lock_covers_verification_and_releases_on_exit(tmp_path, crash):
+    ledger = _signed_history(tmp_path, count=1)
+    context = multiprocessing.get_context("spawn")
+    entered, resume = context.Event(), context.Event()
+    writer = context.Process(
+        target=_pause_signed_write, args=(ledger.path, entered, resume, not crash)
+    )
+    writer.start()
+    try:
+        assert entered.wait(10)
+        if not crash:
+            resume.set()
+            assert ledger.verify_integrity(require_signed_records=True)
+        writer.join(5)
+        assert not writer.is_alive()
+        assert writer.exitcode == (23 if crash else 0)
+        appended = ledger.append(actor="parent", event_type="after")
+        assert appended["sequence"] == (2 if crash else 3)
+        assert ledger.verify_integrity(require_signed_records=True)
+    finally:
+        resume.set()
+        if writer.is_alive():
+            writer.terminate()
+            writer.join(5)
+
+
+@pytest.mark.parametrize("export", [False, True], ids=["active_profile", "export"])
+def test_verifying_read_only_history_needs_no_write_access(
+    tmp_path, monkeypatch, export
+):
+    ledger = _signed_history(tmp_path, count=1)
+    lock_path = ledger.path.with_suffix(".jsonl.lock")
+    if export:
+        lock_path.unlink(missing_ok=True)
+    original_open = os.open
+
+    def read_only_open(path, flags, *args, **kwargs):
+        if flags & (os.O_CREAT | os.O_RDWR | os.O_WRONLY):
+            raise PermissionError("read-only export")
+        return original_open(path, flags, *args, **kwargs)
+
+    monkeypatch.setattr(os, "open", read_only_open)
+    assert ledger.verify_integrity(require_signed_records=True)
+    if export:
+        assert not lock_path.exists()
+    missing = SecurityAuditLedger(tmp_path / "absent" / "audit.jsonl")
+    assert missing.verify_integrity()
+    assert not missing.path.parent.exists()

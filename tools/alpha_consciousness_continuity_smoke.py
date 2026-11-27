@@ -394,20 +394,37 @@ def worker(profile, artifacts, phase, *, automatic=False, live=False):
         import aetherra_os_launcher as launcher_module
 
         probe = None
+        temporal_owners = None
         if automatic:
             # Third party imports
             from alpha_consciousness_stream_probe import StreamProbe
 
             probe = StreamProbe(artifacts)
             probe.install(stack, launcher_module)
+            if probe.options.get("temporal_witness"):
+                # Third party imports
+                from alpha_temporal_smoke import install_sample_witness
+
+                install_sample_witness(stack, artifacts)
 
         original_announcement = launcher_module.AetherraOSLauncher._announce_os_online
 
         async def observed_announcement(launcher):
-            nonlocal launcher_seen, command_task, running_loop
+            nonlocal launcher_seen, command_task, running_loop, temporal_owners
             running_loop = asyncio.get_running_loop()
             result = await original_announcement(launcher)
             launcher_seen = launcher
+            temporal_boot = {}
+            if probe and probe.options.get("temporal_witness"):
+                # Third party imports
+                from alpha_temporal_smoke import owned_hub_listener
+
+                temporal_boot["owned_hub_listener"] = owned_hub_listener(launcher)
+                temporal_owners = (
+                    launcher._temporal_source,
+                    launcher._temporal_observer,
+                    launcher._temporal_memory,
+                )
             engine = launcher.systems["aetherra"].impl
             if probe and probe.options.get("history_fixture"):
                 history_id = await launcher.systems[
@@ -431,6 +448,7 @@ def worker(profile, artifacts, phase, *, automatic=False, live=False):
                 artifacts / "boot.json",
                 {
                     "pid": os.getpid(),
+                    **temporal_boot,
                     **(
                         {
                             "interpreter": {
@@ -476,6 +494,11 @@ def worker(profile, artifacts, phase, *, automatic=False, live=False):
                 exit_code = 0
         finally:
             finished.set()
+            if temporal_owners is not None:
+                # Third party imports
+                from alpha_temporal_smoke import record_settlement
+
+                record_settlement(artifacts, *temporal_owners)
             if command_task is not None and not command_task.done():
                 command_task.cancel()
             observer = (

@@ -133,14 +133,14 @@ def inventory(database, stream, *, candidate=None):
 
 
 class Launch:
-    def __init__(self, profile, artifacts, phase, *, live=False, **options):
+    def __init__(self, profile, artifacts, phase, *, live=False, port=0, **options):
         self.profile = profile
         self.artifacts = artifacts
         self.artifacts.mkdir(parents=True, exist_ok=False)
         write_json(artifacts / "harness.json", options)
         self.sample_count = 0
         with socket.socket() as reservation:
-            reservation.bind(("127.0.0.1", 0))
+            reservation.bind(("127.0.0.1", port))
             self.port = reservation.getsockname()[1]
         self.base = f"http://127.0.0.1:{self.port}"
         self.forced = False
@@ -222,7 +222,9 @@ class Launch:
         assert self.process.poll() is None
         self.stop_method = "parent_kill_at_witness"
         self.process.kill()
-        assert self.process.wait(timeout=10) != 0
+        exit_code = self.process.wait(timeout=10)
+        if exit_code == 0:
+            raise RuntimeError("launcher exited successfully at kill witness")
         return cut
 
     def finish(self):
@@ -231,7 +233,9 @@ class Launch:
                 assert self.process.poll() is None, "unexpected launcher exit"
                 self.stop_method = "harness_sigint"
                 (self.artifacts / "stop-runtime").touch()
-                assert self.process.wait(timeout=65) == 0
+                exit_code = self.process.wait(timeout=65)
+                if exit_code != 0:
+                    raise RuntimeError(f"launcher exited with code {exit_code}")
                 self.provider = read(self.artifacts / "provider.json")
                 assert self.provider["signed_audit_verified"] is True
                 assert self.provider["launcher_stopped"]
@@ -382,6 +386,8 @@ def periodic_in_window(session, start, observed_through, seconds, receipts):
 
 
 def run(output, observe_seconds, *, live=False):
+    if not __debug__:
+        raise RuntimeError("Smoke verification requires Python assertions")
     output.mkdir(parents=True, exist_ok=False)
     summary = {
         "mode": "automatic_stream",
