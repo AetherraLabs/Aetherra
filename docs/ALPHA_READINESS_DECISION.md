@@ -86,6 +86,14 @@ cause. The existing five-minute gate and operational authority are unchanged;
 final pushed-revision checks remain required. The C2b receipt retains its
 original six-record scope.
 
+An eighth OPEN record, [DEV-CI-002](DEVELOPMENT_ISSUES.md#dev-ci-002--personal-continuity-write-session-http-503)
+([#382](https://github.com/AetherraLabs/Aetherra/issues/382)), preserves the
+separate write-session HTTP 503 at PR head `9f3f97db`: 1 failed, 4 passed,
+1 skipped, exit 1. Its [receipt](evidence/ci_personal_continuity_503_2026-11-26.json)
+contains the original failure only; the failing turn and response reason were
+not published. No cause, correction verification or new readiness decision is
+established. Later observations stay on #382 without replacing that failure.
+
 ## DEV-CKPT-001 Candidate Follow-Up (2026-11-25)
 
 Historical candidate checkpoint, retained at its original scope. Subsequent

@@ -12,7 +12,7 @@ The proposal in [#375](https://github.com/AetherraLabs/Aetherra/issues/375) was
 implemented as five GitHub tracking milestones, without due dates or assignee
 changes. Official Master Roadmap stages remain authoritative and unchanged.
 
-Initial assignment snapshot, before registration of additional issue #381:
+Initial assignment snapshot, before registration of additional issues #381/#382:
 
 | Milestone | Assigned issues | Count |
 | --- | --- | --- |
@@ -30,7 +30,7 @@ issue #76 retains milestone #4; #375 remains unmilestoned. Both are pinned.
 
 All nine status/priority labels retain their names and IDs and now have meaningful
 colors and descriptions. The other 48 labels are unchanged. Before registration
-of #381 and documentary closure of #377, the 33-open-issue filter snapshot was:
+of #381/#382 and documentary closure of #377, the 33-open-issue filter snapshot was:
 
 | Status | Count | Priority | Count |
 | --- | --- | --- | --- |
@@ -46,12 +46,15 @@ Counts describe that initial snapshot, not a quota. Subsequent registration of
 unresolved capability timeout already documented in PR #368 and the similar
 PR #379 observation. It adds one active/medium issue and one assignment to
 milestone #5; it does not recreate the backlog or establish a common cause.
-The original 31 assignments remain intact; the added issue makes 32.
+Separate [#382](https://github.com/AetherraLabs/Aetherra/issues/382) records
+the later personal-continuity HTTP assertion failure, adding one active/high
+issue to milestone #5. The original 31 assignments remain intact; these two
+additional issues make 33 assignments. No shared cause is inferred.
 
-With #381 registered, documentary closure of #377 will leave 33 open issues:
-status counts active 7, planned 14, research 2, deferred 6, community 2 and
-tracking 2; priority counts high 4, medium 18 and low 9. Milestone #5 will contain
-eight assigned issues (seven open, #377 closed). These are conditional closeout
+With #381/#382 registered, documentary closure of #377 will leave 34 open issues:
+status counts active 8, planned 14, research 2, deferred 6, community 2 and
+tracking 2; priority counts high 5, medium 18 and low 9. Milestone #5 will contain
+nine assigned issues (eight open, #377 closed). These are conditional closeout
 counts until #377 closes; no engineering record closes with it. Every issue has
 one status classification; #76/#375 remain intentionally unprioritized tracking.
 Priority is review order, not severity or release-blocking status.
@@ -71,7 +74,10 @@ owners, next actions and closure gates; no unknown cause is assigned from reruns
 Additional [DEV-CI-001](DEVELOPMENT_ISSUES.md#dev-ci-001--capabilities-job-timeout-before-a-result-summary)
 links [#381](https://github.com/AetherraLabs/Aetherra/issues/381) to the
 [four-log CI receipt](evidence/ci_capabilities_timeout_2026-11-26.json). The
-original six C2b records and this seventh CI record all remain OPEN.
+separate [DEV-CI-002](DEVELOPMENT_ISSUES.md#dev-ci-002--personal-continuity-write-session-http-503)
+links [#382](https://github.com/AetherraLabs/Aetherra/issues/382) to the
+[original HTTP-failure receipt](evidence/ci_personal_continuity_503_2026-11-26.json).
+The original six C2b records and two additional CI records all remain OPEN.
 
 The [merged-main review receipt](evidence/c2b_merged_main_review_2026-11-26.json)
 and [readiness decision](ALPHA_READINESS_DECISION.md#c2b-merged-main-evidence-review-2026-11-26)
@@ -93,7 +99,7 @@ Checks for this documentation-only delivery:
 - Parse all four issue YAML files and both Markdown frontmatters; validate IDs.
 - Run focused Markdown lint with `markdownlint-cli2@0.13.0` and `.markdownlint.jsonc`.
 - Run `python tools/verify_docs_consistency.py`; archive its generated report separately.
-- Check changed relative links/anchors, 19 original C2b archive hashes, four CI log hashes and unchanged historical receipts.
+- Check changed relative links/anchors, 19 original C2b archive hashes, five CI log hashes and unchanged historical receipts.
 - Run `git diff --check` and review hosted checks on the exact PR head before merge.
 
 Discussions and GitHub private vulnerability reporting are enabled. SECURITY.md
@@ -111,6 +117,14 @@ cause is not established. No runtime fix or timeout change is included here.
 Unchanged runtime/test/workflow content does not prove documentation irrelevant,
 because the static-security capability test scans repository contents. Final
 checks must run on the resulting pushed revision.
+
+At subsequent head `9f3f97db`, CI Quality Gates reported a different failure:
+one write-session HTTP 503 before the personal-continuity test reached restart.
+The selection ended 1 failed / 4 passed / 1 skipped, exit 1; artifact publication
+was skipped. DEV-CI-002 preserves this assertion failure and missing diagnostic
+boundaries, without assigning it to the capability timeout or earlier defects.
+Its receipt contains only the original failure; later results are recorded
+separately on #382 and cannot establish causal closure by themselves.
 
 The detailed Self-Incorporation guide reconciliation (#376) and full contributor
 entry-path audit (#378) remain separate open work. Temporal observer PR #380 is

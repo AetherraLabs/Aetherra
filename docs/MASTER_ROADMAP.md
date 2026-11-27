@@ -46,7 +46,9 @@ all failures. The original six C2b [development records](DEVELOPMENT_ISSUES.md#c
 remain OPEN. An additional [DEV-CI-001](DEVELOPMENT_ISSUES.md#dev-ci-001--capabilities-job-timeout-before-a-result-summary)
 record ([#381](https://github.com/AetherraLabs/Aetherra/issues/381)) consolidates
 unexplained Linux capability timeouts from PRs #368/#379; separate passing
-retries do not establish a fix. All seven remain unresolved.
+retries do not establish a fix. Separate [DEV-CI-002](DEVELOPMENT_ISSUES.md#dev-ci-002--personal-continuity-write-session-http-503)
+([#382](https://github.com/AetherraLabs/Aetherra/issues/382)) records a
+personal-continuity write-session HTTP 503 with cause unknown. All eight remain OPEN.
 
 TemporalConsciousnessEngine [PR #380](https://github.com/AetherraLabs/Aetherra/pull/380)
 remains separate and pending integration. Checkpoints confer no autonomous action
@@ -198,7 +200,7 @@ retain the existing acceptance boundary. The integration plan is now partway thr
 | Phase D | Deferred | Governed optional agency only after the earlier integration gates; no new action authority |
 
 Next, review the [merged-main receipt](evidence/c2b_merged_main_review_2026-11-26.json)
-and investigate the seven OPEN development records under their owner/review gates.
+and investigate the eight OPEN development records under their owner/review gates.
 The [C2b plan](superpowers/plans/2026-11-25-phase-c2b-checkpoints.md) and
 [prerequisite receipt](evidence/c2b_prerequisites_2026-11-25.json) retain the
 historical implementation gates. Keep pending Temporal PR #380 separate.

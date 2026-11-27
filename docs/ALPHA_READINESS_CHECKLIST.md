@@ -25,6 +25,10 @@ and [sanitized receipt](evidence/c2b_merged_main_review_2026-11-26.json).
   Linux capability timeouts remain unexplained after their separately recorded
   passing retries. Preserve the [CI receipt](evidence/ci_capabilities_timeout_2026-11-26.json)
   and five-minute enforcement; final revision checks remain required.
+- [ ] Resolve separate [DEV-CI-002](DEVELOPMENT_ISSUES.md#dev-ci-002--personal-continuity-write-session-http-503)
+  ([#382](https://github.com/AetherraLabs/Aetherra/issues/382)): write-session
+  HTTP 503, cause unknown. Preserve the [original-failure receipt](evidence/ci_personal_continuity_503_2026-11-26.json);
+  later observations do not establish a correction or replace the failure.
 - [x] Delegated Codex independent documentation wording review under
   [#377](https://github.com/AetherraLabs/Aetherra/issues/377); final pushed-revision
   checks remain required.
@@ -511,8 +515,9 @@ Status: the existing supervised Windows source-runtime boundary remains unchange
 C1/C2a, C2b and the reporting/runtime follow-ups are merged. The
 [current evidence review](ALPHA_READINESS_DECISION.md#c2b-merged-main-evidence-review-2026-11-26)
 distinguishes merged-main results from historical candidate checks. The original
-six C2b records and additional DEV-CI-001 remain OPEN; passing CI retries do not
-explain the capability timeouts or the original checkpoint causes.
+six C2b records and additional DEV-CI-001/DEV-CI-002 remain OPEN. Neither
+capability timeouts nor the separate write-session HTTP 503 has an established
+cause; passing retries do not resolve them or the original checkpoint causes.
 Unattended/production operation and unverified installation graphs remain NO-GO;
 no broader authority is inferred.
 
@@ -531,7 +536,7 @@ Decision record:
 
 ## Current Next Actions
 
-1. Review the merged-main and CI evidence and maintain the seven OPEN
+1. Review the merged-main and CI evidence and maintain the eight OPEN
    [development records](DEVELOPMENT_ISSUES.md#current-records) through their
    owner/review gates; retain original failures and revision-specific limits.
 2. Review pending Temporal PR #380 separately. Keep strict signing, governance,

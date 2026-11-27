@@ -99,6 +99,7 @@ this document establishes development practice only.
 | [DEV-HOMEOSTASIS-001](#dev-homeostasis-001--watchdog-shutdown-lifecycle) | OPEN | Homeostasis/Runtime maintainers | Which outstanding await causes the shutdown watchdog error? |
 | [DEV-STORM-001](#dev-storm-001--skipped-persistence-lifecycle-check) | OPEN | Memory/STORM maintainers | Why did the lifecycle recall return no results? |
 | [DEV-CI-001](#dev-ci-001--capabilities-job-timeout-before-a-result-summary) | OPEN | CI/Runtime maintainers | Which operation prevented the Linux capability job from completing? |
+| [DEV-CI-002](#dev-ci-002--personal-continuity-write-session-http-503) | OPEN | Hub/Engine and CI maintainers | Why did a personal-continuity write turn return HTTP 503? |
 
 ## ALPHA-CKPT-001 — Checkpoint stop delay
 
@@ -446,3 +447,51 @@ with a supported cause and focused correction/regression, or an evidenced
 external cause with tested containment and explicit maintainer disposition.
 Passing reruns alone do not close this record. Supervised-alpha limits,
 Guardian/Security, signing and approval boundaries remain unchanged.
+
+## DEV-CI-002 — Personal continuity write-session HTTP 503
+
+**Status: OPEN — cause and severity unknown.**
+Owner: Hub/Engine and CI maintainers. First observed/registered/reviewed:
+2026-11-26 (America/Denver). GitHub: [#382](https://github.com/AetherraLabs/Aetherra/issues/382).
+Review gate: recurrence, affected Hub/Engine/test-lifecycle changes and continuity
+verification claims. This HTTP assertion failure is separate from DEV-CI-001's
+capability timeouts and the original six C2b records.
+
+[Failed CI Quality Gates job](https://github.com/AetherraLabs/Aetherra/actions/runs/45939281664/job/140309611225)
+ran head `9f3f97dbf2fdf431906cb9bbc0eae5f0b5a5dced`, merge checkout
+`7e8e8d9597c799b69cc10e75e5ff7641818876a0` into main `5662300`.
+The [original-failure receipt](evidence/ci_personal_continuity_503_2026-11-26.json)
+records the exact command, configuration and retained job-log hash: Ubuntu 26.04
+image `20261116.202.1`, Python 3.11.18, requirements-ci.lock, pytest 9.1.0,
+pytest-asyncio 1.4.0 and coverage 7.14.1; pinned embedding model provisioned,
+offline flags and a synthetic enforcing full-runtime profile.
+
+Expected: each sequential write turn returns HTTP 200 before restart/recall
+assertions. Observed: `test_personal_fact_survives_full_runtime_restart` failed
+at line 201 while checking its write-session results (caller line 209). One of
+six `POST /api/ai/ask` responses was 503; the ordinal and response reason are
+unknown. The child returned zero; empty initial history and `stopped` assertions
+passed. That flag alone does not establish settlement of every subsystem.
+The selection ended with **1 failed, 4 passed, 1 skipped in 272.09 seconds,
+exit 1**. Restart/recall in this test was not reached; this was not a timeout.
+
+Artifact publication was skipped and the run's artifact list was empty at
+inspection. Configured upload paths also omit the temporary child result/runtime
+files. The published log cannot establish response body/error code, request
+lease/queue state, readiness at failure or cause. PR #351's intentional busy
+responses and PR #368's separate strict-architecture 503/controlled `hub_busy`
+race do not identify this failure. No connection to DEV-CI-001, STORM or checkpoint
+failures is established. Unchanged runtime/test/workflow content does not prove
+documentation or environment effects irrelevant.
+
+Containment: preserve the failing assertion, existing deadlines, fail-closed
+responses and supervised-alpha limits; no runtime fix, automatic retry or gate
+change is introduced by this documentation. Next action: owner captures a
+bounded reproduction with sanitized request ordinal/status/error code, readiness
+and lease/queue state, monotonic timing, dependency/configuration, child exit and
+artifact hashes. Keep later observations on #382 separate from the immutable
+original-failure receipt. Close only with a supported cause and verified focused
+correction/regression, or an evidenced external cause with tested containment
+and explicit reviewed disposition. A passing rerun alone cannot close this
+record or establish risk acceptance or broader GO. Guardian, Security, signing
+and approval boundaries remain unchanged.

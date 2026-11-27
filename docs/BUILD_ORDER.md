@@ -99,6 +99,9 @@ from earlier candidate live/browser/physical evidence. Original failures remain.
 Additional [DEV-CI-001](DEVELOPMENT_ISSUES.md#dev-ci-001--capabilities-job-timeout-before-a-result-summary)
 ([#381](https://github.com/AetherraLabs/Aetherra/issues/381)) preserves the prior
 and current Linux capability timeouts separately from their passing retries.
+Separate [DEV-CI-002](DEVELOPMENT_ISSUES.md#dev-ci-002--personal-continuity-write-session-http-503)
+([#382](https://github.com/AetherraLabs/Aetherra/issues/382)) records the
+unexplained personal-continuity write-session HTTP 503.
 
 **Stage 21 remains active, with the existing supervised internal-alpha GO
 unchanged.** Stage 22 Beta Hardening and Stage 23 Production Readiness remain
@@ -107,7 +110,7 @@ its recorded limits; Phase D optional agency remains deferred.
 
 | Priority | Work | Required Outcome |
 | --- | --- | --- |
-| 1 | Review evidence and investigate OPEN development records | Apply the seven [records' owner and closure gates](DEVELOPMENT_ISSUES.md#current-records); preserve causes still unknown, retained failures and unverified boundaries. Delegated Codex documentation review accepted the reconciliation; final pushed-revision checks remain required. |
+| 1 | Review evidence and investigate OPEN development records | Apply the eight [records' owner and closure gates](DEVELOPMENT_ISSUES.md#current-records); preserve causes still unknown, retained failures and unverified boundaries. Delegated Codex documentation review accepted the reconciliation; final pushed-revision checks remain required. |
 | Separate pending work | Temporal runtime observer, PR #380 | Review and verify pending integration separately from merged C2b/checkpoint work. |
 
 Keep signing, Guardian/Security, checkpoint ownership and observe/propose-only
