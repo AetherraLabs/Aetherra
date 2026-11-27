@@ -1,6 +1,58 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.23 (2026-11-27)
+
+### Bug Fixes
+
+- Keep cold chat ranking off the runtime event loop
+  ([`9fd2903`](https://github.com/AetherraLabs/Aetherra/commit/9fd29034d7023aa7ba8677b8b93982430bd5fa47))
+
+- Publish governed Temporal registry health
+  ([`c180550`](https://github.com/AetherraLabs/Aetherra/commit/c180550f0b0b6ee544eb7f670a2f1619ceee9e07))
+
+### Chores
+
+- Merge main into Temporal observer integration
+  ([`f84e736`](https://github.com/AetherraLabs/Aetherra/commit/f84e736ad47ffdef3f269a145c6f011fc1a59ee5))
+
+### Documentation
+
+- Complete modernization evidence and contributor guidance
+  ([`6a1b978`](https://github.com/AetherraLabs/Aetherra/commit/6a1b978a611c8b7b1c0b18c31ec98a3e19ace2ac))
+
+- Improve .github/ISSUE_TEMPLATE/config.yml contributor guidance
+  ([`e7f9a4f`](https://github.com/AetherraLabs/Aetherra/commit/e7f9a4fd155e4a0b797a179900659f2f55f78ff1))
+
+- Improve .github/pull_request_template.md contributor guidance
+  ([`8972471`](https://github.com/AetherraLabs/Aetherra/commit/8972471c6fe3f38832f677b558f701f51f1f2213))
+
+- Improve CONTRIBUTING.md contributor guidance
+  ([`d58f44a`](https://github.com/AetherraLabs/Aetherra/commit/d58f44ac7b8d4569b4c121aac8733e036e34cd2b))
+
+- Improve README.md contributor guidance
+  ([`b1dec4d`](https://github.com/AetherraLabs/Aetherra/commit/b1dec4da7e3337bcbd706f32357fb35ef1ac9c0d))
+
+- Preserve unexplained continuity HTTP failure
+  ([`54c3d02`](https://github.com/AetherraLabs/Aetherra/commit/54c3d028c973f1628649a568577242afc53c12ce))
+
+- Retain unexplained capability timeout evidence
+  ([`9f3f97d`](https://github.com/AetherraLabs/Aetherra/commit/9f3f97dbf2fdf431906cb9bbc0eae5f0b5a5dced))
+
+### Features
+
+- Integrate opt-in Temporal history and runtime observer
+  ([`060d672`](https://github.com/AetherraLabs/Aetherra/commit/060d672b398167e0b28a4a40757c2b1f93ee6cac))
+
+### Testing
+
+- Add Temporal CI acceptance and verification evidence
+  ([`8d221cd`](https://github.com/AetherraLabs/Aetherra/commit/8d221cd43840423ef9d924150a84a5cc813bd26f))
+
+- Isolate Temporal registry fixtures across launcher reloads
+  ([`0d6fcb7`](https://github.com/AetherraLabs/Aetherra/commit/0d6fcb78ddafdcf8d517e57d51f420bb32452c01))
+
+
 ## v0.5.0-beta.22 (2026-11-26)
 
 
