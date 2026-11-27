@@ -2,6 +2,7 @@
 
 # Standard library imports
 import asyncio
+import importlib
 import json
 import threading
 import time
@@ -19,7 +20,6 @@ from Aetherra.aetherra_core.memory.aetherra_memory_engine import (
     AetherraMemoryEngineAdvanced,
 )
 from Aetherra.consciousness.temporal_observer import TemporalObserver
-from aetherra_os_launcher import AetherraOSLauncher, MemoryAdapter
 from aetherra_service_registry import ServiceStatus
 
 # Local imports
@@ -38,7 +38,9 @@ async def until(check, timeout=3):
 
 
 @pytest_asyncio.fixture
-async def temporal_launcher(memory, temporal_policy, monkeypatch):
+async def temporal_launcher(memory, temporal_policy, monkeypatch, request):
+    if getattr(request, "param", None) == "reloaded":
+        importlib.reload(launcher_module)
     rules_path = temporal_policy / "guardian.json"
     rules = json.loads(rules_path.read_text())
     rules["allow"].extend(
@@ -66,13 +68,15 @@ async def temporal_launcher(memory, temporal_policy, monkeypatch):
     caps_path.write_text(json.dumps(caps))
     monkeypatch.setenv("AETHERRA_REGISTRY_URL", "")
     registry = registry_module.AetherraServiceRegistry()
-    launcher = AetherraOSLauncher()
+    launcher = launcher_module.AetherraOSLauncher()
     launcher.service_registry = registry
     # Keep the real adapter, SQLite, job admission, collector and registry. The
     # unrelated engine constructor starts optional embedding/model components.
     backend = AetherraMemoryEngineAdvanced.__new__(AetherraMemoryEngineAdvanced)
     backend.core_memory = backend._checkpoint_core = memory
-    launcher.systems["memory"] = MemoryAdapter(backend)
+    # Earlier HMR tests can reload the launcher. Resolve its current classes so
+    # strict adapter ownership does not reject a class retained at collection.
+    launcher.systems["memory"] = launcher_module.MemoryAdapter(backend)
     monkeypatch.setattr(launcher, "_consciousness_core_readiness", lambda: None)
     monkeypatch.setattr(launcher, "_consciousness_observations", lambda: [])
     assert await registry.register_service("memory_system", backend)
@@ -490,3 +494,15 @@ async def test_lost_source_or_expired_cache_is_not_healthy(
             await until(lambda: registry.get_service("temporal_observer") is collector)
             assert registry.get_service_info("temporal_observer") is owner
             assert collector.get_runtime_status()["writer_epoch"] == epoch
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("temporal_launcher", ["reloaded"], indirect=True)
+async def test_reloaded_launcher_still_registers_owned_temporal(temporal_launcher):
+    launcher, registry, start = temporal_launcher
+    collector = await start()
+    status = collector.get_runtime_status()
+    assert status["runtime_state"] != "blocked", status
+    assert launcher._temporal_registration_expected
+    await until(lambda: registry.get_service("temporal_observer") is collector)
+    assert collector._owned()
