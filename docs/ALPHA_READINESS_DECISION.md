@@ -1,15 +1,16 @@
 # Internal Alpha Readiness Decision
 
 Date: 2026-11-25 (America/Denver)
+Evidence reconciliation: 2026-11-26; existing decision unchanged.
 
 **The existing supervised internal-alpha boundary remains unchanged.**
 **NO-GO for unattended or production operation and unverified installation graphs.**
 
 - Decision owner: Aetherra Labs.
-- Clean verified merge: [PR #355](https://github.com/AetherraLabs/Aetherra/pull/355)
+- Historical prerequisite merge: [PR #355](https://github.com/AetherraLabs/Aetherra/pull/355)
   at `e8975d38f1a3d1acb78bfb8ad85cb4b56ee9c331`. It incorporates C1 and C2a
   and corrects checkpoint-stop command-error reporting.
-- Released main: `a30277e3cfeb9e80f0605436e366721a548ead6d`,
+- Historical prerequisite release: `a30277e3cfeb9e80f0605436e366721a548ead6d`,
   `v0.5.0-beta.14`. Only release metadata differs from the verified merge.
 - Historical desktop, Phase A/B and C1/C2a candidate checkpoints retain their own
   revisions and verification boundaries; they are not current-main substitutes.
@@ -25,7 +26,78 @@ See [the checklist](ALPHA_READINESS_CHECKLIST.md),
 [fresh-install evidence](evidence/desktop_alpha_2026-11-22.json) and
 [clean-main acceptance](evidence/desktop_alpha_main_2026-11-22.json).
 
+## C2b Merged-Main Evidence Review (2026-11-26)
+
+C2b and the bounded runtime hardening integrated through PRs #356-#368
+(excluding #361), ending at merge `592c462244252abe5626b825e642f3977f84a431`.
+Release `v0.5.0-beta.22` points to `56623003675bc99f9e3dfadf15b6254beb183b59`;
+only release metadata in CHANGELOG, README and the project version changed.
+Automatic selection, periodic saves, bounded retention, operator inspection/
+recovery and Observatory checkpoint reporting are implemented. This is a
+retrospective evidence reconciliation, not a new GO or engineering closure.
+
+The [sanitized receipt](evidence/c2b_merged_main_review_2026-11-26.json) records
+commands, exact revisions and hashes of retained local artifacts:
+
+- Merge `592c4622`: full suite 4,158 passed / 38 skipped, exit 0, 45.29% coverage
+  against 22%; docs and Python quality receipts exited zero.
+- Release `56623003`: the 660-second automatic-continuity smoke used the default
+  300-second cadence and N=10, acknowledged periodic generations 1/2 and stop
+  generations 3/4, and restored the exact generation-3 row at epoch 2 before
+  ticks. Signed audits verified; checkpoint data stayed outside chat evidence.
+  All three harness SIGINT processes exited zero with closed listeners and no
+  cleanup kill. Boot and integration receipts exited zero.
+- Retained signed-main CI and beta.22 release-verifier results passed: valid
+  manifest signature, two signed distribution hashes and five API asset digests.
+  This review did not rerun hosted CI or download/verify assets anew.
+
+The released-main smoke used a deterministic context responder, not a live
+provider. It does not supply new browser, real keyboard Ctrl+C, fresh-install,
+long-soak or retention-boundary evidence. Earlier candidate live/browser/R3 and
+extended-run checks below remain bound to `4d9c8f8e`; their failed runs and unknown
+historical causes remain intact.
+
+The original six C2b [development records](DEVELOPMENT_ISSUES.md#current-records), coordinated
+by [#369](https://github.com/AetherraLabs/Aetherra/issues/369),
+[#370](https://github.com/AetherraLabs/Aetherra/issues/370),
+[#371](https://github.com/AetherraLabs/Aetherra/issues/371),
+[#372](https://github.com/AetherraLabs/Aetherra/issues/372),
+[#373](https://github.com/AetherraLabs/Aetherra/issues/373) and
+[#374](https://github.com/AetherraLabs/Aetherra/issues/374), remain OPEN. The
+watchdog error occurred in all three smoke shutdowns despite zero exits; the
+STORM lifecycle persistence skip remains unverified. No causal correction or
+risk acceptance is inferred. Delegated Codex independent documentation review
+accepted this reconciliation on 2026-11-26 under
+[#377](https://github.com/AetherraLabs/Aetherra/issues/377) and
+[PR #379](https://github.com/AetherraLabs/Aetherra/pull/379), subject to final
+checks on the pushed revision. This accepts documentation wording only.
+Guardian, Security, signing, deadlines, ownership and retention approval remain
+unchanged. Stage 21 supervised internal alpha remains active; unattended and
+production operation remain NO-GO. Temporal [PR #380](https://github.com/AetherraLabs/Aetherra/pull/380)
+remains separate and pending integration; Phase D remains deferred.
+
+A seventh OPEN record, [DEV-CI-001](DEVELOPMENT_ISSUES.md#dev-ci-001--capabilities-job-timeout-before-a-result-summary)
+([#381](https://github.com/AetherraLabs/Aetherra/issues/381)), consolidates
+the prior PR #368 and current PR #379 Linux capability timeouts. The
+[separate CI receipt](evidence/ci_capabilities_timeout_2026-11-26.json) retains
+both failures and unchanged-checkout retries (171 passed / 4 skipped each).
+Neither passing retry explains the original failure or establishes a common
+cause. The existing five-minute gate and operational authority are unchanged;
+final pushed-revision checks remain required. The C2b receipt retains its
+original six-record scope.
+
+An eighth OPEN record, [DEV-CI-002](DEVELOPMENT_ISSUES.md#dev-ci-002--personal-continuity-write-session-http-503)
+([#382](https://github.com/AetherraLabs/Aetherra/issues/382)), preserves the
+separate write-session HTTP 503 at PR head `9f3f97db`: 1 failed, 4 passed,
+1 skipped, exit 1. Its [receipt](evidence/ci_personal_continuity_503_2026-11-26.json)
+contains the original failure only; the failing turn and response reason were
+not published. No cause, correction verification or new readiness decision is
+established. Later observations stay on #382 without replacing that failure.
+
 ## DEV-CKPT-001 Candidate Follow-Up (2026-11-25)
+
+Historical candidate checkpoint, retained at its original scope. Subsequent
+merged-main evidence is recorded above.
 
 **Scoped corrections verified for the candidate; operational authority unchanged.**
 The product source is `4d9c8f8e455b87624e6918dbcc784577950af4fb`, tree
@@ -74,7 +146,8 @@ signed suffixes and leaves independent integrity checks cold from genesis.
 It does not establish cross-process coordination or large-ledger latency bounds.
 
 Strict Guardian, Security, signing, receipt deadlines, ownership, single-worker
-Memory authority and retention approval remain unchanged. C2b remains unmerged;
+Memory authority and retention approval remain unchanged. At this checkpoint
+C2b was unmerged;
 the existing supervised internal-alpha boundary stands, and unattended or
 production operation remains NO-GO. Hosted PR checks belong to the delivered
 revision. Production bundle signing and signed-manifest enforcement require a

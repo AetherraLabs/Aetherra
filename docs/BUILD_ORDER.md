@@ -89,29 +89,33 @@ Internal alpha requires:
 
 ## Current Next Work
 
-Phases A and B, C1, C2a and the checkpoint-stop follow-up are merged.
-PR #355 passed hosted CI and clean-merge verification at `e8975d38`. Released
-main is `a30277e3` (`v0.5.0-beta.14`), with verified signing. The
+Phases A/B, C1/C2a, C2b and the bounded runtime follow-up are merged.
+The C2b merge is `592c4622` (PR #368); beta.22 is `56623003`. The
 [phase status table](MASTER_ROADMAP.md#current-priority-internal-alpha),
-[current decision](ALPHA_READINESS_DECISION.md#c2b-prerequisite-checkpoint-2026-11-25)
-and [prerequisite receipt](evidence/c2b_prerequisites_2026-11-25.json) record the
-supported-profile checks and limits.
+[current evidence review](ALPHA_READINESS_DECISION.md#c2b-merged-main-evidence-review-2026-11-26)
+and [receipt](evidence/c2b_merged_main_review_2026-11-26.json) distinguish the
+4,158-pass/38-skip merge suite and 660-second offline released-main continuity
+from earlier candidate live/browser/physical evidence. Original failures remain.
+Additional [DEV-CI-001](DEVELOPMENT_ISSUES.md#dev-ci-001--capabilities-job-timeout-before-a-result-summary)
+([#381](https://github.com/AetherraLabs/Aetherra/issues/381)) preserves the prior
+and current Linux capability timeouts separately from their passing retries.
+Separate [DEV-CI-002](DEVELOPMENT_ISSUES.md#dev-ci-002--personal-continuity-write-session-http-503)
+([#382](https://github.com/AetherraLabs/Aetherra/issues/382)) records the
+unexplained personal-continuity write-session HTTP 503.
 
 **Stage 21 remains active, with the existing supervised internal-alpha GO
 unchanged.** Stage 22 Beta Hardening and Stage 23 Production Readiness remain
-Planned; a beta package version is not acceptance into either stage. C2b is not
-implemented, and Phase D optional agency remains deferred.
+Planned; a beta package version does not advance them. C2b is implemented within
+its recorded limits; Phase D optional agency remains deferred.
 
 | Priority | Work | Required Outcome |
 | --- | --- | --- |
-| 1 | Start Task 1 of the approved C2b contract | Follow the [gated plan](superpowers/plans/2026-11-25-phase-c2b-checkpoints.md) for atomic head/recovery, periodic saving and retention. History and temporal reasoning remain separate. |
-| Separate pending work | Temporal runtime observer | Preserve the pending integration; do not conflate it with the merged Consciousness sidecar/checkpoints |
+| 1 | Review evidence and investigate OPEN development records | Apply the eight [records' owner and closure gates](DEVELOPMENT_ISSUES.md#current-records); preserve causes still unknown, retained failures and unverified boundaries. Delegated Codex documentation review accepted the reconciliation; final pushed-revision checks remain required. |
+| Separate pending work | Temporal runtime observer, PR #380 | Review and verify pending integration separately from merged C2b/checkpoint work. |
 
-The follow-up corrects missing background command-error reporting. The clean
-merge passed 3,840 tests and skipped 38. The original slow operation remains
-unidentified. Keep signing, Guardian/Security, checkpoint ownership and
-observe/propose-only authority limits enforced. Broader installation graphs,
-unattended/production use and autonomous actions require separate acceptance.
+Keep signing, Guardian/Security, checkpoint ownership and observe/propose-only
+authority limits enforced. Broader installation graphs, unattended/production
+use and autonomous actions require separate acceptance.
 
 Historical reference: the [2026-11-22 desktop verification](ALPHA_READINESS_DECISION.md#historical-desktop-verification-2026-11-22)
 and [first supervised exercise](evidence/supervised_alpha_2026-11-22.json)

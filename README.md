@@ -37,6 +37,13 @@ active internal alpha-stage research and engineering codebase.
 - Expect some systems to be functional foundations rather than final products.
 - Prefer manual approval, rollback plans, and audit review for risky actions.
 
+## Start here
+
+- [Project identity](docs/WHO_IS_AETHERRA.md) and [Master Roadmap](docs/MASTER_ROADMAP.md)
+- [Supported Windows alpha installation](docs/DESKTOP_INSTALLATION.md) and [operator runbook](docs/ALPHA_OPERATOR_RUNBOOK.md)
+- [Contributor guide](CONTRIBUTING.md) and [current contribution opportunities](https://github.com/AetherraLabs/Aetherra/issues/375)
+- [Development issue register](docs/DEVELOPMENT_ISSUES.md)
+
 ## Current Priorities
 
 1. Keep privileged actions mediated by Guardian and Security.
