@@ -62,7 +62,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: capabilities-diagnostics
+          name: capabilities-diagnostics-${{ github.run_attempt }}
           path: ${{ runner.temp }}/capabilities-diagnostics
           if-no-files-found: warn
 

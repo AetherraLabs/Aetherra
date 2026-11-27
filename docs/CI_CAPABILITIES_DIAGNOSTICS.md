@@ -46,7 +46,7 @@ other environments report that test as skipped, not as verified stack capture.
 
 The watchdog fails with exit 124 at 290 seconds and attempts bounded cleanup
 before the outer five-minute limit. Otherwise pytest's exit status is preserved.
-The `capabilities-diagnostics` Actions artifact is uploaded even after a failed
+The `capabilities-diagnostics-<attempt>` Actions artifact is uploaded even after a failed
 capability step. Missing diagnostics cannot turn a pytest failure into success.
 
 These are synthetic CI diagnostics, not runtime conversation logging. Detached
