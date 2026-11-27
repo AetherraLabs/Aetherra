@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "verification_date": "2026-11-27",
+  "scope": "Bind final formatted Memory source to the exact source exercised by successful controlled green run",
+  "source": "Aetherra/aetherra_core/memory/memory_core.py",
+  "base_commit": "0d6fcb78ddafdcf8d517e57d51f420bb32452c01",
+  "successful_green_source_sha256": "fcfd7c2c40b22e95cf3e248ecd09a69c014d496f97d67ce82eeffcec5a1c2313",
+  "final_formatted_source_sha256": "946ec6881b66b128975a8a90984c80a48e5d7f98b330871ddb56d3f61362cb71",
+  "reconstructed_green_source_sha256": "fcfd7c2c40b22e95cf3e248ecd09a69c014d496f97d67ce82eeffcec5a1c2313",
+  "reconstruction_matches_recorded_green_bytes": true,
+  "reconstruction": "Reverse the one formatter-only SELECT expression flattening in final source; preserve all other source bytes; exact SHA256 must equal the green manifest hash",
+  "reconstructed_line_endings": "LF",
+  "ast_comparison": "ast.dump(ast.parse(source), include_attributes=False)",
+  "asts_equal": true,
+  "normalized_ast_sha256": "1d0d7d996543d79c11de58f24e0a0a0a47c7cbbebac0938f1fae79ea6b772fa4",
+  "other_selected_source_files_unchanged": 14,
+  "original_comparison_sha256": "6f64399f251065efefcfd2519d5be56be5c5bf09a08bf2057c2f73cc5d5e1c12",
+  "original_comparison_unmodified": true,
+  "format_only_diff": "--- green/Aetherra/aetherra_core/memory/memory_core.py\n+++ formatted/Aetherra/aetherra_core/memory/memory_core.py\n@@ -625,14 +625,11 @@\n         if not query_text.strip() or limit <= 0:\n             return []\n         connection = self.ensure_connection()\n-        rows = (\n-            connection.execute(\n-                \"SELECT id, content, context, tags, importance, created_at, last_accessed, \"\n-                \"access_count, memory_type FROM memories WHERE memory_type = ? AND id != ?\",\n-                (\"conversation\", exclude_id or \"\"),\n-            )\n-            .fetchall()\n-        )\n+        rows = connection.execute(\n+            \"SELECT id, content, context, tags, importance, created_at, last_accessed, \"\n+            \"access_count, memory_type FROM memories WHERE memory_type = ? AND id != ?\",\n+            (\"conversation\", exclude_id or \"\"),\n+        ).fetchall()\n         candidates = {}\n         texts = []\n         for row in rows:\n",
+  "limits": [
+    "This proves source AST identity across formatting, not an additional runtime rerun.",
+    "The original red/green comparison and source manifests remain unmodified.",
+    "Shortened test assertion messages are outside this production-source proof; report final tests separately."
+  ]
+}

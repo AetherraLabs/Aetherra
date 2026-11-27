@@ -7,6 +7,7 @@ All memory operations are delegated to the canonical engine.
 """
 
 # Standard library imports
+import asyncio
 import hashlib
 import json
 import logging
@@ -623,15 +624,12 @@ class LyrixaMemorySystem:
 
         if not query_text.strip() or limit <= 0:
             return []
-        rows = (
-            self.ensure_connection()
-            .execute(
-                "SELECT id, content, context, tags, importance, created_at, last_accessed, "
-                "access_count, memory_type FROM memories WHERE memory_type = ? AND id != ?",
-                ("conversation", exclude_id or ""),
-            )
-            .fetchall()
-        )
+        connection = self.ensure_connection()
+        rows = connection.execute(
+            "SELECT id, content, context, tags, importance, created_at, last_accessed, "
+            "access_count, memory_type FROM memories WHERE memory_type = ? AND id != ?",
+            ("conversation", exclude_id or ""),
+        ).fetchall()
         candidates = {}
         texts = []
         for row in rows:
@@ -650,8 +648,18 @@ class LyrixaMemorySystem:
                 continue
             candidates[row[0]] = (row, content)
             texts.append((row[0], statements))
+        # Ranking can cold-load a model or wait for its shared lock. Only the
+        # immutable text snapshot crosses threads; SQLite stays with the caller.
+        ranked = await asyncio.to_thread(rank, query_text, texts, min(limit, 3))
+        # A suspended recall must not reopen a closed/replaced connection or
+        # apply access updates to a different Memory lifetime. Cancellation also
+        # leaves the pure ranking worker with no database side effects.
+        if self.conn is not connection:
+            raise RuntimeError("chat_recall_connection_changed")
+        if self._transaction_failed:
+            raise RuntimeError("memory_transaction_unavailable")
         memories = []
-        for record_id, score in rank(query_text, texts, min(limit, 3)):
+        for record_id, score in ranked:
             row, content = candidates[record_id]
             memories.append(
                 Memory(

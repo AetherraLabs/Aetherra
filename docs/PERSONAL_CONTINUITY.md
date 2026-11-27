@@ -4,7 +4,7 @@ Verified 2026-11-19 on Windows / Python 3.13.7. Aetherra is the persistent
 cognitive system; Lyrixa is her user-facing persona. This checkpoint concerns
 remembering, retrieving and answering, not general cognitive-runtime readiness.
 
-### Runtime prerequisites and clean-checkout verification
+## Runtime prerequisites and clean-checkout verification
 
 Commit `3eff802d3f1d3a51dc4f9d05e63132ec350c7e0a` includes the runtime
 prerequisites for the continuity implementation in `1d2fbf093`. Verification
@@ -108,7 +108,14 @@ Set-Location .pytest_tmp_continuity_clean
 
 python -m pip install '.[continuity]'
 # One-time public model provisioning; this command may download model files.
-python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2', revision='c9745ed1d9f207416be6d2e6f8de32d1f16199bf', device='cpu', trust_remote_code=False)"
+@'
+from sentence_transformers import SentenceTransformer
+SentenceTransformer(
+    'sentence-transformers/all-MiniLM-L6-v2',
+    revision='c9745ed1d9f207416be6d2e6f8de32d1f16199bf',
+    device='cpu', trust_remote_code=False,
+)
+'@ | python -
 
 # Offline: real full startup, HTTP ingress, Memory, persistence and restart.
 python -m pytest tests/acceptance/test_personal_continuity.py -q -o addopts= --basetemp=.pytest_tmp_continuity_operator
@@ -224,3 +231,40 @@ process 2: empty user session → same ID selected → same ID + fact in model i
 OpenAI gpt-4o, fallback=false → “You call the little observatory in your garden the Lantern Room.”
 door color → “I haven't been told what color you painted the door.”
 ```
+
+## First-request responsiveness
+
+Chat recall snapshots eligible records on its calling thread, then runs semantic
+ranking in a worker. Cold model loading, encoding and waiting for the shared
+ranking lock must not block the runtime event loop. SQLite reads and access
+updates stay on the caller. If Memory closes or replaces its connection while
+ranking is pending, recall fails rather than reopening it or publishing stale
+evidence. Cancelling recall prevents later access updates; a running encoder
+may still finish its pure computation. This does not promise preemptible model
+work or a new bounded executor-shutdown contract.
+
+The first-request regression holds expensive model work while the real Hub
+server receives HTTP headers. A separate controlled normal-launch comparison
+uses the real pinned local encoder and existing restart conversation. The
+server's five-second socket limit, client deadlines, Guardian/Security grants,
+provider behavior and signing controls are unchanged. No transport retry is
+added. Run the focused offline checks after provisioning the model as above:
+
+```powershell
+python -m pytest -q -o addopts= tests/unit/test_chat_retrieval_async.py tests/unit/test_chat_memory_retrieval.py
+python -m pytest -q -o addopts= tests/acceptance/test_personal_continuity.py
+```
+
+The controlled comparison establishes an accepted-connection/header-starvation
+mechanism. It does not reconstruct the original uninstrumented Windows incident
+or explain the separate Linux write-session HTTP 503 tracked in
+[DEV-CI-002](DEVELOPMENT_ISSUES.md#dev-ci-002--personal-continuity-write-session-http-503).
+Existing checkpoint-delay and watchdog investigations remain OPEN. This change
+adds no live-model, browser, physical-keyboard or broader alpha qualification.
+
+The [sanitized before/after receipt](evidence/personal-continuity-first-request-controlled-2026-11-27.json)
+records the controlled failure and successful restart. The
+[format equivalence receipt](evidence/personal-continuity-first-request-format-equivalence-2026-11-27.json)
+binds its successful source to the final formatted implementation. Seven new
+regressions failed before the fix; the final retrieval selection passed all 16
+focused checks. Full-suite and hosted results are reported separately in the PR.
