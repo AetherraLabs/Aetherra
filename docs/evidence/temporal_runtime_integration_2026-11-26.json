@@ -1,0 +1,1481 @@
+{
+  "scope": "Local uncommitted Temporal observer runtime integration",
+  "base_head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+  "verification": {
+    "focused_normal_launcher": "passed",
+    "browser": "passed",
+    "full_configured_suite": "passed",
+    "whole_change_review": "approved",
+    "final_static_docs_protected_worktree_checks": "passed",
+    "hosted_ci_live_model_physical_interrupt_production_go": "unverified"
+  },
+  "focused_run": {
+    "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+    "command": [
+      "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+      "-m",
+      "pytest",
+      "-q",
+      "--no-cov",
+      "tests/acceptance/test_temporal_runtime_launch.py",
+      "-o",
+      "cache_dir=D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-cache",
+      "--basetemp",
+      "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-runtime-normal-launch-final-01"
+    ],
+    "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+    "ambient_pythonpath_absent": true,
+    "exit_code": 0,
+    "seconds": 157.57
+  },
+  "source_sha256": {
+    "aetherra_os_launcher.py": "600043f8ead9ba73708f23db8086d817293cc78d0f24e2d7f04ee6cc6eea15d5",
+    "aetherra_service_registry.py": "c139bb7baf93d3595778bc71de2f7d1e26d1c3ce3348e58a5072adcaa2afe818",
+    "Aetherra/consciousness/runtime_observer.py": "3ea460fc0464e6a874528ce9d85c8aa9ef751d0957ff8119df093cfe74860e75",
+    "Aetherra/consciousness/core/consciousness_core.py": "50b2a961ef1464aa6e95b355d98ef0953bd47b6e7d32679d106f8c4320eedde0",
+    "Aetherra/consciousness/core/think_stream.py": "d29057dd5f8426b35eabf1b9ece4bde1875313944d541593b6b1d5caa7673400",
+    "Aetherra/consciousness/continuity_memory.py": "e330393bf51195ba4e5f45d648a2383ab656030dcf2ec66c2ebb04123c2f8e18",
+    "Aetherra/consciousness/checkpoint.py": "de977a4c1685d831ac86bc5ed9541de81326ac6cf59191c815d75c4fcd8c8e33",
+    "Aetherra/consciousness/self_trust.py": "d545aae156ed8409fd60001d703da8e69c2e285420dea5a2b354af3928be2f0b",
+    "Aetherra/aetherra_core/memory/lifecycle_checkpoint.py": "80bc0869747e3341d8f9683201a176bca43a7c845f7f71c2f385fc3028790381",
+    "Aetherra/aetherra_core/memory/memory_core.py": "4bbeb8b580421ef2bb8e352f6fcc82a4a2881f701fd923827e54409e47328e56",
+    "Aetherra/aetherra_core/memory/aetherra_memory_engine.py": "e6049144da8ffed4b4407e0d8cbb93f7ec80e2a49ef3ac3cc3659d70069a97c3",
+    "Aetherra/runtime_ui/snapshot.py": "c89c7b8192b9b1a90c44c2db3944e4644a15f829a62a780c6bde66bb127e24a9",
+    "aetherra_hub/blueprints/consciousness.py": "d8584a0d87cb0a2f9da16216f63a37c0ed9efde25e24dccddbe7d1054021c0a0",
+    "tools/alpha_consciousness_smoke.py": "8d4cb3c0c78d21271c882744edecbd6973f44ef7d75c92f2d67df2ead6a15cdf",
+    "tools/alpha_consciousness_continuity_smoke.py": "c810ee0af515360ad9307be3a99d4d8222203bab898b3cb66dae39d48cc24ee7",
+    "tools/alpha_consciousness_automatic_smoke.py": "705134b46c135523ef16c2a2dd77da8b1d74e5b09eae6f9e8df9bd81df4588c3",
+    "tools/alpha_consciousness_stream_probe.py": "20fc15cc62a60f3ef7451a47a76045bc03c94fb8b5bcc7d10e4cac2ace9831a0",
+    "Aetherra/aetherra_core/memory/checkpoint_stream.py": "bb7650273213157cadc950c2bcf62e5baf0e57f72d506ff707d7df9a60d306f7",
+    "Aetherra/consciousness/checkpoint_session.py": "5bb45f8130c4b7fdcfcb64ededa30ff1f9253e91bc00c96ad7a6c695fe5494ba",
+    "tools/alpha_integration_smoke.py": "574b3ebee2c516965dfab86488921bc33e231c741f521231d5273f9509538239",
+    "tests/acceptance/continuity_runtime.py": "5096962fa38d9f94b68a5512fe9aaea294ee31facf3689b8cd28a1a6765f5db1",
+    "Aetherra/consciousness/temporal_observer.py": "935ed8ff3e97797ba1c6cae84d6f7304e2278bd94e6b4d30e90da92ea3b5268e",
+    "Aetherra/consciousness/quantum/temporal_consciousness_system.py": "07f77fe0a7987041f124fe31a3f123420dc9b5e799182dc16c1f7d0a34120170",
+    "Aetherra/aetherra_core/memory/temporal_history.py": "d15b52274b8e7b9ac84499a084650d87610f1292e9beed77c0d279dec0c2e701",
+    "Aetherra/aetherra_core/memory/temporal_history_store.py": "e8ccfc5a5991c2e9acb71203b92dc4b3fb96f5aae88af558a2cb96decc62ea12",
+    "Aetherra/aetherra_core/memory/temporal_history_worker.py": "38b0117278d5f043bde211f49d6f46201a259081819c5d3d77cef92be833858c",
+    "aetherra_hub/services/state.py": "45620cb0dfe69d8a364be8da37baec7f534f6cef098fb32cfc228dda7dae53dc",
+    "Aetherra/lyrixa/gui/src/SubsystemEvidence.tsx": "863fffad029fd1caf8eba8d43c997498271c7aa04bbea9d9ddfdeb9ffdeff18c",
+    "tools/checkpoint_retention.py": "9f365fa619f0afa616194f9237285829ff1c21a15a2346db2f56290e15849e2b",
+    "tools/alpha_temporal_smoke.py": "42c0fd5c073ed13e7d4f6f6c42d6c5355cb0b6f03f5a80d1a1bbe99254d17bcc",
+    "tests/acceptance/test_temporal_runtime_launch.py": "4d21233274338de1d0f13977d58027c1b25fd4b673da2a62d3b5150001742060"
+  },
+  "history_id": "486f229efcac409eb32ce44e819d611d",
+  "stream_id": "523628d79c404278a1c19809dd314792",
+  "strict_profile": {
+    "flags": {
+      "AETHERRA_GUARDIAN_ENABLED": "1",
+      "AETHERRA_GUARDIAN_REQUIRE_POLICY": "1",
+      "AETHERRA_REQUIRE_CAPABILITIES": "1",
+      "AETHERRA_NET_STRICT": "1",
+      "AETHERRA_SCRIPT_VERIFY_STRICT": "1",
+      "AETHERRA_SIGNING_STRICT": "1",
+      "AETHERRA_AUDIT": "1"
+    },
+    "guardian": "enforcing",
+    "generation": "Deterministic ContextResponder; only generation is doubled.",
+    "network": "Each launcher child denies external socket/DNS requests and subprocess launches in an audit hook. Runner credential filtering and offline model flags apply separately.",
+    "temporal_guardian_actions": [
+      "consciousness.temporal_history_acquire",
+      "consciousness.temporal_history_append",
+      "consciousness.temporal_history_read",
+      "consciousness.temporal_history_inspect"
+    ]
+  },
+  "phases": [
+    {
+      "name": "temporal-create",
+      "pid": 44732,
+      "port": 54640,
+      "closed": true,
+      "exit_code": 0,
+      "cleanup_kill": false,
+      "stop_method": "harness_sigint",
+      "start_utc": "2026-11-26T23:53:29.028361+00:00",
+      "end_utc": "2026-11-26T23:55:11.431974+00:00",
+      "signed_audit_verified": true,
+      "original_memory_owned": true,
+      "original_core_thread_alive": false,
+      "original_core_outstanding": false,
+      "original_temporal_thread_alive": false,
+      "original_temporal_outstanding": false,
+      "original_checkpoint_pending": false,
+      "original_history_pending": false,
+      "temporal_state_before_shutdown": "running",
+      "observed_writer_epoch": 1,
+      "homeostasis_watchdog_shutdown_exception_logged": true
+    },
+    {
+      "name": "temporal-resume",
+      "pid": 45844,
+      "port": 54840,
+      "closed": true,
+      "exit_code": 0,
+      "cleanup_kill": false,
+      "stop_method": "harness_sigint",
+      "start_utc": "2026-11-26T23:55:11.445999+00:00",
+      "end_utc": "2026-11-26T23:55:53.592359+00:00",
+      "signed_audit_verified": true,
+      "original_memory_owned": true,
+      "original_core_thread_alive": false,
+      "original_core_outstanding": false,
+      "original_temporal_thread_alive": false,
+      "original_temporal_outstanding": false,
+      "original_checkpoint_pending": false,
+      "original_history_pending": false,
+      "temporal_state_before_shutdown": "running",
+      "observed_writer_epoch": 2,
+      "homeostasis_watchdog_shutdown_exception_logged": true
+    },
+    {
+      "name": "temporal-isolated",
+      "pid": 28772,
+      "port": 54926,
+      "closed": true,
+      "exit_code": 0,
+      "cleanup_kill": false,
+      "stop_method": "harness_sigint",
+      "start_utc": "2026-11-26T23:55:53.605643+00:00",
+      "end_utc": "2026-11-26T23:56:05.744573+00:00",
+      "signed_audit_verified": true,
+      "original_memory_owned": true,
+      "original_core_thread_alive": false,
+      "original_core_outstanding": false,
+      "original_temporal_thread_alive": false,
+      "original_temporal_outstanding": false,
+      "original_checkpoint_pending": false,
+      "original_history_pending": false,
+      "temporal_state_before_shutdown": "blocked",
+      "observed_writer_epoch": null,
+      "homeostasis_watchdog_shutdown_exception_logged": true
+    }
+  ],
+  "retention": {
+    "automatic": "retention_blocked; require_approval/rollback_required",
+    "automatic_signed_decision_ids": [
+      "10a056e312b00ef6cfdc61eba27fbe16f95b3d6d12faefa295b0a5ed6113f18f"
+    ],
+    "operator": "synthetic-temporal-test-operator",
+    "operation": "Existing foreground checkpoint_retention.main on stopped disposable profile",
+    "exact_approval": [
+      {
+        "status": "approval_requested",
+        "request_id": "apr_a1a5bc96a48e547fa92ae20a",
+        "stream_id": "523628d79c404278a1c19809dd314792",
+        "writer_epoch": 2,
+        "generation": 3,
+        "head_digest": "5b1afe6d78f396f74ec91a2a26ec68ba9716e17fcc434d3cc16221b1f4b35f5a",
+        "retain_checkpoints": 2,
+        "intent_fingerprint": "321638fe8f0ae4cb1081294037efc9916091ec3d4ec08adabaee7243436c15c7"
+      },
+      {
+        "status": "pruned",
+        "request_id": "apr_a1a5bc96a48e547fa92ae20a",
+        "stream_id": "523628d79c404278a1c19809dd314792",
+        "writer_epoch": 2,
+        "generation": 3,
+        "head_digest": "5b1afe6d78f396f74ec91a2a26ec68ba9716e17fcc434d3cc16221b1f4b35f5a",
+        "retain_checkpoints": 2,
+        "intent_fingerprint": "321638fe8f0ae4cb1081294037efc9916091ec3d4ec08adabaee7243436c15c7",
+        "deleted_count": 1,
+        "pruned_through": 1,
+        "retained_count": 2,
+        "closed": true,
+        "closed_in_budget": true
+      }
+    ],
+    "watermark_before": 0,
+    "watermark_after": 1,
+    "retained_generations": [
+      2,
+      3
+    ],
+    "verified_equal_temporal_envelopes_before_and_after": 6
+  },
+  "restore": {
+    "owner_thread": "temporal-observer",
+    "before_first_sample": true,
+    "source_observation": {
+      "record_id": "b25acff25dbe46dc864eff93c004fe09",
+      "kind": "observation",
+      "digest": "e2c55231f6b6c99afd8e5b5f72b20fb3867a57fcceca927ab151bbca5b3770d6",
+      "ordinal": 2,
+      "envelope_sha256": "a0b5b370afa0e96c09f9bb4c7c655aa2b6681cecbeda77c162fd7fa7d3143741"
+    },
+    "engine_moment_ids": [
+      "b25acff25dbe46dc864eff93c004fe09",
+      "5c9be80617a14260855b6d82a1b2b9ea",
+      "94f947bfbe514bd4aba50bd9bd94eb5b",
+      "5eab766b0f8f4e13a9e6fca5663aa3af"
+    ],
+    "restored_head": {
+      "record_id": "65b20f963d2f472d9ee6bee698248606",
+      "kind": "session_end",
+      "digest": "a82fefd5b03d23c0b27d984a9cad3274963003c502eb0e9b943ce19a31257b3e",
+      "ordinal": 6,
+      "envelope_sha256": "fc4a746c61592ecc8c565dc67175a5a1862cdf8a88195578995b397c181a8036"
+    },
+    "all_provenance_equals_canonical_database_envelopes": true,
+    "source_append_audit_ids": [
+      "bcac4d2d8508f6fae6dbfad94779247beae4ca411105ffe03a2d5effec138e03",
+      "daf2fdfc483d0bd1cfa583f4adaba918dcc60325340a0ade6a7a4405ae3a0fa5",
+      "bfb71d71d240e8095639d371cda70b2f4285a5a452cc01636cac59dddce279f3",
+      "1d64ddff06cabfe9b8830bde863124d24d0b7c79516c56310f6ee54aa93280b6",
+      "d7c2558b3926766a54107d6f7d6c6a611c9d3cae3d54f8cce63ff1fa70c294a3"
+    ]
+  },
+  "isolated": {
+    "matching_history_id": true,
+    "terminal_error": "missing",
+    "engine_moment_count": 0,
+    "engine_provenance_count": 0,
+    "history_schema_absent": true
+  },
+  "prior_runs": {
+    "runtime-normal-launch-red-01": "Expected missing acceptance helper.",
+    "runtime-normal-launch-green-01": "Worker rejected new phase names at argument parsing.",
+    "runtime-normal-launch-green-02": "Verified strict automatic prune approval requirement; no watermark advance.",
+    "runtime-normal-launch-green-03": "Verified supervised prune and restore; independent inventory incorrectly queried an intentionally absent fresh-profile Temporal table."
+  },
+  "limits": [
+    "Harness-triggered interrupt",
+    "No live model or physical Ctrl+C verification",
+    "Existing Homeostasis watchdog shutdown error tracked separately from original owner settlement",
+    "Existing alpha checkpoint, audit and Observability incidents remain open"
+  ],
+  "local_artifact_directory": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-runtime-normal-launch-final-01\\test_temporal_runtime_launch0\\temporal",
+  "local_artifact_sha256": {
+    "temporal-create/boot.json": "880e16fefee10f89387384435fc748c2deff5b73dcfec783497530df1ad18810",
+    "temporal-create/settlement.json": "fd06f1d876128eae93bd0c2a4061aee536493de8c928d3b3212a681b044a7bfb",
+    "temporal-create/before-first-sample.json": "527488efa262262765be56ea09b438a65b6b2bffe5b09984cefb418430cdc075",
+    "temporal-create/exit.json": "2b7af72dd7cc232431c783dfb45a27ebdb8cfcc7830eb1580e00f6558f9164e8",
+    "temporal-create/http-runtime.json": "da1a13d6fd865d00d4d0662644fbd7c24c7939a4b2a037afaffb79e8d9aaafd5",
+    "temporal-create/runtime.log": "bb230d9beba3caaba110eb91de282d724d6b2a0666ee849454b463ca93fb23bb",
+    "temporal-create/supervised-prune.json": "9364d3594b9c68ebd2768fc201669f618c840eb2edc0976257effae367012eeb",
+    "temporal-create/after-prune.json": "d03122c2343e1720c6c196f12a4d732bd6c6cfbd48f7e9715667aa7c4096de7e",
+    "temporal-create/inventory.json": "00d1dabda8e979cef342236868c8bcc05d82accc1e80656b691212a8e3c2abdb",
+    "temporal-create/provider.json": "0948e0f9edbc87e88e164b4363efc4a9b547c53034b1ed225cf449b58db48db5",
+    "temporal-resume/boot.json": "4f28229e2ff9cd656213630ccb95253d995e8f057624f29d66ff2ab72cc1674e",
+    "temporal-resume/settlement.json": "5ffcb414ef16cf1ae92ded94a355d42fe944b0e55669ea0d1deee471ac234fde",
+    "temporal-resume/before-first-sample.json": "7e5cf2ea08b0742f5a112f8a3ccab0efa221ee7183c91220df592c9be541b0f5",
+    "temporal-resume/exit.json": "8433cc07319ad363f95325b4520ec5ddd28fb4eedc2f36e6624ec94d41c32329",
+    "temporal-resume/http-runtime.json": "c6a2f71c648b1be6c978e476f41bffccbd5a568bf31f06d1d8aab482d4ba4cdf",
+    "temporal-resume/runtime.log": "c9d39ec438ea81f18f3b75718a4de69d335c150132ed59f382e00b307179f3f7",
+    "temporal-resume/inventory.json": "271acf4c479e050c8a76b8006a81a4b40c9db1d4d0e8b819b55c313683045144",
+    "temporal-resume/provider.json": "9155e3799a53cf516514e9116f84c5a43276c4a1c44cca7b52cb90f69ebac752",
+    "temporal-isolated/boot.json": "2a2293142b90d3b8c72c918d10fbdcbb2d2fcd1a9e6e4d57d2384b45c13bc9c8",
+    "temporal-isolated/settlement.json": "578fc8df80464c308a2e2a31504b513a6f572bdcfeb0a699d686b8557f808dc4",
+    "temporal-isolated/exit.json": "4a074c2adde689eb2d14e96154b968d297b46ca6cbf2311367a226bf4e31ee99",
+    "temporal-isolated/http-runtime.json": "4597f8538bd8cc7b4834539ee24fda623527caa4817b97483376aa4c556dae7d",
+    "temporal-isolated/runtime.log": "11cbcf46bbbdf2b85d4f9d9ca5a4490a43f8ffba857c2c3a69166c2a00454b2f",
+    "temporal-isolated/inventory.json": "c856df10a06e58af6986ef24e2925068378e8525e7891414e3e982d956c7ce07",
+    "temporal-isolated/provider.json": "e5ec816f6740be61bae8c3d31526e5b9e22d51fceb1181cb6e9defc33da8a799"
+  },
+  "post_quality_fix": {
+    "binding": "source_sha256 above identifies the original focused normal-launch run. The hashes below identify the subsequent import sorting and three equivalent quality repairs. The normal-launch evidence above was collected before these edits.",
+    "base_head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+    "changed_files_sha256": {
+      "Aetherra/runtime_ui/snapshot.py": "d0f7e5683c5bf40d5eeac816e130f2217139a5915bc419a3ae47bf7c0768ad48",
+      "Aetherra/consciousness/temporal_observer.py": "38aad751c269228d427b309f4415647eb54a19a929e6d83aac1c3434bde224aa",
+      "tests/unit/test_temporal_history_engine.py": "08a10fdd5dd5dd6eb6b5c8486c10802fc7b3103cb7a1d604d7b65c22538d1413",
+      "tests/integration/test_temporal_runtime_restart.py": "508ccc9ed28ea058cc6e3373cdf73ed4e2802db45e2cb6f13517ab53ae30f35b",
+      "aetherra_os_launcher.py": "5dab05b1725df5f975b0110853106d288025f9000b47b9365138ddc170dca2f9",
+      "tests/unit/test_temporal_launcher.py": "253224ef769ea8204e214e5f97cd248b3ed1ab579c1e1f2a135cb43e2bbc1fc7",
+      "tests/unit/test_hub_consciousness_observer.py": "5d521f4314b50155fb5b4071a09889f39340302745c3157e3ca02b4ef65b8baa",
+      "tests/unit/test_temporal_runtime_observer.py": "704864c85119cfaf1d3056dc442937405e32142fa0457cbf2129de87dd2d38c8"
+    },
+    "source_sha256": {
+      "aetherra_os_launcher.py": "5dab05b1725df5f975b0110853106d288025f9000b47b9365138ddc170dca2f9",
+      "aetherra_service_registry.py": "c139bb7baf93d3595778bc71de2f7d1e26d1c3ce3348e58a5072adcaa2afe818",
+      "Aetherra/consciousness/runtime_observer.py": "3ea460fc0464e6a874528ce9d85c8aa9ef751d0957ff8119df093cfe74860e75",
+      "Aetherra/consciousness/core/consciousness_core.py": "50b2a961ef1464aa6e95b355d98ef0953bd47b6e7d32679d106f8c4320eedde0",
+      "Aetherra/consciousness/core/think_stream.py": "d29057dd5f8426b35eabf1b9ece4bde1875313944d541593b6b1d5caa7673400",
+      "Aetherra/consciousness/continuity_memory.py": "e330393bf51195ba4e5f45d648a2383ab656030dcf2ec66c2ebb04123c2f8e18",
+      "Aetherra/consciousness/checkpoint.py": "de977a4c1685d831ac86bc5ed9541de81326ac6cf59191c815d75c4fcd8c8e33",
+      "Aetherra/consciousness/self_trust.py": "d545aae156ed8409fd60001d703da8e69c2e285420dea5a2b354af3928be2f0b",
+      "Aetherra/aetherra_core/memory/lifecycle_checkpoint.py": "80bc0869747e3341d8f9683201a176bca43a7c845f7f71c2f385fc3028790381",
+      "Aetherra/aetherra_core/memory/memory_core.py": "4bbeb8b580421ef2bb8e352f6fcc82a4a2881f701fd923827e54409e47328e56",
+      "Aetherra/aetherra_core/memory/aetherra_memory_engine.py": "e6049144da8ffed4b4407e0d8cbb93f7ec80e2a49ef3ac3cc3659d70069a97c3",
+      "Aetherra/runtime_ui/snapshot.py": "d0f7e5683c5bf40d5eeac816e130f2217139a5915bc419a3ae47bf7c0768ad48",
+      "aetherra_hub/blueprints/consciousness.py": "d8584a0d87cb0a2f9da16216f63a37c0ed9efde25e24dccddbe7d1054021c0a0",
+      "tools/alpha_consciousness_smoke.py": "8d4cb3c0c78d21271c882744edecbd6973f44ef7d75c92f2d67df2ead6a15cdf",
+      "tools/alpha_consciousness_continuity_smoke.py": "c810ee0af515360ad9307be3a99d4d8222203bab898b3cb66dae39d48cc24ee7",
+      "tools/alpha_consciousness_automatic_smoke.py": "705134b46c135523ef16c2a2dd77da8b1d74e5b09eae6f9e8df9bd81df4588c3",
+      "tools/alpha_consciousness_stream_probe.py": "20fc15cc62a60f3ef7451a47a76045bc03c94fb8b5bcc7d10e4cac2ace9831a0",
+      "Aetherra/aetherra_core/memory/checkpoint_stream.py": "bb7650273213157cadc950c2bcf62e5baf0e57f72d506ff707d7df9a60d306f7",
+      "Aetherra/consciousness/checkpoint_session.py": "5bb45f8130c4b7fdcfcb64ededa30ff1f9253e91bc00c96ad7a6c695fe5494ba",
+      "tools/alpha_integration_smoke.py": "574b3ebee2c516965dfab86488921bc33e231c741f521231d5273f9509538239",
+      "tests/acceptance/continuity_runtime.py": "5096962fa38d9f94b68a5512fe9aaea294ee31facf3689b8cd28a1a6765f5db1",
+      "Aetherra/consciousness/temporal_observer.py": "38aad751c269228d427b309f4415647eb54a19a929e6d83aac1c3434bde224aa",
+      "Aetherra/consciousness/quantum/temporal_consciousness_system.py": "07f77fe0a7987041f124fe31a3f123420dc9b5e799182dc16c1f7d0a34120170",
+      "Aetherra/aetherra_core/memory/temporal_history.py": "d15b52274b8e7b9ac84499a084650d87610f1292e9beed77c0d279dec0c2e701",
+      "Aetherra/aetherra_core/memory/temporal_history_store.py": "e8ccfc5a5991c2e9acb71203b92dc4b3fb96f5aae88af558a2cb96decc62ea12",
+      "Aetherra/aetherra_core/memory/temporal_history_worker.py": "38b0117278d5f043bde211f49d6f46201a259081819c5d3d77cef92be833858c",
+      "aetherra_hub/services/state.py": "45620cb0dfe69d8a364be8da37baec7f534f6cef098fb32cfc228dda7dae53dc",
+      "Aetherra/lyrixa/gui/src/SubsystemEvidence.tsx": "863fffad029fd1caf8eba8d43c997498271c7aa04bbea9d9ddfdeb9ffdeff18c",
+      "tools/checkpoint_retention.py": "9f365fa619f0afa616194f9237285829ff1c21a15a2346db2f56290e15849e2b",
+      "tools/alpha_temporal_smoke.py": "42c0fd5c073ed13e7d4f6f6c42d6c5355cb0b6f03f5a80d1a1bbe99254d17bcc",
+      "tests/acceptance/test_temporal_runtime_launch.py": "4d21233274338de1d0f13977d58027c1b25fd4b673da2a62d3b5150001742060"
+    },
+    "frozen_patch_sha256": {
+      "runtime-import-format-only": "19e25372643dfc4485c5445a33f4662ef82cce17136a0db156926d9076406ab1",
+      "runtime-quality-followup": "4eadda277baf16f0141b7d67a767144d7ffc40b9aa59237df094678dedafc432"
+    },
+    "frozen_manifest_sha256": {
+      "runtime-import-format-only": "5fd224e5c9488a806334748319c236bc2f98277b3cc7303cf32a21f9c7f03cfa",
+      "runtime-quality-followup": "23ca91c72db7f50e7564c5ca1e990f4b2c8e6f2ce7a702d22b16ab8a57b4b440"
+    },
+    "focused_unit_process_projection_tests": {
+      "passed": 144,
+      "pytest_seconds": 29.61,
+      "runner": {
+        "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+        "command": [
+          "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+          "-m",
+          "pytest",
+          "-q",
+          "-o",
+          "addopts=",
+          "tests/unit/test_temporal_runtime_observer.py",
+          "tests/integration/test_temporal_runtime_restart.py",
+          "tests/unit/test_runtime_ui_consciousness.py",
+          "tests/unit/test_hub_consciousness_observer.py",
+          "tests/unit/test_temporal_history_engine.py",
+          "tests/unit/test_temporal_launcher.py",
+          "-o",
+          "cache_dir=D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-cache",
+          "--basetemp",
+          "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-runtime-quality-fix-unit"
+        ],
+        "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+        "ambient_pythonpath_absent": true,
+        "exit_code": 0,
+        "seconds": 30.38
+      }
+    },
+    "fixed_python_quality": {
+      "runner": {
+        "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+        "command": [
+          "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+          "tools/python_quality.py"
+        ],
+        "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+        "ambient_pythonpath_absent": true,
+        "exit_code": 0,
+        "seconds": 98.78
+      },
+      "summary": "Python quality: 0 new/edited violations; 946 unchanged legacy files; 87 resolved."
+    },
+    "browser_full_suite": "Pending on the post-quality-fix source."
+  },
+  "listener_review_fix": {
+    "binding": "These three helper/test files changed after the original normal-launch and post-quality snapshots. The browser run and configured full suite will exercise this endpoint.",
+    "source_sha256": {
+      "tests/acceptance/test_temporal_runtime_launch.py": "194a10b42b1fecc03df4f5f0019bfd7c1e5031379bbd716ddc1b574a497601a4",
+      "tools/alpha_consciousness_continuity_smoke.py": "ea906fe67e7d9ea8a5ddca6e14a6a36f33bb399f01783e896d2fa9185c72a759",
+      "tools/alpha_temporal_smoke.py": "b6c7eba5a936545f587a753c5272ae2de6477d4201f01dd3b549a1cfab3ca6a4"
+    },
+    "change_patch_sha256": "481b21d7289a4085ab2f6b77decc9b86b9358debb7026ee0c5d8fd54d53cdff1",
+    "substituted_listener_and_fallback_red": "runtime-browser-listener-red: 2 failed, 1 passed, 1 deselected",
+    "owned_listener_green": "runtime-browser-listener-green: 3 passed, 1 deselected"
+  },
+  "browser_verification": {
+    "command_receipt": {
+      "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+      "command": [
+        "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+        "tools/alpha_temporal_smoke.py",
+        "--output",
+        "D:/Aetherra Labs/.codex-temporal-resume-20261126/browser-runtime-live-01",
+        "--browser-hold-seconds",
+        "600"
+      ],
+      "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+      "ambient_pythonpath_absent": true,
+      "exit_code": 0,
+      "seconds": 367.92
+    },
+    "runtime_receipt": {
+      "passed": true,
+      "history_id": "185cfebbfeae4a508de7c7703b9daa17",
+      "stream_id": "364f162944854226aef23f4be81bf2c5",
+      "phases": [
+        {
+          "name": "temporal-create",
+          "pid": 44140,
+          "port": 3001,
+          "closed": true,
+          "exit_code": 0,
+          "cleanup_kill": false,
+          "stop_method": "harness_sigint",
+          "start_utc": "2026-11-27T00:05:50.374285+00:00",
+          "end_utc": "2026-11-27T00:09:11.924498+00:00",
+          "signed_audit_verified": true
+        },
+        {
+          "name": "temporal-resume",
+          "pid": 65300,
+          "port": 3001,
+          "closed": true,
+          "exit_code": 0,
+          "cleanup_kill": false,
+          "stop_method": "harness_sigint",
+          "start_utc": "2026-11-27T00:09:11.941242+00:00",
+          "end_utc": "2026-11-27T00:10:57.123698+00:00",
+          "signed_audit_verified": true
+        },
+        {
+          "name": "temporal-isolated",
+          "pid": 59272,
+          "port": 3001,
+          "closed": true,
+          "exit_code": 0,
+          "cleanup_kill": false,
+          "stop_method": "harness_sigint",
+          "start_utc": "2026-11-27T00:10:57.144584+00:00",
+          "end_utc": "2026-11-27T00:11:57.948120+00:00",
+          "signed_audit_verified": true
+        }
+      ],
+      "source_sha256": {
+        "aetherra_os_launcher.py": "5dab05b1725df5f975b0110853106d288025f9000b47b9365138ddc170dca2f9",
+        "aetherra_service_registry.py": "c139bb7baf93d3595778bc71de2f7d1e26d1c3ce3348e58a5072adcaa2afe818",
+        "Aetherra/consciousness/runtime_observer.py": "3ea460fc0464e6a874528ce9d85c8aa9ef751d0957ff8119df093cfe74860e75",
+        "Aetherra/consciousness/core/consciousness_core.py": "50b2a961ef1464aa6e95b355d98ef0953bd47b6e7d32679d106f8c4320eedde0",
+        "Aetherra/consciousness/core/think_stream.py": "d29057dd5f8426b35eabf1b9ece4bde1875313944d541593b6b1d5caa7673400",
+        "Aetherra/consciousness/continuity_memory.py": "e330393bf51195ba4e5f45d648a2383ab656030dcf2ec66c2ebb04123c2f8e18",
+        "Aetherra/consciousness/checkpoint.py": "de977a4c1685d831ac86bc5ed9541de81326ac6cf59191c815d75c4fcd8c8e33",
+        "Aetherra/consciousness/self_trust.py": "d545aae156ed8409fd60001d703da8e69c2e285420dea5a2b354af3928be2f0b",
+        "Aetherra/aetherra_core/memory/lifecycle_checkpoint.py": "80bc0869747e3341d8f9683201a176bca43a7c845f7f71c2f385fc3028790381",
+        "Aetherra/aetherra_core/memory/memory_core.py": "4bbeb8b580421ef2bb8e352f6fcc82a4a2881f701fd923827e54409e47328e56",
+        "Aetherra/aetherra_core/memory/aetherra_memory_engine.py": "e6049144da8ffed4b4407e0d8cbb93f7ec80e2a49ef3ac3cc3659d70069a97c3",
+        "Aetherra/runtime_ui/snapshot.py": "d0f7e5683c5bf40d5eeac816e130f2217139a5915bc419a3ae47bf7c0768ad48",
+        "aetherra_hub/blueprints/consciousness.py": "d8584a0d87cb0a2f9da16216f63a37c0ed9efde25e24dccddbe7d1054021c0a0",
+        "tools/alpha_consciousness_smoke.py": "8d4cb3c0c78d21271c882744edecbd6973f44ef7d75c92f2d67df2ead6a15cdf",
+        "tools/alpha_consciousness_continuity_smoke.py": "ea906fe67e7d9ea8a5ddca6e14a6a36f33bb399f01783e896d2fa9185c72a759",
+        "tools/alpha_consciousness_automatic_smoke.py": "705134b46c135523ef16c2a2dd77da8b1d74e5b09eae6f9e8df9bd81df4588c3",
+        "tools/alpha_consciousness_stream_probe.py": "20fc15cc62a60f3ef7451a47a76045bc03c94fb8b5bcc7d10e4cac2ace9831a0",
+        "Aetherra/aetherra_core/memory/checkpoint_stream.py": "bb7650273213157cadc950c2bcf62e5baf0e57f72d506ff707d7df9a60d306f7",
+        "Aetherra/consciousness/checkpoint_session.py": "5bb45f8130c4b7fdcfcb64ededa30ff1f9253e91bc00c96ad7a6c695fe5494ba",
+        "tools/alpha_integration_smoke.py": "574b3ebee2c516965dfab86488921bc33e231c741f521231d5273f9509538239",
+        "tests/acceptance/continuity_runtime.py": "5096962fa38d9f94b68a5512fe9aaea294ee31facf3689b8cd28a1a6765f5db1",
+        "Aetherra/consciousness/temporal_observer.py": "38aad751c269228d427b309f4415647eb54a19a929e6d83aac1c3434bde224aa",
+        "Aetherra/consciousness/quantum/temporal_consciousness_system.py": "07f77fe0a7987041f124fe31a3f123420dc9b5e799182dc16c1f7d0a34120170",
+        "Aetherra/aetherra_core/memory/temporal_history.py": "d15b52274b8e7b9ac84499a084650d87610f1292e9beed77c0d279dec0c2e701",
+        "Aetherra/aetherra_core/memory/temporal_history_store.py": "e8ccfc5a5991c2e9acb71203b92dc4b3fb96f5aae88af558a2cb96decc62ea12",
+        "Aetherra/aetherra_core/memory/temporal_history_worker.py": "38b0117278d5f043bde211f49d6f46201a259081819c5d3d77cef92be833858c",
+        "aetherra_hub/services/state.py": "45620cb0dfe69d8a364be8da37baec7f534f6cef098fb32cfc228dda7dae53dc",
+        "Aetherra/lyrixa/gui/src/SubsystemEvidence.tsx": "863fffad029fd1caf8eba8d43c997498271c7aa04bbea9d9ddfdeb9ffdeff18c",
+        "tools/checkpoint_retention.py": "9f365fa619f0afa616194f9237285829ff1c21a15a2346db2f56290e15849e2b",
+        "tools/alpha_temporal_smoke.py": "b6c7eba5a936545f587a753c5272ae2de6477d4201f01dd3b549a1cfab3ca6a4",
+        "tests/acceptance/test_temporal_runtime_launch.py": "194a10b42b1fecc03df4f5f0019bfd7c1e5031379bbd716ddc1b574a497601a4"
+      },
+      "automatic_prune_approval_required_audit_ids": [
+        "b09828ecdeb83ff438131e7f75e14f1f273e3e2b6b696e089b235925d0be1994"
+      ],
+      "restored_observation_ids": [
+        "99ac12d6f8d64be4be796d564174dd38",
+        "e1d36f11ba2647d8a79ef9ef347e1e7d",
+        "f12de8fc85914ccaa73ca5aa69b69227",
+        "401676af6f3241299f138cdb66439e63"
+      ],
+      "pruned_through": 1
+    },
+    "observations": [
+      {
+        "stage": "create",
+        "observed_at_utc": "2026-11-27T00:09:08.568236+00:00",
+        "browser": "ChatGPT in-app browser",
+        "tab_id": "2",
+        "url": "http://127.0.0.1:13700/",
+        "owned_hub_pid": 44140,
+        "view": "Consciousness inspector",
+        "visual_screenshots": "Captured inline in CUA tool trace, full view and Temporal detail",
+        "visible": {
+          "temporal_runtime": "Running",
+          "temporal_ownership": "Last verified",
+          "temporal_persistence": "Saved",
+          "temporal_pending": "No",
+          "writer_epoch": 1,
+          "accepted_observations": 4,
+          "selected_head_record": "401676af6f3241299f138cdb66439e63",
+          "saved_head_record": "401676af6f3241299f138cdb66439e63",
+          "restored_head_record": "Unknown",
+          "offline_duration": "Unknown",
+          "action_execution": "Disabled",
+          "core_checkpoint": "Retention blocked",
+          "core_checkpoint_error": "Denied"
+        },
+        "source": "Live UI AX state and visual screenshots after browser-ready ownership gate; separate bootstrap artifact retained"
+      },
+      {
+        "stage": "resume",
+        "observed_at_utc": "2026-11-27T00:10:53.253382+00:00",
+        "browser": "ChatGPT in-app browser",
+        "tab_id": "2",
+        "url": "http://127.0.0.1:13700/",
+        "owned_hub_pid": 65300,
+        "view": "Consciousness inspector",
+        "visual_screenshots": "Captured inline in CUA tool trace",
+        "visible": {
+          "temporal_runtime": "Running",
+          "temporal_ownership": "Last verified",
+          "temporal_persistence": "Saved",
+          "temporal_pending": "No",
+          "writer_epoch": 2,
+          "accepted_observations": 5,
+          "selected_head_record": "b60c7d158593444cb3e5084b413be813",
+          "saved_head_record": "b60c7d158593444cb3e5084b413be813",
+          "restored_head_record": "b78e7637e35645fc9ad55b3576cb65e4",
+          "offline_duration": "Unknown",
+          "action_execution": "Disabled",
+          "core_checkpoint": "Retention blocked",
+          "core_checkpoint_error": "Denied"
+        },
+        "source": "Live UI AX state and screenshot after browser-ready child listener gate"
+      },
+      {
+        "stage": "isolated",
+        "observed_at_utc": "2026-11-27T00:11:55.188647+00:00",
+        "browser": "ChatGPT in-app browser",
+        "tab_id": "2",
+        "url": "http://127.0.0.1:13700/",
+        "owned_hub_pid": 59272,
+        "view": "Consciousness inspector",
+        "visual_screenshots": "Captured inline in CUA tool trace",
+        "visible": {
+          "temporal_runtime": "Blocked",
+          "temporal_ownership": "Unverified",
+          "temporal_persistence": "Blocked",
+          "temporal_error": "Missing",
+          "temporal_source_fresh": "No",
+          "temporal_pending": "No",
+          "writer_epoch": "Unknown",
+          "accepted_observations": 0,
+          "selected_head_record": "Unknown",
+          "saved_head_record": "Unknown",
+          "restored_head_record": "Unknown",
+          "offline_duration": "Unknown",
+          "action_execution": "Disabled",
+          "core_runtime": "Running"
+        },
+        "previous_profile_record_ids_cleared": true,
+        "source": "Same live UI tab updated to fresh profile; AX state and visual screenshot after browser-ready ownership gate"
+      },
+      {
+        "stage": "unavailable",
+        "observed_at_utc": "2026-11-27T00:12:39.234490+00:00",
+        "browser": "ChatGPT in-app browser",
+        "tab_id": "2",
+        "url": "http://127.0.0.1:13700/",
+        "visible": {
+          "header": "Runtime unavailable",
+          "message": "Runtime status is unavailable. Check the connection and try again.",
+          "consciousness_status": "Unknown",
+          "source": "Unavailable",
+          "temporal_runtime": "Unknown",
+          "core_restored_record": "Unknown",
+          "core_saved_record": "Unknown"
+        },
+        "temporal_head_rows_removed": true,
+        "previous_live_ids_absent": true,
+        "hub_port_closed": true,
+        "visual_screenshots": "Captured inline in CUA tool trace",
+        "verification_tab_closed": true,
+        "preexisting_wiki_tab_preserved": true
+      }
+    ],
+    "raw_artifact_directory": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\browser-runtime-live-01",
+    "raw_artifact_sha256": {
+      "temporal-create/browser-ready.json": "8e1a31444edf06addb4dafc50e7dba87c19d0ff6b06544d2dc6834104cf8d8bf",
+      "temporal-create/browser-observed.json": "97d9ad550f0b83a63a3c2da976a2e532f1ee7c5561b14ea09d5f52329a06a086",
+      "temporal-create/browser-bootstrap-observed.json": "ea7db449657117bd05663d32d9d510a6dccf76497c2f29435cbc264ff1eb4054",
+      "temporal-create/exit.json": "5751deea1153cd7109aefa0b50f9ad1d485fe6bee10240fcb3b65307af183532",
+      "temporal-resume/browser-ready.json": "3250cf5d8e905a0a7afd8b04da1013dc9734fa9f3caca0f7ac0ea6bd4ad85289",
+      "temporal-resume/browser-observed.json": "9af87b4abbcf68ec05aa862d93a1d71119fe514b61b0c61db5a05081e1c82274",
+      "temporal-resume/browser-bootstrap-observed.json": "8e92eb79d9f8f0bedbbd57d42b717bdb9a937ddb1e50d9aee89e919dcd529a22",
+      "temporal-resume/exit.json": "40f89c7290b9011ec6c8a232f1d4c91a8b90454af53fcc7c3ea953c7a6fb7e61",
+      "temporal-isolated/browser-ready.json": "475ec8677a25e29031142c7c0e25a95fae2a6f9c2d2d712946b4a1ae74ede9fb",
+      "temporal-isolated/browser-observed.json": "05f22a89a53abb7b54ae3b1cbdc2094342d24902bd0c59745de84b8cc32b9e7c",
+      "temporal-isolated/browser-bootstrap-observed.json": "3ba4f1d521e763598919ca35e66fbfa0cee1c9ec779890bb8f6a32ad560ee85a",
+      "temporal-isolated/exit.json": "ece69339b070c69171e7141d2a8525b6d2f7432d485512a84b2509fcc27b76f9",
+      "receipt.json": "5bdf72d55000cf5ebde306a69d95cbc92ea6cc6ae410b6ad2254bca5026fa23d",
+      "browser-unavailable-observed.json": "524acba2763966780fd59bb620b5abd043ba7813b4de533367bb8df22d0e51f9"
+    },
+    "vite_exit": {
+      "pid": 64172,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.EXE",
+        "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo\\Aetherra\\lyrixa\\gui\\node_modules\\vite\\bin\\vite.js",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "13700",
+        "--strictPort"
+      ],
+      "started_at": 1795737947.5226312,
+      "exit_code": 1,
+      "remaining_owned_children": [],
+      "stopped_at": 1795738359.493207
+    },
+    "vite_stop_note": "Owned development server deliberately terminated after verification; exit code is not a test result. No owned children remained.",
+    "no_live_model_or_physical_keyboard_claim": true
+  },
+  "final_qualification": {
+    "prior_full_suite": {
+      "command_receipt": {
+        "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+        "command": [
+          "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+          "-m",
+          "pytest",
+          "-q",
+          "-o",
+          "cache_dir=D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-cache",
+          "--basetemp",
+          "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-runtime-full-final-01"
+        ],
+        "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+        "ambient_pythonpath_absent": true,
+        "exit_code": 1,
+        "seconds": 2669.01
+      },
+      "log_sha256": "9e7294ed8036ad1df9a86e83a4cf4fffee9c13bfbd68dc730b1dc771db4b6839",
+      "passed": 4308,
+      "skipped": 38,
+      "setup_errors": [
+        "tests/tools/test_python_quality.py::test_exact_legacy_source_passes_without_rewriting_baseline",
+        "tests/tools/test_python_quality.py::test_edited_or_new_source_cannot_borrow_a_legacy_allowance[old.py]",
+        "tests/tools/test_python_quality.py::test_edited_or_new_source_cannot_borrow_a_legacy_allowance[new.py]",
+        "tests/tools/test_python_quality.py::test_cleaned_source_is_allowed_and_removed_debt_is_reported",
+        "tests/tools/test_python_quality.py::test_weaker_configuration_cannot_reuse_the_baseline",
+        "tests/tools/test_python_quality.py::test_missing_or_different_tool_version_fails_closed",
+        "tests/tools/test_python_quality.py::test_windows_line_endings_do_not_change_the_allowance",
+        "tests/tools/test_python_quality.py::test_generated_ignored_fixture_is_not_repository_source",
+        "tests/tools/test_python_quality.py::test_gitignore_cannot_hide_tracked_critical_error",
+        "tests/tools/test_python_quality.py::test_nested_configuration_cannot_hide_a_new_violation"
+      ],
+      "coverage_percent": 45.29,
+      "normal_cli_trace_sha256": "f48e20631f5c4fe95e91ec5022597486b1166e8a79ad51511d30cadf6e080c8f",
+      "cause": "In-process supervised_prune temporarily cleared the Windows environment with patch.dict(clear=True). Restoring empty native Git environment values affected later Git fixture setup in the same pytest process.",
+      "repair": "The synthetic supervised retention operation uses a separate child process. The regression exercises the parent environment across the operation.",
+      "post_isolation_freeze": "runtime-post-isolation-code-freeze.json",
+      "regression_and_repair_commands": {
+        "runtime-git-env-red-01": {
+          "command_receipt": {
+            "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+            "command": [
+              "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+              "-m",
+              "pytest",
+              "-q",
+              "-o",
+              "addopts=",
+              "tests/acceptance/test_temporal_runtime_launch.py::test_supervised_prune_preserves_native_parent_environment",
+              "-o",
+              "cache_dir=D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-cache",
+              "--basetemp",
+              "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-runtime-git-env-red-01"
+            ],
+            "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+            "ambient_pythonpath_absent": true,
+            "exit_code": 1,
+            "seconds": 1.66
+          },
+          "log_sha256": "0f130e71e9977558694e0d739ddcb4e065f60eead622753f9c7fba88c649590d",
+          "log": "runtime-git-env-red-01.log",
+          "summary": "1 failed in 0.92s",
+          "scope": "Initial synthetic home fixture setup error; this run did not exercise the target defect."
+        },
+        "runtime-git-env-red-02": {
+          "command_receipt": {
+            "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+            "command": [
+              "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+              "-m",
+              "pytest",
+              "-q",
+              "-o",
+              "addopts=",
+              "tests/acceptance/test_temporal_runtime_launch.py::test_supervised_prune_preserves_native_parent_environment",
+              "-o",
+              "cache_dir=D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-cache",
+              "--basetemp",
+              "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-runtime-git-env-red-02"
+            ],
+            "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+            "ambient_pythonpath_absent": true,
+            "exit_code": 1,
+            "seconds": 1.76
+          },
+          "log_sha256": "931d4c134108c36a52a9982f54e0b21bc0895894862b9fba62386940323316bc",
+          "log": "runtime-git-env-red-02.log",
+          "summary": "1 failed in 0.92s",
+          "scope": "Reproduced missing native GIT_CONFIG_VALUE_0 in the parent environment."
+        },
+        "runtime-git-env-green-01": {
+          "command_receipt": {
+            "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+            "command": [
+              "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+              "-m",
+              "pytest",
+              "-q",
+              "-o",
+              "addopts=",
+              "tests/acceptance/test_temporal_runtime_launch.py::test_supervised_prune_preserves_native_parent_environment",
+              "tests/unit/test_environment_isolation.py",
+              "tests/tools/test_python_quality.py",
+              "-o",
+              "cache_dir=D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-cache",
+              "--basetemp",
+              "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-runtime-git-env-green-01"
+            ],
+            "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+            "ambient_pythonpath_absent": true,
+            "exit_code": 0,
+            "seconds": 48.17
+          },
+          "log_sha256": "a0d61778e3756475e57b545a5501eea56ebb3aa2b747384319ad4280e8ab30f4",
+          "log": "runtime-git-env-green-01.log",
+          "summary": "17 passed in 47.40s",
+          "scope": "17 focused regression and adjacent checks passed after the harness isolation repair."
+        },
+        "runtime-git-env-normal-cli-01": {
+          "command_receipt": {
+            "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+            "command": [
+              "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+              "-m",
+              "pytest",
+              "-q",
+              "-o",
+              "addopts=",
+              "tests/acceptance/test_temporal_runtime_launch.py",
+              "-o",
+              "cache_dir=D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-cache",
+              "--basetemp",
+              "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-runtime-git-env-normal-cli-01"
+            ],
+            "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+            "ambient_pythonpath_absent": true,
+            "exit_code": 0,
+            "seconds": 165.76
+          },
+          "log_sha256": "f0440d2454cf713ee27e16d854ebdc5df3a9c8edd67077627b8af4598f61fefb",
+          "log": "runtime-git-env-normal-cli-01.log",
+          "summary": "8 passed in 164.84s (0:02:44)",
+          "scope": "8 normal-launch acceptance and related checks passed on the repaired harness."
+        }
+      },
+      "harness_isolation_fix": {
+        "manifest_sha256": "217f5c96a328e69cface387b24dc12e1b889ee32afd8f8685f5ea034c492ee5b",
+        "base": "56623003675bc99f9e3dfadf15b6254beb183b59",
+        "files": {
+          "tools/alpha_temporal_smoke.py": {
+            "before_sha256": "a0dd7beba8dbff612d2cce3b4e2ccea33d1a65c46a101557a274bf0a8d9913dc",
+            "after_sha256": "f1bd7f1d6b456415dc12044b305f06f4494085101f04572091793014e1db4fc8"
+          },
+          "tests/acceptance/test_temporal_runtime_launch.py": {
+            "before_sha256": "5dd871f8e94bd69cfaabc344973e6a775fefed84191680b7f1aae2f6656969fa",
+            "after_sha256": "eae647eee8a79c21417129e288e00c4564683c44341ccc1de09f780e3cf42732"
+          }
+        },
+        "patch_sha256": "a189e7163dfece71325da3aa80771a8bd49cfbe06eb4921f68975d2616fedf21",
+        "other_frozen_code_files_unchanged": 32
+      }
+    },
+    "interrupted_full_suite_02": {
+      "status": "interrupted",
+      "command_receipt": {
+        "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+        "command": [
+          "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+          "-m",
+          "pytest",
+          "-q",
+          "-o",
+          "cache_dir=D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-cache",
+          "--basetemp",
+          "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-runtime-full-final-02"
+        ],
+        "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+        "ambient_pythonpath_absent": true,
+        "exit_code": 15,
+        "seconds": 1714.82
+      },
+      "log_sha256": "238445f9ea9ea28e4fd718fe7ddd65484c9d603324d9ac77eb91dd6668501a91",
+      "last_reported_progress_percent": 23,
+      "full_suite_result": "No completed suite summary or coverage measurement",
+      "reason": "The independent conservative secret scan flagged the synthetic API-key fixture value at acceptance test line 212; the runner was stopped.",
+      "scope": "Test fixture literal, with no runtime defect diagnosed.",
+      "repair": "Two synthetic fixture literals were shortened to test-key. Scanner and allowlist were unchanged.",
+      "post_isolation_freeze_sha256": "1be19bf3984b34b75e05052e4b047494e1b72caf0e7ceb86b0d204d3c5129134",
+      "completed_normal_cli": {
+        "receipt": {
+          "passed": true,
+          "history_id": "07c1f4bb04574d81ba2e6c00ff39b5e4",
+          "stream_id": "074153da349b46f2996392d02c556265",
+          "phases": [
+            {
+              "name": "temporal-create",
+              "pid": 13356,
+              "port": 58642,
+              "closed": true,
+              "exit_code": 0,
+              "cleanup_kill": false,
+              "stop_method": "harness_sigint",
+              "start_utc": "2026-11-27T01:39:57.226273+00:00",
+              "end_utc": "2026-11-27T01:41:41.317057+00:00",
+              "signed_audit_verified": true
+            },
+            {
+              "name": "temporal-resume",
+              "pid": 56720,
+              "port": 58824,
+              "closed": true,
+              "exit_code": 0,
+              "cleanup_kill": false,
+              "stop_method": "harness_sigint",
+              "start_utc": "2026-11-27T01:41:41.337736+00:00",
+              "end_utc": "2026-11-27T01:42:24.353534+00:00",
+              "signed_audit_verified": true
+            },
+            {
+              "name": "temporal-isolated",
+              "pid": 45016,
+              "port": 58899,
+              "closed": true,
+              "exit_code": 0,
+              "cleanup_kill": false,
+              "stop_method": "harness_sigint",
+              "start_utc": "2026-11-27T01:42:24.370932+00:00",
+              "end_utc": "2026-11-27T01:42:36.710855+00:00",
+              "signed_audit_verified": true
+            }
+          ],
+          "source_sha256": {
+            "aetherra_os_launcher.py": "5dab05b1725df5f975b0110853106d288025f9000b47b9365138ddc170dca2f9",
+            "aetherra_service_registry.py": "c139bb7baf93d3595778bc71de2f7d1e26d1c3ce3348e58a5072adcaa2afe818",
+            "Aetherra/consciousness/runtime_observer.py": "3ea460fc0464e6a874528ce9d85c8aa9ef751d0957ff8119df093cfe74860e75",
+            "Aetherra/consciousness/core/consciousness_core.py": "50b2a961ef1464aa6e95b355d98ef0953bd47b6e7d32679d106f8c4320eedde0",
+            "Aetherra/consciousness/core/think_stream.py": "d29057dd5f8426b35eabf1b9ece4bde1875313944d541593b6b1d5caa7673400",
+            "Aetherra/consciousness/continuity_memory.py": "e330393bf51195ba4e5f45d648a2383ab656030dcf2ec66c2ebb04123c2f8e18",
+            "Aetherra/consciousness/checkpoint.py": "de977a4c1685d831ac86bc5ed9541de81326ac6cf59191c815d75c4fcd8c8e33",
+            "Aetherra/consciousness/self_trust.py": "d545aae156ed8409fd60001d703da8e69c2e285420dea5a2b354af3928be2f0b",
+            "Aetherra/aetherra_core/memory/lifecycle_checkpoint.py": "80bc0869747e3341d8f9683201a176bca43a7c845f7f71c2f385fc3028790381",
+            "Aetherra/aetherra_core/memory/memory_core.py": "4bbeb8b580421ef2bb8e352f6fcc82a4a2881f701fd923827e54409e47328e56",
+            "Aetherra/aetherra_core/memory/aetherra_memory_engine.py": "e6049144da8ffed4b4407e0d8cbb93f7ec80e2a49ef3ac3cc3659d70069a97c3",
+            "Aetherra/runtime_ui/snapshot.py": "d0f7e5683c5bf40d5eeac816e130f2217139a5915bc419a3ae47bf7c0768ad48",
+            "aetherra_hub/blueprints/consciousness.py": "d8584a0d87cb0a2f9da16216f63a37c0ed9efde25e24dccddbe7d1054021c0a0",
+            "tools/alpha_consciousness_smoke.py": "8d4cb3c0c78d21271c882744edecbd6973f44ef7d75c92f2d67df2ead6a15cdf",
+            "tools/alpha_consciousness_continuity_smoke.py": "ea906fe67e7d9ea8a5ddca6e14a6a36f33bb399f01783e896d2fa9185c72a759",
+            "tools/alpha_consciousness_automatic_smoke.py": "fba670ba35fb02750ea269e2bcf13c7a8757b5184b0c8222da710cb4bcc7ec72",
+            "tools/alpha_consciousness_stream_probe.py": "20fc15cc62a60f3ef7451a47a76045bc03c94fb8b5bcc7d10e4cac2ace9831a0",
+            "Aetherra/aetherra_core/memory/checkpoint_stream.py": "bb7650273213157cadc950c2bcf62e5baf0e57f72d506ff707d7df9a60d306f7",
+            "Aetherra/consciousness/checkpoint_session.py": "5bb45f8130c4b7fdcfcb64ededa30ff1f9253e91bc00c96ad7a6c695fe5494ba",
+            "tools/alpha_integration_smoke.py": "574b3ebee2c516965dfab86488921bc33e231c741f521231d5273f9509538239",
+            "tests/acceptance/continuity_runtime.py": "5096962fa38d9f94b68a5512fe9aaea294ee31facf3689b8cd28a1a6765f5db1",
+            "Aetherra/consciousness/temporal_observer.py": "8db036aac7d34715949a74796effc395ef09f98d59e72f0f5f81da01c7f22d75",
+            "Aetherra/consciousness/quantum/temporal_consciousness_system.py": "07f77fe0a7987041f124fe31a3f123420dc9b5e799182dc16c1f7d0a34120170",
+            "Aetherra/aetherra_core/memory/temporal_history.py": "d15b52274b8e7b9ac84499a084650d87610f1292e9beed77c0d279dec0c2e701",
+            "Aetherra/aetherra_core/memory/temporal_history_store.py": "e8ccfc5a5991c2e9acb71203b92dc4b3fb96f5aae88af558a2cb96decc62ea12",
+            "Aetherra/aetherra_core/memory/temporal_history_worker.py": "38b0117278d5f043bde211f49d6f46201a259081819c5d3d77cef92be833858c",
+            "aetherra_hub/services/state.py": "45620cb0dfe69d8a364be8da37baec7f534f6cef098fb32cfc228dda7dae53dc",
+            "Aetherra/lyrixa/gui/src/SubsystemEvidence.tsx": "863fffad029fd1caf8eba8d43c997498271c7aa04bbea9d9ddfdeb9ffdeff18c",
+            "tools/checkpoint_retention.py": "9f365fa619f0afa616194f9237285829ff1c21a15a2346db2f56290e15849e2b",
+            "tools/alpha_temporal_smoke.py": "f1bd7f1d6b456415dc12044b305f06f4494085101f04572091793014e1db4fc8",
+            "tests/acceptance/test_temporal_runtime_launch.py": "eae647eee8a79c21417129e288e00c4564683c44341ccc1de09f780e3cf42732"
+          },
+          "automatic_prune_approval_required_audit_ids": [
+            "ce2729301ae0d8450d617b8f804053c4004bdd99b95b3a2081f5032f1b14e08d"
+          ],
+          "restored_observation_ids": [
+            "b1c87c1d28a84d0fb626a756d66c63f0",
+            "76f8d2f5a1614ced9673f1ade2a363ef",
+            "8832ccdd24e5422f96d2c9fbd856975b",
+            "9e1c2a0ad1464a19bb859e2247adf6ef"
+          ],
+          "pruned_through": 1
+        },
+        "receipt_sha256": "080422c1e6cecf65d821f550a279a632720e9f10d60746909778a252e00cf598",
+        "trace": {
+          "scope": "Completed normal-launch acceptance within interrupted suite runtime-full-final-02",
+          "history_id": "07c1f4bb04574d81ba2e6c00ff39b5e4",
+          "record": {
+            "record_id": "b1c87c1d28a84d0fb626a756d66c63f0",
+            "kind": "observation",
+            "digest": "698b89cad8022e523128e4f3a8879b28290a4cf0baea4af21978d34aee80ec0f",
+            "ordinal": 2,
+            "envelope_sha256": "8848d4cd8d95b80b1359dcdd5f13e3caa9c00e59b2ce63395fe0da3b4509fc83"
+          },
+          "write_pid": 13356,
+          "restore_pid": 56720,
+          "writer_epochs": [
+            1,
+            2
+          ],
+          "engine_witness_thread": "temporal-observer",
+          "restored_before_first_sample": true,
+          "retained_envelopes_unchanged_by_core_prune": 6,
+          "core_pruned_through_before": 0,
+          "core_pruned_through_after": 1,
+          "isolated_engine_empty": true,
+          "append_audit_ids": [
+            "852cb8143c6a9fd11813eee419c59cf4f6ccaf7374ec0bc21b0d8ba772b4ee44",
+            "0362af20be241a5c410e8837bff46ff89b8a68eb32a9e1987623443273966cd8",
+            "1613e4762386a07cfa39d15499cff48f5bb2f70de679249162992f265d11d1d4",
+            "b01cbd4ad8ec73ec50c6badfbc17070d1748a21752731f3d140e9db3a3044f1f",
+            "504b62f7d8276b5036f50594671b88b69b8eb7c21022a59d4bdb54b91f201f2a"
+          ],
+          "raw_artifact_directory": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-runtime-full-final-02\\test_temporal_runtime_launch0\\temporal",
+          "raw_artifact_sha256": {
+            "receipt.json": "080422c1e6cecf65d821f550a279a632720e9f10d60746909778a252e00cf598",
+            "temporal-create/inventory.json": "7526c212a80ffee3851ed6aa0ff99bfc3ee341b64d228019ee6e73d7f448d059",
+            "temporal-create/after-prune.json": "30d5ae8eb07c72afa0b2cfb54b3d093c7ae8c3d3de0a0d9e588ab5e692c755da",
+            "temporal-resume/before-first-sample.json": "910b1a196d964fa5cda66d9ba9775da3627168616b6ce82a0a0528633e03b64b",
+            "temporal-isolated/settlement.json": "99ccfb9f5705db199794322185cc8e0f60ff6e4905ed34036bd1b48f3c100d57"
+          }
+        }
+      },
+      "post_sentinel_repair_evidence": {
+        "focused_tests": {
+          "command_receipt": {
+            "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+            "command": [
+              "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+              "-m",
+              "pytest",
+              "-q",
+              "-o",
+              "addopts=",
+              "tests/acceptance/test_temporal_runtime_launch.py::test_supervised_prune_preserves_native_parent_environment",
+              "tests/capabilities/test_static_security_scan.py",
+              "tests/unit/test_environment_isolation.py",
+              "tests/tools/test_python_quality.py",
+              "-o",
+              "cache_dir=D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-cache",
+              "--basetemp",
+              "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-runtime-git-env-placeholder-focused-01"
+            ],
+            "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+            "ambient_pythonpath_absent": true,
+            "exit_code": 0,
+            "seconds": 50.97
+          },
+          "log_sha256": "846544341a238b89ff0ed6b1827c715d95d59e187c498e30dc355224c46fa30f",
+          "log": "runtime-git-env-placeholder-focused-01.log",
+          "command_receipt_sha256": "625da1f29448bd60447fdcab3416ac87fbff5edbba79b2126077792e89cce442",
+          "summary": "18 passed in 49.86s",
+          "scope": "Focused post-sentinel tests on the corrected fixture"
+        },
+        "security_scan": {
+          "scope": "Direct repository-root scanner run after the fixture correction",
+          "receipt": {
+            "repo": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+            "critical_count": 0,
+            "severity_counts": {
+              "medium": 2,
+              "high": 1
+            },
+            "test_file_sha256": "14c70719222d876052334aead20a24e2c1135453ec3558a334ebda1341765ed1"
+          },
+          "receipt_name": "runtime-git-env-placeholder-security-root-01.json",
+          "receipt_sha256": "b337b0fa9fb163d72f770d3748c79b142cc38dbb1a71dcedbf4bb43d4242a523"
+        },
+        "frozen_fix": {
+          "manifest_sha256": "44ae6461e7bec860af73360d59a6f75aaa0d1397406723f528f01d9ff1187db1",
+          "file": "tests/acceptance/test_temporal_runtime_launch.py",
+          "before_sha256": "eae647eee8a79c21417129e288e00c4564683c44341ccc1de09f780e3cf42732",
+          "after_sha256": "14c70719222d876052334aead20a24e2c1135453ec3558a334ebda1341765ed1",
+          "patch_sha256": "a16d2efc647ace3b2dfdcda6f656da339db16f36a4860ec110b7fbaf661b8b98",
+          "reason": "Replace synthetic fixture with short dummy test-key; scanners and allowlists unchanged"
+        }
+      }
+    },
+    "trace": {
+      "scope": "Completed normal-launch acceptance within successful full configured suite runtime-full-final-03",
+      "history_id": "d2cbf0cfbaab4afeba3a29ff366f88d2",
+      "record": {
+        "record_id": "7774752595144ec69f251d499ce884f8",
+        "kind": "observation",
+        "digest": "895733e7091b06ae7c822cc4a5fc6ba94af2fa2bed1e60370f9a86d8fb47cd8d",
+        "ordinal": 2,
+        "envelope_sha256": "b4cef7d6a80941360e59d0231e3f82c55ad8691a6de0be1977a541930fc3ca2a"
+      },
+      "write_pid": 16524,
+      "restore_pid": 61456,
+      "writer_epochs": [
+        1,
+        2
+      ],
+      "engine_witness_thread": "temporal-observer",
+      "restored_before_first_sample": true,
+      "retained_envelopes_unchanged_by_core_prune": 6,
+      "core_pruned_through_before": 0,
+      "core_pruned_through_after": 1,
+      "isolated_engine_empty": true,
+      "append_audit_ids": [
+        "82bfc0c264e34560d19dd33db08b0600c601800da948dead0bd32095ef613385",
+        "4a14c3df500486399735e0f360a39162cc507e9b784091ddaaf78e97d6fa381a",
+        "0a1349ab2767632abc3dee74dea4c3542691e370463fd4d50e00e8387ca8bccf",
+        "ab68dba8b4e142b087be3a626df7c9d0236a2be93e5b5607413167eabb53039d",
+        "93980b27fb5cc7b4f25e9bc75e15092d47566a53b40a50c82758b6ffc0bf44d5"
+      ],
+      "raw_artifact_directory": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-runtime-full-final-03\\test_temporal_runtime_launch0\\temporal",
+      "raw_artifact_sha256": {
+        "receipt.json": "0362773291b14ba2efaec029b7409ea1b8cfd5edfc1f81c548e6dc2ddad50305",
+        "temporal-create/inventory.json": "a716b5ce98ce63b88b8a3d14f754f21ceba02a762dbf1b9ecf2abada82d01ba8",
+        "temporal-create/after-prune.json": "24528a78de447b2b5f95952dab7e1285fd3ce7a06a1aa45db9e77d06238d3cea",
+        "temporal-resume/before-first-sample.json": "6c062c8b50158c1c00c00980facf3f19acf2fede12e7ca621c282cfc52f0ef07",
+        "temporal-isolated/settlement.json": "e504d0b59bab35b8ce74d2fce3cf24349be3573ca98477e5fd3a008b7e7ac116"
+      }
+    },
+    "trace_path": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\runtime-final-trace-03.json",
+    "final_code_sha256": {
+      "Aetherra/aetherra_core/engine/aetherra_engine.py": "0a848d4a340230c562618eaeeb520b3ad5ca7898c7ec6fe37d6735327f35e623",
+      "Aetherra/aetherra_core/memory/aetherra_memory_engine.py": "e6049144da8ffed4b4407e0d8cbb93f7ec80e2a49ef3ac3cc3659d70069a97c3",
+      "Aetherra/aetherra_core/memory/memory_core.py": "4bbeb8b580421ef2bb8e352f6fcc82a4a2881f701fd923827e54409e47328e56",
+      "Aetherra/aetherra_core/memory/temporal_history.py": "d15b52274b8e7b9ac84499a084650d87610f1292e9beed77c0d279dec0c2e701",
+      "Aetherra/aetherra_core/memory/temporal_history_store.py": "e8ccfc5a5991c2e9acb71203b92dc4b3fb96f5aae88af558a2cb96decc62ea12",
+      "Aetherra/aetherra_core/memory/temporal_history_worker.py": "38b0117278d5f043bde211f49d6f46201a259081819c5d3d77cef92be833858c",
+      "Aetherra/consciousness/quantum/temporal_consciousness_system.py": "07f77fe0a7987041f124fe31a3f123420dc9b5e799182dc16c1f7d0a34120170",
+      "Aetherra/consciousness/runtime_observer.py": "3ea460fc0464e6a874528ce9d85c8aa9ef751d0957ff8119df093cfe74860e75",
+      "Aetherra/consciousness/temporal_observer.py": "8db036aac7d34715949a74796effc395ef09f98d59e72f0f5f81da01c7f22d75",
+      "Aetherra/guardian/state.py": "dafdc899db149ac1557aa275ccd8abf4395735ad37930086e75ec99621be196e",
+      "Aetherra/lyrixa/gui/src/SubsystemEvidence.tsx": "863fffad029fd1caf8eba8d43c997498271c7aa04bbea9d9ddfdeb9ffdeff18c",
+      "Aetherra/lyrixa/gui/tests/evidence.test.mjs": "18078f34a62cdd36e02c24dad9d4ffc9b27236cb6e411906a89bb062706cda16",
+      "Aetherra/runtime_ui/snapshot.py": "d0f7e5683c5bf40d5eeac816e130f2217139a5915bc419a3ae47bf7c0768ad48",
+      "Aetherra/security/audit_ledger.py": "6ee731cae2b6a67f2e32791be3dc85fb17923f427597e47fa3f85d30b38f8f3d",
+      "aetherra_hub/blueprints/consciousness.py": "d8584a0d87cb0a2f9da16216f63a37c0ed9efde25e24dccddbe7d1054021c0a0",
+      "aetherra_hub/services/state.py": "45620cb0dfe69d8a364be8da37baec7f534f6cef098fb32cfc228dda7dae53dc",
+      "aetherra_os_launcher.py": "5dab05b1725df5f975b0110853106d288025f9000b47b9365138ddc170dca2f9",
+      "tests/acceptance/test_temporal_runtime_launch.py": "14c70719222d876052334aead20a24e2c1135453ec3558a334ebda1341765ed1",
+      "tests/integration/test_temporal_history_restart.py": "fd9dfc7fbb95bb5210a6b95d9b8f84947fa72c4c8d3ab34e88ee2f3937dda2a0",
+      "tests/integration/test_temporal_runtime_restart.py": "508ccc9ed28ea058cc6e3373cdf73ed4e2802db45e2cb6f13517ab53ae30f35b",
+      "tests/unit/test_aetherra_engine_hardening.py": "44192294f55865a326ab792e351824d344879d691df980b5373dac915bc679b4",
+      "tests/unit/test_consciousness_observer_lifecycle.py": "f04e1deb44817e56c7fe1fa752d0a6cafeeb6367dcafdb30b70865c524a98e37",
+      "tests/unit/test_hub_consciousness_observer.py": "5d521f4314b50155fb5b4071a09889f39340302745c3157e3ca02b4ef65b8baa",
+      "tests/unit/test_memory_temporal_history.py": "18cc7fed1d2fe5f6e933f19d95c75b12ee2f769cd7a7a91333f0bb91ad7ff1e4",
+      "tests/unit/test_security_audit_ledger.py": "362b4b29b307920750ba7a3e954fbce0ef122d03ccab6051aab7ae1dab682bfb",
+      "tests/unit/test_temporal_history_c2b_isolation.py": "d10eb79363843c268c78cca33ec61ea6711bebbaddd6810253e5f91b21b41d20",
+      "tests/unit/test_temporal_history_engine.py": "08a10fdd5dd5dd6eb6b5c8486c10802fc7b3103cb7a1d604d7b65c22538d1413",
+      "tests/unit/test_temporal_history_store.py": "3dd1db17ed5f14d5d1736013fa009115f71dbad72e9eb39ae8ff08a6ef5535a5",
+      "tests/unit/test_temporal_launcher.py": "19f3cf76eb44ac1007ff7b78fd013f1cee636145058eeb43dac188ccef12fee3",
+      "tests/unit/test_temporal_runtime_observer.py": "704864c85119cfaf1d3056dc442937405e32142fa0457cbf2129de87dd2d38c8",
+      "tools/alpha_consciousness_automatic_smoke.py": "fba670ba35fb02750ea269e2bcf13c7a8757b5184b0c8222da710cb4bcc7ec72",
+      "tools/alpha_consciousness_continuity_smoke.py": "ea906fe67e7d9ea8a5ddca6e14a6a36f33bb399f01783e896d2fa9185c72a759",
+      "tools/alpha_consciousness_smoke.py": "8d4cb3c0c78d21271c882744edecbd6973f44ef7d75c92f2d67df2ead6a15cdf",
+      "tools/alpha_temporal_smoke.py": "f1bd7f1d6b456415dc12044b305f06f4494085101f04572091793014e1db4fc8"
+    },
+    "final_freeze_sha256": "81c9ab91c34b29c29fa7d3457f7962a566f198dae5b4823d66a55e8cc2732e68",
+    "review": "Final whole-runtime review and fix-only re-review approved; subsequent full-suite-discovered Windows harness isolation fix scoped review approved; test-sentinel correction scoped review approved",
+    "full_suite": {
+      "command_receipt": {
+        "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+        "command": [
+          "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+          "-m",
+          "pytest",
+          "-q",
+          "-o",
+          "cache_dir=D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-cache",
+          "--basetemp",
+          "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-runtime-full-final-03"
+        ],
+        "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+        "ambient_pythonpath_absent": true,
+        "exit_code": 0,
+        "seconds": 2842.65
+      },
+      "log_sha256": "84af6eaf915b9aa5c7f5cb874a8e7b5bb7845f3515193c46929a8c3174d8e2c2",
+      "passed": 4319,
+      "skipped": 38,
+      "pytest_seconds": 2817.44,
+      "coverage_percent": 45.29,
+      "coverage_floor_percent": 22.0,
+      "skip_details": [
+        {
+          "count": 2,
+          "detail": "tests\\capabilities\\test_reflection_memory_stability.py:33: Reflection system unavailable: No module named 'Aetherra.aetherra_core.system.emotion_detector'"
+        },
+        {
+          "count": 2,
+          "detail": "tests\\tools\\test_release_bootstrap.py:15: could not import 'semantic_release': No module named 'semantic_release'"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:154: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:168: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:225: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:237: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:337: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:302: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:314: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:414: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:375: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:387: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:486: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:464: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:450: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:531: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:556: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:516: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:631: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:593: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:605: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:672: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:686: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:750: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:771: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:725: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:804: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\ai\\test_neural_interface.py:821: GUI components not available"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\capabilities\\test_perception_shutdown.py:30: Windows terminate does not deliver SIGTERM"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\capabilities\\test_storm_acceptance.py:138: STORM not enabled"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\capabilities\\test_storm_acceptance.py:206: STORM not enabled"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\capabilities\\test_storm_acceptance.py:306: Memory system not returning results - persistence issue"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\unit\\test_hub_quantum_and_chat_metrics.py:20: Flask not available in test env"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\unit\\test_hub_quantum_and_chat_metrics.py:34: Flask not available in test env"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\unit\\test_signature_verifier.py:419: Symlinks not supported on this system"
+        },
+        {
+          "count": 1,
+          "detail": "tests\\unit\\test_sse_replay_gap_metric.py:20: Flask dependency or environment heavy; placeholder smoke"
+        }
+      ]
+    },
+    "final_normal_launcher": {
+      "receipt_path": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-runtime-full-final-03\\test_temporal_runtime_launch0\\temporal\\receipt.json",
+      "receipt_sha256": "0362773291b14ba2efaec029b7409ea1b8cfd5edfc1f81c548e6dc2ddad50305",
+      "receipt": {
+        "passed": true,
+        "history_id": "d2cbf0cfbaab4afeba3a29ff366f88d2",
+        "stream_id": "b59f611c89cc4dd0be798cbdd183d6f8",
+        "phases": [
+          {
+            "name": "temporal-create",
+            "pid": 16524,
+            "port": 64766,
+            "closed": true,
+            "exit_code": 0,
+            "cleanup_kill": false,
+            "stop_method": "harness_sigint",
+            "start_utc": "2026-11-27T02:10:10.303793+00:00",
+            "end_utc": "2026-11-27T02:11:54.139163+00:00",
+            "signed_audit_verified": true
+          },
+          {
+            "name": "temporal-resume",
+            "pid": 61456,
+            "port": 64945,
+            "closed": true,
+            "exit_code": 0,
+            "cleanup_kill": false,
+            "stop_method": "harness_sigint",
+            "start_utc": "2026-11-27T02:11:54.163108+00:00",
+            "end_utc": "2026-11-27T02:12:37.662738+00:00",
+            "signed_audit_verified": true
+          },
+          {
+            "name": "temporal-isolated",
+            "pid": 42180,
+            "port": 65024,
+            "closed": true,
+            "exit_code": 0,
+            "cleanup_kill": false,
+            "stop_method": "harness_sigint",
+            "start_utc": "2026-11-27T02:12:37.679535+00:00",
+            "end_utc": "2026-11-27T02:12:51.002818+00:00",
+            "signed_audit_verified": true
+          }
+        ],
+        "source_sha256": {
+          "aetherra_os_launcher.py": "5dab05b1725df5f975b0110853106d288025f9000b47b9365138ddc170dca2f9",
+          "aetherra_service_registry.py": "c139bb7baf93d3595778bc71de2f7d1e26d1c3ce3348e58a5072adcaa2afe818",
+          "Aetherra/consciousness/runtime_observer.py": "3ea460fc0464e6a874528ce9d85c8aa9ef751d0957ff8119df093cfe74860e75",
+          "Aetherra/consciousness/core/consciousness_core.py": "50b2a961ef1464aa6e95b355d98ef0953bd47b6e7d32679d106f8c4320eedde0",
+          "Aetherra/consciousness/core/think_stream.py": "d29057dd5f8426b35eabf1b9ece4bde1875313944d541593b6b1d5caa7673400",
+          "Aetherra/consciousness/continuity_memory.py": "e330393bf51195ba4e5f45d648a2383ab656030dcf2ec66c2ebb04123c2f8e18",
+          "Aetherra/consciousness/checkpoint.py": "de977a4c1685d831ac86bc5ed9541de81326ac6cf59191c815d75c4fcd8c8e33",
+          "Aetherra/consciousness/self_trust.py": "d545aae156ed8409fd60001d703da8e69c2e285420dea5a2b354af3928be2f0b",
+          "Aetherra/aetherra_core/memory/lifecycle_checkpoint.py": "80bc0869747e3341d8f9683201a176bca43a7c845f7f71c2f385fc3028790381",
+          "Aetherra/aetherra_core/memory/memory_core.py": "4bbeb8b580421ef2bb8e352f6fcc82a4a2881f701fd923827e54409e47328e56",
+          "Aetherra/aetherra_core/memory/aetherra_memory_engine.py": "e6049144da8ffed4b4407e0d8cbb93f7ec80e2a49ef3ac3cc3659d70069a97c3",
+          "Aetherra/runtime_ui/snapshot.py": "d0f7e5683c5bf40d5eeac816e130f2217139a5915bc419a3ae47bf7c0768ad48",
+          "aetherra_hub/blueprints/consciousness.py": "d8584a0d87cb0a2f9da16216f63a37c0ed9efde25e24dccddbe7d1054021c0a0",
+          "tools/alpha_consciousness_smoke.py": "8d4cb3c0c78d21271c882744edecbd6973f44ef7d75c92f2d67df2ead6a15cdf",
+          "tools/alpha_consciousness_continuity_smoke.py": "ea906fe67e7d9ea8a5ddca6e14a6a36f33bb399f01783e896d2fa9185c72a759",
+          "tools/alpha_consciousness_automatic_smoke.py": "fba670ba35fb02750ea269e2bcf13c7a8757b5184b0c8222da710cb4bcc7ec72",
+          "tools/alpha_consciousness_stream_probe.py": "20fc15cc62a60f3ef7451a47a76045bc03c94fb8b5bcc7d10e4cac2ace9831a0",
+          "Aetherra/aetherra_core/memory/checkpoint_stream.py": "bb7650273213157cadc950c2bcf62e5baf0e57f72d506ff707d7df9a60d306f7",
+          "Aetherra/consciousness/checkpoint_session.py": "5bb45f8130c4b7fdcfcb64ededa30ff1f9253e91bc00c96ad7a6c695fe5494ba",
+          "tools/alpha_integration_smoke.py": "574b3ebee2c516965dfab86488921bc33e231c741f521231d5273f9509538239",
+          "tests/acceptance/continuity_runtime.py": "5096962fa38d9f94b68a5512fe9aaea294ee31facf3689b8cd28a1a6765f5db1",
+          "Aetherra/consciousness/temporal_observer.py": "8db036aac7d34715949a74796effc395ef09f98d59e72f0f5f81da01c7f22d75",
+          "Aetherra/consciousness/quantum/temporal_consciousness_system.py": "07f77fe0a7987041f124fe31a3f123420dc9b5e799182dc16c1f7d0a34120170",
+          "Aetherra/aetherra_core/memory/temporal_history.py": "d15b52274b8e7b9ac84499a084650d87610f1292e9beed77c0d279dec0c2e701",
+          "Aetherra/aetherra_core/memory/temporal_history_store.py": "e8ccfc5a5991c2e9acb71203b92dc4b3fb96f5aae88af558a2cb96decc62ea12",
+          "Aetherra/aetherra_core/memory/temporal_history_worker.py": "38b0117278d5f043bde211f49d6f46201a259081819c5d3d77cef92be833858c",
+          "aetherra_hub/services/state.py": "45620cb0dfe69d8a364be8da37baec7f534f6cef098fb32cfc228dda7dae53dc",
+          "Aetherra/lyrixa/gui/src/SubsystemEvidence.tsx": "863fffad029fd1caf8eba8d43c997498271c7aa04bbea9d9ddfdeb9ffdeff18c",
+          "tools/checkpoint_retention.py": "9f365fa619f0afa616194f9237285829ff1c21a15a2346db2f56290e15849e2b",
+          "tools/alpha_temporal_smoke.py": "f1bd7f1d6b456415dc12044b305f06f4494085101f04572091793014e1db4fc8",
+          "tests/acceptance/test_temporal_runtime_launch.py": "14c70719222d876052334aead20a24e2c1135453ec3558a334ebda1341765ed1"
+        },
+        "automatic_prune_approval_required_audit_ids": [
+          "930aaa2c9d2fa77b02549e5df7e92e8452d799036d3c0929612bd3731cf71cd8"
+        ],
+        "restored_observation_ids": [
+          "7774752595144ec69f251d499ce884f8",
+          "739d4361a0004d63b1ad39b566d99f15",
+          "5c7de414c970492e92f2ffcd8c9d7fa1",
+          "9c32c10255cb4ab3ac86b2caba26a770"
+        ],
+        "pruned_through": 1
+      }
+    },
+    "browser_source_boundary": "The recorded browser observations preceded the final five-file runtime fix, the acceptance-harness process-isolation repair and the synthetic scanner-fixture correction. The inspector renderer matches the final freeze. The final configured suite exercised the normal CLI on the final code.",
+    "final_python_quality": {
+      "command_receipt": {
+        "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+        "command": [
+          "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+          "tools/python_quality.py"
+        ],
+        "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+        "ambient_pythonpath_absent": true,
+        "exit_code": 0,
+        "seconds": 116.12
+      },
+      "log_sha256": "36431df1af9a0aa10062d430d2848721d3daaefc134d79c5802c501ea9f25f94",
+      "log": "runtime-final-quality-02.log",
+      "summary": "Python quality: 0 new/edited violations; 946 unchanged legacy files; 87 resolved."
+    },
+    "final_gui_checks": {
+      "scope": "Task 3 GUI checks verified against the final frozen GUI files",
+      "new_execution": false,
+      "binding_sha256": "ec83c35688630ba2bba81048d91ddd77c33de5cdbc95a6c2bcf183c6a4e82e5b",
+      "original_binding": {
+        "source_scope": "Original Task 3 GUI test/build/lint; no new GUI run",
+        "freeze": "runtime-final-code-freeze.json",
+        "freeze_sha256": "e67f25b6d8532005a06879857d6b7c34a44ea7f5fe052dfcc1d08ff22409fa33",
+        "task3_manifest_sha256": "51b2622bae742d2d28b219cff2c0ed3f6180358554bb8a3d26f1af7f0375afb2",
+        "gui_files": {
+          "Aetherra/lyrixa/gui/src/SubsystemEvidence.tsx": "863fffad029fd1caf8eba8d43c997498271c7aa04bbea9d9ddfdeb9ffdeff18c",
+          "Aetherra/lyrixa/gui/tests/evidence.test.mjs": "18078f34a62cdd36e02c24dad9d4ffc9b27236cb6e411906a89bb062706cda16"
+        },
+        "package_files": {
+          "Aetherra/lyrixa/gui/package.json": {
+            "sha256": "7bf8801f90724400fcd8229ba81c44b960578a196324d0a706b9a09334e63b57",
+            "byte_identical_to_head": true
+          },
+          "Aetherra/lyrixa/gui/package-lock.json": {
+            "sha256": "14530847977301902569a14cf959b9fee33120d6cfa94c6cafd0bdc31988ceed",
+            "byte_identical_to_head": true
+          }
+        },
+        "logs": {
+          "test": {
+            "name": "runtime-launcher-gui-test.log",
+            "sha256": "2097877779b6caac4fe0ceb0b389206748f967bf46fd281386963b8656eca570",
+            "command": "npm.cmd run test"
+          },
+          "build": {
+            "name": "runtime-launcher-gui-build.log",
+            "sha256": "40b58a5169eb86c9dd4b1dd3fc1a15c7bd4e9fb859e33cfa97a47c1cf6f75115",
+            "command": "npm.cmd run build"
+          },
+          "lint": {
+            "name": "runtime-launcher-gui-lint.log",
+            "sha256": "f2b04315e6851f44608ef4e31165ddd30a6a01acd510ac66463bcb343826d870",
+            "command": "npm.cmd run lint"
+          }
+        },
+        "results": {
+          "tests_passed": 41,
+          "tests_failed": 0,
+          "tests_skipped": 0,
+          "build": "passed with Vite warning for chunks exceeding 500 kB",
+          "lint": "passed, as recorded in Task 3 report"
+        },
+        "task3_report_sha256": "103b12e8a7d8cb4c16d67a9ac0255fe9b0cada49774081f5852342bbdeee966b",
+        "post_isolation_freeze_present_at_binding": false
+      },
+      "post_isolation_source_hashes_verified": true
+    },
+    "final_docs_static_checks": {
+      "docs_consistency": {
+        "command_receipt": {
+          "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+          "command": [
+            "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+            "tools/verify_docs_consistency.py"
+          ],
+          "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+          "ambient_pythonpath_absent": true,
+          "exit_code": 0,
+          "seconds": 5.79
+        },
+        "log_sha256": "30759ff2f115329507272b5018737d9687e5a146a0986299938aedd1a3611411",
+        "log": "runtime-final-docs-01.log"
+      },
+      "timing": "Docs command completed before generated-output archival and receipt closure. Diff, JSON and local link checks validate the closing edits separately.",
+      "closing_checks": {
+        "git_diff_check": "passed",
+        "pending_json_parsed": 3,
+        "relative_link_targets_checked": 43,
+        "pending_markdown_checked": 11
+      }
+    },
+    "artifact_archive": {
+      "files": [
+        {
+          "path": "data/approvals_log.jsonl",
+          "generated_sha256": "feb76ef9a8792b748cfcdfab2b19dfe80f1bd330e1535e59ef09d0833ebe9d2a",
+          "restored_from_head": false
+        },
+        {
+          "path": "docs/DOCS_CONSISTENCY_REPORT.md",
+          "generated_sha256": "e37d2eab44e859fe9e036453c71acd7901a5e527efb989e6fcbad3cbe2e55a2f",
+          "restored_from_head": true
+        },
+        {
+          "path": "docs/SELFINC_PRODUCTION_READINESS_GENERATED.md",
+          "generated_sha256": "5b2fa620af2d632269a415fd4351a6436657109ee04b59c38296888d8e90ef0f",
+          "restored_from_head": false
+        },
+        {
+          "path": "hub_runtime_url.txt",
+          "generated_sha256": "db604082b8b63636b4ce557eaadc9c91e5c4d9166a79d5c0d7a7969762521bfa",
+          "restored_from_head": false
+        }
+      ],
+      "external_receipt_sha256": "e5e59cf3356279893651586319c347e3f856ef6a8793cedae86e25bfe0ab6470"
+    },
+    "protected_worktree_preservation": {
+      "protected_worktrees": 3,
+      "pending_files_preserved": 28,
+      "active_index_empty": true,
+      "active_head_unchanged": true,
+      "final_source_hashes_rechecked": 34,
+      "external_receipt_sha256": "cfe26d4db39d7f62e398379694aa5df36f465cee2b2c4256fd35285a92a6be24"
+    },
+    "workflow_dependency_baseline": {
+      "git_diff_against": "56623003675bc99f9e3dfadf15b6254beb183b59",
+      "pathspecs": [
+        ".github/workflows",
+        "requirements",
+        "requirements*.txt",
+        "requirements*.lock",
+        "setup.py",
+        "pyproject.toml",
+        ":(glob)**/package.json",
+        ":(glob)**/package-lock.json",
+        ":(glob)**/pnpm-lock.yaml",
+        ":(glob)**/yarn.lock",
+        ".ci/python-quality-baseline.json"
+      ],
+      "unchanged": true
+    }
+  }
+}

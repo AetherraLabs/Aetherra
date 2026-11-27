@@ -371,3 +371,19 @@ test('Consciousness distinguishes an admitted final attempt from the previous pe
         assert.doesNotMatch(html, /No additional stop save submitted|Final checkpoint acknowledged/)
     }
 })
+
+test('Temporal reports blocked configuration, exact head records, and clears stale transport', async () => {
+    const metrics = {
+        temporal_runtime_state: 'blocked', temporal_enabled: false, temporal_last_error_code: 'config_invalid',
+        temporal_restored_record_id: 'a'.repeat(32), temporal_saved_record_id: 'private/path',
+        temporal_ownership_state: 'fenced', temporal_persistence_state: 'uncertain',
+    }
+    const rendered = await renderEvidence('consciousness', metrics)
+    for (const value of ['Blocked', 'Config invalid', 'Fenced', 'Uncertain', 'Restored Temporal head record', 'a'.repeat(32)]) {
+        assert.ok(rendered.includes(value))
+    }
+    assert.ok(!rendered.includes('private/path'))
+    const stale = await renderEvidence('consciousness', metrics, false)
+    assert.ok(!stale.includes('a'.repeat(32)))
+    assert.ok(!stale.includes('Fenced'))
+})

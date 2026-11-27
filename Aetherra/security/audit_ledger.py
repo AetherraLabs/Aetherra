@@ -18,6 +18,9 @@ from pathlib import Path
 from time import monotonic
 from typing import Any
 
+# Aetherra imports
+from Aetherra.guardian.state import locked_jsonl
+
 AUDIT_VERSION = 1
 GENESIS_HASH = "0" * 64
 
@@ -104,7 +107,7 @@ class SecurityAuditLedger:
         if not isinstance(event_type, str) or not event_type.strip():
             raise ValueError("audit event_type must be a non-empty string")
 
-        with self._lock:
+        with self._lock, locked_jsonl(self.path):
             secret = self._load_or_create_secret()
             sequence, previous_hash, prefix = self._verified_tail(
                 secret, for_append=True
@@ -139,8 +142,8 @@ class SecurityAuditLedger:
         require_signed_records: bool = False,
     ) -> bool:
         """Verify the chain, optionally requiring signed history."""
-        with self._lock:
-            try:
+        try:
+            with self._lock, locked_jsonl(self.path, read_only=True):
                 secret = self._load_secret()
                 if secret is None:
                     return not require_signed_records and (
@@ -148,8 +151,8 @@ class SecurityAuditLedger:
                     )
                 sequence, _, _ = self._verified_tail(secret)
                 return sequence > 0 if require_signed_records else True
-            except (AuditLedgerError, OSError, ValueError, json.JSONDecodeError):
-                return False
+        except (AuditLedgerError, OSError, ValueError, json.JSONDecodeError):
+            return False
 
     def _verified_tail(
         self, secret: bytes, *, for_append: bool = False

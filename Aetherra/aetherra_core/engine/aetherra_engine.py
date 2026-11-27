@@ -442,6 +442,8 @@ class AetherraEngine:
         self.session_id = None
         self.active_tasks = {}
         self.initialized = False
+        self._pending_memory_close: Any | None = None
+        self._memory_close_task: asyncio.Task[bool] | None = None
 
         # Session-scoped scratchpad (ephemeral, never persisted)
         self._scratchpad: List[Dict[str, Any]] = []
@@ -585,6 +587,8 @@ class AetherraEngine:
     async def shutdown(self):
         """Gracefully shutdown the Aetherra engine"""
         if not self.initialized:
+            if self._pending_memory_close is not None:
+                await self._close_memory_for_shutdown(self._pending_memory_close)
             return
 
         try:
@@ -616,15 +620,11 @@ class AetherraEngine:
                     llm_cleanup_confirmed = False
                     self._record_lifecycle_failure("llm_cleanup", exc)
 
-            # Close memory connections
-            try:
-                if hasattr(self.memory_system, "close_connection"):
-                    self.memory_system.close_connection()
-            except Exception as exc:
-                self._record_lifecycle_failure("memory_close", exc)
-
             self.initialized = False
-            if llm_cleanup_confirmed:
+            memory_cleanup_confirmed = await self._close_memory_for_shutdown(
+                self.memory_system
+            )
+            if llm_cleanup_confirmed and memory_cleanup_confirmed:
                 logger.info("[OK] Aetherra Engine shutdown complete")
             else:
                 logger.warning("Aetherra Engine stopped with unresolved owned cleanup")
@@ -635,6 +635,48 @@ class AetherraEngine:
                 "Aetherra Engine shutdown failed trace_id=%s",
                 diagnostic["trace_id"],
             )
+
+    async def _close_memory_for_shutdown(self, memory_system: Any) -> bool:
+        original = self._pending_memory_close
+        if original is not None:
+            memory_system = original
+        try:
+            close = getattr(memory_system, "close_connection", None)
+            if (
+                close is not None
+                and type(memory_system) is AetherraMemorySystem
+                and "memory_system" not in COMPONENT_IMPORT_ERRORS
+            ):
+                # The core SQLite connection supports this thread handoff. Keep
+                # the owned attempt available if the shutdown caller is cancelled.
+                self._pending_memory_close = memory_system
+                attempt = self._memory_close_task
+                if attempt is None or attempt.cancelled():
+                    attempt = asyncio.create_task(asyncio.to_thread(close))
+                    self._memory_close_task = attempt
+                try:
+                    pending = await asyncio.shield(attempt) is False
+                finally:
+                    if attempt.done() and self._memory_close_task is attempt:
+                        self._memory_close_task = None
+            else:
+                pending = close is not None and close() is False
+        except Exception as exc:
+            self._record_lifecycle_failure("memory_close", exc)
+            return False
+        if pending:
+            self._pending_memory_close = memory_system
+            self._record_lifecycle_event(
+                "memory_close", "memory_close_pending", "degraded"
+            )
+            return False
+        if self._pending_memory_close is memory_system:
+            self._pending_memory_close = None
+            if original is not None:
+                self._record_lifecycle_event(
+                    "memory_close", "memory_close_completed", "ok"
+                )
+        return True
 
     async def _start_optional_subsystem(
         self, component: str, instance: Any, method_name: str

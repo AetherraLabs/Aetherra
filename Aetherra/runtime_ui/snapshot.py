@@ -94,6 +94,8 @@ def collect_runtime_ui_system_status() -> dict[str, dict[str, Any]]:
                 observation["status"] = "unknown"
                 observation["summary"] = "Runtime evidence could not be collected."
                 observation["metrics"]["evidence"] = "service_status_unavailable"
+        if name == "consciousness":
+            observation["metrics"].update(collect_temporal_runtime_metrics(registry))
         status[name] = observation
     status["guardian"] = _guardian_status(observed_at)
     return status
@@ -496,6 +498,107 @@ def _continuity_metrics(raw: Any) -> dict[str, Any]:
         health = "ok"
     result["health"] = health
     return {"continuity_" + key: value for key, value in result.items()}
+
+
+def collect_temporal_runtime_metrics(registry) -> dict[str, Any]:
+    """Project only cached, bounded scalar evidence from the current owner."""
+    # Aetherra imports
+    from aetherra_hub.services.state import hub_state
+
+    raw = {"runtime_state": "unavailable"}
+    try:
+        if registry is not None and registry.get_registry_status().get("running"):
+            provider = hub_state.temporal_status_provider(registry)
+            raw = (
+                {"runtime_state": "absent"}
+                if provider is None
+                else _read_status(provider) or raw
+            )
+    except Exception:
+        raw = {"runtime_state": "unavailable"}
+    enums = {
+        "runtime_state": {
+            "disabled",
+            "starting",
+            "running",
+            "stopping",
+            "stopped",
+            "blocked",
+            "unavailable",
+            "missing",
+            "absent",
+        },
+        "ownership_state": {
+            "unverified",
+            "last_verified",
+            "lost",
+            "fenced",
+            "uncertain",
+        },
+        "persistence_state": {
+            "idle",
+            "restoring",
+            "ready",
+            "saved",
+            "closed",
+            "blocked",
+            "uncertain",
+        },
+        "observation_gap_state": {"unknown", "estimated", "inconsistent"},
+        "offline_duration_state": {"unknown"},
+        "last_error_code": {
+            "invalid",
+            "missing",
+            "unchanged",
+            "conflict",
+            "corrupt",
+            "busy",
+            "denied",
+            "audit_failed",
+            "unavailable",
+            "cancelled",
+            "uncertain",
+            "writer_fenced",
+            "ownership_lost",
+            "temporal_config_invalid",
+            "config_invalid",
+            "core_not_ready",
+            "memory_not_ready",
+            "policy_not_ready",
+            "service_conflict",
+        },
+    }
+    result = {}
+    for key, allowed in enums.items():
+        value = raw.get(key)
+        result[key] = value if type(value) is str and value in allowed else None
+    if result["runtime_state"] is None:
+        result["runtime_state"] = "unavailable"
+    if result["runtime_state"] in {"missing", "absent", "unavailable"}:
+        raw = {}
+    for key in ("enabled", "source_fresh", "outstanding", "thread_alive"):
+        value = raw.get(key)
+        result[key] = value if type(value) is bool else None
+    for key in ("selected_head_record_id", "restored_record_id", "saved_record_id"):
+        value = raw.get(key)
+        result[key] = (
+            value
+            if type(value) is str and re.fullmatch(r"[0-9a-f]{32}", value)
+            else None
+        )
+    for key in ("writer_epoch", "skipped_observations", "accepted_observations"):
+        value = raw.get(key)
+        result[key] = (
+            value if type(value) is int and 0 <= value <= _JS_SAFE_INTEGER else None
+        )
+    for key in ("last_verified_observation_at_unix_s", "observation_gap_seconds"):
+        value = raw.get(key)
+        result[key] = (
+            value
+            if type(value) in (int, float) and 0 <= value <= _JS_SAFE_INTEGER
+            else None
+        )
+    return {"temporal_" + key: value for key, value in result.items()}
 
 
 def consciousness_runtime_metrics(raw: dict[str, Any]) -> dict[str, Any]:
