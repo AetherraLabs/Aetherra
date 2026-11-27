@@ -57,7 +57,7 @@ long-soak or retention-boundary evidence. Earlier candidate live/browser/R3 and
 extended-run checks below remain bound to `4d9c8f8e`; their failed runs and unknown
 historical causes remain intact.
 
-All six [development records](DEVELOPMENT_ISSUES.md#current-records), coordinated
+The original six C2b [development records](DEVELOPMENT_ISSUES.md#current-records), coordinated
 by [#369](https://github.com/AetherraLabs/Aetherra/issues/369),
 [#370](https://github.com/AetherraLabs/Aetherra/issues/370),
 [#371](https://github.com/AetherraLabs/Aetherra/issues/371),
@@ -75,6 +75,16 @@ Guardian, Security, signing, deadlines, ownership and retention approval remain
 unchanged. Stage 21 supervised internal alpha remains active; unattended and
 production operation remain NO-GO. Temporal [PR #380](https://github.com/AetherraLabs/Aetherra/pull/380)
 remains separate and pending integration; Phase D remains deferred.
+
+A seventh OPEN record, [DEV-CI-001](DEVELOPMENT_ISSUES.md#dev-ci-001--capabilities-job-timeout-before-a-result-summary)
+([#381](https://github.com/AetherraLabs/Aetherra/issues/381)), consolidates
+the prior PR #368 and current PR #379 Linux capability timeouts. The
+[separate CI receipt](evidence/ci_capabilities_timeout_2026-11-26.json) retains
+both failures and unchanged-checkout retries (171 passed / 4 skipped each).
+Neither passing retry explains the original failure or establishes a common
+cause. The existing five-minute gate and operational authority are unchanged;
+final pushed-revision checks remain required. The C2b receipt retains its
+original six-record scope.
 
 ## DEV-CKPT-001 Candidate Follow-Up (2026-11-25)
 

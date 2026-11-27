@@ -98,6 +98,7 @@ this document establishes development practice only.
 | [DEV-OBS-001](#dev-obs-001--aggregate-observatory-status) | OPEN | Runtime UI/Observability maintainers | Which aggregate and prior-session states can be established? |
 | [DEV-HOMEOSTASIS-001](#dev-homeostasis-001--watchdog-shutdown-lifecycle) | OPEN | Homeostasis/Runtime maintainers | Which outstanding await causes the shutdown watchdog error? |
 | [DEV-STORM-001](#dev-storm-001--skipped-persistence-lifecycle-check) | OPEN | Memory/STORM maintainers | Why did the lifecycle recall return no results? |
+| [DEV-CI-001](#dev-ci-001--capabilities-job-timeout-before-a-result-summary) | OPEN | CI/Runtime maintainers | Which operation prevented the Linux capability job from completing? |
 
 ## ALPHA-CKPT-001 — Checkpoint stop delay
 
@@ -400,3 +401,48 @@ Next action/closure gate: owner records effective supported configuration,
 reproduces or explains the empty recall, adds a regression for an established
 correction and documents scope with maintainer review. A passing rerun or silently
 removing the skip cannot close this unknown-cause record; no risk acceptance.
+
+## DEV-CI-001 — Capabilities job timeout before a result summary
+
+**Status: OPEN — causes unknown; a common cause is not established.**
+Owner: CI/Runtime maintainers. First retained observation: 2026-11-25
+(America/Denver); registered/reviewed: 2026-11-26. Severity unknown.
+GitHub: [#381](https://github.com/AetherraLabs/Aetherra/issues/381).
+Review gate: recurrence, capability-test lifecycle/CI changes and affected
+verification claims. This consolidates the unresolved observation already
+preserved in PR #368 and the similar visible timeout in PR #379.
+
+The [four-log receipt](evidence/ci_capabilities_timeout_2026-11-26.json) retains
+exact head/base/merge-checkout revisions, links and SHA-256 hashes. Both Linux
+jobs ran `pytest -q -o addopts= tests/capabilities` on Ubuntu 26.04 image
+`20261116.202.1`, Python 3.11.18, pytest 9.2.0 and pytest-asyncio 1.5.0,
+with `AETHERRA_QUIET=1` and test defaults. The workflow dynamically installs
+pytest/pytest-asyncio and requirements.txt; identical inputs do not establish
+identical effective environments. Expected: complete the selected tests and
+exit normally within the existing five-minute step limit.
+
+| Source-bound observation | Actual outcome |
+| --- | --- |
+| PR #368, checkout `ce7a5e023d8740fa4aa482b8d856eaeff2b2bc47`, [failed job](https://github.com/AetherraLabs/Aetherra/actions/runs/45756195270/job/139695259592) | Last visible progress 82%, then five-minute timeout without a final summary, active node or stack. Runner terminated pytest and a Python process. |
+| Same checkout, [retry](https://github.com/AetherraLabs/Aetherra/actions/runs/45756195270/job/139698660686) | 171 passed / 4 skipped in 45.98 seconds; subsequent SSE 8 passed. Original failure remains unexplained. |
+| PR #379 head `6a1b978a`, checkout `398604181ca866b0cb0f0a218dbbf16738f0ac9f`, [failed job](https://github.com/AetherraLabs/Aetherra/actions/runs/45937143595/job/140302854422) | Last visible progress 82%, then five-minute timeout without a final summary, active node or stack. Runner terminated pytest and a Python process. |
+| Same checkout, [bounded retry](https://github.com/AetherraLabs/Aetherra/actions/runs/45937143595/job/140306021904) | 171 passed / 4 skipped in 62.42 seconds; subsequent SSE 8 passed in 32.76 seconds. Original failure remains unexplained. |
+
+The blocked test/teardown, pending work and cause are unidentified. Percentages
+do not identify STORM. PR #324's diagnosed post-summary interpreter-shutdown
+hang is historical comparison, not an established mechanism here. The Windows
+watchdog error (#373) and STORM empty-recall skip (#374) remain separate records.
+PR #379's runtime, tests, dependency manifests and workflows match its main
+base, but that does not prove documentation irrelevant: the static-security
+capability test scans repository contents. Neither retry establishes a fix,
+shared cause, accepted risk or broader readiness.
+
+Containment: preserve the five-minute failing gate, original logs and separate
+retry outcomes; no skip, timeout extension or runtime change in the documentation
+PR. Next action: owner captures active node and setup/call/teardown phase,
+Python/thread/process stacks, ownership/drain state and effective dependency/
+network configuration in a separate bounded Linux investigation. Resolve only
+with a supported cause and focused correction/regression, or an evidenced
+external cause with tested containment and explicit maintainer disposition.
+Passing reruns alone do not close this record. Supervised-alpha limits,
+Guardian/Security, signing and approval boundaries remain unchanged.

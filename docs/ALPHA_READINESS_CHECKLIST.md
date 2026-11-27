@@ -17,9 +17,14 @@ and [sanitized receipt](evidence/c2b_merged_main_review_2026-11-26.json).
   reviewed; no new hosted run or asset verification performed by this review.
 - [x] Preserve candidate-only live/browser/physical/extended evidence below and
   all original failures; these do not become released-main checks by integration.
-- [ ] Resolve the six OPEN [development records](DEVELOPMENT_ISSUES.md#current-records)
+- [ ] Resolve the original six OPEN C2b [development records](DEVELOPMENT_ISSUES.md#current-records)
   using their causal/verification gates; watchdog shutdown and the STORM skip
   remain unexplained. Passing reruns and zero exits do not close them.
+- [ ] Resolve additional [DEV-CI-001](DEVELOPMENT_ISSUES.md#dev-ci-001--capabilities-job-timeout-before-a-result-summary)
+  ([#381](https://github.com/AetherraLabs/Aetherra/issues/381)): both original
+  Linux capability timeouts remain unexplained after their separately recorded
+  passing retries. Preserve the [CI receipt](evidence/ci_capabilities_timeout_2026-11-26.json)
+  and five-minute enforcement; final revision checks remain required.
 - [x] Delegated Codex independent documentation wording review under
   [#377](https://github.com/AetherraLabs/Aetherra/issues/377); final pushed-revision
   checks remain required.
@@ -505,8 +510,9 @@ Primary file:
 Status: the existing supervised Windows source-runtime boundary remains unchanged.
 C1/C2a, C2b and the reporting/runtime follow-ups are merged. The
 [current evidence review](ALPHA_READINESS_DECISION.md#c2b-merged-main-evidence-review-2026-11-26)
-distinguishes merged-main results from historical candidate checks. All six
-development records remain OPEN; the original checkpoint causes are unexplained.
+distinguishes merged-main results from historical candidate checks. The original
+six C2b records and additional DEV-CI-001 remain OPEN; passing CI retries do not
+explain the capability timeouts or the original checkpoint causes.
 Unattended/production operation and unverified installation graphs remain NO-GO;
 no broader authority is inferred.
 
@@ -525,7 +531,7 @@ Decision record:
 
 ## Current Next Actions
 
-1. Review the merged-main evidence and maintain the six OPEN
+1. Review the merged-main and CI evidence and maintain the seven OPEN
    [development records](DEVELOPMENT_ISSUES.md#current-records) through their
    owner/review gates; retain original failures and revision-specific limits.
 2. Review pending Temporal PR #380 separately. Keep strict signing, governance,

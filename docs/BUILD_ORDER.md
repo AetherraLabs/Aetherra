@@ -96,6 +96,9 @@ The C2b merge is `592c4622` (PR #368); beta.22 is `56623003`. The
 and [receipt](evidence/c2b_merged_main_review_2026-11-26.json) distinguish the
 4,158-pass/38-skip merge suite and 660-second offline released-main continuity
 from earlier candidate live/browser/physical evidence. Original failures remain.
+Additional [DEV-CI-001](DEVELOPMENT_ISSUES.md#dev-ci-001--capabilities-job-timeout-before-a-result-summary)
+([#381](https://github.com/AetherraLabs/Aetherra/issues/381)) preserves the prior
+and current Linux capability timeouts separately from their passing retries.
 
 **Stage 21 remains active, with the existing supervised internal-alpha GO
 unchanged.** Stage 22 Beta Hardening and Stage 23 Production Readiness remain
@@ -104,7 +107,7 @@ its recorded limits; Phase D optional agency remains deferred.
 
 | Priority | Work | Required Outcome |
 | --- | --- | --- |
-| 1 | Review evidence and investigate OPEN development records | Apply the six [records' owner and closure gates](DEVELOPMENT_ISSUES.md#current-records); preserve causes still unknown, retained failures and unverified boundaries. Delegated Codex documentation review accepted the reconciliation; final pushed-revision checks remain required. |
+| 1 | Review evidence and investigate OPEN development records | Apply the seven [records' owner and closure gates](DEVELOPMENT_ISSUES.md#current-records); preserve causes still unknown, retained failures and unverified boundaries. Delegated Codex documentation review accepted the reconciliation; final pushed-revision checks remain required. |
 | Separate pending work | Temporal runtime observer, PR #380 | Review and verify pending integration separately from merged C2b/checkpoint work. |
 
 Keep signing, Guardian/Security, checkpoint ownership and observe/propose-only

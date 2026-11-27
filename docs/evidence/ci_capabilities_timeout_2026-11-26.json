@@ -1,0 +1,99 @@
+{
+  "schema": "ci_capabilities_timeout_review_v1",
+  "registered_date": "2026-11-26",
+  "timezone": "America/Denver",
+  "issue_id": "DEV-CI-001",
+  "github_issue": "https://github.com/AetherraLabs/Aetherra/issues/381",
+  "status": "OPEN; causes unknown; common cause not established",
+  "scope": "Retrospective inspection of four retained CI logs. Existing #368 observation and similar #379 timeout consolidated, not a new runtime incident store. No runtime fix or timeout change.",
+  "archive_convention": "archive_id is relative to the retained .codex-modernization-closeout-20261126 task archive outside Git, not a repository path. Only compact outcomes and original-byte SHA-256 hashes are published.",
+  "configuration": {
+    "workflow": ".github/workflows/ci.yml",
+    "job": "build-test",
+    "command": "pytest -q -o addopts= tests/capabilities",
+    "step_timeout_minutes": 5,
+    "runner_image": "ubuntu-26.04",
+    "image_version": "20261116.202.1",
+    "python": "3.11.18",
+    "pytest": "9.2.0",
+    "pytest_asyncio": "1.5.0",
+    "environment": "AETHERRA_QUIET=1; tests/conftest.py supplies test defaults",
+    "dependency_install": "pip install pytest pytest-asyncio; pip install -r requirements.txt. These are dynamically resolved inputs, not proof of identical effective environments."
+  },
+  "observations": [
+    {
+      "pr": 368,
+      "head": "7e230a44d5c7bbad85f79f58845091491bab1e3d",
+      "base": "c53cc5524304a6a43688bb683b07f9aa6b467390",
+      "checkout": "ce7a5e023d8740fa4aa482b8d856eaeff2b2bc47",
+      "run_id": 45756195270,
+      "failed_job": 139695259592,
+      "failure_url": "https://github.com/AetherraLabs/Aetherra/actions/runs/45756195270/job/139695259592",
+      "failure_time_utc": "2026-11-26T04:43:11.8513554Z",
+      "last_visible_progress": "72 dots at 41%; 144 dots at 82%; no final summary, active node or stack",
+      "runner_cleanup": "Terminated pytest PID 2553 and Python PID 2817",
+      "retry_job": 139698660686,
+      "retry_url": "https://github.com/AetherraLabs/Aetherra/actions/runs/45756195270/job/139698660686",
+      "retry_checkout_unchanged": true,
+      "retry_capabilities": {
+        "passed": 171,
+        "skipped": 4,
+        "seconds": 45.98
+      },
+      "subsequent_sse_passed": 8
+    },
+    {
+      "pr": 379,
+      "head": "6a1b978a611c8b7b1c0b18c31ec98a3e19ace2ac",
+      "base": "56623003675bc99f9e3dfadf15b6254beb183b59",
+      "checkout": "398604181ca866b0cb0f0a218dbbf16738f0ac9f",
+      "run_id": 45937143595,
+      "failed_job": 140302854422,
+      "failure_url": "https://github.com/AetherraLabs/Aetherra/actions/runs/45937143595/job/140302854422",
+      "failure_time_utc": "2026-11-27T04:05:23.0194273Z",
+      "last_visible_progress": "72 dots at 41%; 144 dots at 82%; no final summary, active node or stack",
+      "runner_cleanup": "Terminated pytest PID 2612 and Python PID 2889",
+      "retry_job": 140306021904,
+      "retry_url": "https://github.com/AetherraLabs/Aetherra/actions/runs/45937143595/job/140306021904",
+      "retry_checkout_unchanged": true,
+      "retry_capabilities": {
+        "passed": 171,
+        "skipped": 4,
+        "seconds": 62.42
+      },
+      "subsequent_sse_passed": 8,
+      "subsequent_sse_seconds": 32.76
+    }
+  ],
+  "boundaries": [
+    "The two failures have similar visible symptoms; no common cause is established.",
+    "The failed runs do not identify an active test, fixture teardown, pending stack or blocked operation. Progress percentages do not identify STORM.",
+    "PR #324 diagnosed a post-summary interpreter shutdown hang; that mechanism is not established here. #373 watchdog errors and #374 STORM empty-recall skip remain separate.",
+    "Runtime, tests, dependency manifests and workflow content at PR #379 head match its main base. This does not prove documentation irrelevant: the static-security capability test scans repository contents.",
+    "Both passing retries are additional observations, not fixes, causal resolution, risk acceptance or expanded GO."
+  ],
+  "next_action": "CI/Runtime maintainers capture active node and setup/call/teardown phase, Python/thread/process stacks, ownership/drain state and effective dependencies/network configuration in a separately bounded Linux investigation; retain original failures and existing five-minute enforcement.",
+  "closure": "Supported cause and focused correction/regression, or evidenced external cause with tested containment and explicit maintainer disposition. Passing reruns alone do not close this record.",
+  "archives": [
+    {
+      "job_id": 139695259592,
+      "archive_id": "ci-capabilities-job-139695259592.log",
+      "sha256": "778e315a2e6cb5e375d2d3c198629fa2838355c0a41b2e63adb708eff51cfd64"
+    },
+    {
+      "job_id": 139698660686,
+      "archive_id": "ci-capabilities-job-139698660686.log",
+      "sha256": "ca1fe4a1c7dfff9f36dd04e589867e1f8812eae35c4956c24e7d83e653878edb"
+    },
+    {
+      "job_id": 140302854422,
+      "archive_id": "ci-capabilities-timeout-140302854422.log",
+      "sha256": "eff337b87525b3fb2b80fbcaf39c484c3eb68c790a708679041ee8e104b22d7f"
+    },
+    {
+      "job_id": 140306021904,
+      "archive_id": "ci-capabilities-job-140306021904.log",
+      "sha256": "45aff411b2613a044e433d9326bc956643e5ec6677d254ec0f15dd6915fec94f"
+    }
+  ]
+}
