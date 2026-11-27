@@ -407,7 +407,7 @@ removing the skip cannot close this unknown-cause record; no risk acceptance.
 
 **Status: OPEN — causes unknown; a common cause is not established.**
 Owner: CI/Runtime maintainers. First retained observation: 2026-11-25
-(America/Denver); registered/reviewed: 2026-11-26. Severity unknown.
+(America/Denver); registered: 2026-11-26; reviewed: 2026-11-27. Severity unknown.
 GitHub: [#381](https://github.com/AetherraLabs/Aetherra/issues/381).
 Review gate: recurrence, capability-test lifecycle/CI changes and affected
 verification claims. This consolidates the unresolved observation already
@@ -438,11 +438,32 @@ base, but that does not prove documentation irrelevant: the static-security
 capability test scans repository contents. Neither retry establishes a fix,
 shared cause, accepted risk or broader readiness.
 
-Containment: preserve the five-minute failing gate, original logs and separate
-retry outcomes; no skip, timeout extension or runtime change in the documentation
-PR. Next action: owner captures active node and setup/call/teardown phase,
-Python/thread/process stacks, ownership/drain state and effective dependency/
-network configuration in a separate bounded Linux investigation. Resolve only
+The [2026-11-27 diagnostic receipt](evidence/dev_ci_001_linux_capture_2026-11-27.json)
+records PR #387 heads `3a1cea7ed9ae43b897a611a07ce4d33f11ea156a` and
+`1031ab4dd179006ac1044ec71c996c7af25bee3e`: each standalone capability selection
+completed with 171 passed / 4 skipped (45.67 and 47.39 seconds). Both used Python
+`-u` and pytest `-vv`, changing buffering and verbosity as well as adding
+instrumentation. Their 30-second samples showed short, completed analytics
+fixture teardowns; neither identifies the historical blocked boundary. The
+first build-test job failed later at docs consistency; the second build-test
+job passed. Selected environment versions matched, but retained install lines
+show filelock 4.3.1 versus 4.3.2; this drift has no established causal role.
+
+The second head's [strict quality job](https://github.com/AetherraLabs/Aetherra/actions/runs/46079599000/job/140775316625)
+failed separately: pytest exceeded `TEST_TIMEOUT=900` and exited 124. The final
+output had 145 progress dots (17%, 35%, then one dot), with no active node,
+stack or result summary. The diagnostic receipt retains its exact command and
+source-log hash. This gate uses `requirements-ci.lock`, coverage and a broader
+test selection; a common cause with the five-minute capability timeout is not
+established. The overall CI run failed despite its successful build-test job.
+
+Containment: preserve the five-minute capability limit, existing 900-second
+strict pytest deadline, original logs and separate capture outcomes; no skip,
+timeout extension or runtime correction is established. Next action: the
+[bounded Linux diagnostic configuration](CI_CAPABILITIES_DIAGNOSTICS.md)
+restores buffered `-q` reporting, captures both gates, and adds opt-in await-chain
+and process cleanup evidence. Capture the stalled node/phase and outstanding
+work before choosing a focused correction. Resolve only
 with a supported cause and focused correction/regression, or an evidenced
 external cause with tested containment and explicit maintainer disposition.
 Passing reruns alone do not close this record. Supervised-alpha limits,

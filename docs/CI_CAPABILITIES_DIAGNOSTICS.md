@@ -6,6 +6,28 @@ and [GitHub #381](https://github.com/AetherraLabs/Aetherra/issues/381).
 The complete `tests/capabilities` selection and five-minute workflow timeout
 remain enforced. Diagnostic output does not establish a cause by itself.
 
+## Retained observations
+
+The [2026-11-27 capture receipt](evidence/dev_ci_001_linux_capture_2026-11-27.json)
+records two standalone capability passes: 171 passed / 4 skipped in 45.67 and
+47.39 seconds. Both used Python `-u` and pytest `-vv`, plus diagnostic hooks;
+they changed buffering and verbosity from the original `-q` invocation and may
+have affected timing. Their approximately 30-second samples captured short,
+completed analytics fixture teardowns, not an established stalled boundary.
+The first build-test job failed later at documentation consistency; the second
+build-test job passed, while its separate strict quality job timed out.
+
+That strict pytest command exceeded its existing 900-second limit and returned
+124. Its last output contained 145 progress dots (17%, 35%, then one dot), with
+no named active node, stack or final summary. The receipt retains the exact
+command, job link and source-log SHA-256. Its locked dependencies, coverage and
+broader selection differ from the standalone job; a shared cause is unknown.
+
+The next capture configuration below restores buffered interpreter streams and
+pytest `-q`, while retaining diagnostic hooks and sampling. These changes have
+no Linux result recorded in this receipt and do not establish a correction or
+broader readiness.
+
 ## Linux reproduction
 
 Use a disposable checkout and the same Python/dependency profile as the CI job.
@@ -19,17 +41,33 @@ diagnostic_root=$(mktemp -d)
 python -m venv "$diagnostic_root/sampler"
 "$diagnostic_root/sampler/bin/python" -m pip install 'py-spy==0.4.4'
 AETHERRA_CI_STACK_SAMPLER="$diagnostic_root/sampler/bin/py-spy" \
-  python -m pytest -q -o addopts= tests/unit/test_ci_capabilities_diagnostics.py
+  python -m pytest -q -o addopts= tests/unit/test_ci_capabilities_diagnostics.py \
+    tests/unit/test_ci_async_diagnostics.py
 python -m tools.ci_capabilities_diagnostics \
   --output "$diagnostic_root/evidence" \
   --sampler "$diagnostic_root/sampler/bin/py-spy" \
-  -- -vv -o addopts= -o faulthandler_timeout=60 tests/capabilities
+  -- -q -o addopts= -o faulthandler_timeout=60 tests/capabilities
 ```
 
 The supervisor sets `AETHERRA_CI_DIAGNOSTICS` only for the launched test process.
 Neither diagnostic variable is a runtime profile or persistence setting.
 The sampler regression is Linux-only and requires `AETHERRA_CI_STACK_SAMPLER`;
 other environments report that test as skipped, not as verified stack capture.
+
+## Strict quality capture
+
+The existing strict quality job also runs capability tests, using
+`requirements-ci.lock` and coverage. Its reproduced 900-second pytest timeout
+is separate evidence; the standalone captures do not establish its cause.
+The job uses the same supervisor around `tools/quality_gates.py`, with snapshots
+every minute and a 1,500-second outer watchdog to retain evidence before the
+existing 30-minute job limit. The original `TEST_TIMEOUT=900` remains enforced;
+the standalone capability step still has its five-minute limit.
+
+The phase plugin is added only to the quality runner's direct pytest invocation
+when `AETHERRA_CI_DIAGNOSTICS` is set. It is not injected into nested pytest
+commands through `PYTEST_ADDOPTS` or `PYTEST_PLUGINS`. The artifact is named
+`strict-quality-diagnostics-<attempt>`. Signing jobs and policy are unchanged.
 
 ## Evidence and limits
 
@@ -42,15 +80,23 @@ other environments report that test as skipped, not as verified stack capture.
   thread names and external path prefixes. Nonblocking samples can be partial;
   sampler failures remain visible as sanitized status values.
 - `environment.jsonl`: selected package versions and Python version.
-- `supervisor.jsonl`: start, watchdog and exit/reap result.
+- `supervisor.jsonl`: start, watchdog, direct-child exit and any live owned
+  descendants before cleanup, then the final exit/reap result. A successful
+  wrapper exit does not by itself prove the tested process left no descendants.
+- `async-stacks.jsonl`: bounded await-chain frames from marked pytest processes
+  after 90 seconds, when a main-thread asyncio loop can service the diagnostic
+  callback. No task names, locals or results are collected.
 
-The watchdog fails with exit 124 at 290 seconds and attempts bounded cleanup
-before the outer five-minute limit. Otherwise pytest's exit status is preserved.
-The `capabilities-diagnostics-<attempt>` Actions artifact is uploaded even after a failed
-capability step. Missing diagnostics cannot turn a pytest failure into success.
+The standalone watchdog fails with exit 124 at 290 seconds and attempts bounded
+cleanup before the outer five-minute limit. Otherwise pytest's exit status is preserved.
+The `capabilities-diagnostics-<attempt>` Actions artifact is uploaded even after
+a failed capability step. Missing diagnostics cannot turn a pytest failure into success.
 
 These are synthetic CI diagnostics, not runtime conversation logging. Detached
-processes outside the launched session are not sampled or terminated. Thread
-stacks do not enumerate suspended asyncio tasks; an idle selector alone does
-not identify an awaited operation. Keep original failures and distinguish a
-reproduced cause from passing reruns or uninstrumented historical incidents.
+processes outside the launched session are not sampled or terminated. The
+optional asyncio capture uses `SIGUSR1` only in the dedicated pytest process,
+respects an existing custom handler, and ignores late delivery after pytest
+unconfigures when it still owns the handler. It does not cover event loops in other threads or a loop
+blocked in synchronous code. An idle selector without corresponding await-chain
+evidence does not identify an awaited operation. Keep original failures and
+distinguish a reproduced cause from passing reruns or uninstrumented historical incidents.

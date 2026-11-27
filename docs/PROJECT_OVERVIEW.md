@@ -529,7 +529,7 @@ Core toggles and networking:
 - `AETHERRA_QFAC_IN_OS`
 - `AETHERRA_QFAC_MODE`
 - `AETHERRA_QUIET`
-- `AETHERRA_CI_DIAGNOSTICS` — Output directory set by the opt-in Linux capability
+- `AETHERRA_CI_DIAGNOSTICS` — Output directory set by the opt-in Linux CI
   supervisor for test phases, process identities and sanitized stack artifacts.
   This is test tooling, not a runtime profile or persistence directory.
 - `AETHERRA_CI_STACK_SAMPLER` — Absolute path to the isolated `py-spy` executable

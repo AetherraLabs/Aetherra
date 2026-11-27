@@ -9,6 +9,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from types import SimpleNamespace
 
 # Third party imports
 import pytest
@@ -42,6 +43,50 @@ def test_forwards_child_exit_status(diagnostics, tmp_path, status):
         checkpoints=(),
     )
     assert result == status
+
+
+def test_normal_exit_records_state_before_cleanup(diagnostics, tmp_path):
+    assert (
+        diagnostics.supervise(
+            [sys.executable, "-c", "raise SystemExit(7)"],
+            tmp_path,
+            timeout=5,
+            checkpoints=(),
+        )
+        == 7
+    )
+    events = records(tmp_path, "supervisor.jsonl")
+    cleanup = next(event for event in events if event["event"] == "before_cleanup")
+    assert cleanup["child_returncode"] == 7
+    assert cleanup["live_processes"] == []
+
+
+@pytest.mark.skipif(sys.platform != "linux", reason="Linux survivor evidence contract")
+@pytest.mark.parametrize("status", [0, 7])
+def test_normal_exit_records_owned_survivor_before_reaping(
+    diagnostics, tmp_path, status
+):
+    marker = tmp_path / "survivor.pid"
+    code = (
+        "import subprocess,sys,pathlib; "
+        "p=subprocess.Popen([sys.executable,'-c','import time; time.sleep(30)']); "
+        f"pathlib.Path({str(marker)!r}).write_text(str(p.pid)); raise SystemExit({status})"
+    )
+    assert (
+        diagnostics.supervise(
+            [sys.executable, "-c", code], tmp_path, timeout=5, checkpoints=()
+        )
+        == status
+    )
+    survivor = int(marker.read_text())
+    cleanup = next(
+        event
+        for event in records(tmp_path, "supervisor.jsonl")
+        if event["event"] == "before_cleanup"
+    )
+    assert cleanup["child_returncode"] == status
+    assert {process["pid"] for process in cleanup["live_processes"]} == {survivor}
+    assert_process_stopped(diagnostics, survivor)
 
 
 def test_watchdog_is_bounded_and_reaps_child(diagnostics, tmp_path):
@@ -79,6 +124,60 @@ def test_session_scope_excludes_siblings_and_reused_id(diagnostics, tmp_path):
     assert {process["pid"] for process in found} == {10, 11, 12}
     assert found[0]["threads"] == 3
     assert diagnostics.same_process({**found[0], "start": 999}, tmp_path) is False
+
+
+def test_reused_session_leader_excludes_its_new_descendants(diagnostics, tmp_path):
+    write_process(tmp_path, 10, 1, 10, 200)
+    write_process(tmp_path, 11, 10, 10, 201)
+    assert diagnostics.owned_processes(10, 100, tmp_path) == []
+
+
+def test_absent_session_leader_preserves_owned_reparented_children(
+    diagnostics, tmp_path
+):
+    write_process(tmp_path, 11, 1, 10, 101)
+    assert [p["pid"] for p in diagnostics.owned_processes(10, 100, tmp_path)] == [11]
+
+
+@pytest.mark.parametrize(
+    "marker", [None, "malformed", "pid", "start", "session", "reused", "valid"]
+)
+def test_async_request_requires_matching_live_opt_in_marker(
+    diagnostics, tmp_path, monkeypatch, marker
+):
+    process = {"pid": 10, "start": 100, "session": 10}
+    sent = []
+    monkeypatch.setattr(diagnostics, "sys", SimpleNamespace(platform="linux"))
+    monkeypatch.setattr(diagnostics, "signal", SimpleNamespace(SIGUSR1=10))
+    monkeypatch.setattr(diagnostics.os, "kill", lambda *args: sent.append(args))
+    monkeypatch.setattr(diagnostics, "same_process", lambda _: marker != "reused")
+    if marker is not None:
+        contents = dict(process)
+        if marker in process:
+            contents[marker] += 1
+        (tmp_path / "async-ready-10.json").write_text(
+            "malformed" if marker == "malformed" else json.dumps(contents)
+        )
+    diagnostics.request_async_capture(process, tmp_path)
+    assert sent == ([(10, 10)] if marker == "valid" else [])
+
+
+@pytest.mark.parametrize("enabled", [False, True])
+def test_snapshot_requests_async_only_when_enabled_before_sampling(
+    diagnostics, tmp_path, monkeypatch, enabled
+):
+    process = {"pid": 10, "start": 100, "session": 10, "python": True}
+    calls = []
+    monkeypatch.setattr(diagnostics, "owned_processes", lambda *_: [process])
+    monkeypatch.setattr(diagnostics, "same_process", lambda _: True)
+    monkeypatch.setattr(
+        diagnostics, "request_async_capture", lambda *_: calls.append("async")
+    )
+    monkeypatch.setattr(
+        diagnostics, "sample_process", lambda *_: calls.append("sample")
+    )
+    diagnostics.snapshot(process, "sampler", tmp_path, request_async=enabled)
+    assert calls == (["async", "sample"] if enabled else ["sample"])
 
 
 def test_stack_output_whitelists_frames_without_private_data(diagnostics):

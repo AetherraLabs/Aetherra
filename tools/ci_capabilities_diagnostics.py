@@ -48,6 +48,9 @@ def read_process(pid, proc_root=PROC):
 
 def owned_processes(session, started, proc_root=PROC):
     try:
+        leader = read_process(session, proc_root)
+        if leader and leader["start"] != started:
+            return []
         processes = (
             read_process(p.name, proc_root)
             for p in proc_root.iterdir()
@@ -158,7 +161,25 @@ def sample_process(process, sampler, output, timeout):
     emit(output, "stacks.jsonl", record)
 
 
-def snapshot(owner, sampler, output, budget=10):
+def request_async_capture(process, output):
+    if sys.platform != "linux":
+        return
+    try:
+        marker = json.loads(
+            (output / f"async-ready-{process['pid']}.json").read_text(encoding="utf-8")
+        )
+        if not isinstance(marker, dict) or any(
+            marker.get(key) != process[key] for key in ("pid", "start", "session")
+        ):
+            return
+        if same_process(process):
+            os.kill(process["pid"], signal.SIGUSR1)
+            emit(output, "async-requests.jsonl", {"pid": process["pid"], "sent": True})
+    except (OSError, ValueError):
+        pass  # An unavailable diagnostic must not affect the supervised command.
+
+
+def snapshot(owner, sampler, output, budget=10, *, request_async=False):
     deadline = time.monotonic() + budget
     processes = owned_processes(owner["pid"], owner["start"])
     emit(
@@ -170,8 +191,11 @@ def snapshot(owner, sampler, output, budget=10):
         remaining = deadline - time.monotonic()
         if remaining <= 0:
             break
-        if sampler and process["python"] and same_process(process):
-            sample_process(process, sampler, output, min(2, remaining))
+        if process["python"] and same_process(process):
+            if request_async:
+                request_async_capture(process, output)
+            if sampler:
+                sample_process(process, sampler, output, min(2, remaining))
 
 
 def stop_owned(child, owner):
@@ -226,7 +250,13 @@ def supervise(
                 break
             if elapsed >= next_capture:
                 if owner:
-                    snapshot(owner, sampler, output, min(10, timeout - elapsed))
+                    snapshot(
+                        owner,
+                        sampler,
+                        output,
+                        min(10, timeout - elapsed),
+                        request_async=elapsed >= 90,
+                    )
                 next_capture = next(pending, float("inf"))
             time.sleep(min(0.05, max(0, timeout - (time.monotonic() - started))))
         if not timed_out:
@@ -235,6 +265,24 @@ def supervise(
     except KeyboardInterrupt:
         result = 130
     finally:
+        live = (
+            [
+                process
+                for process in owned_processes(owner["pid"], owner["start"])
+                if process["state"] != "Z"
+            ]
+            if owner
+            else []
+        )
+        emit(
+            output,
+            "supervisor.jsonl",
+            {
+                "event": "before_cleanup",
+                "child_returncode": child.poll(),
+                "live_processes": live,
+            },
+        )
         stop_owned(child, owner)
         result = 124 if timed_out else result
         emit(
@@ -257,7 +305,6 @@ def main(argv=None):
     return supervise(
         [
             sys.executable,
-            "-u",
             "-m",
             "pytest",
             "-p",

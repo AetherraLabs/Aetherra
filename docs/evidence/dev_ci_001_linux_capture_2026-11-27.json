@@ -1,0 +1,189 @@
+{
+  "issue": "DEV-CI-001",
+  "github_issue": "https://github.com/AetherraLabs/Aetherra/issues/381",
+  "followup_pr": "https://github.com/AetherraLabs/Aetherra/pull/387",
+  "baseline_main": "d7fb7423c4d2dea0b4b7004893925b8f193f25e4",
+  "status": "investigating; no causal runtime correction established",
+  "historical_failures_preserved": true,
+  "five_minute_workflow_timeout_preserved": true,
+  "signing_enforcement_unchanged": true,
+  "captures": [
+    {
+      "head_sha": "3a1cea7ed9ae43b897a611a07ce4d33f11ea156a",
+      "run_id": 46078945314,
+      "job_id": 140773155467,
+      "job_url": "https://github.com/AetherraLabs/Aetherra/actions/runs/46078945314/job/140773155467",
+      "job_conclusion": "failure",
+      "diagnostic_regression": {
+        "passed": 17,
+        "seconds": 4.31
+      },
+      "capabilities": {
+        "passed": 171,
+        "skipped": 4,
+        "seconds": 45.67,
+        "supervisor_exit": 0,
+        "reaped": true
+      },
+      "artifact": {
+        "id": 15236039104,
+        "name": "capabilities-diagnostics",
+        "size_in_bytes": 15596,
+        "digest": "sha256:902d1d2638a908c78fba2880139598d2f33878284f0222440f8f6ac1f5a4df7b",
+        "download_digest_verified": true,
+        "created_at": "2026-11-27T22:53:03Z"
+      },
+      "environment": {
+        "python": "3.11.18",
+        "pytest": "9.2.0",
+        "pytest_asyncio": "1.5.0"
+      },
+      "sample": {
+        "active_node": "tests/capabilities/test_plugin_analytics_coverage.py::test_analytics_migration_edge_cases",
+        "active_phase": "teardown",
+        "main_thread_frame": "analytics_engine.<locals>.cleanup tests/capabilities/test_plugin_analytics_coverage.py:44",
+        "other_sampled_thread": "BoundedWSGIServer.serve_forever aetherra_hub/request_server.py:45 via socketserver.py:233 / selectors.py:415",
+        "phase_duration_seconds": 0.3667308890000527
+      },
+      "pytest_mode": "Python -u (unbuffered interpreter streams), pytest -vv, explicit phase plugin and faulthandler_timeout=60; buffering, verbosity and instrumentation differ from the original -q invocation and may affect timing.",
+      "source_log": {
+        "file": "build-test-job-140773155467.log",
+        "sha256": "2fd1e4825f79b86b2cd616483a93b5bbea4f1e6f050a93d56bb8ba61203c2938"
+      },
+      "sampler": {
+        "package": "py-spy",
+        "version": "0.4.4",
+        "isolated_venv": true,
+        "successful_samples": 1
+      },
+      "failed_step": "Docs consistency"
+    },
+    {
+      "head_sha": "1031ab4dd179006ac1044ec71c996c7af25bee3e",
+      "run_id": 46079599000,
+      "job_id": 140775316491,
+      "job_url": "https://github.com/AetherraLabs/Aetherra/actions/runs/46079599000/job/140775316491",
+      "job_conclusion": "success",
+      "diagnostic_regression": {
+        "passed": 17,
+        "seconds": 4.41
+      },
+      "capabilities": {
+        "passed": 171,
+        "skipped": 4,
+        "seconds": 47.39,
+        "supervisor_exit": 0,
+        "reaped": true
+      },
+      "artifact": {
+        "id": 15236551792,
+        "name": "capabilities-diagnostics-1",
+        "size_in_bytes": 15587,
+        "digest": "sha256:71dd883edb0474e0bf79efbd752059f16a4971845159984ce65f84df4f704356",
+        "download_digest_verified": true,
+        "created_at": "2026-11-27T23:01:26Z"
+      },
+      "environment": {
+        "python": "3.11.18",
+        "pytest": "9.2.0",
+        "pytest_asyncio": "1.5.0"
+      },
+      "sample": {
+        "active_node": "tests/capabilities/test_plugin_analytics_coverage.py::test_analytics_database_error_resilience",
+        "active_phase": "teardown",
+        "phase_duration_seconds": 0.37490631800000074,
+        "main_thread_frame": "analytics_engine.<locals>.cleanup tests/capabilities/test_plugin_analytics_coverage.py:44",
+        "other_sampled_thread": "BoundedWSGIServer.serve_forever aetherra_hub/request_server.py:45 via socketserver.py:233 / selectors.py:415"
+      },
+      "pytest_mode": "Python -u (unbuffered interpreter streams), pytest -vv, explicit phase plugin and faulthandler_timeout=60; buffering, verbosity and instrumentation differ from the original -q invocation and may affect timing.",
+      "source_log": {
+        "file": "build-test-job-140775316491.log",
+        "sha256": "fa961609c39f7b2302405e31480079e5ef99c6baf57a10d9e4f7eb8059839285"
+      },
+      "sampler": {
+        "package": "py-spy",
+        "version": "0.4.4",
+        "isolated_venv": true,
+        "successful_samples": 1
+      },
+      "comparison_to_initial": {
+        "first_sha": "3a1cea7ed9ae43b897a611a07ce4d33f11ea156a",
+        "second_sha": "1031ab4dd179006ac1044ec71c996c7af25bee3e",
+        "recorded_environment_equal": true,
+        "successful_install_version_tokens_equal": false,
+        "successful_install_version_token_count": 186,
+        "only_first": [
+          "filelock-4.3.1"
+        ],
+        "only_second": [
+          "filelock-4.3.2"
+        ],
+        "source_changes_between_captures": [
+          ".github/workflows/ci.yml artifact name",
+          "docs/CI_CAPABILITIES_DIAGNOSTICS.md",
+          "docs/PROJECT_OVERVIEW.md"
+        ],
+        "scope_note": "Successful-install lines are retained dependency evidence, not a full pip freeze."
+      }
+    }
+  ],
+  "limitations": [
+    "Both captured capability runs completed normally; their short completed fixture teardowns and normal thread stacks do not establish the historical stalled boundary.",
+    "Both captures changed interpreter buffering and pytest verbosity (-u/-vv), in addition to instrumentation; passing captures do not establish a causal fix.",
+    "The first build-test job failed later at documentation consistency; the new diagnostic variables were subsequently documented.",
+    "The second build-test job passed, but its overall CI run failed in the separate strict quality job after a 900-second pytest timeout.",
+    "Successful-install comparisons show filelock drift from 4.3.1 to 4.3.2 between these captures, without causal evidence; these lines are not a full pip freeze.",
+    "The archived captures contain thread samples, not suspended asyncio await chains. The later buffered -q and asyncio diagnostic changes have no Linux outcome in this receipt.",
+    "The strict timeout has no named active test, stack or final pytest summary; its progress percentages do not identify a blocked operation or a shared cause."
+  ],
+  "strict_recurrence": {
+    "head_sha": "1031ab4dd179006ac1044ec71c996c7af25bee3e",
+    "run_id": 46079599000,
+    "job_id": 140775316625,
+    "job_url": "https://github.com/AetherraLabs/Aetherra/actions/runs/46079599000/job/140775316625",
+    "exit_code": 124,
+    "last_progress": [
+      {
+        "line": 1011,
+        "dots": 72,
+        "percent": 17
+      },
+      {
+        "line": 1012,
+        "dots": 72,
+        "percent": 35
+      },
+      {
+        "line": 1013,
+        "dots": 1,
+        "percent": null
+      }
+    ],
+    "event": "pull_request",
+    "run_attempt": 1,
+    "run_conclusion": "failure",
+    "run_completed_at": "2026-11-27T23:15:39Z",
+    "job_conclusion": "failure",
+    "failed_step": "Run Quality Gates",
+    "timeout_seconds": 900,
+    "last_progress_dot_count": 145,
+    "named_active_node": null,
+    "stack_available": false,
+    "pytest_summary_available": false,
+    "versions": {
+      "pytest": "9.1.0",
+      "pytest-asyncio": "1.4.0",
+      "torch": "2.13.0",
+      "transformers": "5.12.1",
+      "sentence-transformers": "5.6.0",
+      "filelock": "4.2.1"
+    },
+    "scope_note": "This strict gate uses requirements-ci.lock, coverage, and broader targets. It is distinct from the successful build-test capability captures and does not identify a hanging node by percentage.",
+    "exact_command": "/opt/hostedtoolcache/Python/3.11.18/x64/bin/python -m pytest -q -o addopts= --maxfail=1 --disable-warnings --cov=. --cov-fail-under=0 --cov-report term tests/capabilities tests/failure_injection tests/tools tests/test_outbox_unit.py tests/test_aar_outbox.py tests/test_agent_pipeline_smoke.py tests/capabilities/test_diagnostics_schema.py tests/capabilities/test_plugin_parallel_and_failure_paths.py",
+    "source_log": {
+      "file": "strict-job-140775316625.log",
+      "sha256": "7f248b19838de21607ca56b633f4d53ec3410b384437de3f3155ff59e1c226e3",
+      "timeout_line": 1014
+    }
+  }
+}

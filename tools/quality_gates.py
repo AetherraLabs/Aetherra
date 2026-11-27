@@ -299,7 +299,11 @@ def main() -> int:
         f"--cov-fail-under={int(min_cov)}",
         "--cov-report",
         "term",
-    ] + targets
+    ]
+    if os.getenv("AETHERRA_CI_DIAGNOSTICS"):
+        # Explicit CLI loading keeps the plugin out of nested pytest environments.
+        cmd += ["-p", "tools.ci_capabilities_phase", "-o", "faulthandler_timeout=60"]
+    cmd += targets
     code, out = run(cmd, timeout=float(os.getenv("TEST_TIMEOUT", "0")) or None)
     print(out)
     if code != 0:
