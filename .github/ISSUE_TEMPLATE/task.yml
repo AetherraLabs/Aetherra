@@ -18,7 +18,7 @@ body:
     id: context
     attributes:
       label: Context
-      description: Why this task matters; related issues or PRs.
+      description: Why this task matters; related issues, PRs and stable Development Issue Register ID if applicable.
     validations:
       required: true
   - type: textarea
@@ -51,7 +51,7 @@ body:
     id: acceptance
     attributes:
       label: Acceptance Validation
-      description: How will we verify completion? Tests, metrics, file diff, etc.
+      description: Record revision, profile, commands, actual exits/results/skips, retained failures, limitations and reviewer disposition. Separate implementation acceptance from causal resolution.
   - type: checkboxes
     id: checks
     attributes:

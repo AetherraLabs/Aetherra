@@ -94,12 +94,20 @@ this document establishes development practice only.
 | --- | --- | --- | --- |
 | [ALPHA-CKPT-001](#alpha-ckpt-001--checkpoint-stop-delay) | OPEN | Runtime/Memory maintainers | Which operation caused the original checkpoint-stop delay? |
 | [DEV-CKPT-001](#dev-ckpt-001--extended-run-observer-and-checkpoint-progress-gap) | OPEN | Runtime/Memory maintainers | What caused the original extended-run progress gap? |
+| [DEV-AUDIT-001](#dev-audit-001--signed-audit-scalability) | OPEN | Security/Runtime maintainers | What are measured cold/warm and concurrent-writer limits? |
+| [DEV-OBS-001](#dev-obs-001--aggregate-observatory-status) | OPEN | Runtime UI/Observability maintainers | Which aggregate and prior-session states can be established? |
+| [DEV-HOMEOSTASIS-001](#dev-homeostasis-001--watchdog-shutdown-lifecycle) | OPEN | Homeostasis/Runtime maintainers | Which outstanding await causes the shutdown watchdog error? |
+| [DEV-STORM-001](#dev-storm-001--skipped-persistence-lifecycle-check) | OPEN | Memory/STORM maintainers | Why did the lifecycle recall return no results? |
+| [DEV-CI-001](#dev-ci-001--capabilities-job-timeout-before-a-result-summary) | OPEN | CI/Runtime maintainers | Which operation prevented the Linux capability job from completing? |
+| [DEV-CI-002](#dev-ci-002--personal-continuity-write-session-http-503) | OPEN | Hub/Engine and CI maintainers | Why did a personal-continuity write turn return HTTP 503? |
 
 ## ALPHA-CKPT-001 — Checkpoint stop delay
 
 **Status: OPEN — original slow operation and cause unknown.**
 Owner role: Runtime/Memory maintainers. Opened: 2026-11-24.
-Last reviewed: 2026-11-25. Review gate: C2a verification and C2b integration;
+Last reviewed: 2026-11-26 (traceability only). GitHub: [#369](https://github.com/AetherraLabs/Aetherra/issues/369).
+Review gate: checkpoint changes, recurrence and readiness reviews;
+completed C2a/C2b integration does not close this record. Maintainers must
 retain the issue until causal evidence supports closure. The reporting fix is a
 separate, established correction; this record tracks the unexplained delay.
 
@@ -139,8 +147,8 @@ causal diagnosis or grounds to erase the original failure. See the
 
 ### Containment and next investigation
 
-Next action: Runtime/Memory maintainers retain this issue through the follow-up
-integration and C2a verification, collecting discriminating evidence on any
+Next action: Runtime/Memory maintainers retain this issue through subsequent
+checkpoint/readiness reviews, collecting discriminating evidence on any
 recurrence instead of assigning a cause from passing reruns.
 
 - Keep one-second attempt and bounded shutdown budgets, explicit uncertainty,
@@ -172,8 +180,9 @@ cannot be established, leave this issue open with the supervised operating limit
 ## DEV-CKPT-001 — Extended-run observer and checkpoint progress gap
 
 **Status: OPEN — historical causal chain unproven.**
-Owner role: Runtime/Memory maintainers. Opened and reviewed: 2026-11-25
-(America/Denver). Review gate: supervised full-launch continuity verification.
+Owner role: Runtime/Memory maintainers. Opened: 2026-11-25
+(America/Denver); traceability reviewed: 2026-11-26.
+GitHub: [#370](https://github.com/AetherraLabs/Aetherra/issues/370). Review gate: supervised full-launch continuity verification.
 The [delivery receipt](evidence/dev_ckpt_001_delivery_2026-11-25.json) records
 source revisions, failed and passing observations, exact IDs and archive hashes.
 Its archive identifiers name retained material outside Git, not repository links.
@@ -267,13 +276,222 @@ timings on recurrence. Close only with a supported historical explanation and
 source-bound verification, or a separately reviewed bounded disposition.
 Passing reruns do not meet that gate. DEV-AUDIT-001 remains OPEN for cold and
 linear audit costs; DEV-OBS-001 remains OPEN for aggregate status reporting.
-These are separate tracked items, not sections added by this delivery.
+Their standalone records below preserve these limits; this documentation review
+does not resolve them.
 
 Strict Guardian, Security, signing, existing deadlines, N=10 retention approval,
 64 KiB payload cap and single-worker Memory authority remain unchanged. No late
 receipt acceptance, automatic checkpoint retry, reacquisition or pruning approval
-is introduced. At the original verification checkpoint C2b was unmerged.
-Update 2026-11-26: the C2b stack and #368 are merged, released at
-`56623003675bc99f9e3dfadf15b6254beb183b59`; that merge does not establish the
-historical cause or close this issue. The existing supervised internal-alpha
-boundary stands; unattended and production operation remain NO-GO.
+is introduced. At the 2026-11-25 candidate checkpoint C2b was unmerged.
+The [merged-main evidence review](ALPHA_READINESS_DECISION.md#c2b-merged-main-evidence-review-2026-11-26)
+records subsequent integration without resolving the original causes. The
+existing supervised internal-alpha boundary stands; unattended and production
+operation remain NO-GO.
+
+## DEV-AUDIT-001 — Signed audit scalability
+
+**Status: OPEN — cold/linear costs and cross-process limits uncharacterized.**
+Owner: Security/Runtime maintainers. Opened: 2026-11-25; reviewed: 2026-11-26.
+GitHub: [#371](https://github.com/AetherraLabs/Aetherra/issues/371).
+Review gate: audit-path changes and any scale/readiness claim.
+
+Observed at candidate `4d9c8f8e455b87624e6918dbcc784577950af4fb`
+(Windows x64, Python 3.13.7, signed synthetic full-launch profiles): append can
+reuse a verified prefix only with matching bytes and effective signing key;
+64 paths and an absolute 600-second expiry bound the process-local cache.
+Every append still reads/hashes the full file; cold validation, expiry, eviction,
+replacement and key changes can require genesis verification. Independent
+integrity checks always start at genesis. Expected: measured supported limits
+without weakening signature verification or claiming constant latency.
+
+The [delivery receipt](evidence/dev_ckpt_001_delivery_2026-11-25.json) preserves
+parent `3897c5a6`'s two expected assertion failures and 30 committed focused
+passes at `4d9c8f8e` (exit 0), plus the 537-test affected precommit selection.
+These verify the bounded cache correction, not large-ledger performance or
+cross-process serialization. Audit cost is not established as the original
+checkpoint failure's cause; that uncertainty remains in the CKPT records.
+
+Containment: retain supervised operation, independent genesis checks, signing,
+existing deadlines and explicit uncertainty; no performance risk acceptance.
+Next action/closure gate: owner benchmarks cold/warm paths, expiry/replacement
+and concurrent writers with ledger size, keys/configuration, command, source,
+latency distributions and actual failures retained. Resolve only after supported
+limits or a correction are verified and maintainer disposition is recorded.
+Reviewer approval and engineering closure remain pending.
+
+## DEV-OBS-001 — Aggregate Observatory status
+
+**Status: OPEN — aggregate status and durable prior-session facts incomplete.**
+Owner: Runtime UI/Observability maintainers. Opened: 2026-11-25;
+reviewed: 2026-11-26. GitHub: [#372](https://github.com/AetherraLabs/Aetherra/issues/372).
+Review gate: status aggregation changes and restart/disconnect readiness claims.
+
+At candidate `4d9c8f8e455b87624e6918dbcc784577950af4fb`, the Windows source-runtime
+R3 physical pair used reviewed external instrumentation and two genuine operator
+Ctrl+C events. The [delivery receipt](evidence/dev_ckpt_001_delivery_2026-11-25.json)
+links source, configuration, commands/archives and signed/durable joins: both
+runtime/redirector exits were zero with closed listeners. The same browser tab
+reconnected, showed the restored row, advanced ticks 6 to 21 and cleared current
+evidence after both exits; actions stayed disabled. The observed 54.23-second
+host-clock gap is not verified offline duration. Durable prior acceptance,
+prior termination and a complete aggregate runtime state remain unknown.
+The earlier uninstrumented physical-01 failed its strict terminal gate and
+skipped session two; R3 does not supply its missing acknowledgment.
+
+Expected: aggregate views distinguish established, unknown, stale and offline
+facts across restart/disconnect/shutdown. Cause of the incomplete aggregation
+has not been diagnosed. Containment: keep actions disabled and unknown fields
+explicit; do not infer acceptance or termination from a disconnected browser.
+Next action/closure gate: owner defines evidence-backed aggregation and verifies
+restart, disconnect and shutdown, including clearing stale state and preserving
+unknowns, without enabling control actions. Maintainer review of those receipts
+is required; no risk acceptance or engineering closure is recorded.
+
+## DEV-HOMEOSTASIS-001 — Watchdog shutdown lifecycle
+
+**Status: OPEN — outstanding await and shutdown cause unknown.**
+Owner: Homeostasis/Runtime maintainers. Opened/reviewed: 2026-11-26.
+GitHub: [#373](https://github.com/AetherraLabs/Aetherra/issues/373).
+Review gate: normal-launch shutdown changes and any lifecycle acceptance claim.
+
+At released main `56623003675bc99f9e3dfadf15b6254beb183b59`, all three Windows
+Python 3.13.7 full-launch processes in the 660-second automatic continuity run
+logged `Event loop stopped before Future completed.` as a fatal watchdog-thread
+error during harness SIGINT shutdown. Each process nevertheless exited zero,
+closed its listener and needed no cleanup kill. Expected: bounded cooperative
+settlement without orphan work or a watchdog error; process exit alone does not
+prove that contract. The outstanding await and causal sequence are unidentified.
+
+The [sanitized review receipt](evidence/c2b_merged_main_review_2026-11-26.json)
+records the exact smoke command, revision, synthetic profile, exit outcomes and
+hashes of retained logs/receipts. This is archived evidence review, not a fresh
+reproduction or physical keyboard test. Checkpoint acknowledgments in that run
+do not resolve the watchdog error or either historical CKPT cause.
+
+Containment: preserve supervised operation and existing checkpoint/security
+contracts; no workaround or risk acceptance is established. Next action/closure
+gate: owner captures the pending await on normal-launch shutdown, establishes
+cause, verifies bounded cooperative settlement and absence of orphan work or
+watchdog errors, and obtains maintainer review with retained failures. Status
+stays OPEN until that evidence and disposition exist.
+
+## DEV-STORM-001 — Skipped persistence lifecycle check
+
+**Status: OPEN — empty recall observed; underlying cause unproven.**
+Owner: Memory/STORM maintainers. Opened/reviewed: 2026-11-26.
+GitHub: [#374](https://github.com/AetherraLabs/Aetherra/issues/374).
+Review gate: STORM persistence/recall changes and any affected readiness claim.
+
+Merged main `592c462244252abe5626b825e642f3977f84a431`'s Windows Python 3.13.7
+full suite exited zero with 4,158 passed and 38 skipped. One retained skip is
+`tests/capabilities/test_storm_acceptance.py::TestSTORMProductionReadiness::test_storm_full_lifecycle`
+(line 306): `Memory system not returning results - persistence issue`.
+The test stores four synthetic memories, checks non-null remember results,
+then skips on empty `storm_hybrid` recall items. Its fixture isolates temporary
+storage paths and closes handles. The recorded skip does not establish a general
+Memory failure, a persistence root cause or the complete effective STORM config.
+Expected: the supported lifecycle configuration reaches its recall/quality
+assertions, or an evidenced scope limitation is explicitly reviewed.
+
+The [sanitized review receipt](evidence/c2b_merged_main_review_2026-11-26.json)
+binds the exact suite command, source, skip and actual outcome to retained log
+hashes. No new reproduction or corrective run was performed in this review.
+Containment: preserve the skip and distinguish it from the two separate
+`STORM not enabled` skips; do not count this lifecycle as verified.
+Next action/closure gate: owner records effective supported configuration,
+reproduces or explains the empty recall, adds a regression for an established
+correction and documents scope with maintainer review. A passing rerun or silently
+removing the skip cannot close this unknown-cause record; no risk acceptance.
+
+## DEV-CI-001 — Capabilities job timeout before a result summary
+
+**Status: OPEN — causes unknown; a common cause is not established.**
+Owner: CI/Runtime maintainers. First retained observation: 2026-11-25
+(America/Denver); registered/reviewed: 2026-11-26. Severity unknown.
+GitHub: [#381](https://github.com/AetherraLabs/Aetherra/issues/381).
+Review gate: recurrence, capability-test lifecycle/CI changes and affected
+verification claims. This consolidates the unresolved observation already
+preserved in PR #368 and the similar visible timeout in PR #379.
+
+The [four-log receipt](evidence/ci_capabilities_timeout_2026-11-26.json) retains
+exact head/base/merge-checkout revisions, links and SHA-256 hashes. Both Linux
+jobs ran `pytest -q -o addopts= tests/capabilities` on Ubuntu 26.04 image
+`20261116.202.1`, Python 3.11.18, pytest 9.2.0 and pytest-asyncio 1.5.0,
+with `AETHERRA_QUIET=1` and test defaults. The workflow dynamically installs
+pytest/pytest-asyncio and requirements.txt; identical inputs do not establish
+identical effective environments. Expected: complete the selected tests and
+exit normally within the existing five-minute step limit.
+
+| Source-bound observation | Actual outcome |
+| --- | --- |
+| PR #368, checkout `ce7a5e023d8740fa4aa482b8d856eaeff2b2bc47`, [failed job](https://github.com/AetherraLabs/Aetherra/actions/runs/45756195270/job/139695259592) | Last visible progress 82%, then five-minute timeout without a final summary, active node or stack. Runner terminated pytest and a Python process. |
+| Same checkout, [retry](https://github.com/AetherraLabs/Aetherra/actions/runs/45756195270/job/139698660686) | 171 passed / 4 skipped in 45.98 seconds; subsequent SSE 8 passed. Original failure remains unexplained. |
+| PR #379 head `6a1b978a`, checkout `398604181ca866b0cb0f0a218dbbf16738f0ac9f`, [failed job](https://github.com/AetherraLabs/Aetherra/actions/runs/45937143595/job/140302854422) | Last visible progress 82%, then five-minute timeout without a final summary, active node or stack. Runner terminated pytest and a Python process. |
+| Same checkout, [bounded retry](https://github.com/AetherraLabs/Aetherra/actions/runs/45937143595/job/140306021904) | 171 passed / 4 skipped in 62.42 seconds; subsequent SSE 8 passed in 32.76 seconds. Original failure remains unexplained. |
+
+The blocked test/teardown, pending work and cause are unidentified. Percentages
+do not identify STORM. PR #324's diagnosed post-summary interpreter-shutdown
+hang is historical comparison, not an established mechanism here. The Windows
+watchdog error (#373) and STORM empty-recall skip (#374) remain separate records.
+PR #379's runtime, tests, dependency manifests and workflows match its main
+base, but that does not prove documentation irrelevant: the static-security
+capability test scans repository contents. Neither retry establishes a fix,
+shared cause, accepted risk or broader readiness.
+
+Containment: preserve the five-minute failing gate, original logs and separate
+retry outcomes; no skip, timeout extension or runtime change in the documentation
+PR. Next action: owner captures active node and setup/call/teardown phase,
+Python/thread/process stacks, ownership/drain state and effective dependency/
+network configuration in a separate bounded Linux investigation. Resolve only
+with a supported cause and focused correction/regression, or an evidenced
+external cause with tested containment and explicit maintainer disposition.
+Passing reruns alone do not close this record. Supervised-alpha limits,
+Guardian/Security, signing and approval boundaries remain unchanged.
+
+## DEV-CI-002 — Personal continuity write-session HTTP 503
+
+**Status: OPEN — cause and severity unknown.**
+Owner: Hub/Engine and CI maintainers. First observed/registered/reviewed:
+2026-11-26 (America/Denver). GitHub: [#382](https://github.com/AetherraLabs/Aetherra/issues/382).
+Review gate: recurrence, affected Hub/Engine/test-lifecycle changes and continuity
+verification claims. This HTTP assertion failure is separate from DEV-CI-001's
+capability timeouts and the original six C2b records.
+
+[Failed CI Quality Gates job](https://github.com/AetherraLabs/Aetherra/actions/runs/45939281664/job/140309611225)
+ran head `9f3f97dbf2fdf431906cb9bbc0eae5f0b5a5dced`, merge checkout
+`7e8e8d9597c799b69cc10e75e5ff7641818876a0` into main `5662300`.
+The [original-failure receipt](evidence/ci_personal_continuity_503_2026-11-26.json)
+records the exact command, configuration and retained job-log hash: Ubuntu 26.04
+image `20261116.202.1`, Python 3.11.18, requirements-ci.lock, pytest 9.1.0,
+pytest-asyncio 1.4.0 and coverage 7.14.1; pinned embedding model provisioned,
+offline flags and a synthetic enforcing full-runtime profile.
+
+Expected: each sequential write turn returns HTTP 200 before restart/recall
+assertions. Observed: `test_personal_fact_survives_full_runtime_restart` failed
+at line 201 while checking its write-session results (caller line 209). One of
+six `POST /api/ai/ask` responses was 503; the ordinal and response reason are
+unknown. The child returned zero; empty initial history and `stopped` assertions
+passed. That flag alone does not establish settlement of every subsystem.
+The selection ended with **1 failed, 4 passed, 1 skipped in 272.09 seconds,
+exit 1**. Restart/recall in this test was not reached; this was not a timeout.
+
+Artifact publication was skipped and the run's artifact list was empty at
+inspection. Configured upload paths also omit the temporary child result/runtime
+files. The published log cannot establish response body/error code, request
+lease/queue state, readiness at failure or cause. PR #351's intentional busy
+responses and PR #368's separate strict-architecture 503/controlled `hub_busy`
+race do not identify this failure. No connection to DEV-CI-001, STORM or checkpoint
+failures is established. Unchanged runtime/test/workflow content does not prove
+documentation or environment effects irrelevant.
+
+Containment: preserve the failing assertion, existing deadlines, fail-closed
+responses and supervised-alpha limits; no runtime fix, automatic retry or gate
+change is introduced by this documentation. Next action: owner captures a
+bounded reproduction with sanitized request ordinal/status/error code, readiness
+and lease/queue state, monotonic timing, dependency/configuration, child exit and
+artifact hashes. Keep later observations on #382 separate from the immutable
+original-failure receipt. Close only with a supported cause and verified focused
+correction/regression, or an evidenced external cause with tested containment
+and explicit reviewed disposition. A passing rerun alone cannot close this
+record or establish risk acceptance or broader GO. Guardian, Security, signing
+and approval boundaries remain unchanged.

@@ -1,0 +1,80 @@
+{
+  "schema": "ci_personal_continuity_503_original_failure_v1",
+  "date": "2026-11-26",
+  "timezone": "America/Denver",
+  "issue_id": "DEV-CI-002",
+  "github_issue": "https://github.com/AetherraLabs/Aetherra/issues/382",
+  "status": "OPEN; cause and severity unknown",
+  "scope": "Original failed run only. Retrospective log/source inspection; no correction verification. Later observations belong on issue #382 and do not replace this failure.",
+  "source": {
+    "pr": 379,
+    "head": "9f3f97dbf2fdf431906cb9bbc0eae5f0b5a5dced",
+    "base": "56623003675bc99f9e3dfadf15b6254beb183b59",
+    "merge_checkout": "7e8e8d9597c799b69cc10e75e5ff7641818876a0",
+    "workflow": ".github/workflows/ci_quality_gates.yml",
+    "job": "quality-gates",
+    "run_id": 45939281664,
+    "job_id": 140309611225,
+    "url": "https://github.com/AetherraLabs/Aetherra/actions/runs/45939281664/job/140309611225"
+  },
+  "configuration": {
+    "runner_image": "ubuntu-26.04",
+    "image_version": "20261116.202.1",
+    "python": "3.11.18",
+    "dependency_input": "requirements-ci.lock",
+    "pytest": "9.1.0",
+    "pytest_asyncio": "1.4.0",
+    "coverage": "7.14.1",
+    "offline_flags": [
+      "HF_HUB_OFFLINE=1",
+      "TRANSFORMERS_OFFLINE=1"
+    ],
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "embedding_revision": "c9745ed1d9f207416be6d2e6f8de32d1f16199bf",
+    "profile": "Synthetic isolated full-runtime profile, enforcing Guardian/Security, deterministic context responder; no live provider verification."
+  },
+  "command": "python -m pytest tests/acceptance/test_personal_continuity.py tests/acceptance/test_consciousness_continuity.py -q -o addopts= --cov=. --cov-report= --cov-fail-under=0",
+  "failure": {
+    "nodeid": "tests/acceptance/test_personal_continuity.py::test_personal_fact_survives_full_runtime_restart",
+    "assertion_line": 201,
+    "caller_line": 209,
+    "phase": "write session, before restart",
+    "request": "One of six sequential POST /api/ai/ask turns returned HTTP 503; expected 200. Failing ordinal unknown.",
+    "child_return_code": 0,
+    "initial_message_count_assertion_passed": true,
+    "stopped_flag_assertion_passed": true,
+    "stopped_limit": "The flag alone does not establish that every subsystem settled.",
+    "selection": {
+      "failed": 1,
+      "passed": 4,
+      "skipped": 1,
+      "seconds": 272.09,
+      "exit_code": 1
+    },
+    "kind": "HTTP status assertion failure; not a timeout"
+  },
+  "missing_evidence": {
+    "publish_artifacts_step": "skipped",
+    "run_artifact_list_at_inspection": [],
+    "upload_path_limit": "Configured publication paths omit temporary child result/runtime files even if the step runs.",
+    "unknown": [
+      "Failed turn ordinal",
+      "Response body and error code",
+      "Hub/Engine readiness and lease/queue state at failure",
+      "Child runtime evidence",
+      "Cause"
+    ]
+  },
+  "distinctions": [
+    "DEV-CI-001 / #381 capability timeouts remain separate. No connection to STORM or checkpoint failures is established.",
+    "PR #351 intentional busy responses and PR #368 separate strict-architecture 503/controlled hub_busy race do not identify this cause.",
+    "Runtime, tests, dependency manifests and workflows match the main base; documentation-only changes do not prove environmental or repository-input effects irrelevant.",
+    "No correction, acceptance, broader GO or causal closure is established. A later passing retry cannot erase the original failure."
+  ],
+  "next_action": "Hub/Engine and CI maintainers capture a bounded reproduction with sanitized request ordinal, status/error code, readiness and lease/queue state, monotonic timings, exact configuration/dependencies, child exit and artifact hashes; preserve fail-closed responses and existing deadlines.",
+  "archive_convention": "archive_id is relative to the retained .codex-modernization-closeout-20261126 archive outside Git, not a repository link. Only compact facts and the original job-log hash are published.",
+  "archive": {
+    "archive_id": "ci-personal-continuity-503-140309611225.log",
+    "sha256": "cd41be928a7350fe29940d35813592c352dff17d515185c5983e16c1d2a05cc7"
+  }
+}

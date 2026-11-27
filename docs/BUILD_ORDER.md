@@ -89,25 +89,45 @@ Internal alpha requires:
 
 ## Current Next Work
 
-Phases A and B, C1, C2a and the checkpoint-stop follow-up are merged. C2b also
-merged through PRs #356-#360 and #362-#367, followed by the progress correction
-in #368. The final merge is `592c46224425`; released main is its metadata-only
-child `56623003675b` (`v0.5.0-beta.22`), with verified signing. The
-[phase status table](MASTER_ROADMAP.md#current-priority-internal-alpha) and
-[resumption evidence](evidence/temporal_resumption_2026-11-26.json) distinguish
-completed clean-checkout results from historical readiness evidence.
+Phases A/B, C1/C2a, C2b and the bounded runtime follow-up are merged.
+C2b merged through PRs #356-#360 and #362-#367, followed by the progress
+correction in #368 at `592c46224425`; its metadata-only beta.22 release is
+`56623003675b`. The
+[phase status table](MASTER_ROADMAP.md#current-priority-internal-alpha),
+[current evidence review](ALPHA_READINESS_DECISION.md#c2b-merged-main-evidence-review-2026-11-26)
+and [receipt](evidence/c2b_merged_main_review_2026-11-26.json) distinguish the
+4,158-pass/38-skip merge suite and 660-second offline released-main continuity
+from earlier candidate live/browser/physical evidence. Original failures remain.
+Additional [DEV-CI-001](DEVELOPMENT_ISSUES.md#dev-ci-001--capabilities-job-timeout-before-a-result-summary)
+([#381](https://github.com/AetherraLabs/Aetherra/issues/381)) preserves the prior
+and current Linux capability timeouts separately from their passing retries.
+Separate [DEV-CI-002](DEVELOPMENT_ISSUES.md#dev-ci-002--personal-continuity-write-session-http-503)
+([#382](https://github.com/AetherraLabs/Aetherra/issues/382)) records the
+unexplained personal-continuity write-session HTTP 503.
+
+Temporal [PR #380](https://github.com/AetherraLabs/Aetherra/pull/380) delivers the
+completed-Core source projection, typed Memory history and normal-launch runtime
+observer as a separate milestone. The observer is disabled by default and remains
+observe-only. The [operator guide](TEMPORAL_HISTORY.md),
+[source receipt](evidence/temporal_resumption_2026-11-26.json),
+[Memory receipt](evidence/temporal_memory_history_2026-11-26.json),
+[runtime receipt](evidence/temporal_runtime_integration_2026-11-26.json) and
+[delivery mapping](evidence/temporal_observer_delivery_2026-11-26.json) retain
+pre-publication source bindings and verification limits. They do not establish
+checks on the current integration revision; final PR review and revision-bound
+checks remain required.
 
 **Stage 21 remains active, with the existing supervised internal-alpha GO
 unchanged.** Stage 22 Beta Hardening and Stage 23 Production Readiness remain
-Planned; a beta package version is not acceptance into either stage. Phase D
-optional agency remains deferred.
+Planned; a beta package version does not advance them. C2b is implemented within
+its recorded limits; Phase D optional agency remains deferred.
 
 | Priority | Work | Required Outcome |
 | --- | --- | --- |
-| 1 | Review the Temporal runtime milestone for merge | Review the local source-bound verification receipts and the PR checks; keep existing alpha scope and unresolved incidents unchanged. [Runtime receipt](evidence/temporal_runtime_integration_2026-11-26.json) |
-| Ongoing alpha qualification | Retain unresolved incidents and revision-bound verification limits | Keep checkpoint recovery, temporal history and temporal reasoning separate; do not infer broader readiness from the merged C2b checks. |
+| 1 | Review the Temporal runtime milestone on the current integration revision | Review the source-bound local receipts, current PR checks and merge outcome separately from historical C2b acceptance; preserve the existing alpha scope and unresolved incidents. |
+| Ongoing alpha qualification | Review evidence and investigate OPEN development records | Apply the eight [records' owner and closure gates](DEVELOPMENT_ISSUES.md#current-records); preserve causes still unknown, retained failures and unverified boundaries. The prior delegated Codex documentation review accepted the modernization reconciliation only; final pushed-revision checks remain required. |
 
-The full suite at merge `592c46224425` passed 4,158 tests with 38 skips and
+The full suite at C2b merge `592c46224425` passed 4,158 tests with 38 skips and
 45.29% coverage; GUI tests (40), build and lint passed. Released main
 `56623003675b` passed boot/integration checks and a 660-second automated
 continuity/restart run. These results do not rerun Python installation, browser,
@@ -117,9 +137,12 @@ live-model, physical keyboard or the 65-minute exercise at released main.
 [DEV-CKPT-001](DEVELOPMENT_ISSUES.md#dev-ckpt-001--extended-run-observer-and-checkpoint-progress-gap)
 remain **OPEN**: the original slow operation and extended-run causal chain are
 unexplained. The pre-existing Homeostasis watchdog shutdown error also remains;
-clean process exit does not prove orderly settlement of its pending work. Keep
-signing, Guardian/Security, checkpoint ownership and observe/propose-only
-limits enforced. Unattended/production use and autonomous actions remain NO-GO.
+clean process exit does not prove orderly settlement of its pending work.
+Checkpoint recovery, Temporal history and temporal reasoning remain distinct;
+C2b retention cannot delete Temporal history. Keep signing, Guardian/Security,
+checkpoint ownership and observe/propose-only limits enforced. Unattended or
+production use, unverified installation graphs and autonomous actions have no
+new acceptance or GO.
 
 Historical reference: the [2026-11-22 desktop verification](ALPHA_READINESS_DECISION.md#historical-desktop-verification-2026-11-22)
 and [first supervised exercise](evidence/supervised_alpha_2026-11-22.json)

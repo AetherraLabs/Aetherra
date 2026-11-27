@@ -2,7 +2,7 @@
 
 The canonical contributor guide lives at the repository root:
 
-- `CONTRIBUTING.md`
+- [CONTRIBUTING.md](../CONTRIBUTING.md)
 
 Keep this file intentionally short so GitHub contributors have one source of
 truth instead of a copied guide that can drift.

@@ -1,6 +1,6 @@
 # Aetherra Master Roadmap
 
-Updated: 2026-11-26
+Updated: 2026-11-27
 
 This is the single source of truth for Aetherra roadmap planning.
 
@@ -37,21 +37,45 @@ testing with governance, observation and signing controls enforced. The
 checkpoint verification qualification below does not expand that boundary.
 
 C1, C2a and the checkpoint-stop follow-up are merged. C2b automatic selection,
-atomic head advancement, recovery, periodic saves and retention also merged
-through PRs #356-#360 and #362-#367, followed by the progress correction in #368.
-The final merge is `592c46224425`; released main is its metadata-only child
-`56623003675b` (`v0.5.0-beta.22`). The
-[resumption evidence](evidence/temporal_resumption_2026-11-26.json) preserves the
-exact revision bindings and limits of the completed clean-checkout checks.
+atomic head advancement, recovery, periodic saves and retention merged through
+PRs #356-#360 and #362-#367, followed by the progress correction in #368 at
+`592c46224425`. Its metadata-only beta.22 release is `56623003675b`. The merge
+suite passed 4,158 tests with 38 skips; released-main offline continuity passed
+a bounded 660-second check. Retained signing/release verification passed. The
+[current evidence review](ALPHA_READINESS_DECISION.md#c2b-merged-main-evidence-review-2026-11-26)
+separates those scopes from candidate live/browser/physical checks and preserves
+all failures. The original six C2b [development records](DEVELOPMENT_ISSUES.md#current-records)
+remain OPEN. An additional [DEV-CI-001](DEVELOPMENT_ISSUES.md#dev-ci-001--capabilities-job-timeout-before-a-result-summary)
+record ([#381](https://github.com/AetherraLabs/Aetherra/issues/381)) consolidates
+unexplained Linux capability timeouts from PRs #368/#379; separate passing
+retries do not establish a fix. Separate [DEV-CI-002](DEVELOPMENT_ISSUES.md#dev-ci-002--personal-continuity-write-session-http-503)
+([#382](https://github.com/AetherraLabs/Aetherra/issues/382)) records a
+personal-continuity write-session HTTP 503 with cause unknown. All eight remain OPEN.
 
-The local opt-in Temporal observer samples completed Core ticks every five seconds.
-It saves changes and session/gap markers through typed Memory, restores up to 256
-records into the existing engine, and publishes cached evidence in the
-Consciousness inspector. See the [operator guide](TEMPORAL_HISTORY.md) and
-[local runtime receipt](evidence/temporal_runtime_integration_2026-11-26.json)
-for the commands, source hashes and scope. Local final-source verification recorded 4,319 passed, 38 skipped and 45.29% coverage against the unchanged 22% floor.
-Checkpoint recovery, temporal history and temporal reasoning remain distinct.
-Checkpoints confer no autonomous action authority or unattended readiness.
+TemporalConsciousnessEngine [PR #380](https://github.com/AetherraLabs/Aetherra/pull/380)
+delivers the completed-Core source projection, typed Memory history and opt-in
+runtime observer as a separate milestone. The disabled-by-default observer samples
+completed Core ticks every five seconds, saves changes and session/gap markers
+through typed Memory, restores a window of up to 256 records into the existing
+engine, and publishes cached evidence in the Consciousness inspector. See the
+[operator guide](TEMPORAL_HISTORY.md),
+[source receipt](evidence/temporal_resumption_2026-11-26.json),
+[Memory receipt](evidence/temporal_memory_history_2026-11-26.json),
+[runtime receipt](evidence/temporal_runtime_integration_2026-11-26.json) and
+[delivery mapping](evidence/temporal_observer_delivery_2026-11-26.json).
+The pre-publication final-source suite recorded 4,319 passed, 38 skipped and
+45.29% coverage against the unchanged 22% floor. Those receipts retain their
+source and revision bindings; they are not current integration-revision checks.
+The earlier Temporal browser observation preceded the final runtime/harness
+fixes and fixture correction, as recorded in the operator guide; no new browser,
+live-model, physical keyboard, fresh-install or soak acceptance is claimed here.
+
+Current PR review and revision-bound checks remain required. The prior delegated
+Codex documentation review accepted the modernization reconciliation only.
+Checkpoint recovery, Temporal history and temporal reasoning remain distinct:
+Temporal history has no automatic deletion and is outside C2b retention.
+Checkpoints and Temporal confer no autonomous action authority or unattended
+readiness. The existing supervised internal-alpha boundary is unchanged.
 
 Authoritative identity and system references:
 
@@ -182,8 +206,8 @@ Readiness remain Planned. The `v0.5.0-beta.22` release version does not advance
 those roadmap stages or expand the existing supervised GO.
 
 The [readiness checklist](ALPHA_READINESS_CHECKLIST.md) and
-[2026-11-25 prerequisite decision](ALPHA_READINESS_DECISION.md#c2b-prerequisite-checkpoint-2026-11-25) govern
-acceptance. The integration plan is now partway through Phase C:
+[current evidence review](ALPHA_READINESS_DECISION.md#c2b-merged-main-evidence-review-2026-11-26)
+retain the existing acceptance boundary. The integration plan is now partway through Phase C:
 
 | Milestone | Current status | Delivered scope or remaining boundary |
 | --- | --- | --- |
@@ -192,12 +216,19 @@ acceptance. The integration plan is now partway through Phase C:
 | C1 | Merged, PR #354 | Opt-in observe-only Consciousness sidecar starts after core activation, exposes bounded status and stops independently of chat |
 | C2a | Merged, PR #353 | One orderly-stop checkpoint through existing Memory; explicitly selected restore before the first tick |
 | Checkpoint-stop follow-up | Merged, PR #355 | Clean-main suite and hosted signing passed. The original stop delay remains unexplained. |
-| C2b | Merged, PRs #356-#360 and #362-#367; progress follow-up #368 merged | Atomic checkpoint heads, exact recovery, automatic selection, periodic saving and retention through existing Memory; [approved invariants](superpowers/specs/2026-11-24-phase-c2b-checkpoint-contract-design.md) remain authoritative |
-| Temporal runtime observer | Implemented and locally verified, disabled by default; PR review pending | [Runtime design](superpowers/specs/2026-11-26-temporal-runtime-integration-design.md) and [verification receipt](evidence/temporal_runtime_integration_2026-11-26.json) |
+| C2b | Merged, PRs #356-#360 and #362-#367; progress follow-up #368 merged; beta.22 | Atomic checkpoint heads, exact recovery, automatic selection, periodic saves and retention through existing Memory; [approved invariants](superpowers/specs/2026-11-24-phase-c2b-checkpoint-contract-design.md) and [revision-bound evidence](ALPHA_READINESS_DECISION.md#c2b-merged-main-evidence-review-2026-11-26) retain OPEN defects and verification limits |
+| Temporal source projection | Delivered in PR #380 with source-bound local verification | Completed numeric Core ticks only; [source plan](superpowers/plans/2026-11-26-temporal-source-projection.md) and [receipt](evidence/temporal_resumption_2026-11-26.json) |
+| Temporal Memory history | Delivered in PR #380 with source-bound local verification | Typed Memory-owned append/read, exact ownership and committed ordering; retained changes and session/gap markers, with no automatic deletion or C2b pruning; [contract](superpowers/specs/2026-11-26-temporal-memory-history.md) and [receipt](evidence/temporal_memory_history_2026-11-26.json) |
+| Temporal runtime observer | Delivered in PR #380, disabled by default; current integration review/checks required | Normal-launch collector, bounded engine restoration and cached inspector evidence; [runtime design](superpowers/specs/2026-11-26-temporal-runtime-integration-design.md), [local receipt](evidence/temporal_runtime_integration_2026-11-26.json) and [delivery mapping](evidence/temporal_observer_delivery_2026-11-26.json); no broader acceptance |
 | Phase D | Deferred | Governed optional agency only after the earlier integration gates; no new action authority |
 
-Temporal remains observe-only. The [resumption evidence](evidence/temporal_resumption_2026-11-26.json)
-binds the baseline and earlier checks separately.
+Review the Temporal milestone on the current integration revision separately from
+the [merged-main C2b receipt](evidence/c2b_merged_main_review_2026-11-26.json),
+and investigate the eight OPEN development records under their owner/review gates.
+The [C2b plan](superpowers/plans/2026-11-25-phase-c2b-checkpoints.md) and
+[prerequisite receipt](evidence/c2b_prerequisites_2026-11-25.json) retain the
+historical implementation gates. Temporal remains observe-only; its local
+receipts do not rerun those historical checks on the current PR revision.
 
 Completed clean-checkout verification at merge `592c46224425` passed 4,158 tests
 with 38 skips and 45.29% coverage against the unchanged 22% floor; GUI tests
@@ -219,6 +250,14 @@ operation. This is not an explanation for either checkpoint incident. Signing
 and Guardian/Security remain enforced. The existing supervised-alpha GO is
 unchanged; broader installation graphs, unattended operation, production use
 and autonomous actions have no new acceptance or GO.
+
+The [follow-up receipt](evidence/checkpoint_stop_followup_2026-11-24.json)
+records 3,840 passing tests, 38 skips and five passing subtests. The change makes
+background command failures observable; it does not identify the original slow
+operation or fix a proven runtime timing cause. Track the unresolved cause in
+[ALPHA-CKPT-001](DEVELOPMENT_ISSUES.md#alpha-ckpt-001--checkpoint-stop-delay). Signing
+and Guardian/Security remain enforced. Broader installation graphs, unattended
+operation, production use and autonomous actions have no new acceptance evidence or GO.
 
 Historical reference: the [2026-11-22 desktop verification](ALPHA_READINESS_DECISION.md#historical-desktop-verification-2026-11-22)
 covered fresh Windows/Python 3.13 installation and dependency audits on its

@@ -1,0 +1,208 @@
+{
+  "schema": "c2b_merged_main_documentation_review_v1",
+  "review_date": "2026-11-26",
+  "timezone": "America/Denver",
+  "scope": "Retrospective inspection of retained receipts, source and logs; no new runtime execution or readiness decision. Delegated Codex independent documentation review accepted the reconciliation under issue #377 and PR #379, subject to final checks on the pushed revision.",
+  "archive_convention": "archive_id is relative to the retained .codex-c2b-execution-20261125 archive outside Git, not a repository link. Hashes identify inspected original bytes. Private logs, prompts, databases and keys are not published.",
+  "source": {
+    "merged_main": "592c462244252abe5626b825e642f3977f84a431",
+    "release_commit": "56623003675bc99f9e3dfadf15b6254beb183b59",
+    "release_tag": "v0.5.0-beta.22",
+    "integrated_prs": [
+      356,
+      357,
+      358,
+      359,
+      360,
+      362,
+      363,
+      364,
+      365,
+      366,
+      367,
+      368
+    ],
+    "release_diff_files": [
+      "CHANGELOG.md",
+      "README.md",
+      "pyproject.toml"
+    ],
+    "release_diff_limit": "Release metadata only; pyproject version beta.21 to beta.22. This does not move candidate-only live/browser/physical results to main."
+  },
+  "profile": "Windows x64, Python 3.13.7 source runtime; isolated synthetic data; normal full launcher; ambient PYTHONPATH absent in command receipts.",
+  "merged_main_suite": {
+    "source": "592c462244252abe5626b825e642f3977f84a431",
+    "command": "python -m pytest -q --no-showlocals -o cache_dir=<isolated-cache> --basetemp <isolated-temp>",
+    "exit_code": 0,
+    "passed": 4158,
+    "skipped": 38,
+    "coverage_percent": 45.29,
+    "coverage_floor_percent": 22,
+    "pytest_seconds": 2174.31,
+    "process_seconds": 2199.39,
+    "docs_and_python_quality_receipts_exit_code": 0
+  },
+  "released_main_continuity": {
+    "source": "56623003675bc99f9e3dfadf15b6254beb183b59",
+    "command": "python tools/alpha_consciousness_smoke.py --continuity --automatic-stream --observe-seconds 660 --output <isolated-output>",
+    "exit_code": 0,
+    "process_seconds": 750.56,
+    "observation_seconds": 660,
+    "interval_seconds": 300,
+    "retention_limit": 10,
+    "periodic_acknowledged_generations": [
+      1,
+      2
+    ],
+    "orderly_stop_acknowledged_generations": [
+      3,
+      4
+    ],
+    "restored_record_id": "30f17a4b8a994eb69b3fd61a8b9679cf",
+    "restore": "Exact first-session stop row restored at writer epoch 2 before the first tick, as checked by the automatic smoke.",
+    "provider": "deterministic context-responder; no live provider verification",
+    "checkpoint_excluded_from_chat": true,
+    "signed_audits_verified": true,
+    "source_unchanged": true,
+    "runtime_exits": [
+      0,
+      0,
+      0
+    ],
+    "listeners_closed": true,
+    "cleanup_kill": false,
+    "stop_method": "harness_sigint",
+    "boot_and_integration_exit_code": 0,
+    "limits": "No new browser, real keyboard Ctrl+C, live-model, fresh-install, long-soak or retention-boundary claim from this 660-second run."
+  },
+  "release_verification": {
+    "signed_main_ci_verifier_exit_code": 0,
+    "signature_valid": true,
+    "signed_distribution_hashes_verified": 2,
+    "api_asset_digests_verified": 5,
+    "tag_stable": true,
+    "private_key_access": false,
+    "limit": "Retained verifier results and release metadata reviewed; not a new hosted run or new independent download."
+  },
+  "open_observations": {
+    "DEV-HOMEOSTASIS-001": {
+      "github_issue": 373,
+      "source": "56623003675bc99f9e3dfadf15b6254beb183b59",
+      "observed": "Fatal watchdog thread error: Event loop stopped before Future completed.",
+      "occurrences": "run-a, run-b and run-c normal harness shutdown logs",
+      "unknown": "Outstanding await and causal shutdown sequence; zero process exit and closed listener do not prove cooperative watchdog settlement."
+    },
+    "DEV-STORM-001": {
+      "github_issue": 374,
+      "source": "592c462244252abe5626b825e642f3977f84a431",
+      "nodeid": "tests/capabilities/test_storm_acceptance.py::TestSTORMProductionReadiness::test_storm_full_lifecycle",
+      "skip_line": 306,
+      "skip_reason": "Memory system not returning results - persistence issue",
+      "established": "The test skips when storm_hybrid recall returns an empty items list after non-null remember results. Fixture isolates storage paths and closes handles.",
+      "unknown": "Underlying persistence/retrieval cause and complete effective STORM configuration; no claim of a general Memory failure."
+    }
+  },
+  "identity_review": {
+    "new_ids": [
+      "DEV-HOMEOSTASIS-001",
+      "DEV-STORM-001"
+    ],
+    "checked": "No exact-ID match in local HEAD tracked content or all-ref docs history; GitHub issue search returned no matches before assignment. Existing IDs ALPHA-CKPT-001, DEV-CKPT-001, DEV-AUDIT-001 and DEV-OBS-001 retained.",
+    "github_issues_read": [
+      369,
+      370,
+      371,
+      372,
+      373,
+      374,
+      377
+    ],
+    "github_states": "All OPEN; comments endpoints returned zero comments at review."
+  },
+  "disposition": "All six engineering records remain OPEN. No causal closure, risk acceptance, expanded GO, new persistence authority or change to Guardian/Security/signing, receipt deadlines, ownership or retention approval. Temporal PR #380 remains separate and pending integration.",
+  "archives": [
+    {
+      "archive_id": "evidence/main-592c46224425-a1-full.json",
+      "sha256": "778038ae6ea128b05748f1f7d7954919e4ce2e6973139f5f8467c0525cb5571c"
+    },
+    {
+      "archive_id": "evidence/main-592c46224425-a1-full.log",
+      "sha256": "d99161a512e28746ea79f46c8048afcb0ad4f63d48b20fcf809cb8dd7389cdfe"
+    },
+    {
+      "archive_id": "evidence/main-592c46224425-signing-ci.json",
+      "sha256": "d6577348bf5888dbae5ed590250636d02fd21ba77b20f9622f5fe06edc4fed49"
+    },
+    {
+      "archive_id": "evidence/main-592c46224425-signing-ci.log",
+      "sha256": "1962818ae8bb24a7ea94c5ef40f6431dd09c996783f6d8cbce4a3897e981a853"
+    },
+    {
+      "archive_id": "evidence/main-592c46224425-static-a1-docs.json",
+      "sha256": "a1055f36d0e00c3849ef6798b0dd405df397c5a4b12a503b2145dd07c3d8fd9a"
+    },
+    {
+      "archive_id": "evidence/main-592c46224425-static-a1-style.json",
+      "sha256": "40a24b6cf9962306f035b1a25feff7410ba9c07ab4a6d463c008edd10d53bcff"
+    },
+    {
+      "archive_id": "evidence/main-56623003675b-a1-boot.json",
+      "sha256": "213af134cfba197a89db5047104c1ef5b3c18139d412ade31f2c2cefe9de3377"
+    },
+    {
+      "archive_id": "evidence/main-56623003675b-a1-integration.json",
+      "sha256": "1eef4cefb8db71dd7bf077abf009adee779846ab6b60e4d085ca9f0fc8e5c2d3"
+    },
+    {
+      "archive_id": "evidence/main-56623003675b-a1-default660.json",
+      "sha256": "af163b25c0ba6daf16f34d440ff8ba2ad35b0a6aaa23f023c304bbfcd0f21248"
+    },
+    {
+      "archive_id": "evidence/main-56623003675b-a1-default660-private/run/summary.json",
+      "sha256": "cd4ca81e068a79ca9fe32d6a7870eb326691b785957a346494a1b3229a34c492"
+    },
+    {
+      "archive_id": "merge-release-v0.5.0-beta.22-20261126/verification.json",
+      "sha256": "01bff68638e2491bd0b20d931f14d9d91aed116dd350b9daf21a889b6b3cfc04"
+    },
+    {
+      "archive_id": "merge-release-v0.5.0-beta.22-20261126/verification.log",
+      "sha256": "cf44af72de73010ee8ef49dc0c14381b65392356e036db8d279467b78bef5075"
+    },
+    {
+      "archive_id": "merge-release-v0.5.0-beta.22-20261126/release-metadata.json",
+      "sha256": "144f001b29cccc16df42e859520ae7a5e846d84e9800c20a33c7fba384aa5762"
+    },
+    {
+      "archive_id": "evidence/main-56623003675b-a1-default660-private/run/run-a/runtime.log",
+      "sha256": "1846ea8c615538421592e1cf05ddf5238dd61be76308178171caca30289d33cf"
+    },
+    {
+      "archive_id": "evidence/main-56623003675b-a1-default660-private/run/run-a/exit.json",
+      "sha256": "16f45b63b5c15b8f9f22ff44a686fdbb89299a0c83365a244524f2bbd7cd77c6"
+    },
+    {
+      "archive_id": "evidence/main-56623003675b-a1-default660-private/run/run-b/runtime.log",
+      "sha256": "649bdab40c6aac88340dfd90ec3f7c8991ef112be6847c5c9045dcc6a2d56128"
+    },
+    {
+      "archive_id": "evidence/main-56623003675b-a1-default660-private/run/run-b/exit.json",
+      "sha256": "6ea505c1153ad86d595080fe8885487ce7a8a80234f3ee91360ffeae0491af17"
+    },
+    {
+      "archive_id": "evidence/main-56623003675b-a1-default660-private/run/run-c/runtime.log",
+      "sha256": "697d9d76ee5e9778330f670e2ad402847645103c90d9b82883913fd75640f1e5"
+    },
+    {
+      "archive_id": "evidence/main-56623003675b-a1-default660-private/run/run-c/exit.json",
+      "sha256": "bb2f426fc049d2abda8a3cba7af23320e92e3625cf2ca47c3f460eef6a49bd57"
+    }
+  ],
+  "documentation_review": {
+    "date": "2026-11-26",
+    "reviewer": "Delegated Codex independent documentation review under user-authorized closeout",
+    "pr": "https://github.com/AetherraLabs/Aetherra/pull/379",
+    "result": "No Critical or Important findings; all 19 archive hashes matched. Documentation wording accepted, with final pushed-revision checks and post-merge issue synchronization required.",
+    "boundary": "No engineering closure, risk acceptance, new runtime verification or expanded GO."
+  }
+}
