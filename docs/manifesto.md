@@ -1,7 +1,14 @@
 # AETHERRA MANIFESTO (v6.0 – July 2025)
 
-> **HISTORICAL DOCUMENT — NOT CURRENT PRODUCT OR SECURITY READINESS.** This is a preserved July 2025 vision and progress statement. Its claims of a first validated AI operating system, production readiness, 97.2% validation, autonomous self-rewriting, and quantum capabilities reflect historical assertions; they have **not** been independently revalidated as current release capabilities. As of November 2026, Aetherra is an experimental, governed cognitive operating layer in **supervised internal alpha**, not a replacement operating system, production service, or unattended autonomous companion. **Current authoritative sources:** [Master Roadmap](MASTER_ROADMAP.md), [Alpha Readiness Decision](ALPHA_READINESS_DECISION.md), [Security Policy](../SECURITY.md), and [Development Issue Register](DEVELOPMENT_ISSUES.md). Historical assertions below are retained for provenance rather than endorsed as current fact.
-
+> **HISTORICAL DOCUMENT — NOT CURRENT PRODUCT OR SECURITY READINESS.** This is a preserved July 2025 vision and
+> progress statement. Its claims of a first validated AI operating system, production readiness, 97.2% validation,
+> autonomous self-rewriting, and quantum capabilities reflect historical assertions; they have **not** been
+> independently revalidated as current release capabilities. As of November 2026, Aetherra is an experimental,
+> governed cognitive operating layer in **supervised internal alpha**, not a replacement operating system, production
+> service, or unattended autonomous companion. **Current authoritative sources:** [Master Roadmap](MASTER_ROADMAP.md),
+> [Alpha Readiness Decision](ALPHA_READINESS_DECISION.md), [Security Policy](../SECURITY.md), and [Development Issue
+> Register](DEVELOPMENT_ISSUES.md). Historical assertions below are retained for provenance rather than endorsed as
+> current fact.
 
 ## 🌌 What is Aetherra?
 
