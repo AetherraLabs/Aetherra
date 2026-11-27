@@ -182,9 +182,7 @@ async def _shutdown_case(monkeypatch, tmp_path, component_kind, completion_race)
             if not task.done():
                 task.cancel()
         _, pending = await asyncio.wait(tasks, timeout=2)
-        assert (
-            len(pending) == 0
-        ), "Controlled shutdown test tasks survived explicit cleanup"
+        assert len(pending) == 0, "Controlled shutdown tasks survived cleanup"
         for task in tasks:
             if not task.cancelled():
                 task.result()
@@ -202,3 +200,36 @@ def test_stop_finishes_when_dependency_consumes_cancellation(
     monkeypatch, tmp_path, component_kind, completion_race
 ):
     asyncio.run(_shutdown_case(monkeypatch, tmp_path, component_kind, completion_race))
+
+
+def test_controller_completes_normal_cycle_before_stopping(monkeypatch, tmp_path):
+    events = []
+
+    async def collect_snapshot():
+        events.append("metrics")
+        if events.count("metrics") == 2:
+            controller.stop()
+
+    controller = HomeostasisController(
+        metrics=types.SimpleNamespace(
+            get_current_snapshot=lambda: None,
+            collect_snapshot=collect_snapshot,
+        ),
+        config_path=str(tmp_path / "absent-setpoints.yaml"),
+        policy_path=str(tmp_path / "absent-policy.yaml"),
+    )
+    controller.control_interval = 0
+    execute = controller.execute_pending_actions
+
+    async def execute_actions():
+        events.append("actions")
+        return await execute()
+
+    monkeypatch.setattr(controller, "execute_pending_actions", execute_actions)
+
+    async def run():
+        await asyncio.wait_for(controller.start(), timeout=2)
+
+    asyncio.run(run())
+    assert events == ["metrics", "actions", "metrics"]
+    assert not controller.running
