@@ -7,6 +7,10 @@ Quick links:
 - Docs consistency gate: `docs/contributing/docs-consistency.md`
 - [Development issue register and evidence practice](docs/DEVELOPMENT_ISSUES.md)
 
+## Finding work
+
+Start with [the contributor backlog](https://github.com/AetherraLabs/Aetherra/issues/375) or [good first issues](https://github.com/AetherraLabs/Aetherra/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22). Discuss scope and verification before implementing. Status and priority labels guide planning; they do not grant runtime authority or imply release acceptance. Use synthetic data and follow [SECURITY.md](SECURITY.md) for private vulnerability reporting.
+
 ## Governance & Compliance Expectations
 
 When submitting PRs that affect dependencies, licensing, or release engineering:
