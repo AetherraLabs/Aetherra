@@ -1,9 +1,9 @@
 # Aetherra Runtime File Provenance and Safe Reduction Plan
 
 **Status:** proposed baseline and audit contract — no deletion authorized.  
-**Source:** `main@64d5d5ccecbf2c445eac80902aad537e34d30ebf` (2026-11-27).  
+**Initial inventory source:** `main@64d5d5ccecbf2c445eac80902aad537e34d30ebf` (2026-11-27). **Superseded for execution:** PR #380 merged as `b72952bab04527073de50550f94cfef9e0c81da1` and current main is `a47e199b6903e4c6d277272e2434b055b6773fba`. Recompute all tree counts and reachability on the execution-time HEAD; initial counts remain historical only.  
 **Owner:** Aetherra architecture, runtime, release, Security/Guardian and subsystem maintainers.  
-**Parallel work:** the separate runtime fake-evidence plan in PR #384, Temporal PR #380, existing bug register, and legacy UI cleanup must retain their own acceptance and branches.
+**Parallel work:** the separate runtime fake-evidence plan in PR #384, now-merged Temporal PR #380, existing bug register, and legacy UI cleanup must retain their own acceptance and branches.
 
 ## Objective
 
@@ -51,7 +51,7 @@ At minimum capture independently:
 2. **Conversations and continuity:** Hub -> Engine -> actual SQLite Memory -> local semantic recall -> Lyrixa; competing facts, unknowns, restart, local profile isolation, actual authorization. No live-model provider required for deterministic offline tracing; separately verify a permitted real-provider path if needed.
 3. **Cognitive Observatory:** `Aetherra/runtime_ui/`, `aetherra_hub/blueprints/runtime_ui.py`, `Aetherra/lyrixa/gui/` React/Vite source, static dist generation, API/event subscriptions and failure states. Dist is a generated artifact, not a source file.
 4. **Governed runtime:** Security, Guardian, Homeostasis, Maintenance, Kernel, registry, Self-Improvement proposal-only, optional Self-Incorporation under its explicit flag, Aether Script validation, signed audit. Exercise both enabled and disabled paths; **do not trigger live mutation or unapproved autonomy**.
-5. **Memory and Consciousness optional paths:** QFAC/STORM, observer, owned checkpoint persistence/recovery. Temporal PR #380 is **not merged** at this baseline and is a separately protected future branch.
+5. **Memory and Consciousness optional paths:** QFAC/STORM, observer, owned checkpoint persistence/recovery. Temporal PR #380 **was unmerged at the original baseline but is now merged into main**. Its normal-launch temporal observation, existing-Memory history ownership, restart restoration, audit and inspector paths must be protected as supported opt-in runtime paths in the new baseline. Do not equate disabled-by-default with unused.
 6. **Public CLI and entrypoints:** `aether.py`, `pyproject.toml` project scripts `aetherra` and `lyrixa`, operators' supported smoke and diagnostics, `setup.py`, packaging and Windows source-runtime entrypoints.
 7. **Plugins, agents and scripts:** plugin manifests, filesystem scans, plugin registration, script `.aether` signature verification, approval contracts, dynamically resolved imports and entry-point scripts. Do not remove only because a plugin is disabled in the baseline.
 8. **Release and developer profiles:** source distribution, wheel, signed release/manifest, CI workflows, docs consistency, source and data files in tests, import-map policy, dependency locks and license validation.
@@ -96,7 +96,7 @@ Produce artifacts **outside the repository** by default; commit only compact san
 
 ### Wave 0 — Freeze scope and capture baseline
 
-- Coordinate existing PR #380 (Temporal), #384 (runtime mock cleanup), any active development worktrees and issue register. Never change their working directories, worktrees or unpublished files.
+- Include merged PR #380 (Temporal) in the current baseline; coordinate separate PR #384 (runtime mock cleanup), any active development worktrees and issue register. Never change their working directories, worktrees or unpublished files.
 - Record clean checkout, exact head, public launch/test/CI profiles, signed scripts, approvals and baseline outcomes with real passes/skips/failures. Preserve current unknown-cause issues.
 - Define canonical Aetherra identity and minimum usable system contract: governed boot, accurate status, actual persistent memory/retrieval, chat/Engine interface, shutdown/restart, safe Observatory, stable Security/Guardian, and truthful optional disabled state. **Do not declare the other documented systems obsolete solely because they are not required on the first frame.**
 - Acceptance: reviewed source of truth and run list, baseline reproducible, no accidental broad cleanup authorization.
@@ -153,7 +153,7 @@ Use `git rm` only on reviewed exact paths after validation, never a broad `find 
 | Root 25 Python files | Multiple command surfaces and daemon/compatibility entrypoints require a supported-entrypoint matrix |
 | `Aetherra/aetherra_core/` (238) | Complex engine/memory/orchestration hierarchy; inspect duplicate responsibility and dynamic adapters |
 | `Aetherra/lyrixa/` (100) | Persona internals, plugin UI, canonical React frontend and retired UI compatibility mixed |
-| `Aetherra/consciousness/` (99) | Current observer + older experimental models with optional imports; Temporal PR #380 pending |
+| `Aetherra/consciousness/` (99) | Current observer + older experimental models with optional imports; Temporal PR #380 merged; validate new runtime history files |
 | `Aetherra/plugins/` and `plugins/` | Manifest discovery and signed script loading are invisible to naive import tools |
 | `Aetherra/memory/`, `Aetherra/aetherra_core/memory/`, `Aetherra/core/` | Multiple Memory namespaces; distinguish true store, adapters, legacy engines and research |
 | `tools/` (197) | Many may be CLI/CI/smoke/generator dependencies, not runtime; trim by workflow evidence |
@@ -163,6 +163,6 @@ Use `git rm` only on reviewed exact paths after validation, never a broad `find 
 
 ## Required Codex handoff (first execution, **no cleanup writes**)
 
-> On a clean isolated checkout of `AetherraLabs/Aetherra` at the exact current main SHA, implement a standard-library read-only **file provenance auditor** under `tools/maintenance`. Produce a complete JSON/CSV register with every `git ls-files` path, its Git/current hash, type, ownership candidate, static Python imports, dynamic-literal imports, resource and build references, test/CI relevance, entrypoint roots and unresolved edges. In a separate bounded supervised-alpha harness, observe actual imported modules, file reads and loaded services across normal boot, memory recall, Hub/Observatory and stop/restart. Use isolated synthetic data and existing strict policies. Provide exact execution commands, evidence hashes, missed-edge caveats, and candidate dispositions; **do not remove or move a single runtime file**. Propose the first narrowly scoped cleanup PRs only after comparison with packaging, tests, plugin manifests and maintainers' reviewed acceptance gates.
+> On a clean isolated checkout of `AetherraLabs/Aetherra` at a freshly fetched and pinned execution-time main SHA (which must include merged PR #380), implement a standard-library read-only **file provenance auditor** under `tools/maintenance`. Produce a complete JSON/CSV register with every `git ls-files` path, its Git/current hash, type, ownership candidate, static Python imports, dynamic-literal imports, resource and build references, test/CI relevance, entrypoint roots and unresolved edges. In a separate bounded supervised-alpha harness, observe actual imported modules, file reads and loaded services across normal boot, memory recall, Hub/Observatory and stop/restart. Use isolated synthetic data and existing strict policies. Provide exact execution commands, evidence hashes, missed-edge caveats, and candidate dispositions; **do not remove or move a single runtime file**. Propose the first narrowly scoped cleanup PRs only after comparison with packaging, tests, plugin manifests and maintainers' reviewed acceptance gates.
 
 **Success is a smaller, comprehensible Aetherra that still demonstrably behaves as Aetherra—not the smallest possible file count.**
