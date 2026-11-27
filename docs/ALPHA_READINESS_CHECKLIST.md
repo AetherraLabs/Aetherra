@@ -1,12 +1,39 @@
 # Alpha Readiness Checklist
 
-Updated: 2026-11-25
+Updated: 2026-11-26
+
+## C2b Merged-Main Evidence Review (2026-11-26)
+
+Retrospective receipt review; no new readiness decision. See the
+[current evidence scope](ALPHA_READINESS_DECISION.md#c2b-merged-main-evidence-review-2026-11-26)
+and [sanitized receipt](evidence/c2b_merged_main_review_2026-11-26.json).
+
+- [x] C2b integrated through PR #368 at `592c4622`; beta.22 is `56623003`.
+  Full suite: 4,158 passed, 38 skipped, exit 0, 45.29% coverage against 22%.
+- [x] Released-main 660-second offline continuity: two periodic acknowledgments,
+  acknowledged stop saves and exact restart; signed audits and three zero exits.
+  The stops use harness SIGINT. Boot/integration receipts passed.
+- [x] Retained signed-main CI, manifest signature and distribution verification
+  reviewed; no new hosted run or asset verification performed by this review.
+- [x] Preserve candidate-only live/browser/physical/extended evidence below and
+  all original failures; these do not become released-main checks by integration.
+- [ ] Resolve the six OPEN [development records](DEVELOPMENT_ISSUES.md#current-records)
+  using their causal/verification gates; watchdog shutdown and the STORM skip
+  remain unexplained. Passing reruns and zero exits do not close them.
+- [x] Delegated Codex independent documentation wording review under
+  [#377](https://github.com/AetherraLabs/Aetherra/issues/377); final pushed-revision
+  checks remain required.
+
+The supervised internal-alpha boundary and unattended/production NO-GO remain
+unchanged. Temporal [PR #380](https://github.com/AetherraLabs/Aetherra/pull/380)
+is separate and pending integration; Phase D remains deferred.
 
 ## DEV-CKPT-001 Candidate Follow-Up (2026-11-25)
 
-These checks are bound to product commit
+Historical candidate checks, preserved at their original scope, bound to product
+commit
 `4d9c8f8e455b87624e6918dbcc784577950af4fb` and tree
-`de52a848d9e410e5829d4406c8527cd71263e92d`. C2b remains unmerged.
+`de52a848d9e410e5829d4406c8527cd71263e92d`. C2b was unmerged at this checkpoint.
 See the [issue](DEVELOPMENT_ISSUES.md#dev-ckpt-001--extended-run-observer-and-checkpoint-progress-gap),
 [candidate decision](ALPHA_READINESS_DECISION.md#dev-ckpt-001-candidate-follow-up-2026-11-25)
 and [delivery receipt](evidence/dev_ckpt_001_delivery_2026-11-25.json).
@@ -138,8 +165,9 @@ unexplained runtime delay. The earlier scoped GO is not expanded.
 The original GO missed the Windows first-Ctrl+C path because earlier smoke
 stopped the observer independently. That historical GO rested on targeted review
 and explicitly historical broader evidence; the current qualification is above.
-Signing, policy and the one-second deadline remain unchanged. C2b automatic selection, periodic saves
-and retention are deferred. Pending temporal work is preserved; directory
+Signing, policy and the one-second deadline remain unchanged. At that historical
+checkpoint, C2b automatic selection, periodic saves and retention were deferred.
+Pending temporal work is preserved; directory
 isolation does not establish account isolation or unattended/action readiness.
 
 ## Historical Phase B Candidate Checkpoints
@@ -475,10 +503,10 @@ Primary file:
 ## Gate 10: Alpha Decision
 
 Status: the existing supervised Windows source-runtime boundary remains unchanged.
-C1/C2a and the reporting follow-up are merged. Hosted signing and supported
-profile checks passed within the scope recorded in the
-[current decision](ALPHA_READINESS_DECISION.md#c2b-prerequisite-checkpoint-2026-11-25).
-The original delay remains unexplained.
+C1/C2a, C2b and the reporting/runtime follow-ups are merged. The
+[current evidence review](ALPHA_READINESS_DECISION.md#c2b-merged-main-evidence-review-2026-11-26)
+distinguishes merged-main results from historical candidate checks. All six
+development records remain OPEN; the original checkpoint causes are unexplained.
 Unattended/production operation and unverified installation graphs remain NO-GO;
 no broader authority is inferred.
 
@@ -497,11 +525,11 @@ Decision record:
 
 ## Current Next Actions
 
-1. Continue with Task 1 in the [C2b implementation plan](superpowers/plans/2026-11-25-phase-c2b-checkpoints.md)
-   from the verified released baseline.
-2. Keep [ALPHA-CKPT-001](DEVELOPMENT_ISSUES.md#alpha-ckpt-001--checkpoint-stop-delay)
-   open, preserve the original failure and keep strict signing and governance
-   enforced. Temporal integration remains separate.
+1. Review the merged-main evidence and maintain the six OPEN
+   [development records](DEVELOPMENT_ISSUES.md#current-records) through their
+   owner/review gates; retain original failures and revision-specific limits.
+2. Review pending Temporal PR #380 separately. Keep strict signing, governance,
+   checkpoint authority and the existing supervised internal-alpha boundary.
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

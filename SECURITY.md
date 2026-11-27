@@ -8,7 +8,8 @@ We support the latest main branch. Please open issues and PRs against main.
 
 If you discover a security vulnerability, please do not open a public issue.
 
-Instead, email <security@aetherra.dev> with:
+Use [GitHub private vulnerability reporting](https://github.com/AetherraLabs/Aetherra/security/advisories/new),
+which is enabled for this repository, or email <security@aetherra.dev>. Include:
 
 - A detailed description of the issue and its impact
 - Steps to reproduce or a proof-of-concept

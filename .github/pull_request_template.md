@@ -50,7 +50,8 @@
 - Retained failure evidence and remaining uncertainty:
 - Proposed disposition and required reviewer/owner:
 
-Passing reruns do not establish an unknown cause. Do not include secrets or private conversations. No change to readiness or authority is implied by this PR.
+Passing reruns do not establish an unknown cause. Do not include secrets or
+private conversations. No change to readiness or authority is implied by this PR.
 
 ## Notes for Reviewers
 

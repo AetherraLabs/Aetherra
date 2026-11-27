@@ -1,11 +1,13 @@
 name: Bug Report
-description: Report a reproducible problem in the project
+description: Report an observed defect, including intermittent or historical failures
 labels: [bug]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to file a bug. Please search existing issues first.
+        Search existing issues and the [Development Issue Register](https://github.com/AetherraLabs/Aetherra/blob/main/docs/DEVELOPMENT_ISSUES.md) first.
+        Preserve historical failures; passing reruns alone do not establish their cause.
+        Report vulnerabilities privately through [SECURITY.md](https://github.com/AetherraLabs/Aetherra/blob/main/SECURITY.md).
   - type: input
     id: summary
     attributes:
@@ -18,7 +20,7 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: OS, Python version, invocation (CLI flags), commit SHA if known.
+      description: OS, Python version, environment/profile, invocation and observed source revision; state what is unknown.
       placeholder: |
         OS: Windows 11
         Python: 3.12.3
@@ -29,8 +31,8 @@ body:
   - type: textarea
     id: steps
     attributes:
-      label: Reproduction Steps
-      description: Exact minimal steps or script to reproduce the problem.
+      label: Reproduction / Retained Evidence
+      description: Exact steps or retained failure evidence; distinguish current reproduction, intermittent observations and unverified causes.
       placeholder: |
         1. Run ...
         2. Observe ...
@@ -48,7 +50,7 @@ body:
     id: actual
     attributes:
       label: Actual Behavior / Logs
-      description: Paste full traceback, structured JSON output, or relevant console logs (redact secrets).
+      description: Provide sanitized outcomes, exit codes and receipt/log links; retain failures and state skips, limitations and unknowns. Exclude secrets and private conversations.
     validations:
       required: true
   - type: textarea
@@ -68,9 +70,9 @@ body:
       options:
         - label: I searched existing issues and did not find a duplicate.
           required: true
-        - label: I can reproduce this with the latest main branch.
+        - label: I identified the observed source revision and stated whether reproduction on current main was attempted and its actual result.
           required: true
-        - label: I provided complete reproduction steps and logs.
+        - label: I provided available reproduction steps or retained failure evidence and stated any gaps.
           required: true
         - label: I am willing to submit a PR to help fix this.
           required: false

@@ -4,12 +4,17 @@ This is the canonical contributor guide for Aetherra.
 
 Quick links:
 
-- Docs consistency gate: `docs/contributing/docs-consistency.md`
+- [Docs consistency check](tools/verify_docs_consistency.py): run `python tools/verify_docs_consistency.py`.
 - [Development issue register and evidence practice](docs/DEVELOPMENT_ISSUES.md)
 
 ## Finding work
 
-Start with [the contributor backlog](https://github.com/AetherraLabs/Aetherra/issues/375) or [good first issues](https://github.com/AetherraLabs/Aetherra/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22). Discuss scope and verification before implementing. Status and priority labels guide planning; they do not grant runtime authority or imply release acceptance. Use synthetic data and follow [SECURITY.md](SECURITY.md) for private vulnerability reporting.
+Start with [the contributor backlog](https://github.com/AetherraLabs/Aetherra/issues/375)
+or [good first issues](https://github.com/AetherraLabs/Aetherra/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
+Discuss scope and verification before implementing. Status and priority labels
+guide planning; they do not grant runtime authority or imply release acceptance.
+Use synthetic data and follow [SECURITY.md](SECURITY.md) for private vulnerability
+reporting.
 
 ## Governance & Compliance Expectations
 
@@ -43,11 +48,14 @@ A forthcoming automation script will fail CI if README version badge mismatches 
 
 All `.aether` workflows and scripts must include an up-to-date `# @signature:` header.
 
-To avoid manual steps, a git pre-commit hook is provided that automatically (re)signs any staged `.aether` files:
+To avoid manual steps, a git pre-commit hook is provided that automatically
+(re)signs any staged `.aether` files:
 
 1. Ensure the hook file exists at `.git/hooks/pre-commit` (created automatically in this repo) and is executable.
 2. Stage your changes (`git add` ...).
-3. On `git commit`, the hook runs `tools/precommit_sign_aether.py` which calls `tools/sign_aether.py` for each changed `.aether` file and re-adds them to the index if modified.
+3. On `git commit`, the hook runs `tools/precommit_sign_aether.py` which calls
+   `tools/sign_aether.py` for each changed `.aether` file and re-adds them to the
+   index if modified.
 
 Manual signing (if ever needed):
 
@@ -74,6 +82,7 @@ CI also runs a strict verification workflow (`aether-verify-signatures.yml`) to 
 Active deprecations are tracked to ensure safe removal after a stability window.
 
 **Recently Completed:**
+
 - Legacy Hub script (`aetherra_hub_server.py`) — fully migrated to `aetherra_hub.compat` module (removed).
 
 If proposing a new deprecation, open an issue with label `deprecation-proposal` containing:

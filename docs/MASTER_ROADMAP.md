@@ -1,6 +1,6 @@
 # Aetherra Master Roadmap
 
-Updated: 2026-11-25
+Updated: 2026-11-26
 
 This is the single source of truth for Aetherra roadmap planning.
 
@@ -36,18 +36,20 @@ Windows source-runtime profile. The current objective is bounded internal
 testing with governance, observation and signing controls enforced. The
 checkpoint verification qualification below does not expand that boundary.
 
-C1 and C2a are merged. The checkpoint-stop follow-up merged through PR #355 as
-`e8975d38` and released as `v0.5.0-beta.14` (`a30277e3`). Clean main, fresh
-Python and GUI, live gpt-4o, browser and physical shutdown checks passed within
-their recorded scopes. Hosted production signing and independent release
-manifest and distribution verification passed. Neither physical sampler observed
-final receipt acceptance, which remains unknown for both runs. The original
-stop delay is still unexplained. See the
-[current decision](ALPHA_READINESS_DECISION.md#c2b-prerequisite-checkpoint-2026-11-25).
+C1, C2a and C2b are merged. C2b integrated through PR #368 at `592c4622`
+and released as `v0.5.0-beta.22` (`56623003`). The merge suite passed 4,158 tests
+with 38 skips; released-main offline continuity passed a bounded 660-second
+check. Retained signing/release verification passed. The
+[current evidence review](ALPHA_READINESS_DECISION.md#c2b-merged-main-evidence-review-2026-11-26)
+separates those scopes from candidate live/browser/physical checks and preserves
+all failures. Six [development records](DEVELOPMENT_ISSUES.md#current-records)
+remain OPEN; integration does not establish their causes or close them.
 
-C2b automatic selection, periodic saves and retention are ready to enter
-implementation. Pending TemporalConsciousnessEngine work stays separate.
-Checkpoints confer no autonomous action authority or unattended readiness.
+TemporalConsciousnessEngine [PR #380](https://github.com/AetherraLabs/Aetherra/pull/380)
+remains separate and pending integration. Checkpoints confer no autonomous action
+authority or unattended readiness. Delegated Codex documentation review accepted
+the reconciliation; final pushed-revision checks remain required. The existing
+supervised internal-alpha boundary is unchanged.
 
 Authoritative identity and system references:
 
@@ -174,12 +176,12 @@ Results:
 
 **Stage 21 remains active: supervised internal alpha on the documented Windows
 source-runtime profile.** Stage 22 Beta Hardening and Stage 23 Production
-Readiness remain Planned. The `v0.5.0-beta.13` release version does not advance
+Readiness remain Planned. The `v0.5.0-beta.22` release version does not advance
 those roadmap stages or expand the existing supervised GO.
 
 The [readiness checklist](ALPHA_READINESS_CHECKLIST.md) and
-[current decision](ALPHA_READINESS_DECISION.md#c2b-prerequisite-checkpoint-2026-11-25) govern
-acceptance. The integration plan is now partway through Phase C:
+[current evidence review](ALPHA_READINESS_DECISION.md#c2b-merged-main-evidence-review-2026-11-26)
+retain the existing acceptance boundary. The integration plan is now partway through Phase C:
 
 | Milestone | Current status | Delivered scope or remaining boundary |
 | --- | --- | --- |
@@ -188,13 +190,15 @@ acceptance. The integration plan is now partway through Phase C:
 | C1 | Merged, PR #354 | Opt-in observe-only Consciousness sidecar starts after core activation, exposes bounded status and stops independently of chat |
 | C2a | Merged, PR #353 | One orderly-stop checkpoint through existing Memory; explicitly selected restore before the first tick |
 | Checkpoint-stop follow-up | Merged, PR #355 | Clean-main suite and hosted signing passed. The original stop delay remains unexplained. |
-| C2b | Contract approved and prerequisites verified 2026-11-25. Implementation pending. | [Approved write/head/recovery invariants](superpowers/specs/2026-11-24-phase-c2b-checkpoint-contract-design.md) before automatic selection, periodic saves and retention |
-| Temporal runtime observer | Pending, separate work | Standalone engine hardening exists; pending normal-launch integration is preserved and is not activated by C1/C2a |
+| C2b | Merged through PR #368; beta.22 | Automatic head selection, periodic saves, bounded retention and operator recovery; [revision-bound evidence](ALPHA_READINESS_DECISION.md#c2b-merged-main-evidence-review-2026-11-26) retains OPEN defects and verification limits |
+| Temporal runtime observer | Pending PR #380, separate work | Normal-launch integration requires its own review and verification; C2b does not activate it |
 | Phase D | Deferred | Governed optional agency only after the earlier integration gates; no new action authority |
 
-Next, start Task 1 in the [C2b implementation plan](superpowers/plans/2026-11-25-phase-c2b-checkpoints.md)
-from the verified released baseline. The [prerequisite receipt](evidence/c2b_prerequisites_2026-11-25.json)
-records Task 0 evidence and scope. Keep Temporal integration separate.
+Next, review the [merged-main receipt](evidence/c2b_merged_main_review_2026-11-26.json)
+and investigate the six OPEN development records under their owner/review gates.
+The [C2b plan](superpowers/plans/2026-11-25-phase-c2b-checkpoints.md) and
+[prerequisite receipt](evidence/c2b_prerequisites_2026-11-25.json) retain the
+historical implementation gates. Keep pending Temporal PR #380 separate.
 
 The [follow-up receipt](evidence/checkpoint_stop_followup_2026-11-24.json)
 records 3,840 passing tests, 38 skips and five passing subtests. The change makes
