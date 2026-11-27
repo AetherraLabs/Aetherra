@@ -1,0 +1,253 @@
+{
+  "schema": 1,
+  "recorded_at": "2026-11-26T22:08:24.813113+00:00",
+  "scope": "Local Temporal source and governed Memory-history foundations; runtime integration remains pending.",
+  "base": "56623003675bc99f9e3dfadf15b6254beb183b59",
+  "verification_state": "Verified in an isolated uncommitted worktree; no commit, push or hosted CI run in this task.",
+  "accepted_history_policy": {
+    "sampling_seconds": 5,
+    "retain": "sampled count changes plus session/gap markers",
+    "automatic_deletion": false,
+    "scheduler": "Deferred to runtime observer integration; Memory validates transitions and suppresses unchanged ordinary observations."
+  },
+  "prior_source_slice": "temporal_resumption_2026-11-26.json",
+  "implementation": {
+    "authority": "Existing profile Memory database and Guardian/Security interfaces",
+    "tables": [
+      "temporal_history_heads",
+      "temporal_history_records",
+      "temporal_history_receipts"
+    ],
+    "owner": "consciousness:temporal",
+    "scope": "temporal_history:v1",
+    "page_limit": 64,
+    "attempt_limit_seconds": 1,
+    "core_total_drain_budget_seconds": 1,
+    "release_signing_controls": "unchanged and enforced",
+    "signed_audit": "Existing Guardian OS sidecar lock now serializes key/tail/signed append/cache across processes; HMAC/key format unchanged."
+  },
+  "reviewed_python_sha256": {
+    "Aetherra/aetherra_core/engine/aetherra_engine.py": "0a848d4a340230c562618eaeeb520b3ad5ca7898c7ec6fe37d6735327f35e623",
+    "Aetherra/aetherra_core/memory/aetherra_memory_engine.py": "e6049144da8ffed4b4407e0d8cbb93f7ec80e2a49ef3ac3cc3659d70069a97c3",
+    "Aetherra/aetherra_core/memory/memory_core.py": "4bbeb8b580421ef2bb8e352f6fcc82a4a2881f701fd923827e54409e47328e56",
+    "Aetherra/aetherra_core/memory/temporal_history.py": "d15b52274b8e7b9ac84499a084650d87610f1292e9beed77c0d279dec0c2e701",
+    "Aetherra/aetherra_core/memory/temporal_history_store.py": "e8ccfc5a5991c2e9acb71203b92dc4b3fb96f5aae88af558a2cb96decc62ea12",
+    "Aetherra/aetherra_core/memory/temporal_history_worker.py": "38b0117278d5f043bde211f49d6f46201a259081819c5d3d77cef92be833858c",
+    "Aetherra/consciousness/runtime_observer.py": "3ea460fc0464e6a874528ce9d85c8aa9ef751d0957ff8119df093cfe74860e75",
+    "Aetherra/guardian/state.py": "dafdc899db149ac1557aa275ccd8abf4395735ad37930086e75ec99621be196e",
+    "Aetherra/security/audit_ledger.py": "6ee731cae2b6a67f2e32791be3dc85fb17923f427597e47fa3f85d30b38f8f3d",
+    "aetherra_os_launcher.py": "9ea5f58e8468001e714db8d7b1c1235aede603f68c078a692add9b365e45baa8",
+    "tests/integration/test_temporal_history_restart.py": "fd9dfc7fbb95bb5210a6b95d9b8f84947fa72c4c8d3ab34e88ee2f3937dda2a0",
+    "tests/unit/test_aetherra_engine_hardening.py": "44192294f55865a326ab792e351824d344879d691df980b5373dac915bc679b4",
+    "tests/unit/test_consciousness_observer_lifecycle.py": "f04e1deb44817e56c7fe1fa752d0a6cafeeb6367dcafdb30b70865c524a98e37",
+    "tests/unit/test_memory_temporal_history.py": "18cc7fed1d2fe5f6e933f19d95c75b12ee2f769cd7a7a91333f0bb91ad7ff1e4",
+    "tests/unit/test_security_audit_ledger.py": "362b4b29b307920750ba7a3e954fbce0ef122d03ccab6051aab7ae1dab682bfb",
+    "tests/unit/test_temporal_history_c2b_isolation.py": "d10eb79363843c268c78cca33ec61ea6711bebbaddd6810253e5f91b21b41d20",
+    "tests/unit/test_temporal_history_store.py": "3dd1db17ed5f14d5d1736013fa009115f71dbad72e9eb39ae8ff08a6ef5535a5"
+  },
+  "verification": {
+    "full_suite": {
+      "label": "history-full-02",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 2389.35,
+      "log_sha256": "4108a6ddf2f09a65c73af93580058e62eba1da6016107f9eb47afcd5735075a1",
+      "passed": 4239,
+      "skipped": 38,
+      "coverage_percent": 45.29,
+      "unchanged_coverage_floor_percent": 22,
+      "skip_reasons": [
+        "SKIPPED [2] tests\\capabilities\\test_reflection_memory_stability.py:33: Reflection system unavailable: No module named 'Aetherra.aetherra_core.system.emotion_detector'",
+        "SKIPPED [2] tests\\tools\\test_release_bootstrap.py:15: could not import 'semantic_release': No module named 'semantic_release'",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:154: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:168: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:225: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:237: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:337: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:302: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:314: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:414: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:375: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:387: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:486: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:464: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:450: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:531: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:556: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:516: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:631: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:593: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:605: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:672: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:686: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:750: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:771: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:725: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:804: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:821: GUI components not available",
+        "SKIPPED [1] tests\\capabilities\\test_perception_shutdown.py:30: Windows terminate does not deliver SIGTERM",
+        "SKIPPED [1] tests\\capabilities\\test_storm_acceptance.py:138: STORM not enabled",
+        "SKIPPED [1] tests\\capabilities\\test_storm_acceptance.py:206: STORM not enabled",
+        "SKIPPED [1] tests\\capabilities\\test_storm_acceptance.py:306: Memory system not returning results - persistence issue",
+        "SKIPPED [1] tests\\unit\\test_hub_quantum_and_chat_metrics.py:20: Flask not available in test env",
+        "SKIPPED [1] tests\\unit\\test_hub_quantum_and_chat_metrics.py:34: Flask not available in test env",
+        "SKIPPED [1] tests\\unit\\test_signature_verifier.py:419: Symlinks not supported on this system",
+        "SKIPPED [1] tests\\unit\\test_sse_replay_gap_metric.py:20: Flask dependency or environment heavy; placeholder smoke"
+      ]
+    },
+    "focused_boundaries": {
+      "label": "history-final-boundaries",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "addopts=",
+        "tests/unit\\test_guardian_core.py",
+        "tests/unit\\test_guardian_containment.py",
+        "tests/unit\\test_guardian_approval.py",
+        "tests/unit\\test_guardian_policy_engine.py",
+        "tests/unit\\test_guardian_models.py",
+        "tests/unit\\test_guardian_preauthorization.py",
+        "tests/unit/test_security_audit_ledger.py",
+        "tests/unit/test_memory_temporal_history.py",
+        "tests/unit/test_temporal_history_store.py",
+        "tests/unit/test_temporal_history_c2b_isolation.py",
+        "tests/integration/test_temporal_history_restart.py",
+        "tests/unit/test_aetherra_engine_hardening.py",
+        "tests/unit/test_engine_memory_compatibility.py"
+      ],
+      "exit_code": 0,
+      "seconds": 25.0,
+      "log_sha256": "ccb7efb53971309820230fbbf836851cf3f73d857aabee8bce14184da898e44b",
+      "passed": 215
+    },
+    "python_quality": {
+      "label": "history-quality-verified",
+      "command": [
+        "python",
+        "tools/python_quality.py"
+      ],
+      "exit_code": 0,
+      "seconds": 100.78,
+      "log_sha256": "3dc4c55a1cbd36f4df0e2b9abd068bfdfddb3a909597f42b5b8b80d70a845e35",
+      "new_or_edited_violations": 0,
+      "baseline": "unchanged"
+    },
+    "documentation": {
+      "label": "history-docs-verified",
+      "command": [
+        "python",
+        "tools/verify_docs_consistency.py"
+      ],
+      "exit_code": 0,
+      "seconds": 3.82,
+      "log_sha256": "30759ff2f115329507272b5018737d9687e5a146a0986299938aedd1a3611411",
+      "missing_envs": 0,
+      "missing_routes": 0,
+      "missing_required_consciousness_metrics": 0
+    },
+    "environment": {
+      "python": "3.13.7",
+      "platform": "win32",
+      "model_downloads_offline": true,
+      "general_network_egress_blocked_by_runner": false,
+      "ambient_credentials_removed": true
+    }
+  },
+  "synthetic_restart_trace": {
+    "write_process": 63196,
+    "write_epoch": 1,
+    "record": {
+      "id": "55555555555555555555555555555555",
+      "digest": "b27a3437cc9e629ca8273b31b5b712fc06e52371737cf25ad665f62546be6df3",
+      "ordinal": 3,
+      "kind": "observation",
+      "sequence": 6,
+      "observed_at": 95.0,
+      "working_memory_count": 3
+    },
+    "append_request_digest": "8910fb12b948ce76ece3ee307f77322b62cdd39455488625ddf44473d6e47137",
+    "signed_audit_reference": "b63f48bce6950260b80ba887730fc258b42dce9c56c327c95a8cb05b64b1a869",
+    "selected_head": {
+      "ordinal": 4,
+      "id": "77777777777777777777777777777777",
+      "digest": "cc560fcb64fe358925daaff0be4ac5be2650c2c3fb596f04a4d25f3333a7f694"
+    },
+    "read_process": 26652,
+    "read_epoch": 2,
+    "same_record_and_digest_after_restart": true,
+    "writer_and_reader_signed_audit_verified": true,
+    "generic_chat_memory_rows": 0,
+    "separate_profile": {
+      "pid": 40196,
+      "error": "missing",
+      "record_ids": [],
+      "generic_memory_count": 0,
+      "history_schema_created": false
+    },
+    "consumer": "Typed Memory read page; no Temporal engine import or reply generation in this slice."
+  },
+  "live_takeover_trace": {
+    "old_process": 62808,
+    "old_epoch": 2,
+    "new_process": 43120,
+    "new_epoch": 3,
+    "old_append_error": "writer_fenced",
+    "after_old_settled_inspection": "not_committed",
+    "head_unchanged": true,
+    "timing_control": "Old job monotonic clock held to isolate epoch fencing from process-start scheduling; Memory, policy, signed audit and SQL are real."
+  },
+  "review_regressions": [
+    "Bound oversized/corrupt SQLite values before materialization and restore the caller limit.",
+    "Route ordinary Memory close through shared drain; retain unfinished ownership and retry original backend.",
+    "Keep real Core drain off the asyncio loop and retain cancelled close attempts.",
+    "Serialize concurrent process audit appends, preserve readonly verification and fail closed on partial data.",
+    "Settle/wake cancelled or terminal jobs; release settled Core references before idle.",
+    "Distinguish precommit SQLite corruption from unavailability; keep postcommit uncertainty."
+  ],
+  "shared_failure_limits": [
+    "SQLite and signed-audit locks remain shared resources. Independent lanes do not guarantee successful saves during shared storage/authority failure.",
+    "Blocked shared audit regression preserves local C2b deadline, outstanding ownership and unchanged heads without a false acknowledgement.",
+    "Readonly exports without a sidecar validate captured bytes and may reject an incomplete concurrent write."
+  ],
+  "excluded_runs": [
+    {
+      "label": "history-full-01",
+      "reason": "Intentionally stopped after final review found load-bearing fixes; not completed-suite evidence."
+    },
+    {
+      "label": "history-finalfix-red-snapshot-01",
+      "reason": "Fixture cleanup blocked on an Event owned by a terminated writer. Corrected fixture used os._exit before write and bounded joins; aborted run is not reproduction or pass evidence."
+    }
+  ],
+  "preservation": {
+    "protected_unchanged": true,
+    "protected_worktrees": 3,
+    "pending_temporal_files": 17,
+    "pending_alpha_files": 11,
+    "indexes_and_heads_unchanged": true,
+    "local_receipt_sha256": "69b430911244e6d7a8a3dafc29a029a6b98dd9074ebf95cfa747de464de9e9dd"
+  },
+  "unverified": [
+    "Normal launcher activation of the Temporal observer",
+    "Five-second sampling and exact import into the Temporal engine",
+    "Temporal Observatory/browser behavior",
+    "Fresh installation, live-model and physical-keyboard checks for this change",
+    "Hosted CI and release verification for this uncommitted change"
+  ],
+  "readiness": "Existing supervised internal-alpha boundary unchanged; no unattended or production GO.",
+  "open_issues_preserved": [
+    "ALPHA-CKPT-001",
+    "DEV-CKPT-001",
+    "DEV-AUDIT-001",
+    "DEV-OBS-001",
+    "Existing Homeostasis watchdog shutdown error"
+  ]
+}

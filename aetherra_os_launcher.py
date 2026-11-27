@@ -44,6 +44,16 @@ if TYPE_CHECKING:
         StreamToken,
     )
     from Aetherra.aetherra_core.memory.lifecycle_checkpoint import CheckpointJobControl
+    from Aetherra.aetherra_core.memory.temporal_history import (
+        AppendInspection,
+        AppendReceipt,
+        AppendRequest,
+        HistoryHead,
+        HistoryKey,
+        HistoryPage,
+        HistorySelection,
+        HistoryToken,
+    )
 
 
 # Early .env loader: ensure API keys and config from .env are available at startup
@@ -173,6 +183,83 @@ class MemoryAdapter:
         ):
             raise RuntimeError("checkpoint_unavailable")
         return self.impl
+
+    def submit_acquire_temporal_history(
+        self, *, key: "HistoryKey", start_mode: str, control: "CheckpointJobControl"
+    ) -> "StreamJob[HistorySelection]":
+        return self._submit_temporal_history(
+            operation="acquire", key=key, start_mode=start_mode, control=control
+        )
+
+    def submit_append_temporal_history(
+        self, *, request: "AppendRequest", control: "CheckpointJobControl"
+    ) -> "StreamJob[AppendReceipt]":
+        return self._submit_temporal_history(
+            operation="append", request=request, control=control
+        )
+
+    def submit_read_temporal_history(
+        self,
+        *,
+        token: "HistoryToken",
+        selected_head: "HistoryHead",
+        after_ordinal: int,
+        limit: int,
+        control: "CheckpointJobControl",
+    ) -> "StreamJob[HistoryPage]":
+        return self._submit_temporal_history(
+            operation="read",
+            token=token,
+            selected_head=selected_head,
+            after_ordinal=after_ordinal,
+            limit=limit,
+            control=control,
+        )
+
+    def submit_inspect_temporal_append(
+        self,
+        *,
+        token: "HistoryToken",
+        request: "AppendRequest",
+        control: "CheckpointJobControl",
+    ) -> "StreamJob[AppendInspection]":
+        return self._submit_temporal_history(
+            operation="inspect", token=token, request=request, control=control
+        )
+
+    def _submit_temporal_history(self, **job):
+        # Aetherra imports
+        from Aetherra.aetherra_core.memory.checkpoint_stream import StreamJob
+
+        try:
+            backend = self._checkpoint_backend()
+        except RuntimeError:
+            return StreamJob.refused("unavailable")
+        return backend._submit_temporal_history(
+            adapter_owned=lambda: self._checkpoint_backend() is backend, **job
+        )
+
+    def _original_temporal_backend(self):
+        # Aetherra imports
+        from Aetherra.aetherra_core.memory.aetherra_memory_engine import (
+            AetherraMemoryEngineAdvanced,
+        )
+
+        backend = self._checkpoint_impl
+        if (
+            type(backend) is AetherraMemoryEngineAdvanced
+            and backend._checkpoint_core is self._checkpoint_core
+        ):
+            return backend
+        return None
+
+    def temporal_history_pending(self) -> bool:
+        backend = self._original_temporal_backend()
+        return backend is not None and backend.temporal_history_pending()
+
+    def drain_temporal_history(self, timeout: float = 1.0) -> bool:
+        backend = self._original_temporal_backend()
+        return backend is not None and backend.drain_temporal_history(timeout)
 
     def submit_acquire_checkpoint_stream(
         self,
@@ -516,6 +603,15 @@ class AetherraOSLauncher:
         self._perception_adapters = []
         self._consciousness_task = None
         self._consciousness_stop_deadline = None
+        self._temporal_observer = None
+        self._temporal_task = None
+        self._temporal_registry = None
+        self._temporal_source = None
+        self._consciousness_ownership_evaluated = False
+        self._temporal_memory = None
+        self._temporal_stop_deadline = None
+        self._temporal_registration_expected = False
+        self._temporal_marker_allowed = True
         # One-shot intent from main()'s Windows SIGINT handler, never task.cancel().
         self._orderly_cli_sigint_task: asyncio.Task | None = None
 
@@ -2678,14 +2774,58 @@ class AetherraOSLauncher:
             continuity_settings,
             observer_settings,
         )
+        from Aetherra.consciousness.temporal_observer import (
+            TemporalObserver,
+            temporal_settings,
+        )
+        from aetherra_hub.services.state import hub_state
+
+        if self._temporal_observer is not None or self._temporal_source is not None:
+            return
+        temporal_error = None
+        try:
+            settings = temporal_settings(config or {})
+        except ValueError:
+            settings, temporal_error = None, "config_invalid"
+        registry = self._temporal_registry = self.service_registry
+        memory_adapter = self.systems.get("memory") if settings else None
+        self._temporal_memory = (
+            memory_adapter if type(memory_adapter) is MemoryAdapter else None
+        )
+
+        def configure_temporal(source=None):
+            self._consciousness_ownership_evaluated = True
+            self._temporal_source = source
+            try:
+                self._temporal_observer = TemporalObserver(
+                    source,
+                    self._temporal_memory,
+                    settings=settings,
+                    local_owned=self._temporal_locally_owned,
+                    readiness=self._consciousness_core_readiness,
+                )
+                if temporal_error or (settings and source is None):
+                    self._temporal_observer.block(temporal_error or "core_not_ready")
+                if registry is not None:
+                    return hub_state.bind_temporal_status(
+                        owner=self,
+                        registry=registry,
+                        provider=self._get_temporal_runtime_status,
+                    )
+            except Exception:
+                logger.warning("[TEMPORAL] Collector or status binding unavailable")
+                if self._temporal_observer is not None:
+                    self._temporal_observer.block("unavailable")
+            return False
 
         if "consciousness_core" in self.systems:
+            configure_temporal()
             return
-        registry = self.service_registry
         if (
             registry is not None
             and registry.get_service_info("consciousness_core") is not None
         ):
+            configure_temporal()
             logger.warning(
                 "[CONSCIOUSNESS] Observer name already owned; leaving existing service intact"
             )
@@ -2698,6 +2838,7 @@ class AetherraOSLauncher:
         except ValueError:
             interval, error = 1.0, "config_invalid"
         if interval is None:
+            configure_temporal()
             return
         memory = self.systems.get("memory") if continuity["enabled"] else None
         checkpoint_store = None
@@ -2747,7 +2888,9 @@ class AetherraOSLauncher:
             automatic=continuity.get("automatic"),
             recovery_attempt=continuity.get("recovery_attempt"),
             local_owned=local_owned,
+            temporal_observation_enabled=settings is not None,
         )
+        bound = configure_temporal(observer)
         if error:
             observer.block(error)
         self.systems["consciousness_core"] = observer
@@ -2763,14 +2906,295 @@ class AetherraOSLauncher:
                 },
             ):
                 observer.block("core_not_ready")
+                if settings and self._temporal_observer is not None:
+                    self._temporal_observer.block("core_not_ready")
                 return
-            observer.start()
+            started = observer.start()
             self._consciousness_task = asyncio.create_task(
                 self._monitor_consciousness_observer(observer)
             )
         except Exception:
-            await observer.stop()
+            await self._stop_paired_monitor(observer)
             logger.warning("[CONSCIOUSNESS] Observer registration unavailable")
+            if settings and self._temporal_observer is not None:
+                self._temporal_observer.block("core_not_ready")
+            return
+        if settings and self._temporal_observer is not None:
+            collector = self._temporal_observer
+            try:
+                if not started or not local_owned():
+                    collector.block("core_not_ready")
+                elif (
+                    not bound
+                    or registry.get_service_info("temporal_observer") is not None
+                    or "temporal_observer" in self.systems
+                ):
+                    collector.block("service_conflict")
+                elif not self._temporal_memory_owned():
+                    collector.block("memory_not_ready")
+                else:
+                    registered = await registry.register_service(
+                        "temporal_observer",
+                        collector,
+                        metadata={"observer_only": True, "self_heartbeat": True},
+                    )
+                    info = registry.get_service_info("temporal_observer")
+                    if not registered or info is None or info.instance is not collector:
+                        collector.block("unavailable")
+                        return
+                    self._temporal_registration_expected = True
+                    if "temporal_observer" not in self.systems:
+                        self.systems["temporal_observer"] = collector
+                    if self._temporal_locally_owned():
+                        collector.start()
+                    else:
+                        collector.block("ownership_lost")
+            except Exception:
+                collector.block("unavailable")
+            finally:
+                if self._temporal_registration_expected:
+                    # Publish the initial state before returning from startup;
+                    # the registry's registration API defaults to healthy.
+                    await self._publish_temporal_service_status(collector)
+                    self._temporal_task = asyncio.create_task(
+                        self._monitor_temporal_observer(collector)
+                    )
+
+    def _temporal_service_status(self):
+        status = self._get_temporal_runtime_status()
+        state = status.get("runtime_state")
+        if (
+            state == "running"
+            and status.get("thread_alive") is True
+            and status.get("source_fresh") is True
+        ):
+            return ServiceStatus.HEALTHY
+        return {
+            "starting": ServiceStatus.STARTING,
+            "stopping": ServiceStatus.STOPPING,
+            "stopped": ServiceStatus.STOPPING,
+            "failed": ServiceStatus.FAILED,
+        }.get(state, ServiceStatus.DEGRADED)
+
+    async def _publish_temporal_service_status(self, collector, *, timeout=1.0):
+        registry = self._temporal_registry
+        info = registry.get_service_info("temporal_observer") if registry else None
+        if (
+            info is None
+            or info.instance is not collector
+            or self.service_registry is not registry
+        ):
+            return False
+        try:
+            status = self._temporal_service_status()
+            # The snapshot and all ownership checks must still hold after the
+            # policy worker returns. It may never revive a newly blocked worker.
+            async with asyncio.timeout(timeout):
+                return await registry.update_service_status(
+                    "temporal_observer",
+                    status,
+                    expected_instance=collector,
+                    nonblocking_preflight=True,
+                    preflight_timeout=timeout,
+                    apply_if=lambda: (
+                        self._temporal_observer is collector
+                        and self.service_registry is registry
+                        and self._temporal_registry is registry
+                        and self._temporal_service_status() is status
+                    ),
+                )
+        except Exception as exc:
+            logger.warning(
+                "[TEMPORAL] Registry status publication unavailable (%s)",
+                type(exc).__name__,
+            )
+            return False
+
+    async def _monitor_temporal_observer(self, collector):
+        """Publish cached state only for this registration; never reacquire it."""
+        last_attempt_at = time.monotonic()
+        registry = self._temporal_registry
+        info = registry.get_service_info("temporal_observer") if registry else None
+        last_attempt_status = info.status if info is not None else None
+        try:
+            while True:
+                registry = self._temporal_registry
+                info = (
+                    registry.get_service_info("temporal_observer") if registry else None
+                )
+                if (
+                    info is None
+                    or info.instance is not collector
+                    or self.service_registry is not registry
+                ):
+                    return
+                status = self._temporal_service_status()
+                heartbeat_interval = min(30.0, max(1.0, registry._stale_sec / 3))
+                if (
+                    status is not last_attempt_status
+                    or time.monotonic() - last_attempt_at >= heartbeat_interval
+                ):
+                    await self._publish_temporal_service_status(collector)
+                    last_attempt_at = time.monotonic()
+                    last_attempt_status = status
+                await asyncio.sleep(1)
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            logger.warning(
+                "[TEMPORAL] Registry monitor unavailable (%s)", type(exc).__name__
+            )
+
+    def _temporal_memory_owned(self):
+        memory = self._temporal_memory
+        if memory is None or self.systems.get("memory") is not memory:
+            return False
+        info = self._temporal_registry.get_service_info("memory_system")
+        try:
+            return info is not None and info.instance is memory._checkpoint_backend()
+        except RuntimeError:
+            return False
+
+    def _temporal_locally_owned(self):
+        registry = self._temporal_registry
+        if registry is None or self.service_registry is not registry:
+            return False
+        for name, expected in (
+            ("consciousness_core", self._temporal_source),
+            ("temporal_observer", self._temporal_observer),
+        ):
+            info = registry.get_service_info(name)
+            if (
+                info is None
+                or info.instance is not expected
+                or self.systems.get(name) is not expected
+            ):
+                return False
+        return self._temporal_memory_owned()
+
+    def _get_temporal_runtime_status(self):
+        registry = self._temporal_registry
+        if registry is None or self.service_registry is not registry:
+            return {"runtime_state": "unavailable"}
+        if self._temporal_registration_expected:
+            info = registry.get_service_info("temporal_observer")
+            if info is None:
+                return {"runtime_state": "missing", "last_error_code": "missing"}
+            core_info = registry.get_service_info("consciousness_core")
+            memory_info = registry.get_service_info("memory_system")
+            memory = self._temporal_memory
+            if (
+                info.instance is not self._temporal_observer
+                or self.systems.get("temporal_observer") is not self._temporal_observer
+                or core_info is None
+                or core_info.instance is not self._temporal_source
+                or self.systems.get("consciousness_core") is not self._temporal_source
+                or memory is None
+                or self.systems.get("memory") is not memory
+                or memory_info is None
+                or memory_info.instance is not memory._checkpoint_impl
+                or memory.impl is not memory._checkpoint_impl
+                or memory.impl.core_memory is not memory._checkpoint_core
+            ):
+                return {
+                    "runtime_state": "unavailable",
+                    "ownership_state": "lost",
+                    "last_error_code": "ownership_lost",
+                }
+        return self._temporal_observer.get_runtime_status()
+
+    async def _finish_temporal_stop(self, *, save_history, clear=False):
+        temporal = self._temporal_observer
+        if temporal is None:
+            return
+        if self._temporal_stop_deadline is None:
+            self._temporal_stop_deadline = time.monotonic() + 1.0
+        deadline = self._temporal_stop_deadline
+        if not save_history:
+            self._temporal_marker_allowed = False
+        settled = False
+        task = self._temporal_task
+        if task is not None:
+            task.cancel()
+        # Publish stopping/blocked concurrently with the existing stop/drain
+        # window. Audit latency cannot add another second to shutdown.
+        remaining = deadline - time.monotonic()
+        publication = (
+            asyncio.create_task(
+                self._publish_temporal_service_status(
+                    temporal, timeout=min(1.0, remaining)
+                )
+            )
+            if self._temporal_registration_expected and remaining > 0
+            else None
+        )
+        try:
+            settled = await temporal.stop(
+                save_history=save_history and self._temporal_marker_allowed,
+                deadline=deadline,
+            )
+        finally:
+            try:
+                memory = self._temporal_memory
+                if memory is not None and self._temporal_registration_expected:
+                    remaining = max(0.0, deadline - time.monotonic())
+                    if remaining:
+                        try:
+                            async with asyncio.timeout(remaining):
+                                drained = await asyncio.to_thread(
+                                    memory.drain_temporal_history, remaining
+                                )
+                        except TimeoutError:
+                            drained = False
+                    else:
+                        drained = memory.drain_temporal_history(timeout=0)
+                    settled = settled and drained
+            finally:
+                try:
+                    async with asyncio.timeout(max(0.0, deadline - time.monotonic())):
+                        await asyncio.gather(
+                            *(
+                                pending
+                                for pending in (task, publication)
+                                if pending is not None
+                            ),
+                            return_exceptions=True,
+                        )
+                except TimeoutError:
+                    pass
+                finally:
+                    for pending in (task, publication):
+                        if pending is not None and not pending.done():
+                            pending.cancel()
+                    if task is None or task.done():
+                        self._temporal_task = None
+        if not settled:
+            raise RuntimeError("temporal_shutdown_pending")
+        if clear and self._temporal_registry is not None:
+            # Aetherra imports
+            from aetherra_hub.services.state import hub_state
+
+            hub_state.clear_temporal_status(
+                owner=self, registry=self._temporal_registry
+            )
+
+    def _close_temporal_admission(self):
+        if self._temporal_observer is not None:
+            try:
+                self._temporal_observer.close_observation_admission()
+            except Exception:
+                self._temporal_marker_allowed = False
+                logger.warning("[TEMPORAL] Observation admission closure failed")
+
+    async def _stop_paired_monitor(self, observer):
+        if self._temporal_source is not observer:
+            await observer.stop()
+            return
+        self._close_temporal_admission()
+        try:
+            await self._stop_owned_core(save_checkpoint=False, monitor_stop=True)
+        finally:
+            await self._finish_temporal_stop(save_history=False)
 
     async def _monitor_consciousness_observer(self, observer):
         """Refresh only the exact owned worker; failed/blocked loops never stay healthy."""
@@ -2785,8 +3209,7 @@ class AetherraOSLauncher:
                     else None
                 )
                 if info is None or info.instance is not observer:
-                    await observer.stop()
-                    return
+                    break
                 state = observer.get_runtime_status()["runtime_state"]
                 status = {
                     "starting": ServiceStatus.STARTING,
@@ -2827,15 +3250,36 @@ class AetherraOSLauncher:
         except asyncio.CancelledError:
             raise
         except Exception as exc:
-            await observer.stop()
             logger.warning(
                 "[CONSCIOUSNESS] Observer lifecycle status unavailable (%s)",
                 type(exc).__name__,
             )
 
+        await self._stop_paired_monitor(observer)
+
     async def _stop_consciousness_observer(self, *, save_checkpoint=False):
         """Stop only the optional C1 observer, preserving core chat ownership."""
-        observer = self.systems.get("consciousness_core")
+        self._close_temporal_admission()
+        try:
+            await self._stop_owned_core(save_checkpoint=save_checkpoint)
+        except BaseException:
+            try:
+                await self._finish_temporal_stop(save_history=False)
+            except Exception:
+                logger.warning(
+                    "[TEMPORAL] Shutdown remains pending after Core stop failure"
+                )
+            raise
+        await self._finish_temporal_stop(save_history=save_checkpoint, clear=True)
+
+    async def _stop_owned_core(self, *, save_checkpoint, monitor_stop=False):
+        observer = (
+            self._temporal_source
+            if self._consciousness_ownership_evaluated
+            or self._temporal_source is not None
+            or self._temporal_observer is not None
+            else self.systems.get("consciousness_core")
+        )
         if observer is None or not callable(
             getattr(observer, "get_runtime_status", None)
         ):
@@ -2843,7 +3287,7 @@ class AetherraOSLauncher:
         if self._consciousness_stop_deadline is None:
             self._consciousness_stop_deadline = time.monotonic() + 2.0
         stop_deadline = self._consciousness_stop_deadline
-        task = self._consciousness_task
+        task = None if monitor_stop else self._consciousness_task
         if task is not None:
             task.cancel()
         try:
@@ -2881,7 +3325,11 @@ class AetherraOSLauncher:
                     drained = False
             if not drained:
                 raise RuntimeError("consciousness_shutdown_pending")
-        registry = self.service_registry
+        registry = (
+            self._temporal_registry
+            if self._temporal_source is observer
+            else self.service_registry
+        )
         info = registry.get_service_info("consciousness_core") if registry else None
         remaining = stop_deadline - time.monotonic()
         if info is not None and info.instance is observer and remaining > 0:

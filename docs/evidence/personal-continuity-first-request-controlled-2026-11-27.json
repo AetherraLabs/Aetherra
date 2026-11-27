@@ -1,0 +1,445 @@
+{
+  "schema_version": 1,
+  "verification_date": "2026-11-27",
+  "scope": "Controlled before/after reproduction through the existing full Windows launcher, Hub /api/ai/ask, real Memory and pinned local retrieval model",
+  "case": "Existing varied-paraphrase bicycle case, nine writes then one recall in a new process",
+  "schedule_control": "Hold only the queued system_startup aetherra_thought until first POST TCP connect, then release and yield once before headers; no model delay or replacement",
+  "unchanged_limits_seconds": {
+    "server_socket_operation": 5,
+    "client_request": 90,
+    "child_process": 200
+  },
+  "retrieval_model": {
+    "identifier": "sentence-transformers/all-MiniLM-L6-v2",
+    "revision": "c9745ed1d9f207416be6d2e6f8de32d1f16199bf",
+    "local_files_only": true,
+    "trust_remote_code": false
+  },
+  "source_binding": {
+    "only_changed_selected_source": [
+      "Aetherra/aetherra_core/memory/memory_core.py"
+    ],
+    "other_selected_sources_unchanged": 14,
+    "dependency_hashes_unchanged": 25,
+    "helper_hashes_unchanged": 3,
+    "sources_red": {
+      "tests/acceptance/test_personal_continuity.py": "ab2baf03baa77aa04d29480a1e9dc19aac72bf4302b3d23c66aed7da75090441",
+      "tests/acceptance/continuity_runtime.py": "5096962fa38d9f94b68a5512fe9aaea294ee31facf3689b8cd28a1a6765f5db1",
+      "aetherra_os_launcher.py": "847b773537e0ee859d76dc679040631a36b2324ecdc616d9c729d4adb221d81a",
+      "aetherra_kernel_loop.py": "4818bdda6182da3314c1164aeb2ad5f3c534d47fd061d53f8554a94c958d9173",
+      "aetherra_hub/request_server.py": "4d2762bb73947b00b4d027c44171021e978b0bef4e62393e5805c6865b30fe17",
+      "aetherra_hub/app.py": "083a68c841113a4746869f474b8a6ac3bcf6d739450196568a66b60e9b6c583c",
+      "aetherra_hub/compat.py": "d228dafe7e038678bc2c172029a5b0dbaba58953655a784b83dd36b9d1a8728b",
+      "aetherra_hub/blueprints/ai_ask.py": "d8880948fb7bdfcd26b3806e53ec8d21da86b20224d62f926d0f9f32fcea0eca",
+      "aetherra_hub/services/chat_contract.py": "44641a18385776660d0f162fddf157ff4dbe5d5e5f280b51d45737a713db5196",
+      "aetherra_hub/services/request_ownership.py": "0c3c29bb2fef4653972be20664c337417c5ffa2a9699e0313eb3b0bc6da1bbe4",
+      "Aetherra/aetherra_core/engine/aetherra_engine.py": "0a848d4a340230c562618eaeeb520b3ad5ca7898c7ec6fe37d6735327f35e623",
+      "Aetherra/aetherra_core/memory/memory_core.py": "4bbeb8b580421ef2bb8e352f6fcc82a4a2881f701fd923827e54409e47328e56",
+      "Aetherra/aetherra_core/memory/chat_retrieval.py": "b77c35780117c80382631c5b1a673216c6f83d3245aec5facbdfb0e6dc22d3b5",
+      "requirements.lock": "80c2bfabc6f020578a8c46942fb5364fbc6ee37f95e659f7948488fb407f2158",
+      "requirements-ci.lock": "4276a3a2f14bb11747460280265df6087416f8c1d0f21246122bd305c67f6b7d"
+    },
+    "helper_sha256": {
+      "run_case.py": "a34cbb0bc9b7becfe92dc7e771282bb3aeaae70e0f741ba6e90c7ed14a679740",
+      "controlled_child.py": "c5a89d42e717e713c6406ae3e98d0ce4322cc216ca42b15457ec1f4041444018",
+      "observe_child.py": "c23031ba6faec8150fa05746d1185e6adeb977df51131e08f1af36cc009b9367"
+    },
+    "prepared_red_sha256": "0204cecd52c9eb2467f0092f89052e21e7c15a777a85422f928c05335ab1a87a",
+    "prepared_green_sha256": "2e8bb5d906bb6eefdb987d6b86d7df6d1f2f75e654f31858ae51597906a07cd4"
+  },
+  "runs": {
+    "red": {
+      "artifact_directory": "controlled-runs/red-0d6fcb78-one",
+      "source_commit": "0d6fcb78ddafdcf8d517e57d51f420bb32452c01",
+      "source_state": "pre-fix committed source",
+      "memory_core_sha256": "4bbeb8b580421ef2bb8e352f6fcc82a4a2881f701fd923827e54409e47328e56",
+      "artifact_sha256": {
+        "summary.json": "8b2738d58aabe2bddeb2016e2df73de7619c324a4bd289a76f5c852d8c8de6b6",
+        "recall-controlled-trace.json": "b1d265bf1cc759ee917745c9a538d8a0217508609e9d8e9fea6c40e725cf9c3a",
+        "source-manifest.json": "e4a3e3c8670b437857a039e56effffdb610d78b289f20cc57914698cbb49458e",
+        "write-result.json": "a586f26e017ba351809ba919b1825ab8e72bb7e4dd3bd23d829b51ac20b62c0b",
+        "recall-result.json": "47290e139fc3a42bbc8921529cdb01cde39da8ccf8ac894de925fe30659e979a"
+      },
+      "case_passed": false,
+      "diagnostic_complete": true,
+      "processes": {
+        "write": {
+          "pid": 42632,
+          "stopped": true,
+          "status": [
+            200,
+            200,
+            200,
+            200,
+            200,
+            200,
+            200,
+            200,
+            200
+          ]
+        },
+        "recall": {
+          "pid": 57848,
+          "stopped": true,
+          "status": []
+        }
+      },
+      "clock": {
+        "utc_before_ns": 1795804606035929800,
+        "monotonic_ns": 917875173988000,
+        "utc_after_ns": 1795804606035933800,
+        "pid": 57848
+      },
+      "socket": {
+        "client_port": 55737,
+        "server_port": 55695
+      },
+      "thread_ids": {
+        "client_event_loop": 15400,
+        "startup_encoder": 15400,
+        "HTTP_request_worker": 10744
+      },
+      "timing_ms": {
+        "cold_encoder_duration": 10897.7361,
+        "startup_rank_duration": 10956.4655,
+        "accept_to_first_header_handoff": 11014.0235,
+        "accept_to_socket_timeout": 5013.618,
+        "timeout_to_header_handoff": 6000.4055,
+        "maximum_observed_loop_lag": 10974.450399
+      },
+      "cold_encoder_began_before_client_resume": true,
+      "cold_encoder_overlapped_header_handoff": false,
+      "socket_timeout_count": 1,
+      "POST_parsed": false,
+      "exception_type": "ServerDisconnectedError",
+      "cleanup_release_used": false,
+      "hook_count": 20,
+      "hook_errors": [],
+      "metadata_errors": 0,
+      "dropped_events": 0,
+      "missing_modules": [],
+      "source_changes": [],
+      "selected_events": [
+        {
+          "seq": 101,
+          "monotonic_ns": 917883145423800,
+          "thread_id": 22968,
+          "event": "server.accept.end",
+          "operation_id": 26,
+          "local_port": 55695,
+          "peer_port": 55737
+        },
+        {
+          "seq": 102,
+          "monotonic_ns": 917883145784800,
+          "thread_id": 10744,
+          "event": "server.request.begin",
+          "operation_id": 27,
+          "handler_id": 1549183118400,
+          "local_port": 55695,
+          "peer_port": 55737
+        },
+        {
+          "seq": 104,
+          "monotonic_ns": 917883181621800,
+          "thread_id": 15400,
+          "event": "control.client_connected",
+          "local_port": 55737,
+          "peer_port": 55695
+        },
+        {
+          "seq": 107,
+          "monotonic_ns": 917883181689700,
+          "thread_id": 15400,
+          "event": "startup_thought.begin"
+        },
+        {
+          "seq": 110,
+          "monotonic_ns": 917883186391800,
+          "thread_id": 15400,
+          "event": "memory.rank.begin",
+          "operation_id": 28,
+          "candidate_count": 10,
+          "limit": 3,
+          "startup_thought": true
+        },
+        {
+          "seq": 111,
+          "monotonic_ns": 917883186399500,
+          "thread_id": 15400,
+          "event": "model.encoder.begin",
+          "operation_id": 29,
+          "cache_entries": 0,
+          "startup_thought": true
+        },
+        {
+          "seq": 113,
+          "monotonic_ns": 917888159041800,
+          "thread_id": 10744,
+          "event": "server.socket_timeout",
+          "handler_id": 1549183118400,
+          "local_port": 55695,
+          "peer_port": 55737
+        },
+        {
+          "seq": 117,
+          "monotonic_ns": 917894084135600,
+          "thread_id": 15400,
+          "event": "model.encoder.end",
+          "operation_id": 29
+        },
+        {
+          "seq": 118,
+          "monotonic_ns": 917894142857300,
+          "thread_id": 15400,
+          "event": "memory.rank.end",
+          "operation_id": 28
+        },
+        {
+          "seq": 120,
+          "monotonic_ns": 917894159332000,
+          "thread_id": 15400,
+          "event": "control.client_resume_before_headers"
+        },
+        {
+          "seq": 124,
+          "monotonic_ns": 917894159447300,
+          "thread_id": 15400,
+          "event": "client.transport_handoff.begin",
+          "writer_id": 1549277582736,
+          "first_after_headers": true,
+          "bytes": 338,
+          "local_port": 55737,
+          "peer_port": 55695
+        },
+        {
+          "seq": 129,
+          "monotonic_ns": 917894176618900,
+          "thread_id": 15400,
+          "event": "client.response.error",
+          "operation_id": 32,
+          "error_type": "ServerDisconnectedError"
+        }
+      ]
+    },
+    "green": {
+      "artifact_directory": "controlled-runs/green-focused-one",
+      "source_commit": "0d6fcb78ddafdcf8d517e57d51f420bb32452c01",
+      "source_state": "same commit plus focused Memory fix",
+      "memory_core_sha256": "fcfd7c2c40b22e95cf3e248ecd09a69c014d496f97d67ce82eeffcec5a1c2313",
+      "artifact_sha256": {
+        "summary.json": "73bfa28faab0798702354d9b6900fe0d7f59a18dbb1408a7360db8ae9de36cc7",
+        "recall-controlled-trace.json": "8c2a994d16b7b65b77bab95aed36926882cf960275698d0c56a54a4403523d14",
+        "source-manifest.json": "9002eac2710ee10f4f521c26f6c3b9188acae692cf5bf21db3e190e8189432e4",
+        "write-result.json": "389b350b422591b1727d8d6436ddf8104a616fb1c6f2b8871f5aa9e3d91b6805",
+        "recall-result.json": "2f02b8b47aaa78574b4fb951ab8e18c77805a6ed2890b9e0b6bb175ee0385a7a"
+      },
+      "case_passed": true,
+      "diagnostic_complete": true,
+      "processes": {
+        "write": {
+          "pid": 41928,
+          "stopped": true,
+          "status": [
+            200,
+            200,
+            200,
+            200,
+            200,
+            200,
+            200,
+            200,
+            200
+          ]
+        },
+        "recall": {
+          "pid": 42392,
+          "stopped": true,
+          "status": [
+            200
+          ]
+        }
+      },
+      "clock": {
+        "utc_before_ns": 1795804737332063900,
+        "monotonic_ns": 918006470120600,
+        "utc_after_ns": 1795804737332065400,
+        "pid": 42392
+      },
+      "socket": {
+        "client_port": 56038,
+        "server_port": 55997
+      },
+      "thread_ids": {
+        "client_event_loop": 65572,
+        "startup_encoder": 56304,
+        "HTTP_request_worker": 43664
+      },
+      "timing_ms": {
+        "cold_encoder_duration": 12044.9924,
+        "startup_rank_duration": 12104.5392,
+        "accept_to_first_header_handoff": 6.1296,
+        "accept_to_socket_timeout": null,
+        "timeout_to_header_handoff": null,
+        "maximum_observed_loop_lag": 1535.361899
+      },
+      "cold_encoder_began_before_client_resume": true,
+      "cold_encoder_overlapped_header_handoff": true,
+      "socket_timeout_count": 0,
+      "POST_parsed": true,
+      "exception_type": null,
+      "cleanup_release_used": false,
+      "hook_count": 20,
+      "hook_errors": [],
+      "metadata_errors": 0,
+      "dropped_events": 0,
+      "missing_modules": [],
+      "source_changes": [],
+      "selected_events": [
+        {
+          "seq": 101,
+          "monotonic_ns": 918015235803000,
+          "thread_id": 47464,
+          "event": "server.accept.end",
+          "operation_id": 26,
+          "local_port": 55997,
+          "peer_port": 56038
+        },
+        {
+          "seq": 103,
+          "monotonic_ns": 918015236124200,
+          "thread_id": 65572,
+          "event": "control.client_connected",
+          "local_port": 56038,
+          "peer_port": 55997
+        },
+        {
+          "seq": 106,
+          "monotonic_ns": 918015236162000,
+          "thread_id": 65572,
+          "event": "startup_thought.begin"
+        },
+        {
+          "seq": 107,
+          "monotonic_ns": 918015236562200,
+          "thread_id": 43664,
+          "event": "server.request.begin",
+          "operation_id": 27,
+          "handler_id": 2882250958416,
+          "local_port": 55997,
+          "peer_port": 56038
+        },
+        {
+          "seq": 110,
+          "monotonic_ns": 918015241717900,
+          "thread_id": 56304,
+          "event": "memory.rank.begin",
+          "operation_id": 28,
+          "candidate_count": 10,
+          "limit": 3,
+          "startup_thought": true
+        },
+        {
+          "seq": 111,
+          "monotonic_ns": 918015241728500,
+          "thread_id": 56304,
+          "event": "model.encoder.begin",
+          "operation_id": 29,
+          "cache_entries": 0,
+          "startup_thought": true
+        },
+        {
+          "seq": 112,
+          "monotonic_ns": 918015241823900,
+          "thread_id": 65572,
+          "event": "control.client_resume_before_headers"
+        },
+        {
+          "seq": 116,
+          "monotonic_ns": 918015241932600,
+          "thread_id": 65572,
+          "event": "client.transport_handoff.begin",
+          "writer_id": 2882252141776,
+          "first_after_headers": true,
+          "bytes": 338,
+          "local_port": 56038,
+          "peer_port": 55997
+        },
+        {
+          "seq": 121,
+          "monotonic_ns": 918015242304000,
+          "thread_id": 43664,
+          "event": "server.parse_headers.end",
+          "operation_id": 33,
+          "parsed": true,
+          "handler_id": 2882250958416,
+          "local_port": 55997,
+          "peer_port": 56038,
+          "method": "POST",
+          "route": "/api/ai/ask"
+        },
+        {
+          "seq": 146,
+          "monotonic_ns": 918027286720900,
+          "thread_id": 56304,
+          "event": "model.encoder.end",
+          "operation_id": 29
+        },
+        {
+          "seq": 147,
+          "monotonic_ns": 918027346257100,
+          "thread_id": 56304,
+          "event": "memory.rank.end",
+          "operation_id": 28
+        },
+        {
+          "seq": 154,
+          "monotonic_ns": 918027433254800,
+          "thread_id": 65572,
+          "event": "client.response.end",
+          "operation_id": 32,
+          "http_status": 200
+        }
+      ]
+    }
+  },
+  "successful_record_lineage": {
+    "saved_record_id": "4cbcae77ccad5871ee918ad8dd651fae",
+    "retrieved_record_ids": [
+      "4cbcae77ccad5871ee918ad8dd651fae"
+    ],
+    "reply_component_evidence_ids": [
+      "4cbcae77ccad5871ee918ad8dd651fae"
+    ],
+    "prompt_evidence_ids": [
+      "4cbcae77ccad5871ee918ad8dd651fae"
+    ],
+    "stored_content_matches_prompt_evidence": true,
+    "stored_content_sha256": "9d7ea94e818dd2c80a51316da0834a2be918aa8a61f83d2d53590620dd7e61a2",
+    "generation_prompt_sha256": "0698c626f14136831257a1fce3029f7f28f7e86c57cf7b662c126db4b3f1d298",
+    "synthetic_fact_in_supplied_prompt": true,
+    "expected_answer_in_reply": true,
+    "write_pid": 41928,
+    "recall_pid": 42392,
+    "initial_user_message_count": 0,
+    "provider": {
+      "model": "context-responder",
+      "provider": "deterministic"
+    },
+    "generation_used": true,
+    "fallback": false,
+    "retrieval": "local_semantic_chat",
+    "retrieval_event": "ok",
+    "live_generation_model_verified": false
+  },
+  "conclusion": "Moving pure semantic ranking and its shared lock off the event loop prevents the reproduced pre-header socket timeout while preserving exact post-restart memory evidence.",
+  "limitations": [
+    "The original intermittent historical incident did not capture socket/monotonic ordering; this controlled matching mechanism is not retrospective proof of its exact cause or PR attribution.",
+    "The diagnostic client and startup task share the runtime event loop, as in the existing acceptance harness; this is not a separate-browser/network packet capture.",
+    "Text generation uses the existing context-derived deterministic responder; this is not a live OpenAI/model-generation pass.",
+    "Each state has one controlled run. The complete Windows suite and CI must be reported independently.",
+    "Thread offload does not make a running encoder interruptible or establish bounded encoder/executor termination.",
+    "This does not close the historically distinct Ubuntu HTTP503 issue or expand internal-alpha acceptance.",
+    "Raw synthetic prompts, replies and local profile databases remain external; this report contains opaque IDs, hashes and timing metadata only."
+  ]
+}

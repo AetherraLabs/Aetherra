@@ -24,18 +24,28 @@ def _path_lock(path: Path) -> threading.RLock:
 
 
 @contextmanager
-def locked_jsonl(path: Path):
+def locked_jsonl(path: Path, *, read_only: bool = False):
     """Serialize a state transition across independent callers sharing this log."""
     path = path.expanduser().resolve()
-    path.parent.mkdir(parents=True, exist_ok=True)
     # Keep the empty sidecar at a stable inode. Closing its descriptor releases
     # the OS lock, including when the holder exits unexpectedly.
-    fd = os.open(path.with_suffix(path.suffix + ".lock"), os.O_RDWR | os.O_CREAT, 0o600)
+    sidecar = path.with_suffix(path.suffix + ".lock")
+    if read_only:
+        try:
+            fd = os.open(sidecar, os.O_RDONLY)
+        except FileNotFoundError:
+            # Legacy and exported logs may have no sidecar. If the first writer
+            # races this snapshot, the reader must reject incomplete bytes.
+            yield path
+            return
+    else:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fd = os.open(sidecar, os.O_RDWR | os.O_CREAT, 0o600)
     try:
         deadline = time.monotonic() + 0.25
         while True:
             try:
-                _lock_descriptor(fd)
+                _lock_descriptor(fd, read_only=read_only)
                 break
             except OSError as exc:
                 if exc.errno not in {errno.EACCES, errno.EAGAIN, errno.EDEADLK}:
@@ -48,17 +58,19 @@ def locked_jsonl(path: Path):
         os.close(fd)
 
 
-def _lock_descriptor(fd: int) -> None:
+def _lock_descriptor(fd: int, *, read_only: bool) -> None:
     if os.name == "nt":
         # Standard library imports
         import msvcrt
 
-        msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+        mode = msvcrt.LK_NBRLCK if read_only else msvcrt.LK_NBLCK
+        msvcrt.locking(fd, mode, 1)
     else:
         # Standard library imports
         import fcntl
 
-        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        mode = fcntl.LOCK_SH if read_only else fcntl.LOCK_EX
+        fcntl.flock(fd, mode | fcntl.LOCK_NB)
 
 
 def append_jsonl(path: Path, record: Mapping[str, Any]) -> None:

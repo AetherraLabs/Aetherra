@@ -646,7 +646,18 @@ def parse_args(argv=None):
         help="Verify exact checkpoint restart across three normal full launches",
     )
     parser.add_argument("--artifacts", type=Path, help=argparse.SUPPRESS)
-    parser.add_argument("--phase", choices=("a", "b", "c"), help=argparse.SUPPRESS)
+    parser.add_argument(
+        "--phase",
+        choices=(
+            "a",
+            "b",
+            "c",
+            "temporal-create",
+            "temporal-resume",
+            "temporal-isolated",
+        ),
+        help=argparse.SUPPRESS,
+    )
     parser.add_argument(
         "--automatic-stream",
         action="store_true",

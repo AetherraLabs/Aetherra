@@ -1656,3 +1656,71 @@ async def test_engine_shutdown_drains_only_started_llm_cleanup(
         assert failures
         assert "shutdown complete" not in caplog.text
         assert "synthetic-private-drain" not in caplog.text
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("llm_confirmed", [True, False])
+async def test_shutdown_retries_only_the_original_pending_memory(
+    tmp_path, caplog, llm_confirmed
+):
+    # Standard library imports
+    from unittest.mock import AsyncMock, Mock
+
+    engine = _engine(tmp_path)
+    engine.initialized = True
+    original_close = Mock(side_effect=[False, True])
+    replacement_close = Mock(return_value=None)
+    engine.memory_system = types.SimpleNamespace(close_connection=original_close)
+    drain = AsyncMock(return_value=llm_confirmed)
+    engine._llm_manager = types.SimpleNamespace(drain_pending_cleanup=drain)
+    caplog.set_level("INFO", logger=engine_module.__name__)
+
+    await engine.shutdown()
+
+    assert engine.initialized is False
+    original_close.assert_called_once_with()
+    assert any(
+        event["code"] == "memory_close_pending"
+        for event in engine._lifecycle_diagnostics
+    )
+    assert "shutdown complete" not in caplog.text
+    engine.memory_system = types.SimpleNamespace(close_connection=replacement_close)
+
+    await engine.shutdown()
+    await engine.shutdown()
+
+    assert original_close.call_count == 2
+    replacement_close.assert_not_called()
+    drain.assert_awaited_once()
+    assert any(
+        event["code"] == "memory_close_completed"
+        for event in engine._lifecycle_diagnostics
+    )
+    if not llm_confirmed:
+        assert "shutdown complete" not in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_shutdown_accepts_a_legacy_memory_close_receipt(tmp_path, caplog):
+    # Standard library imports
+    import sqlite3
+    from unittest.mock import AsyncMock, Mock
+
+    engine = _engine(tmp_path)
+    engine.initialized = True
+    legacy_connection = sqlite3.connect(":memory:")
+    close = Mock(side_effect=legacy_connection.close)
+    engine.memory_system = types.SimpleNamespace(close_connection=close)
+    engine._llm_manager = types.SimpleNamespace(
+        drain_pending_cleanup=AsyncMock(return_value=True)
+    )
+    caplog.set_level("INFO", logger=engine_module.__name__)
+
+    try:
+        await engine.shutdown()
+        await engine.shutdown()
+
+        close.assert_called_once_with()
+        assert "shutdown complete" in caplog.text
+    finally:
+        legacy_connection.close()
