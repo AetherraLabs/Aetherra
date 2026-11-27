@@ -72,7 +72,11 @@ def _unavailable_observer_state(metrics):
 def _owned_observer_state():
     """Read an existing observer only; an unavailable owner suppresses old push state."""
     # Aetherra imports
-    from Aetherra.runtime_ui.snapshot import _read_status, consciousness_runtime_metrics
+    from Aetherra.runtime_ui.snapshot import (
+        _read_status,
+        collect_temporal_runtime_metrics,
+        consciousness_runtime_metrics,
+    )
     from aetherra_service_registry import get_existing_service_registry
 
     try:
@@ -83,15 +87,22 @@ def _owned_observer_state():
         owned = callable(getter) or (
             info is not None and info.metadata.get("phase") == "phase_c1_observer"
         )
+        temporal = collect_temporal_runtime_metrics(registry)
         if not owned:
+            if hub_state.temporal_status_provider(registry) is not None:
+                metrics = consciousness_runtime_metrics({})
+                metrics.update(temporal)
+                return _unavailable_observer_state(metrics), 503
             return None
         if not registry.get_registry_status().get("running"):
             return {
                 "status": "unavailable",
                 "message": "Consciousness registry is not running.",
+                "runtime": temporal,
             }, 503
         raw = _read_status(getter)
         metrics = consciousness_runtime_metrics(raw or {})
+        metrics.update(temporal)
         unavailable = _unavailable_observer_state(metrics)
         if not metrics["available"] or metrics["think_stream_available"] is not True:
             return unavailable, 503
@@ -101,6 +112,7 @@ def _owned_observer_state():
         # Lifecycle can change while reading a cached snapshot. Recheck without
         # invoking get_status(), which evaluates autopilot and writes audit state.
         metrics = consciousness_runtime_metrics(_read_status(getter) or {})
+        metrics.update(collect_temporal_runtime_metrics(registry))
         if not metrics["available"] or metrics["think_stream_available"] is not True:
             return _unavailable_observer_state(metrics), 503
         payload = {

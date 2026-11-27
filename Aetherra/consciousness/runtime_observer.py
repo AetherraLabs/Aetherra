@@ -138,6 +138,7 @@ class ConsciousnessObserver:
         automatic: dict | None = None,
         recovery_attempt: AttemptDescriptor | None = None,
         local_owned: Callable[[], bool] | None = None,
+        temporal_observation_enabled: bool = False,
     ):
         if not math.isfinite(tick_interval) or not 0.2 <= tick_interval <= 10:
             raise ValueError("consciousness_config_invalid")
@@ -170,6 +171,13 @@ class ConsciousnessObserver:
                     recovery_attempt, self._automatic
                 )
         self._local_owned = local_owned if local_owned is not None else lambda: True
+        if type(temporal_observation_enabled) is not bool:
+            raise ValueError("consciousness_config_invalid")
+        self._temporal_enabled = temporal_observation_enabled is True
+        self._temporal_snapshot: dict[str, Any] | None = None
+        self._temporal_session: str | None = None
+        self._temporal_started_wall = 0.0
+        self._temporal_started_monotonic = 0.0
         self._session = None
         self._checkpoint_store = checkpoint_store
         self._continuity_enabled = continuity_enabled
@@ -231,6 +239,10 @@ class ConsciousnessObserver:
         with self._lock:
             if self._thread is not None or self._state != "starting":
                 return False
+            if self._temporal_enabled:
+                self._temporal_session = uuid.uuid4().hex
+                self._temporal_started_wall = time.time()
+                self._temporal_started_monotonic = time.monotonic()
             self._thread = threading.Thread(
                 target=self._run, name="consciousness-observer", daemon=True
             )
@@ -241,6 +253,8 @@ class ConsciousnessObserver:
         if not observer_policy_ready():
             return "policy_not_ready"
         try:
+            if self._temporal_enabled and self._local_owned() is not True:
+                return "core_not_ready"
             return "core_not_ready" if self._readiness() is not None else None
         except Exception:
             return "core_not_ready"
@@ -665,6 +679,22 @@ class ConsciousnessObserver:
                     # The in-flight tick is discarded. Only an earlier frozen,
                     # fully completed tick may be saved after a normal return.
                     break
+                if self._temporal_enabled:
+                    # Paired source clocks describe tick completion, not a later
+                    # checkpoint export, readiness read or publication.
+                    temporal_wall = time.time()
+                    temporal_uptime = (
+                        time.monotonic() - self._temporal_started_monotonic
+                    )
+                if stream_active:
+                    observation_wall = time.time()
+                if stream_active:
+                    elapsed = time.monotonic() - self._session.started_monotonic
+                frozen = (
+                    core.export_observer_checkpoint("0" * 32)
+                    if self._continuity_enabled
+                    else None
+                )
                 reason = self._ready_reason()
                 if reason:
                     with self._lock:
@@ -672,19 +702,24 @@ class ConsciousnessObserver:
                     if self._continuity_enabled:
                         self._checkpoint_failure(reason, blocked=True)
                     return
-                if stream_active:
-                    observation_wall = time.time()
-                    elapsed = time.monotonic() - self._session.started_monotonic
-                frozen = (
-                    core.export_observer_checkpoint("0" * 32)
-                    if self._continuity_enabled
-                    else None
-                )
                 with self._lock:
                     if self._stop.is_set():
                         break
                     self._last_completed_checkpoint = frozen
                     self._completed += 1
+                    if self._temporal_enabled:
+                        # Capture on the Core owner, only after tick acceptance.
+                        # No callbacks, engine, Guardian or Memory I/O here.
+                        self._temporal_snapshot = {
+                            "session_id": self._temporal_session,
+                            "session_started_at_unix_s": self._temporal_started_wall,
+                            "sequence": self._completed,
+                            "observed_at_unix_s": temporal_wall,
+                            "observed_uptime_s": temporal_uptime,
+                            "working_memory_count": len(core.working_memory),
+                            "active_intention_count": len(core.active_intents),
+                            "focus_count": len(core._last_focuses),
+                        }
                     if stream_active:
                         self._session.on_completed_tick(
                             frozen,
@@ -828,6 +863,31 @@ class ConsciousnessObserver:
                 "last_error_code": self._error,
                 "think_stream_available": state == "running" and bool(self._snapshot),
             }
+
+    def get_temporal_observation(self) -> dict[str, Any] | None:
+        """Read a detached numeric projection, not Core or persistence authority.
+
+        Consumers must validate their own policy/ownership and compare source
+        session/sequence. Repeated reads are not additional observations.
+        """
+        with self._lock:
+            if (
+                not self._temporal_enabled
+                or self._state != "running"
+                or self._stop.is_set()
+                or self._temporal_snapshot is None
+                or self._thread is None
+                or not self._thread.is_alive()
+            ):
+                return None
+            age = (
+                time.monotonic()
+                - self._temporal_started_monotonic
+                - self._temporal_snapshot["observed_uptime_s"]
+            )
+            if not math.isfinite(age) or not 0 <= age <= max(3 * self._interval, 3):
+                return None
+            return dict(self._temporal_snapshot)
 
     def get_think_stream(self) -> dict[str, Any]:
         status = self.get_runtime_status()
