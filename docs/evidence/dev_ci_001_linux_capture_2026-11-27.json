@@ -125,16 +125,127 @@
         ],
         "scope_note": "Successful-install lines are retained dependency evidence, not a full pip freeze."
       }
+    },
+    {
+      "head_sha": "99bec98fdd9665be2ba945a9e60dda5e14905da2",
+      "run_id": 46083173053,
+      "run_attempt": 1,
+      "job_id": 140786623093,
+      "job_url": "https://github.com/AetherraLabs/Aetherra/actions/runs/46083173053/job/140786623093",
+      "job_conclusion": "success",
+      "run_conclusion": "failure",
+      "diagnostic_regression": {
+        "passed": 38,
+        "seconds": 5.36
+      },
+      "capabilities": {
+        "passed": 171,
+        "skipped": 4,
+        "seconds": 47.88,
+        "supervisor_exit": 0,
+        "reaped": true,
+        "live_owned_processes_before_cleanup": 0
+      },
+      "sse_v2": {
+        "passed": 8,
+        "seconds": 32.7
+      },
+      "artifact": {
+        "id": 15238675547,
+        "name": "capabilities-diagnostics-1",
+        "size_in_bytes": 15561,
+        "digest": "sha256:4537c0584bcecdfa3a6c9b3a2236dbb3a4ffb9e0569b49abe1e1144be740dd3f",
+        "created_at": "2026-11-27T23:37:13Z",
+        "download_digest_verified": true
+      },
+      "environment": {
+        "python": "3.11.18",
+        "pytest": "9.2.0",
+        "pytest_asyncio": "1.5.0"
+      },
+      "sample": {
+        "active_node": "tests/capabilities/test_plugin_analytics_coverage.py::test_analytics_session_data_accumulation",
+        "active_phase": "teardown",
+        "phase_duration_seconds": 0.3947284919999561,
+        "main_thread_frame": "analytics_engine.<locals>.cleanup tests/capabilities/test_plugin_analytics_coverage.py:44",
+        "other_sampled_thread": "BoundedWSGIServer.serve_forever aetherra_hub/request_server.py:45"
+      },
+      "pytest_mode": "Buffered Python interpreter and pytest -q, with explicit phase plugin, faulthandler_timeout=60 and process sampling.",
+      "source_log": {
+        "file": "build-test-job-140786623093.log",
+        "sha256": "26618a2987debcef05afefc1268adf8aacb59ebac5bec5afa40225f9700f9601"
+      },
+      "async_stack_count": 0
+    },
+    {
+      "head_sha": "99bec98fdd9665be2ba945a9e60dda5e14905da2",
+      "run_id": 46083173053,
+      "run_attempt": 2,
+      "job_id": 140788525228,
+      "job_url": "https://github.com/AetherraLabs/Aetherra/actions/runs/46083173053/job/140788525228",
+      "job_conclusion": "success",
+      "run_conclusion": "failure",
+      "diagnostic_regression": {
+        "passed": 38,
+        "seconds": 5.04
+      },
+      "capabilities": {
+        "passed": 171,
+        "skipped": 4,
+        "seconds": 41.75,
+        "supervisor_exit": 0,
+        "reaped": true,
+        "live_owned_processes_before_cleanup": 0
+      },
+      "sse_v2": {
+        "passed": 8,
+        "seconds": 32.25
+      },
+      "artifact": {
+        "id": 15237648870,
+        "name": "capabilities-diagnostics-2",
+        "size_in_bytes": 15395,
+        "digest": "sha256:a9085e323526f8c9357a1a5eb54f88b3e89d8d580bf5ab6b0c109726de4d3c9e",
+        "created_at": "2026-11-27T23:43:04Z",
+        "download_digest_verified": true
+      },
+      "environment": {
+        "python": "3.11.18",
+        "pytest": "9.2.0",
+        "pytest_asyncio": "1.5.0"
+      },
+      "sample": {
+        "active_node": "tests/capabilities/test_plugin_analytics_coverage.py::test_analytics_large_context_data",
+        "active_phase": "teardown",
+        "phase_duration_seconds": 0.33781530799998905,
+        "main_thread_frame": "analytics_engine.<locals>.cleanup tests/capabilities/test_plugin_analytics_coverage.py:44",
+        "other_sampled_thread": "BoundedWSGIServer.serve_forever aetherra_hub/request_server.py:45"
+      },
+      "pytest_mode": "Buffered Python interpreter and pytest -q, with explicit phase plugin, faulthandler_timeout=60 and process sampling.",
+      "source_log": {
+        "file": "build-test-job-140788525228.log",
+        "sha256": "cb9bba622ac814104f22deea58f2eb6fa59fc33d33d4deba47b313f058f892c7"
+      },
+      "async_stack_count": 0,
+      "scope_note": "One unchanged build-test-only retry; strict was not rerun. Attempt-level failure retains the separate strict result.",
+      "comparison_to_attempt_1": {
+        "successful_install_version_tokens_equal": true,
+        "token_count": 186,
+        "only_attempt_1": [],
+        "only_attempt_2": []
+      }
     }
   ],
   "limitations": [
-    "Both captured capability runs completed normally; their short completed fixture teardowns and normal thread stacks do not establish the historical stalled boundary.",
-    "Both captures changed interpreter buffering and pytest verbosity (-u/-vv), in addition to instrumentation; passing captures do not establish a causal fix.",
-    "The first build-test job failed later at documentation consistency; the new diagnostic variables were subsequently documented.",
-    "The second build-test job passed, but its overall CI run failed in the separate strict quality job after a 900-second pytest timeout.",
-    "Successful-install comparisons show filelock drift from 4.3.1 to 4.3.2 between these captures, without causal evidence; these lines are not a full pip freeze.",
-    "The archived captures contain thread samples, not suspended asyncio await chains. The later buffered -q and asyncio diagnostic changes have no Linux outcome in this receipt.",
-    "The strict timeout has no named active test, stack or final pytest summary; its progress percentages do not identify a blocked operation or a shared cause."
+    "All four captured standalone capability selections completed normally; short completed fixture teardowns do not establish the historical stalled boundary.",
+    "The first two captures used -u/-vv; the third capture and unchanged build-test repeat restored buffered -q but retained instrumentation. None establishes a causal timeout fix.",
+    "The first build-test job failed later at documentation consistency. The later overall CI failures are separate from successful standalone capability results.",
+    "The second capture strict job exceeded 900 seconds without a named active node, stack or summary; percentages do not identify an operation or shared cause.",
+    "The third capture strict job failed on nested diagnostic-plugin import, not timeout. Its local correction has Windows regression evidence only in this receipt.",
+    "Successful-install evidence showed filelock 4.3.1 to 4.3.2 drift between initial captures. All 186 tokens matched between the third capture and its unchanged repeat; neither comparison is a full pip freeze or causal evidence.",
+    "The standalone runs completed before the 90-second async request. The third strict sample sent one request but produced no await-chain artifact while synchronous subprocess waiting was sampled.",
+    "Zero live owned processes before cleanup covers only the launched session; unmatched phase starts around environment-mutating tests do not alone establish blocked work.",
+    "Historical causes remain unknown; no accepted risk or readiness expansion is established."
   ],
   "strict_recurrence": {
     "head_sha": "1031ab4dd179006ac1044ec71c996c7af25bee3e",
@@ -185,5 +296,114 @@
       "sha256": "7f248b19838de21607ca56b633f4d53ec3410b384437de3f3155ff59e1c226e3",
       "timeout_line": 1014
     }
+  },
+  "strict_diagnostic_import_regression": {
+    "head_sha": "99bec98fdd9665be2ba945a9e60dda5e14905da2",
+    "run_id": 46083173053,
+    "run_attempt": 1,
+    "job_id": 140786623239,
+    "job_url": "https://github.com/AetherraLabs/Aetherra/actions/runs/46083173053/job/140786623239",
+    "job_conclusion": "failure",
+    "test_summary": {
+      "failed": 1,
+      "passed": 307,
+      "skipped": 5,
+      "seconds": 95.71,
+      "exit_code": 1
+    },
+    "failure": {
+      "node": "tests/tools/test_quality_gates_pr_description.py::test_pr_description_generation[0.0]",
+      "assertion_line": 324,
+      "observed_error": "ImportError: Error importing plugin \"tools.ci_capabilities_phase\": No module named 'tools'",
+      "boundary": "Nested quality-runner pytest attempts to import the diagnostic plugin from a temporary checkout without tools importable.",
+      "source_log_lines": [
+        1059,
+        1203,
+        1284,
+        1286,
+        1289
+      ],
+      "historical_timeout_reproduced": false
+    },
+    "artifact": {
+      "id": 15238660311,
+      "name": "strict-quality-diagnostics-1",
+      "size_in_bytes": 26716,
+      "digest": "sha256:e3c255b9180f187b3ecbeaf1230622e375c3612d120b1e59bd442211cdf773b1",
+      "created_at": "2026-11-27T23:38:08Z",
+      "download_digest_verified": true
+    },
+    "source_log": {
+      "file": "strict-job-140786623239.log",
+      "sha256": "f91cca22b054adc443dfb9e3185544723ebcb003e2dfb482eed3088167b0e4d4"
+    },
+    "samples": [
+      {
+        "approximate_seconds": 30,
+        "active_node": "tests/capabilities/test_lyrixa_chat_schema_strict.py::test_lyrixa_chat_offline_fallback_schema_strict",
+        "phase": "call",
+        "phase_duration_seconds": 0.5845850299999711,
+        "boundary": "Hub shutdown waiting in threading.Event.wait; call completed normally."
+      },
+      {
+        "approximate_seconds": 90,
+        "active_node": "tests/tools/test_quality_gate_diagnostics.py::test_selected_pytest_loads_phase_plugin_without_infecting_nested_pytest",
+        "phase": "call",
+        "boundary": "Synchronous subprocess.communicate at test_quality_gate_diagnostics.py:87; nested child sampler_failed."
+      }
+    ],
+    "async_requests_sent": 1,
+    "async_stack_count": 0,
+    "live_owned_processes_before_cleanup": 0,
+    "supervisor_exit": 1,
+    "reaped": true,
+    "scope_note": "This diagnostic import regression is separate from the historical timeout. Phase completion gaps around environment-mutating tests do not establish stalled tests."
+  },
+  "local_diagnostic_correction": {
+    "base_head_sha": "99bec98fdd9665be2ba945a9e60dda5e14905da2",
+    "source_state": "Local working-tree correction after the captured head; no Linux verification recorded here.",
+    "change": "Load the opt-in phase plugin only when the quality runner current directory resolves to its own source checkout, preserving nested temporary-repository runs.",
+    "source_sha256": {
+      "tools/quality_gates.py": "5fe45b76898ac28fd571e1deb0b8a94b1b57cbecb00ddbff2880961c310185fa",
+      "tests/tools/test_quality_gate_diagnostics.py": "dbd356c1f00153f68f37d3298d36579ccab03f64ba6d25b3cc812fe7b6447c75"
+    },
+    "verification_platform": "Windows",
+    "red_targets": [
+      "tests/tools/test_quality_gate_diagnostics.py"
+    ],
+    "green_targets": [
+      "tests/tools/test_quality_gate_diagnostics.py",
+      "tests/tools/test_quality_gate_controls.py",
+      "tests/tools/test_quality_gates_pr_description.py"
+    ],
+    "verification": {
+      "red": {
+        "passed": 4,
+        "failed": 2,
+        "pytest_seconds": 25.56,
+        "wall_seconds": 26.52,
+        "exit_code": 1,
+        "timed_out": false,
+        "ambient_pythonpath_absent": true,
+        "source_log": {
+          "file": "diagnostic-quality-scope-red.log",
+          "sha256": "76a4fd73dc2b858248ced489a957b69bb637ed9d39001a4c01096529ad3068bb"
+        }
+      },
+      "green": {
+        "passed": 55,
+        "failed": 0,
+        "pytest_seconds": 27.71,
+        "wall_seconds": 28.5,
+        "exit_code": 0,
+        "timed_out": false,
+        "ambient_pythonpath_absent": true,
+        "source_log": {
+          "file": "diagnostic-quality-scope-green.log",
+          "sha256": "b9e6ce909b9d8324f749bc20969af4b9976364ae475f4eb344ab6671605dde4d"
+        }
+      }
+    },
+    "scope_note": "This corrects diagnostic injection scope, not the unknown historical capability or strict timeout cause."
   }
 }

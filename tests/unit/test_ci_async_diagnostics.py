@@ -116,12 +116,65 @@ def test_await_chain_is_bounded_and_disabled_callback_does_not_write(tmp_path):
     asyncio.run(scenario())
 
 
+def _child_environment(output):
+    env = dict(
+        os.environ,
+        AETHERRA_CI_DIAGNOSTICS=str(output),
+        PYTEST_DISABLE_PLUGIN_AUTOLOAD="1",
+    )
+    for name in ("PYTEST_ADDOPTS", "PYTEST_PLUGINS"):
+        env.pop(name, None)
+    return env
+
+
+@pytest.mark.parametrize("inherited", ["addopts", "plugins", "both"])
+def test_isolated_child_ignores_parent_pytest_configuration(
+    monkeypatch, tmp_path, inherited
+):
+    for name in ("PYTEST_ADDOPTS", "PYTEST_PLUGINS"):
+        monkeypatch.delenv(name, raising=False)
+    if inherited in ("addopts", "both"):
+        monkeypatch.setenv("PYTEST_ADDOPTS", "--cov-append")
+    if inherited in ("plugins", "both"):
+        monkeypatch.setenv("PYTEST_PLUGINS", "ci_async_unavailable_plugin_sentinel")
+    suite = tmp_path / "test_minimal.py"
+    suite.write_text(
+        "import sys\n"
+        "def test_minimal():\n"
+        "    assert 'tools.ci_capabilities_phase' in sys.modules\n"
+    )
+    output = tmp_path / "diagnostics"
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-q",
+            "-o",
+            "addopts=",
+            "-p",
+            "tools.ci_capabilities_phase",
+            str(suite),
+        ],
+        env=_child_environment(output),
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert (output / "phases.jsonl").exists()
+
+
 def _wait_until(predicate, child, timeout=15):
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         if predicate():
             return
-        assert child.poll() is None, "diagnostic test child exited before readiness"
+        if child.poll() is not None:
+            stdout, stderr = child.communicate(timeout=1)
+            pytest.fail(
+                "diagnostic test child exited before readiness:\n" + stdout + stderr
+            )
         time.sleep(0.02)
     pytest.fail("diagnostic child did not become ready")
 
@@ -161,13 +214,10 @@ def test_linux_signal_captures_wait_chain_and_late_signal_preserves_exit(
     code = (
         "import os,signal,sys,pytest; "
         f"result=pytest.main(['-q','-o','addopts=','--tb=no','-p','tools.ci_capabilities_phase',{str(suite)!r}]); "
+        f"assert result == {exit_code}, f'pytest returned {{result}} before late SIGUSR1'; "
         "os.kill(os.getpid(),signal.SIGUSR1); sys.exit(result)"
     )
-    env = dict(
-        os.environ,
-        AETHERRA_CI_DIAGNOSTICS=str(output),
-        PYTEST_DISABLE_PLUGIN_AUTOLOAD="1",
-    )
+    env = _child_environment(output)
     child = subprocess.Popen(
         [sys.executable, "-c", code],
         env=env,
@@ -236,11 +286,7 @@ def test_linux_plugin_preserves_custom_signal_handler(tmp_path, install_when):
         "assert signal.getsignal(signal.SIGUSR1) is handler; "
         "os.kill(os.getpid(),signal.SIGUSR1); sys.exit(result)"
     )
-    env = dict(
-        os.environ,
-        AETHERRA_CI_DIAGNOSTICS=str(output),
-        PYTEST_DISABLE_PLUGIN_AUTOLOAD="1",
-    )
+    env = _child_environment(output)
     result = subprocess.run(
         [sys.executable, "-c", code],
         env=env,

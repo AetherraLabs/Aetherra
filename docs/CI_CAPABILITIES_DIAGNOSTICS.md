@@ -9,7 +9,7 @@ remain enforced. Diagnostic output does not establish a cause by itself.
 ## Retained observations
 
 The [2026-11-27 capture receipt](evidence/dev_ci_001_linux_capture_2026-11-27.json)
-records two standalone capability passes: 171 passed / 4 skipped in 45.67 and
+records two initial standalone capability passes: 171 passed / 4 skipped in 45.67 and
 47.39 seconds. Both used Python `-u` and pytest `-vv`, plus diagnostic hooks;
 they changed buffering and verbosity from the original `-q` invocation and may
 have affected timing. Their approximately 30-second samples captured short,
@@ -23,10 +23,23 @@ no named active node, stack or final summary. The receipt retains the exact
 command, job link and source-log SHA-256. Its locked dependencies, coverage and
 broader selection differ from the standalone job; a shared cause is unknown.
 
-The next capture configuration below restores buffered interpreter streams and
-pytest `-q`, while retaining diagnostic hooks and sampling. These changes have
-no Linux result recorded in this receipt and do not establish a correction or
-broader readiness.
+Head `99bec98fdd9665be2ba945a9e60dda5e14905da2` restored buffered interpreter
+streams and pytest `-q`, retaining diagnostic hooks and sampling. The third
+capture and its one unchanged build-test repeat each completed with 171 passed /
+4 skipped (47.88 and 41.75 seconds); both Linux diagnostic regression steps
+passed all 38 tests. Both observed zero live owned processes before cleanup.
+Their analytics teardown samples completed in 0.395 and 0.338 seconds. Artifact
+digests, source-log hashes and exact job identities are retained in the receipt.
+
+The third capture's strict job failed separately with 1 failed / 307 passed /
+5 skipped in 95.71 seconds. An inherited diagnostic flag made a nested quality
+runner import `tools.ci_capabilities_phase` from a temporary repository where
+`tools` was unavailable. This is a diagnostic import regression, not the
+historical timeout. A local source-checkout guard now limits plugin injection:
+its regressions first reported 2 failed / 4 passed, then the selected Windows
+suite passed all 55 tests. This local correction has no Linux result recorded
+here. The historical timeout causes remain unknown; passing captures and the
+diagnostic correction do not establish broader readiness.
 
 ## Linux reproduction
 
@@ -64,9 +77,11 @@ every minute and a 1,500-second outer watchdog to retain evidence before the
 existing 30-minute job limit. The original `TEST_TIMEOUT=900` remains enforced;
 the standalone capability step still has its five-minute limit.
 
-The phase plugin is added only to the quality runner's direct pytest invocation
-when `AETHERRA_CI_DIAGNOSTICS` is set. It is not injected into nested pytest
-commands through `PYTEST_ADDOPTS` or `PYTEST_PLUGINS`. The artifact is named
+The phase plugin is added to the quality runner's direct pytest invocation only
+when `AETHERRA_CI_DIAGNOSTICS` is set and its current directory resolves to its
+own source checkout. An inherited flag therefore does not inject the plugin
+into quality runs from temporary repositories. It is not loaded through
+`PYTEST_ADDOPTS` or `PYTEST_PLUGINS`. The artifact is named
 `strict-quality-diagnostics-<attempt>`. Signing jobs and policy are unchanged.
 
 ## Evidence and limits
@@ -88,15 +103,18 @@ commands through `PYTEST_ADDOPTS` or `PYTEST_PLUGINS`. The artifact is named
   callback. No task names, locals or results are collected.
 
 The standalone watchdog fails with exit 124 at 290 seconds and attempts bounded
-cleanup before the outer five-minute limit. Otherwise pytest's exit status is preserved.
+cleanup before the outer five-minute limit. Otherwise pytest's exit status is
+preserved.
 The `capabilities-diagnostics-<attempt>` Actions artifact is uploaded even after
-a failed capability step. Missing diagnostics cannot turn a pytest failure into success.
+a failed capability step. Missing diagnostics cannot turn a pytest failure into
+success.
 
 These are synthetic CI diagnostics, not runtime conversation logging. Detached
 processes outside the launched session are not sampled or terminated. The
 optional asyncio capture uses `SIGUSR1` only in the dedicated pytest process,
 respects an existing custom handler, and ignores late delivery after pytest
-unconfigures when it still owns the handler. It does not cover event loops in other threads or a loop
-blocked in synchronous code. An idle selector without corresponding await-chain
+unconfigures when it still owns the handler. It does not cover event loops in
+other threads or a loop blocked in synchronous code. An idle selector without corresponding await-chain
 evidence does not identify an awaited operation. Keep original failures and
-distinguish a reproduced cause from passing reruns or uninstrumented historical incidents.
+distinguish a reproduced cause from passing reruns or uninstrumented historical
+incidents.

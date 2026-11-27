@@ -300,8 +300,11 @@ def main() -> int:
         "--cov-report",
         "term",
     ]
-    if os.getenv("AETHERRA_CI_DIAGNOSTICS"):
-        # Explicit CLI loading keeps the plugin out of nested pytest environments.
+    if (
+        os.getenv("AETHERRA_CI_DIAGNOSTICS")
+        and Path.cwd().resolve() == Path(__file__).resolve().parents[1]
+    ):
+        # The inherited flag must not load this plugin in temporary repositories.
         cmd += ["-p", "tools.ci_capabilities_phase", "-o", "faulthandler_timeout=60"]
     cmd += targets
     code, out = run(cmd, timeout=float(os.getenv("TEST_TIMEOUT", "0")) or None)
