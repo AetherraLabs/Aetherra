@@ -604,6 +604,7 @@ class AetherraOSLauncher:
         self._consciousness_task = None
         self._consciousness_stop_deadline = None
         self._temporal_observer = None
+        self._temporal_task = None
         self._temporal_registry = None
         self._temporal_source = None
         self._consciousness_ownership_evaluated = False
@@ -2933,7 +2934,9 @@ class AetherraOSLauncher:
                     collector.block("memory_not_ready")
                 else:
                     registered = await registry.register_service(
-                        "temporal_observer", collector, metadata={"observer_only": True}
+                        "temporal_observer",
+                        collector,
+                        metadata={"observer_only": True, "self_heartbeat": True},
                     )
                     info = registry.get_service_info("temporal_observer")
                     if not registered or info is None or info.instance is not collector:
@@ -2948,6 +2951,99 @@ class AetherraOSLauncher:
                         collector.block("ownership_lost")
             except Exception:
                 collector.block("unavailable")
+            finally:
+                if self._temporal_registration_expected:
+                    # Publish the initial state before returning from startup;
+                    # the registry's registration API defaults to healthy.
+                    await self._publish_temporal_service_status(collector)
+                    self._temporal_task = asyncio.create_task(
+                        self._monitor_temporal_observer(collector)
+                    )
+
+    def _temporal_service_status(self):
+        status = self._get_temporal_runtime_status()
+        state = status.get("runtime_state")
+        if (
+            state == "running"
+            and status.get("thread_alive") is True
+            and status.get("source_fresh") is True
+        ):
+            return ServiceStatus.HEALTHY
+        return {
+            "starting": ServiceStatus.STARTING,
+            "stopping": ServiceStatus.STOPPING,
+            "stopped": ServiceStatus.STOPPING,
+            "failed": ServiceStatus.FAILED,
+        }.get(state, ServiceStatus.DEGRADED)
+
+    async def _publish_temporal_service_status(self, collector, *, timeout=1.0):
+        registry = self._temporal_registry
+        info = registry.get_service_info("temporal_observer") if registry else None
+        if (
+            info is None
+            or info.instance is not collector
+            or self.service_registry is not registry
+        ):
+            return False
+        try:
+            status = self._temporal_service_status()
+            # The snapshot and all ownership checks must still hold after the
+            # policy worker returns. It may never revive a newly blocked worker.
+            async with asyncio.timeout(timeout):
+                return await registry.update_service_status(
+                    "temporal_observer",
+                    status,
+                    expected_instance=collector,
+                    nonblocking_preflight=True,
+                    preflight_timeout=timeout,
+                    apply_if=lambda: (
+                        self._temporal_observer is collector
+                        and self.service_registry is registry
+                        and self._temporal_registry is registry
+                        and self._temporal_service_status() is status
+                    ),
+                )
+        except Exception as exc:
+            logger.warning(
+                "[TEMPORAL] Registry status publication unavailable (%s)",
+                type(exc).__name__,
+            )
+            return False
+
+    async def _monitor_temporal_observer(self, collector):
+        """Publish cached state only for this registration; never reacquire it."""
+        last_attempt_at = time.monotonic()
+        registry = self._temporal_registry
+        info = registry.get_service_info("temporal_observer") if registry else None
+        last_attempt_status = info.status if info is not None else None
+        try:
+            while True:
+                registry = self._temporal_registry
+                info = (
+                    registry.get_service_info("temporal_observer") if registry else None
+                )
+                if (
+                    info is None
+                    or info.instance is not collector
+                    or self.service_registry is not registry
+                ):
+                    return
+                status = self._temporal_service_status()
+                heartbeat_interval = min(30.0, max(1.0, registry._stale_sec / 3))
+                if (
+                    status is not last_attempt_status
+                    or time.monotonic() - last_attempt_at >= heartbeat_interval
+                ):
+                    await self._publish_temporal_service_status(collector)
+                    last_attempt_at = time.monotonic()
+                    last_attempt_status = status
+                await asyncio.sleep(1)
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            logger.warning(
+                "[TEMPORAL] Registry monitor unavailable (%s)", type(exc).__name__
+            )
 
     def _temporal_memory_owned(self):
         memory = self._temporal_memory
@@ -3017,26 +3113,61 @@ class AetherraOSLauncher:
         if not save_history:
             self._temporal_marker_allowed = False
         settled = False
+        task = self._temporal_task
+        if task is not None:
+            task.cancel()
+        # Publish stopping/blocked concurrently with the existing stop/drain
+        # window. Audit latency cannot add another second to shutdown.
+        remaining = deadline - time.monotonic()
+        publication = (
+            asyncio.create_task(
+                self._publish_temporal_service_status(
+                    temporal, timeout=min(1.0, remaining)
+                )
+            )
+            if self._temporal_registration_expected and remaining > 0
+            else None
+        )
         try:
             settled = await temporal.stop(
                 save_history=save_history and self._temporal_marker_allowed,
                 deadline=deadline,
             )
         finally:
-            memory = self._temporal_memory
-            if memory is not None and self._temporal_registration_expected:
-                remaining = max(0.0, deadline - time.monotonic())
-                if remaining:
-                    try:
-                        async with asyncio.timeout(remaining):
-                            drained = await asyncio.to_thread(
-                                memory.drain_temporal_history, remaining
-                            )
-                    except TimeoutError:
-                        drained = False
-                else:
-                    drained = memory.drain_temporal_history(timeout=0)
-                settled = settled and drained
+            try:
+                memory = self._temporal_memory
+                if memory is not None and self._temporal_registration_expected:
+                    remaining = max(0.0, deadline - time.monotonic())
+                    if remaining:
+                        try:
+                            async with asyncio.timeout(remaining):
+                                drained = await asyncio.to_thread(
+                                    memory.drain_temporal_history, remaining
+                                )
+                        except TimeoutError:
+                            drained = False
+                    else:
+                        drained = memory.drain_temporal_history(timeout=0)
+                    settled = settled and drained
+            finally:
+                try:
+                    async with asyncio.timeout(max(0.0, deadline - time.monotonic())):
+                        await asyncio.gather(
+                            *(
+                                pending
+                                for pending in (task, publication)
+                                if pending is not None
+                            ),
+                            return_exceptions=True,
+                        )
+                except TimeoutError:
+                    pass
+                finally:
+                    for pending in (task, publication):
+                        if pending is not None and not pending.done():
+                            pending.cancel()
+                    if task is None or task.done():
+                        self._temporal_task = None
         if not settled:
             raise RuntimeError("temporal_shutdown_pending")
         if clear and self._temporal_registry is not None:

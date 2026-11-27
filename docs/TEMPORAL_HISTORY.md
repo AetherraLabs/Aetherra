@@ -7,7 +7,8 @@ cached status through the Consciousness inspector.
 ## Retention and meaning
 
 The accepted policy is to retain changes observed at five-second sampling points
-plus session/gap markers, with no automatic deletion. The observer samples on a five-second monotonic cadence; Memory rejects unchanged ordinary observations and validates boundaries.
+plus session/gap markers, with no automatic deletion. The observer samples on a five-second
+monotonic cadence; Memory rejects unchanged ordinary observations and validates boundaries.
 The Temporal engine's bounded analysis window is separate from this durable archive.
 C2b recovery checkpoint retention cannot delete these records.
 
@@ -172,7 +173,8 @@ observed Homeostasis watchdog shutdown exception remain open.
 
 ## Final local runtime verification
 
-Local final-source verification recorded 4,319 passed, 38 skipped and 45.29% coverage against the unchanged 22% floor. The configured command was `python -m pytest -q`. It included
+Local final-source verification recorded 4,319 passed, 38 skipped and 45.29% coverage against the
+unchanged 22% floor. The configured command was `python -m pytest -q`. It included
 the normal-launch acceptance test using the final frozen code. The earlier full
 run recorded 4,308 passes, 38 skips and ten Git fixture setup errors. The
 supervised retention harness now isolates its environment in a child process. A second
@@ -183,12 +185,40 @@ contains the exact interpreter command, skip reasons and source hashes.
 In the live Consciousness inspector, creation showed Running and Saved at epoch 1.
 Restart showed epoch 2 and the restored head. An isolated profile showed Missing
 and cleared prior IDs. Closing the Hub cleared live values in the same tab. The
-browser ran before the final five-file runtime fix, the harness isolation repair and the synthetic scanner-fixture correction. Its renderer hash matches the final
+browser ran before the final five-file runtime fix, the harness isolation repair and the synthetic
+scanner-fixture correction. Its renderer hash matches the final
 source. The browser harness command was
 `python tools/alpha_temporal_smoke.py --output <new-directory> --browser-hold-seconds 600`.
 All three owned launchers exited zero. The verification tab and owned development
 server were closed. The synthetic generation and harness interrupt qualify local
 numeric observation only. Existing incidents and supervised-alpha scope continue.
+
+## Registry health and publication limits
+
+The launcher publishes the owned Temporal collector's cached lifecycle state to
+its original registry: starting; healthy only when running with a live worker and
+fresh source; degraded when the source is stale or unavailable or the collector
+is blocked; failed; or stopping. It polls every second and refreshes an unchanged
+heartbeat at most every 30 seconds (sooner for a shorter registry stale window).
+An authorized, healthy observer therefore remains discoverable beyond the default
+180-second stale window. Publication rechecks the exact collector, registry and lifecycle state
+after authorization; replacing Core, Memory or the Temporal registration cannot
+publish stale healthy evidence or reacquire ownership.
+
+Status publication uses existing Guardian and Security checks off the event loop,
+with a one-second ceiling. Shutdown cancels the monitor and shares the existing
+Temporal stop budget; it does not extend the independent Core and Temporal
+budgets. The registry's registration API initially defaults to healthy. If status
+publication is denied or unavailable, its last authorized cached value can lag the
+collector until a permitted update or the stale monitor runs. No denied update
+is forced through. Consult the independent cached Temporal inspector for the
+collector's state; a registry value alone is not proof of healthy continuity.
+
+Regression checks use real registry, collector, Memory SQLite and Guardian paths:
+
+```powershell
+python -m pytest -q -o addopts= tests/unit/test_temporal_registry_publication.py
+```
 
 ## PR verification boundary
 
