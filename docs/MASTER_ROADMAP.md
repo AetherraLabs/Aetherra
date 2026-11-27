@@ -1,6 +1,6 @@
 # Aetherra Master Roadmap
 
-Updated: 2026-11-25
+Updated: 2026-11-26
 
 This is the single source of truth for Aetherra roadmap planning.
 
@@ -36,17 +36,21 @@ Windows source-runtime profile. The current objective is bounded internal
 testing with governance, observation and signing controls enforced. The
 checkpoint verification qualification below does not expand that boundary.
 
-C1 and C2a are merged. The checkpoint-stop follow-up merged through PR #355 as
-`e8975d38` and released as `v0.5.0-beta.14` (`a30277e3`). Clean main, fresh
-Python and GUI, live gpt-4o, browser and physical shutdown checks passed within
-their recorded scopes. Hosted production signing and independent release
-manifest and distribution verification passed. Neither physical sampler observed
-final receipt acceptance, which remains unknown for both runs. The original
-stop delay is still unexplained. See the
-[current decision](ALPHA_READINESS_DECISION.md#c2b-prerequisite-checkpoint-2026-11-25).
+C1, C2a and the checkpoint-stop follow-up are merged. C2b automatic selection,
+atomic head advancement, recovery, periodic saves and retention also merged
+through PRs #356-#360 and #362-#367, followed by the progress correction in #368.
+The final merge is `592c46224425`; released main is its metadata-only child
+`56623003675b` (`v0.5.0-beta.22`). The
+[resumption evidence](evidence/temporal_resumption_2026-11-26.json) preserves the
+exact revision bindings and limits of the completed clean-checkout checks.
 
-C2b automatic selection, periodic saves and retention are ready to enter
-implementation. Pending TemporalConsciousnessEngine work stays separate.
+The local opt-in Temporal observer samples completed Core ticks every five seconds.
+It saves changes and session/gap markers through typed Memory, restores up to 256
+records into the existing engine, and publishes cached evidence in the
+Consciousness inspector. See the [operator guide](TEMPORAL_HISTORY.md) and
+[local runtime receipt](evidence/temporal_runtime_integration_2026-11-26.json)
+for the commands, source hashes and scope. Local final-source verification recorded 4,319 passed, 38 skipped and 45.29% coverage against the unchanged 22% floor.
+Checkpoint recovery, temporal history and temporal reasoning remain distinct.
 Checkpoints confer no autonomous action authority or unattended readiness.
 
 Authoritative identity and system references:
@@ -174,11 +178,11 @@ Results:
 
 **Stage 21 remains active: supervised internal alpha on the documented Windows
 source-runtime profile.** Stage 22 Beta Hardening and Stage 23 Production
-Readiness remain Planned. The `v0.5.0-beta.13` release version does not advance
+Readiness remain Planned. The `v0.5.0-beta.22` release version does not advance
 those roadmap stages or expand the existing supervised GO.
 
 The [readiness checklist](ALPHA_READINESS_CHECKLIST.md) and
-[current decision](ALPHA_READINESS_DECISION.md#c2b-prerequisite-checkpoint-2026-11-25) govern
+[2026-11-25 prerequisite decision](ALPHA_READINESS_DECISION.md#c2b-prerequisite-checkpoint-2026-11-25) govern
 acceptance. The integration plan is now partway through Phase C:
 
 | Milestone | Current status | Delivered scope or remaining boundary |
@@ -188,21 +192,33 @@ acceptance. The integration plan is now partway through Phase C:
 | C1 | Merged, PR #354 | Opt-in observe-only Consciousness sidecar starts after core activation, exposes bounded status and stops independently of chat |
 | C2a | Merged, PR #353 | One orderly-stop checkpoint through existing Memory; explicitly selected restore before the first tick |
 | Checkpoint-stop follow-up | Merged, PR #355 | Clean-main suite and hosted signing passed. The original stop delay remains unexplained. |
-| C2b | Contract approved and prerequisites verified 2026-11-25. Implementation pending. | [Approved write/head/recovery invariants](superpowers/specs/2026-11-24-phase-c2b-checkpoint-contract-design.md) before automatic selection, periodic saves and retention |
-| Temporal runtime observer | Pending, separate work | Standalone engine hardening exists; pending normal-launch integration is preserved and is not activated by C1/C2a |
+| C2b | Merged, PRs #356-#360 and #362-#367; progress follow-up #368 merged | Atomic checkpoint heads, exact recovery, automatic selection, periodic saving and retention through existing Memory; [approved invariants](superpowers/specs/2026-11-24-phase-c2b-checkpoint-contract-design.md) remain authoritative |
+| Temporal runtime observer | Implemented and locally verified, disabled by default; PR review pending | [Runtime design](superpowers/specs/2026-11-26-temporal-runtime-integration-design.md) and [verification receipt](evidence/temporal_runtime_integration_2026-11-26.json) |
 | Phase D | Deferred | Governed optional agency only after the earlier integration gates; no new action authority |
 
-Next, start Task 1 in the [C2b implementation plan](superpowers/plans/2026-11-25-phase-c2b-checkpoints.md)
-from the verified released baseline. The [prerequisite receipt](evidence/c2b_prerequisites_2026-11-25.json)
-records Task 0 evidence and scope. Keep Temporal integration separate.
+Temporal remains observe-only. The [resumption evidence](evidence/temporal_resumption_2026-11-26.json)
+binds the baseline and earlier checks separately.
 
-The [follow-up receipt](evidence/checkpoint_stop_followup_2026-11-24.json)
-records 3,840 passing tests, 38 skips and five passing subtests. The change makes
-background command failures observable; it does not identify the original slow
-operation or fix a proven runtime timing cause. Track the unresolved cause in
-[ALPHA-CKPT-001](DEVELOPMENT_ISSUES.md#alpha-ckpt-001--checkpoint-stop-delay). Signing
-and Guardian/Security remain enforced. Broader installation graphs, unattended
-operation, production use and autonomous actions have no new acceptance evidence or GO.
+Completed clean-checkout verification at merge `592c46224425` passed 4,158 tests
+with 38 skips and 45.29% coverage against the unchanged 22% floor; GUI tests
+(40), build and lint also passed. Released main `56623003675b` passed boot and
+integration validation plus a 660-second default-cadence continuity/restart run,
+with exact durable-head restore and acknowledged final saves. Main signing and
+the beta.22 release signature/assets passed verification. These results do not
+constitute a new Python installation, browser, live-model, physical keyboard or
+65-minute soak check at released main; the earlier checks retain their original
+revision bindings. Four saved records did not exercise ten-record pruning.
+
+The original delay remains unexplained: both
+[ALPHA-CKPT-001](DEVELOPMENT_ISSUES.md#alpha-ckpt-001--checkpoint-stop-delay) and
+[DEV-CKPT-001](DEVELOPMENT_ISSUES.md#dev-ckpt-001--extended-run-observer-and-checkpoint-progress-gap)
+remain **OPEN**. The normal-launch checks also retained the pre-existing
+Homeostasis shutdown defect, `Event loop stopped before Future completed`;
+process/thread exit does not establish orderly completion of every watchdog
+operation. This is not an explanation for either checkpoint incident. Signing
+and Guardian/Security remain enforced. The existing supervised-alpha GO is
+unchanged; broader installation graphs, unattended operation, production use
+and autonomous actions have no new acceptance or GO.
 
 Historical reference: the [2026-11-22 desktop verification](ALPHA_READINESS_DECISION.md#historical-desktop-verification-2026-11-22)
 covered fresh Windows/Python 3.13 installation and dependency audits on its

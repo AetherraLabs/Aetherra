@@ -1,0 +1,286 @@
+{
+  "schema": 1,
+  "date": "2026-11-26",
+  "scope": "Temporal resumption: completed-tick numeric source foundation",
+  "base_commit": "56623003675bc99f9e3dfadf15b6254beb183b59",
+  "implementation_status": "completed numeric source slice verified locally; normal-launch Temporal worker/persistence/Observatory integration pending",
+  "source_sha256": {
+    "Aetherra/consciousness/runtime_observer.py": "3ea460fc0464e6a874528ce9d85c8aa9ef751d0957ff8119df093cfe74860e75",
+    "tests/unit/test_consciousness_observer_lifecycle.py": "f04e1deb44817e56c7fe1fa752d0a6cafeeb6367dcafdb30b70865c524a98e37"
+  },
+  "tests": {
+    "baseline": {
+      "passed": 265,
+      "exit_code": 0,
+      "receipt": {
+        "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+        "command": [
+          "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+          "-m",
+          "pytest",
+          "-q",
+          "-o",
+          "addopts=",
+          "tests/unit/test_temporal_consciousness_functional.py",
+          "tests/integration/test_temporal_memory_restart.py",
+          "tests/unit/test_temporal_consciousness_guardian.py",
+          "tests/unit/test_memory_temporal_integration_guardian.py",
+          "tests/unit/test_consciousness_runtime_guardian.py",
+          "tests/unit/test_memory_checkpoint_stream.py",
+          "tests/unit/test_checkpoint_session.py",
+          "tests/tools/test_release_signing.py",
+          "-o",
+          "cache_dir=D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-cache",
+          "--basetemp",
+          "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-baseline"
+        ],
+        "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+        "ambient_pythonpath_absent": true,
+        "exit_code": 0,
+        "seconds": 49.13
+      }
+    },
+    "new_regressions": {
+      "initial_failures": 5,
+      "freshness_config_failures": 4,
+      "review_failures": 4,
+      "final_passed": 13,
+      "real_core_cases": 10,
+      "constructor_validation_cases": 3,
+      "exit_code": 0,
+      "receipt": {
+        "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+        "command": [
+          "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+          "-m",
+          "pytest",
+          "-q",
+          "-o",
+          "addopts=",
+          "tests/unit/test_consciousness_observer_lifecycle.py",
+          "-k",
+          "temporal_projection",
+          "-o",
+          "cache_dir=D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-cache",
+          "--basetemp",
+          "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-final-projection"
+        ],
+        "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+        "ambient_pythonpath_absent": true,
+        "exit_code": 0,
+        "seconds": 1.88
+      }
+    },
+    "adjacent_initial": {
+      "passed": 160,
+      "exit_code": 0,
+      "receipt": {
+        "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+        "command": [
+          "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+          "-m",
+          "pytest",
+          "-q",
+          "-o",
+          "addopts=",
+          "tests/unit/test_consciousness_observer_lifecycle.py",
+          "tests/unit/test_consciousness_observer_core.py",
+          "tests/unit/test_consciousness_observer_continuity.py",
+          "tests/unit/test_hub_consciousness_observer.py",
+          "-o",
+          "cache_dir=D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-cache",
+          "--basetemp",
+          "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-projection-focused"
+        ],
+        "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+        "ambient_pythonpath_absent": true,
+        "exit_code": 0,
+        "seconds": 33.03
+      }
+    },
+    "full_suite": {
+      "passed": 4171,
+      "skipped": 38,
+      "pytest_seconds": 2350.59,
+      "coverage_percent": 45.29,
+      "coverage_floor": 22,
+      "exit_code": 0,
+      "receipt": {
+        "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+        "command": [
+          "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+          "-m",
+          "pytest",
+          "-q",
+          "-o",
+          "cache_dir=D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-cache",
+          "--basetemp",
+          "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-full"
+        ],
+        "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+        "ambient_pythonpath_absent": true,
+        "exit_code": 0,
+        "seconds": 2367.34
+      },
+      "log_sha256": "d4677c1908a8fbb933b535d267cf9ee079a7d6c73d139d2ecc1bfe078da61296",
+      "skip_lines": [
+        "SKIPPED [2] tests\\capabilities\\test_reflection_memory_stability.py:33: Reflection system unavailable: No module named 'Aetherra.aetherra_core.system.emotion_detector'",
+        "SKIPPED [2] tests\\tools\\test_release_bootstrap.py:15: could not import 'semantic_release': No module named 'semantic_release'",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:154: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:168: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:225: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:237: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:337: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:302: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:314: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:414: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:375: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:387: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:486: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:464: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:450: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:531: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:556: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:516: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:631: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:593: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:605: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:672: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:686: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:750: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:771: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:725: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:804: GUI components not available",
+        "SKIPPED [1] tests\\ai\\test_neural_interface.py:821: GUI components not available",
+        "SKIPPED [1] tests\\capabilities\\test_perception_shutdown.py:30: Windows terminate does not deliver SIGTERM",
+        "SKIPPED [1] tests\\capabilities\\test_storm_acceptance.py:138: STORM not enabled",
+        "SKIPPED [1] tests\\capabilities\\test_storm_acceptance.py:206: STORM not enabled",
+        "SKIPPED [1] tests\\capabilities\\test_storm_acceptance.py:306: Memory system not returning results - persistence issue",
+        "SKIPPED [1] tests\\unit\\test_hub_quantum_and_chat_metrics.py:20: Flask not available in test env",
+        "SKIPPED [1] tests\\unit\\test_hub_quantum_and_chat_metrics.py:34: Flask not available in test env",
+        "SKIPPED [1] tests\\unit\\test_signature_verifier.py:419: Symlinks not supported on this system",
+        "SKIPPED [1] tests\\unit\\test_sse_replay_gap_metric.py:20: Flask dependency or environment heavy; placeholder smoke"
+      ]
+    },
+    "adjacent_final": {
+      "passed": 164,
+      "exit_code": 0,
+      "receipt": {
+        "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+        "command": [
+          "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+          "-m",
+          "pytest",
+          "-q",
+          "-o",
+          "addopts=",
+          "tests/unit/test_consciousness_observer_lifecycle.py",
+          "tests/unit/test_consciousness_observer_core.py",
+          "tests/unit/test_consciousness_observer_continuity.py",
+          "tests/unit/test_hub_consciousness_observer.py",
+          "-o",
+          "cache_dir=D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-cache",
+          "--basetemp",
+          "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\pytest-review-green"
+        ],
+        "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+        "ambient_pythonpath_absent": true,
+        "exit_code": 0,
+        "seconds": 32.54
+      }
+    },
+    "python_quality": {
+      "new_or_edited_violations": 0,
+      "unchanged_legacy_files": 946,
+      "exit_code": 0,
+      "receipt": {
+        "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+        "command": [
+          "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+          "tools/python_quality.py"
+        ],
+        "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\static",
+        "ambient_pythonpath_absent": true,
+        "exit_code": 0,
+        "seconds": 116.17
+      }
+    },
+    "docs_consistency": {
+      "missing_environment_variables": 0,
+      "missing_routes": 0,
+      "exit_code": 0,
+      "receipt": {
+        "head": "56623003675bc99f9e3dfadf15b6254beb183b59",
+        "command": [
+          "D:\\Aetherra Labs\\.codex-c2b-execution-20261125\\runtime\\Scripts\\python.exe",
+          "tools/verify_docs_consistency.py"
+        ],
+        "cwd": "D:\\Aetherra Labs\\.codex-temporal-resume-20261126\\repo",
+        "ambient_pythonpath_absent": true,
+        "exit_code": 0,
+        "seconds": 4.07
+      }
+    }
+  },
+  "historical_main_verification": {
+    "merge": "592c462244252abe5626b825e642f3977f84a431",
+    "full_suite": {
+      "passed": 4158,
+      "skipped": 38,
+      "coverage_percent": 45.29,
+      "floor_percent": 22
+    },
+    "gui_tests": 40,
+    "runtime_commit": "56623003675bc99f9e3dfadf15b6254beb183b59",
+    "steady_state_seconds": 660,
+    "final_stop_receipts": 2,
+    "scope": "Offline deterministic responder; harness signals. No new Python install, browser, live-model, physical Ctrl+C or 65-minute check at released main.",
+    "public_evidence": "https://github.com/AetherraLabs/Aetherra/pull/368",
+    "quality_run": "https://github.com/AetherraLabs/Aetherra/actions/runs/45781733712",
+    "release_run": "https://github.com/AetherraLabs/Aetherra/actions/runs/45783618811",
+    "closeout_sha256": "4b6d4947386a82e416723913bad7332d6d1d7263e07468bdcd9b6c2c200a0852"
+  },
+  "limits": [
+    "No launcher Temporal activation or persistent history in this source slice",
+    "History density clarification pending",
+    "ALPHA-CKPT-001 and DEV-CKPT-001 remain OPEN; historical cause unproven",
+    "DEV-AUDIT-001 and DEV-OBS-001 remain OPEN",
+    "Pre-existing Homeostasis watchdog shutdown defect remains",
+    "No expanded alpha GO; unattended and production remain NO-GO"
+  ],
+  "protected_work": {
+    "verified_at": "2026-11-26T19:54:38.845392+00:00",
+    "exact_head_index_status_staging_and_file_hash_match": true,
+    "worktrees": 3,
+    "pending_files_preserved": 28,
+    "temporal_pending_files": 17,
+    "alpha_draft_files": 11,
+    "independent_report_sha256": "d785d79cdffa923df2e676360eea15762074535fe055b0fc3c02604755a26c42",
+    "final_repeat_match": true
+  },
+  "signing": "No signing/key/workflow/control changes; release-signing tests included in baseline",
+  "source_equivalence": {
+    "Aetherra/consciousness/runtime_observer.py": {
+      "suite_sha256": "3ea460fc0464e6a874528ce9d85c8aa9ef751d0957ff8119df093cfe74860e75",
+      "quality_sha256": "3ea460fc0464e6a874528ce9d85c8aa9ef751d0957ff8119df093cfe74860e75",
+      "identical_python_ast": true
+    },
+    "tests/unit/test_consciousness_observer_lifecycle.py": {
+      "suite_sha256": "932d2e4fdc5ee3ef1259f299803f8580d2dc42bfc6da86bf0ff0c3fb398a3d3c",
+      "quality_sha256": "f04e1deb44817e56c7fe1fa752d0a6cafeeb6367dcafdb30b70865c524a98e37",
+      "identical_python_ast": true
+    }
+  },
+  "source_equivalence_note": "The full suite ran on frozen source. The final test-file-only formatting correction adds import-section comments; Python ASTs are identical. All 13 new cases were rerun on the formatted result.",
+  "review": {
+    "important_findings": 3,
+    "fixed_with_regressions": [
+      "readiness invalidated during checkpoint export",
+      "paired observation clocks before delayed export",
+      "explicit local ownership refusal"
+    ],
+    "corrected_fixture_failures": 4,
+    "invalid_initial_fixture_run_excluded": true
+  },
+  "delivery": "Local isolated branch codex/temporal-observer-resume-20261126; no commit, push, merge or release"
+}

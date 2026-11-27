@@ -89,29 +89,37 @@ Internal alpha requires:
 
 ## Current Next Work
 
-Phases A and B, C1, C2a and the checkpoint-stop follow-up are merged.
-PR #355 passed hosted CI and clean-merge verification at `e8975d38`. Released
-main is `a30277e3` (`v0.5.0-beta.14`), with verified signing. The
-[phase status table](MASTER_ROADMAP.md#current-priority-internal-alpha),
-[current decision](ALPHA_READINESS_DECISION.md#c2b-prerequisite-checkpoint-2026-11-25)
-and [prerequisite receipt](evidence/c2b_prerequisites_2026-11-25.json) record the
-supported-profile checks and limits.
+Phases A and B, C1, C2a and the checkpoint-stop follow-up are merged. C2b also
+merged through PRs #356-#360 and #362-#367, followed by the progress correction
+in #368. The final merge is `592c46224425`; released main is its metadata-only
+child `56623003675b` (`v0.5.0-beta.22`), with verified signing. The
+[phase status table](MASTER_ROADMAP.md#current-priority-internal-alpha) and
+[resumption evidence](evidence/temporal_resumption_2026-11-26.json) distinguish
+completed clean-checkout results from historical readiness evidence.
 
 **Stage 21 remains active, with the existing supervised internal-alpha GO
 unchanged.** Stage 22 Beta Hardening and Stage 23 Production Readiness remain
-Planned; a beta package version is not acceptance into either stage. C2b is not
-implemented, and Phase D optional agency remains deferred.
+Planned; a beta package version is not acceptance into either stage. Phase D
+optional agency remains deferred.
 
 | Priority | Work | Required Outcome |
 | --- | --- | --- |
-| 1 | Start Task 1 of the approved C2b contract | Follow the [gated plan](superpowers/plans/2026-11-25-phase-c2b-checkpoints.md) for atomic head/recovery, periodic saving and retention. History and temporal reasoning remain separate. |
-| Separate pending work | Temporal runtime observer | Preserve the pending integration; do not conflate it with the merged Consciousness sidecar/checkpoints |
+| 1 | Review the Temporal runtime milestone for merge | Review the local source-bound verification receipts and the PR checks; keep existing alpha scope and unresolved incidents unchanged. [Runtime receipt](evidence/temporal_runtime_integration_2026-11-26.json) |
+| Ongoing alpha qualification | Retain unresolved incidents and revision-bound verification limits | Keep checkpoint recovery, temporal history and temporal reasoning separate; do not infer broader readiness from the merged C2b checks. |
 
-The follow-up corrects missing background command-error reporting. The clean
-merge passed 3,840 tests and skipped 38. The original slow operation remains
-unidentified. Keep signing, Guardian/Security, checkpoint ownership and
-observe/propose-only authority limits enforced. Broader installation graphs,
-unattended/production use and autonomous actions require separate acceptance.
+The full suite at merge `592c46224425` passed 4,158 tests with 38 skips and
+45.29% coverage; GUI tests (40), build and lint passed. Released main
+`56623003675b` passed boot/integration checks and a 660-second automated
+continuity/restart run. These results do not rerun Python installation, browser,
+live-model, physical keyboard or the 65-minute exercise at released main.
+
+[ALPHA-CKPT-001](DEVELOPMENT_ISSUES.md#alpha-ckpt-001--checkpoint-stop-delay) and
+[DEV-CKPT-001](DEVELOPMENT_ISSUES.md#dev-ckpt-001--extended-run-observer-and-checkpoint-progress-gap)
+remain **OPEN**: the original slow operation and extended-run causal chain are
+unexplained. The pre-existing Homeostasis watchdog shutdown error also remains;
+clean process exit does not prove orderly settlement of its pending work. Keep
+signing, Guardian/Security, checkpoint ownership and observe/propose-only
+limits enforced. Unattended/production use and autonomous actions remain NO-GO.
 
 Historical reference: the [2026-11-22 desktop verification](ALPHA_READINESS_DECISION.md#historical-desktop-verification-2026-11-22)
 and [first supervised exercise](evidence/supervised_alpha_2026-11-22.json)

@@ -272,5 +272,8 @@ These are separate tracked items, not sections added by this delivery.
 Strict Guardian, Security, signing, existing deadlines, N=10 retention approval,
 64 KiB payload cap and single-worker Memory authority remain unchanged. No late
 receipt acceptance, automatic checkpoint retry, reacquisition or pruning approval
-is introduced. C2b remains unmerged. The existing supervised internal-alpha
+is introduced. At the original verification checkpoint C2b was unmerged.
+Update 2026-11-26: the C2b stack and #368 are merged, released at
+`56623003675bc99f9e3dfadf15b6254beb183b59`; that merge does not establish the
+historical cause or close this issue. The existing supervised internal-alpha
 boundary stands; unattended and production operation remain NO-GO.
