@@ -40,9 +40,31 @@ jobs:
       - name: Smoke tests
         run: python tools/os_smoke.py
 
+      - name: Install isolated stack sampler
+        run: |
+          python -m venv "$RUNNER_TEMP/aetherra-stack-tools"
+          "$RUNNER_TEMP/aetherra-stack-tools/bin/python" -m pip install 'py-spy==0.4.4'
+
+      - name: Capabilities diagnostic regression tests
+        env:
+          AETHERRA_CI_STACK_SAMPLER: ${{ runner.temp }}/aetherra-stack-tools/bin/py-spy
+        run: python -m pytest -q -o addopts= tests/unit/test_ci_capabilities_diagnostics.py
+
       - name: Capabilities tests
         timeout-minutes: 5
-        run: pytest -q -o addopts= tests/capabilities
+        run: >-
+          python -m tools.ci_capabilities_diagnostics
+          --output "$RUNNER_TEMP/capabilities-diagnostics"
+          --sampler "$RUNNER_TEMP/aetherra-stack-tools/bin/py-spy"
+          -- -vv -o addopts= -o faulthandler_timeout=60 tests/capabilities
+
+      - name: Retain capability diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: capabilities-diagnostics
+          path: ${{ runner.temp }}/capabilities-diagnostics
+          if-no-files-found: warn
 
       - name: SSE v2 tests
         run: pytest -q -o addopts= tests/test_sse_v2.py
