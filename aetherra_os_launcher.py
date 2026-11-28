@@ -739,11 +739,15 @@ class AetherraOSLauncher:
             # A cancelled boot must clean up without granting checkpoint intent.
             launch_task = asyncio.current_task()
             if launch_task is not None and launch_task.cancelling():
+                # Deliver a pending request before entering asynchronous cleanup.
+                await asyncio.sleep(0)
                 raise asyncio.CancelledError
 
             # Phase 6: Announce OS online
             await self._announce_os_online()
             if launch_task is not None and launch_task.cancelling():
+                # Deliver a pending request before entering asynchronous cleanup.
+                await asyncio.sleep(0)
                 raise asyncio.CancelledError
 
             # Phase 7: Enter main operation loop
@@ -4697,18 +4701,23 @@ class AetherraOSLauncher:
         operation_task = asyncio.current_task()
         try:
             if operation_task is not None and operation_task.cancelling():
+                # A manual raise alone leaves Task.cancel() queued for cleanup.
+                await asyncio.sleep(0)
                 raise asyncio.CancelledError
             while self.running:
                 await self._refresh_owned_engine_heartbeat()
                 if operation_task is not None and operation_task.cancelling():
+                    await asyncio.sleep(0)
                     raise asyncio.CancelledError
                 await self._refresh_observation_service_heartbeats()
                 if operation_task is not None and operation_task.cancelling():
+                    await asyncio.sleep(0)
                     raise asyncio.CancelledError
 
                 # Write OS status file for cross-process detection
                 await self._write_os_status()
                 if operation_task is not None and operation_task.cancelling():
+                    await asyncio.sleep(0)
                     raise asyncio.CancelledError
 
                 # Check system health periodically

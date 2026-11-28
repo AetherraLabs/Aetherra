@@ -691,3 +691,15 @@ watchdog event loop, stdlib scheduler loop and Hub `serve_forever`/selector. The
 are observed stacks, not proof of the initiating cause or individual responsibility.
 The profile-specific hypothesis is unsupported. Retain both timeouts and their
 separate receipts; do not mark this lifecycle limitation resolved by clean siblings.
+
+Shutdown follow-up (2026-11-28): [controlled before/after evidence](SHUTDOWN_CANCELLATION_FOLLOWUP.md)
+now establishes one cancellation escape path on main `9c2e7708`: a manual
+`CancelledError` raised from `cancelling()` left the actual task cancellation queued.
+It was then delivered during Hub teardown, skipping later owned shutdown and leaving
+the non-daemon watchdog alive. An identical real-CLI signal reproduced the hang before
+correction and completed teardown after a yield at the existing guards; 18 deterministic
+regression cases failed before and pass afterward. This is a focused correction supported
+by intervention, not closure from a passing rerun. Historical failures remain retained;
+no common cause with older Homeostasis/CI/checkpoint records is asserted. The startup-owner
+and opt-in mismatch remains OPEN, with the same Runtime/Kernel review gate. See the linked
+report and follow-up PR for complete suite/CI results and remaining verification limits.

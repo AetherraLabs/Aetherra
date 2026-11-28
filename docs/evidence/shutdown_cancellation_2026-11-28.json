@@ -1,0 +1,353 @@
+{
+  "date": "2026-11-28",
+  "scope": "DEV-SELFINC-002 shutdown follow-up / GitHub #42; no opt-in or authority correction",
+  "base_commit": "9c2e7708adc6c3eaa9d78388b0f92627855a0800",
+  "environment": "Windows, Python 3.13.7, isolated offline full-launch profiles",
+  "launcher_before_sha256": "d0811295af97a663d153ed8f0d96a32d1e57963ff43d7ca4ea1b4b5c15b421ed",
+  "launcher_after_sha256": "8e1ed67b02a36183b501a00666ccee9040e2fa51960d2145dd89f9700dd99a4e",
+  "regression_tests_sha256": "6e999ae78e7263f476160ae7c354ebde295124c8a6c4e6633a7a31fbd8254976",
+  "baseline_normal_probe": {
+    "full-default": {
+      "exit_code": 0,
+      "timed_out": false,
+      "seconds": 9.33,
+      "probe_completed": true,
+      "stop": "automated interrupt_main; not a physical keyboard check",
+      "completed_cleanly": true
+    },
+    "full-selfinc-opt-in": {
+      "exit_code": 0,
+      "timed_out": false,
+      "seconds": 9.1,
+      "probe_completed": true,
+      "stop": "automated interrupt_main; not a physical keyboard check",
+      "completed_cleanly": true
+    },
+    "full-explicit-disable": {
+      "exit_code": 0,
+      "timed_out": false,
+      "seconds": 8.91,
+      "probe_completed": true,
+      "stop": "automated interrupt_main; not a physical keyboard check",
+      "completed_cleanly": true
+    }
+  },
+  "before_controlled_signal": {
+    "receipt": {
+      "exit_code": 1,
+      "timed_out": true,
+      "seconds": 70.01,
+      "signal": "one _thread.interrupt_main inside real CLI status write, no parent stop signal",
+      "runtime_log_sha256": "1a96d6e14da1907e4fe1232010f333f9b09413724089695ba134930347be654b"
+    },
+    "trace": [
+      {
+        "boundary": "_main_operation_loop",
+        "event": "enter",
+        "cancelling": 0,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_main_operation_loop",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": true,
+        "result": true
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": true
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": true,
+        "result": null
+      },
+      {
+        "boundary": "_graceful_shutdown",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": true
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": true
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": true,
+        "result": null
+      },
+      {
+        "boundary": "_stop_presence_resources",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": true
+      },
+      {
+        "boundary": "_stop_presence_resources",
+        "event": "raise",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "exception": "CancelledError"
+      },
+      {
+        "boundary": "_graceful_shutdown",
+        "event": "raise",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "exception": "CancelledError"
+      }
+    ],
+    "artifacts": {
+      "receipt.json": "1345cedb9abdba125b7d6f7e4416b752bdc9f7aa69cdbb5a5e98866e869fde4a",
+      "shutdown-trace.jsonl": "c120caa5ba43959b871231fa757e8caf6b117ddaa0c28bd435098c818c664237",
+      "runtime.log": "1a96d6e14da1907e4fe1232010f333f9b09413724089695ba134930347be654b"
+    }
+  },
+  "after_controlled_signal": {
+    "receipt": {
+      "exit_code": 0,
+      "timed_out": false,
+      "seconds": 9.17,
+      "signal": "one _thread.interrupt_main inside real CLI status write, no parent stop signal",
+      "runtime_log_sha256": "b7e1621a9dcb14bedf1603e1e6adae85aff8c6a3f80ac9dd8e1ded5d7e1d457f"
+    },
+    "trace": [
+      {
+        "boundary": "_main_operation_loop",
+        "event": "enter",
+        "cancelling": 0,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_main_operation_loop",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "result": true
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "result": null
+      },
+      {
+        "boundary": "_graceful_shutdown",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "result": null
+      },
+      {
+        "boundary": "_stop_presence_resources",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_stop_presence_resources",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "result": null
+      },
+      {
+        "boundary": "_graceful_shutdown",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "result": null
+      }
+    ],
+    "artifacts": {
+      "receipt.json": "fcc2d7b7b1f053d0bdc07324e252e71ba3933ac6b0821e6c06889ea7b1befaaf",
+      "shutdown-trace.jsonl": "f8de7f48b973cfcdee6084f8c3f34fe32deadd402bc89f187c11095fbb0d3cee",
+      "runtime.log": "b7e1621a9dcb14bedf1603e1e6adae85aff8c6a3f80ac9dd8e1ded5d7e1d457f"
+    }
+  },
+  "normal_launch_repeats": {
+    "probe-green-one": {
+      "full-default": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 9.07,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true
+      },
+      "full-selfinc-opt-in": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 9.01,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true
+      },
+      "full-explicit-disable": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 8.93,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true
+      }
+    },
+    "probe-green-two": {
+      "full-default": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 8.98,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true
+      },
+      "full-selfinc-opt-in": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 9.09,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true
+      },
+      "full-explicit-disable": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 9.12,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true
+      }
+    }
+  },
+  "regression_results": {
+    "before": "18 failed, 19 deselected; owned cleanup skipped in every inline-cancellation case",
+    "after": "65 passed; original cancellation, Windows signal and Homeostasis coverage included"
+  },
+  "retained_test_logs": {
+    "baseline-contracts.log": "11e22f84d133bef15c8baa8dae48fe8f84b3e9caa4234f1d3cd0df44c66f2a9f",
+    "red-inline-cancellation.log": "cd31a90d892cf556b60c0f96acc0a5e5794451d81c27049b4ab758cea83e6990",
+    "green-cancellation.log": "266cf7a738cb92d3aff7be0c55a8917d80d3f019b67caefb95e0a16fc50b0d35",
+    "final-focused.log": "41f71e1752d44a9dfe1df9336a0212a98fc4b37d0100dc538222b41679b8cbda",
+    "final-injected-cli.log": "1eec01ed4d2eaf478937ade645c10fbaab94e6a0d3cf178959398a2b001b284b",
+    "python-quality.log": "a80ef194bd1fbbe1fcc4b22ace109dac84d6279aec09c0ddd2216a405a8b7d14",
+    "docs-consistency.log": "0dd09fc5d8ef3be80b0d530194cd8e4f471948930b4d90cafd4dbe8d2932c78f"
+  },
+  "limitations": [
+    "The controlled real-CLI signal reproduces the retained wait stacks and establishes this cancellation escape path, not the cause of every historical hang.",
+    "No live-model, browser or physical-keyboard validation; automated SIGINT only.",
+    "QFAC provenance, unsigned planning trust, and Self-Incorporation startup ownership remain open.",
+    "Older DEV-HOMEOSTASIS-001, DEV-CI-001 and checkpoint records retain their own evidence and disposition."
+  ],
+  "initial_corrected_run": {
+    "receipt": {
+      "exit_code": 0,
+      "timed_out": false,
+      "seconds": 9.0,
+      "signal": "one _thread.interrupt_main inside real CLI status write, no parent stop signal",
+      "runtime_log_sha256": "4e0812322ba2e9fff86dd7873e8a526e7930a49105d23149e7fc16c1a684ccbe"
+    },
+    "trace": [
+      {
+        "boundary": "_main_operation_loop",
+        "event": "enter",
+        "cancelling": 0,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_main_operation_loop",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "result": true
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "result": null
+      },
+      {
+        "boundary": "_graceful_shutdown",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "result": null
+      },
+      {
+        "boundary": "_stop_presence_resources",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_stop_presence_resources",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "result": null
+      },
+      {
+        "boundary": "_graceful_shutdown",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "result": null
+      }
+    ],
+    "artifacts": {
+      "receipt.json": "a4bb03fcd69b19184e9abfe0682d85be8b916592bbc124d08c958384f4b90db0",
+      "shutdown-trace.jsonl": "f8de7f48b973cfcdee6084f8c3f34fe32deadd402bc89f187c11095fbb0d3cee",
+      "runtime.log": "4e0812322ba2e9fff86dd7873e8a526e7930a49105d23149e7fc16c1a684ccbe"
+    },
+    "launcher_sha256": "7dd67af76214247ea935eda632649599fc584f4ed1a93ecff7ced96ef7f63d0e",
+    "note": "Before LF normalization; retained separately from the final source-bound rerun."
+  }
+}

@@ -123,3 +123,77 @@ async def test_pending_cancellation_at_operation_entry_skips_all_work(
         assert calls == []
     finally:
         await startup.cleanup(task)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "boundary",
+    [
+        "_load_core_systems",
+        "_announce_os_online",
+        "_main_operation_loop",
+        "_refresh_owned_engine_heartbeat",
+        "_refresh_observation_service_heartbeats",
+        "_write_os_status",
+    ],
+)
+@pytest.mark.parametrize(
+    ("marked_sigint", "cancellations"), [(False, 1), (True, 1), (True, 2)]
+)
+async def test_inline_cancellation_does_not_escape_into_owned_cleanup(
+    monkeypatch, isolated_launcher, boundary, marked_sigint, cancellations
+):
+    """A signal between suspensions must settle before asynchronous teardown."""
+    case = isolated_launcher
+    launcher = case.launcher
+    heartbeat_started = asyncio.Event()
+    heartbeat_stopped = asyncio.Event()
+
+    async def heartbeat():
+        heartbeat_started.set()
+        try:
+            await asyncio.Future()
+        finally:
+            await asyncio.sleep(0)
+            heartbeat_stopped.set()
+
+    heartbeat_task = asyncio.create_task(heartbeat())
+    await heartbeat_started.wait()
+    launcher._daemon_heartbeat_tasks.append(heartbeat_task)
+    original = getattr(launcher, boundary)
+
+    def cancel_inline():
+        current = asyncio.current_task()
+        for _ in range(cancellations):
+            current.cancel()
+        if marked_sigint:
+            launcher._orderly_cli_sigint_task = current
+
+    async def boundary_with_signal(*args, **kwargs):
+        if boundary == "_main_operation_loop":
+            cancel_inline()
+            return await original(*args, **kwargs)
+        result = await original(*args, **kwargs)
+        # Models Windows SIGINT arriving inside a synchronous part of an
+        # awaited method: cancel() is requested, but has not been delivered.
+        cancel_inline()
+        return result
+
+    monkeypatch.setattr(launcher, boundary, boundary_with_signal)
+    task = asyncio.create_task(launcher.launch_full_os({"quiet": True, "mode": "test"}))
+    try:
+        _, pending = await asyncio.wait((task,), timeout=2)
+        assert not pending, "Launch did not settle after inline cancellation"
+        assert case.stopped.is_set(), "Cancellation escaped into owned cleanup"
+        assert heartbeat_stopped.is_set(), "Owned heartbeat teardown was interrupted"
+        startup_cancel = boundary in {"_load_core_systems", "_announce_os_online"}
+        orderly = not startup_cancel and marked_sigint and cancellations == 1
+        assert case.saves == ([True, False] if orderly else [False])
+        if startup_cancel:
+            assert task.cancelled()
+        else:
+            await task
+        assert not launcher.running
+    finally:
+        await startup.cleanup(task)
+        await startup.cleanup(heartbeat_task)
