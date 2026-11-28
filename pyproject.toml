@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aetherra"
-version = "0.5.0-beta.23"
+version = "0.5.0-beta.24"
 description = "AI-native development environment with intelligent workflows and persistent memory"
 readme = "README.md"
 license = {text = "GPL-3.0-or-later"}

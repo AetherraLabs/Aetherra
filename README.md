@@ -6,12 +6,12 @@
 > A safety-first cognitive operating layer for agentic AI systems.
 
 [![License](https://img.shields.io/badge/License-GPLv3-0891b2)](LICENSE)
-![Version](https://img.shields.io/badge/Version-0.5.0--beta.23-0f766e)
+![Version](https://img.shields.io/badge/Version-0.5.0--beta.24-0f766e)
 ![Language](https://img.shields.io/badge/Language-Python%20%2B%20Aetherra-8b5cf6)
 ![Status](https://img.shields.io/badge/Status-Internal%20Alpha%20Foundation-2563eb)
 ![Safety](https://img.shields.io/badge/Safety-Guardian%20Mediated-22c55e)
 
-Version: **0.5.0-beta.23**
+Version: **0.5.0-beta.24**
 
 Aetherra is an experimental AI operating layer for modular agents, persistent
 memory, policy-mediated execution, auditable decisions, and controlled
