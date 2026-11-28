@@ -1,6 +1,43 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.25 (2026-11-28)
+
+### Bug Fixes
+
+- Deliver pending cancellation before launcher cleanup
+  ([`370952e`](https://github.com/AetherraLabs/Aetherra/commit/370952e899630926be29a9f8f7fa428f93f1ae92))
+
+- Discard queued Homeostasis actions before shutdown
+  ([`f4f7a41`](https://github.com/AetherraLabs/Aetherra/commit/f4f7a41b1719959959ffb497487770f3ec4bb55b))
+
+### Chores
+
+- Merge main into evidence integrity plan
+  ([`122dadc`](https://github.com/AetherraLabs/Aetherra/commit/122dadc64ff0e567b535b68d7b8a649453b1cb3e))
+
+### Code Style
+
+- Align P0 probe formatters and retain rerun evidence
+  ([`6c79dc7`](https://github.com/AetherraLabs/Aetherra/commit/6c79dc7cc4b3f32be8e9a77eece30ed121b883b0))
+
+### Documentation
+
+- Clarify evidence integrity ownership and priorities
+  ([`b400f62`](https://github.com/AetherraLabs/Aetherra/commit/b400f6244c61dc7bbf26fedc7c0f2e96d0d2e0af))
+
+- Record P0 runtime evidence and authority reachability
+  ([`4e799b3`](https://github.com/AetherraLabs/Aetherra/commit/4e799b3a0839e2ceab5831cbcc43161bb0972cca))
+
+- Record shutdown verification results and retained limits
+  ([`3822a02`](https://github.com/AetherraLabs/Aetherra/commit/3822a02196232d50f7ed1c7d78df21c80b7d346a))
+
+### Testing
+
+- Bound nested diagnostic coverage reporting
+  ([`dbb599b`](https://github.com/AetherraLabs/Aetherra/commit/dbb599bec392e2dfa83d98b0af8c2cad9fc54dbd))
+
+
 ## v0.5.0-beta.24 (2026-11-28)
 
 ### Bug Fixes
@@ -99,6 +136,9 @@
 
 - Improve README.md contributor guidance
   ([`b1dec4d`](https://github.com/AetherraLabs/Aetherra/commit/b1dec4da7e3337bcbd706f32357fb35ef1ac9c0d))
+
+- Plan replacement and isolation of mock runtime evidence
+  ([`50ad129`](https://github.com/AetherraLabs/Aetherra/commit/50ad129a1bcb0836f52064466944221aaac30ce8))
 
 - Preserve unexplained continuity HTTP failure
   ([`54c3d02`](https://github.com/AetherraLabs/Aetherra/commit/54c3d028c973f1628649a568577242afc53c12ce))
