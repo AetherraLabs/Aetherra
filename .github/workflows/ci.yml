@@ -74,6 +74,7 @@ jobs:
           python -m pytest -q -o addopts= -o faulthandler_timeout=1
           tests/unit/test_homeostasis_shutdown_cancellation.py
           tests/unit/test_launcher_startup_cancellation.py
+          tests/unit/test_launcher_operation_cancellation.py
 
       - name: SSE v2 tests
         run: pytest -q -o addopts= tests/test_sse_v2.py

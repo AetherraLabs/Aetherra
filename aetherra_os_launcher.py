@@ -4694,13 +4694,22 @@ class AetherraOSLauncher:
         """[LOOP] Main operation loop - keeps the OS running."""
         logger.info("[LOOP] Entering main operation loop...")
 
+        operation_task = asyncio.current_task()
         try:
+            if operation_task is not None and operation_task.cancelling():
+                raise asyncio.CancelledError
             while self.running:
                 await self._refresh_owned_engine_heartbeat()
+                if operation_task is not None and operation_task.cancelling():
+                    raise asyncio.CancelledError
                 await self._refresh_observation_service_heartbeats()
+                if operation_task is not None and operation_task.cancelling():
+                    raise asyncio.CancelledError
 
                 # Write OS status file for cross-process detection
                 await self._write_os_status()
+                if operation_task is not None and operation_task.cancelling():
+                    raise asyncio.CancelledError
 
                 # Check system health periodically
                 await asyncio.sleep(30)  # Every 30 seconds

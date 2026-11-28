@@ -1,0 +1,90 @@
+{
+  "issue": "DEV-CI-001",
+  "status": "OPEN: captured operation-loop cancellation defect; earlier attribution remains limited",
+  "source_head": "5c1a380657faf5db77e959bd3d7881edf1e12173",
+  "job": "https://github.com/AetherraLabs/Aetherra/actions/runs/46093911637/job/140820828253",
+  "run_attempt": 1,
+  "timeout_source": "capability supervisor watchdog at290 seconds; outer workflow five-minute capability deadline retained",
+  "exit_code": 124,
+  "active_node": "tests/capabilities/test_self_maintenance_services.py::test_self_maintenance_services_registration_and_basic_ops",
+  "pid": 2717,
+  "capture_count": 3,
+  "capture_times": [
+    744.49336457,
+    834.522658707,
+    914.484025655
+  ],
+  "compact_boot_task_trace": {
+    "task_id": 3,
+    "awaits_task": null,
+    "cancelling": 1,
+    "frames": [
+      {
+        "function": "test_self_maintenance_services_registration_and_basic_ops.<locals>.boot",
+        "file": "tests/capabilities/test_self_maintenance_services.py",
+        "line": 23
+      },
+      {
+        "function": "AetherraOSLauncher.launch_full_os",
+        "file": "aetherra_os_launcher.py",
+        "line": 750
+      },
+      {
+        "function": "AetherraOSLauncher._main_operation_loop",
+        "file": "aetherra_os_launcher.py",
+        "line": 4706
+      },
+      {
+        "function": "sleep",
+        "file": "tasks.py",
+        "line": 649
+      }
+    ]
+  },
+  "all_boot_samples_cancelling": 1,
+  "supported_observation": "The active test is joining its cancelled boot task. Three samples across 170 seconds capture that boot coroutine inside the operation-loop sleep with cancelling=1; startup checks do not cover this later continuation.",
+  "trace_limit": "The boot coroutine is directly captured; the parent test Task is not present in these bounded samples. The active node comes from phases.jsonl, not a captured numeric parent edge.",
+  "cause_scope": "The operation loop did not recheck pending cancellation after awaited heartbeat/status work. The exact dependency or instruction that consumed the original signal was not sampled. Earlier uninstrumented timeouts are not retroactively attributed.",
+  "artifact": {
+    "id": 15242956230,
+    "digest": "sha256:5ee6eec9cdfc5dffa2e5e07c5e2afb01d580fb85d2171ad3bd40c35cbfe0ef15"
+  },
+  "job_log_sha256": "67e7aae3c239cc8571aa578ace8a85e7f737625dcac8982a4c45a3ed5687aa18",
+  "same_head_comparisons": {
+    "strict": "414 passed / 5 skipped, exit0 with no live owned survivors",
+    "windows_capabilities": "170 passed / 5 skipped,292.45s pytest,298.13s process,exit0",
+    "windows_log_sha256": "49c1b84d34648744d8e31e9d6b1ba7c8026c5583f544b3c9b7b7fd3d806383b7",
+    "limits": "Standalone and strict/full CI use different dependency profiles; those differences are recorded without causal attribution."
+  },
+  "correction": {
+    "scope": "Nine operation-loop lines recheck the owning Task cancellation count at entry and after each awaited heartbeat/status operation, raising into the unchanged cancellation handler before later work or the long sleep.",
+    "policy": "Ordinary or repeated cancellation returns cleanup-only; only the same-task first marked SIGINT retains existing orderly checkpoint intent. No new stop or checkpoint authority.",
+    "source_scope": "Working tree on recorded 5c head; final source hashes bind the tested correction.",
+    "source_sha256": {
+      "aetherra_os_launcher.py": "d0811295af97a663d153ed8f0d96a32d1e57963ff43d7ca4ea1b4b5c15b421ed",
+      "tests/unit/test_launcher_operation_cancellation.py": "a4114f8732472a4e06704275b823fa3b1080a8a4b41fb870f9514da6755fda6b"
+    }
+  },
+  "controlled_windows_red": {
+    "failed": 10,
+    "passed": 9,
+    "seconds": 5.69,
+    "log_sha256": "b15bc28a3844091d65fdefe02be66d8e2f6e838bbf2b316703b77203b7dc3826",
+    "scope": "Portable consumed cancellation at all three awaited boundaries with ordinary/first/repeated SIGINT, plus pending cancellation at entry. Real wait_for ordering controls pass on Windows 3.13 before correction."
+  },
+  "controlled_windows_green": {
+    "regressions_passed": 19,
+    "regressions_seconds": 0.37,
+    "regressions_log_sha256": "dd817158e0d25aef3651fc4c79438c6d631883a61f21344ba4cc60ceefdd032d",
+    "lifecycle_heartbeat_selection_passed": 132,
+    "selection_seconds": 35.35,
+    "selection_log_sha256": "4c6244db9f3e2e9d3a2e51ba62743666786d9e95a91bcd73dff7044257ef1f33",
+    "scope": "Real launch/operation/finally with controlled dependencies; checks owned cleanup, no later heartbeat/status calls, ordinary/first/repeated cancellation save intent, and existing Engine/Homeostasis/Hub/Windows controls.",
+    "limit": "The 132-case run precedes a nonbehavioral assertion-format change; the final 19-case run and source hashes cover that final text."
+  },
+  "remaining_limits": [
+    "Exact cancellation-consuming dependency remains unsampled. The owner continuation defect is captured and directly reproduced.",
+    "Earlier uninstrumented failures and the missing boot await in b586 are not retroactively assigned this cause.",
+    "Final exact-head Linux verification is retained on PR #387. Automated SIGINT simulations are not physical keyboard checks."
+  ]
+}

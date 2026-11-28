@@ -405,7 +405,7 @@ removing the skip cannot close this unknown-cause record; no risk acceptance.
 
 ## DEV-CI-001 — Capabilities job timeout before a result summary
 
-**Status: OPEN — historical causes unknown; Homeostasis shutdown and test-owned registry cleanup corrected.**
+**Status: OPEN — operation-loop cancellation defect captured; historical attribution remains limited.**
 Owner: CI/Runtime maintainers. First retained observation: 2026-11-25
 (America/Denver); registered: 2026-11-26; reviewed: 2026-11-27. Severity unknown.
 GitHub: [#381](https://github.com/AetherraLabs/Aetherra/issues/381).
@@ -512,6 +512,18 @@ cleanup-only checkpoint intent. Four failing cases became passing cases; the
 Awaited-Task links improve the bounded capture. Neither this controlled result
 nor a future passing rerun proves the missing natural await or closes historical
 uncertainty.
+
+The [5c1a3806 capability capture](evidence/dev_ci_001_operation_cancellation_2026-11-27.json)
+then identifies a concrete continuation defect for that attempt: the directly
+captured boot task had cancelling=1 while sleeping inside the operation loop in
+three samples spanning 170 seconds. The test phase remained self-maintenance.
+The runtime did not recheck cancellation after awaited heartbeat/status work.
+Nine owner-loop lines now perform those checks, routing through the existing
+ordinary/first-SIGINT/repeated-interruption policy. Regression RED was 10 failed /
+9 passed; GREEN was 19 passed, with 132 lifecycle/heartbeat controls passing.
+The exact cancellation-consuming dependency remains unsampled; earlier absent
+stacks are not retroactively attributed. Source hashes, job/artifact digests,
+trace limits and final PR verification references remain in the receipt.
 
 Containment retains the five-minute capability limit, existing 900-second strict
 pytest deadline, original failures and separate capture outcomes. This controlled

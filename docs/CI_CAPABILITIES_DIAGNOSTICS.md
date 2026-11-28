@@ -97,8 +97,8 @@ retains the active test and fourteen async samples: the self-maintenance
 capability test waited at line 78 for its canceled boot task. The event loop
 remained responsive. The 32-task sample omitted the boot task itself, so its
 awaited operation is not established by this capture. Live background Homeostasis
-chains do not by themselves identify the cause. This failure remains a blocker;
-passing narrower checks does not close DEV-CI-001. The same head's full quality
+chains do not by themselves identify the cause. That failed attempt remains evidence;
+passing narrower checks did not resolve its omitted await chain. The same head's full quality
 gate timed out at the same test join and also omitted the boot await chain.
 
 A [controlled launcher regression](evidence/dev_ci_001_launcher_cancellation_2026-11-27.json)
@@ -110,6 +110,26 @@ and five controls became 23 passing startup/shutdown/Windows SIGINT checks with
 the correction. This controlled result does not prove the missing natural await
 chain. Bounded awaited-Task links now improve future captures; exact-head Linux
 verification remains on PR #387.
+
+## Captured operation-loop continuation
+
+The [later capability capture at 5c1a3806](evidence/dev_ci_001_operation_cancellation_2026-11-27.json)
+supplies the missing launcher state for that new attempt. The active test was
+self-maintenance; three direct boot-task samples across 170 seconds showed
+cancelling=1 while launch_full_os awaited the operation loop's 30-second sleep.
+The loop had continued after cancellation instead of reaching shutdown. These
+samples capture the boot task directly; they do not contain a numeric parent-test
+edge. The exact dependency that consumed cancellation was not sampled.
+
+Nine operation-loop lines now recheck pending cancellation at entry and after
+each awaited heartbeat/status operation, before later work or sleep. They raise
+into the existing cancellation handler: ordinary or repeated cancellation remains
+cleanup-only; the first same-task marked SIGINT retains orderly checkpoint intent.
+Ten failing cases and nine controls became 19 passing regressions, with 132
+lifecycle/heartbeat controls also passing. Guardian, signing and resource teardown
+order remain unchanged. Consult PR #387 for final exact-head Linux results.
+This captured defect does not retroactively identify the older uninstrumented
+timeout causes or expand supervised-alpha readiness.
 
 ## Linux reproduction
 
