@@ -406,5 +406,85 @@
     "signing_regressions_passed": 58,
     "signing_subtests_passed": 5,
     "production_signing": "Enforced for main pushes; expected skip on pull requests; no new production signing pass claimed."
+  },
+  "linux_capability_recurrence": {
+    "head": "3822a02196232d50f7ed1c7d78df21c80b7d346a",
+    "job": "https://github.com/AetherraLabs/Aetherra/actions/runs/46124032231/job/140914505725",
+    "artifact": "https://github.com/AetherraLabs/Aetherra/actions/runs/46124032231/artifacts/15255352254",
+    "exit_code": 124,
+    "supervisor_seconds": 290,
+    "workflow_timeout_minutes": 5,
+    "active_node": "tests/capabilities/test_qfac_in_os.py::test_qfac_optional_service_registration",
+    "phase": "call, in finally awaiting cancelled boot task",
+    "await_chain": [
+      "test_qfac_optional_service_registration -> boot -> launch_full_os -> _graceful_shutdown",
+      "HomeostasisOrchestrator.shutdown -> stop -> _stop_background_tasks",
+      "HomeostasisController.start -> execute_pending_actions -> execute_action_via_kernel",
+      "AetherraKernelLoop.submit_actuator_action_and_wait -> asyncio.wait_for"
+    ],
+    "observations": "The same await chain is retained in three samples. Boot and controller each report cancelling=1. This identifies the wait, not every historical initiating cause.",
+    "artifacts_sha256": {
+      "async-ready-2598.json": "d79783ee792734966904619aa70f0959212c33bb10ab9af305cf3b203ab78817",
+      "async-requests.jsonl": "9b5a66ca9d92896e7de9008551a166b080f763d44880f66ffd0b1c4cb660c247",
+      "async-stacks.jsonl": "ad0b245518563fe525b3ed1a12f6c54b411fe02c61dab67793b2a86285ae2142",
+      "environment.jsonl": "399642d6e38f914f99f09f9912b3ba2b275d4ea51e7ba2bce97a5cb691c2bad2",
+      "phases.jsonl": "6ea04f92cbb5a31343a44561efcfe256f27b0a0470602787649853b773edafbd",
+      "processes.jsonl": "65bf89891f6adfefb149958bec5487b22b3e31cba6c6d795410dd5d2c236066e",
+      "stacks.jsonl": "2d83c9b24cd96c1afc4a5ade9fabbf8d8b50bccce27c589262acd77f09fbb599",
+      "supervisor.jsonl": "ea37cb8a29953cc35c5de99ed05a9c39beb3f76b0fe55580c5021ba8df9359ce"
+    }
+  },
+  "queued_action_correction": {
+    "record": "DEV-CI-001 / #381, shutdown follow-up for #42",
+    "cause": "Closing running intent did not discard the pending action batch; a dependency consuming cancellation could dispatch a further action and wait through its timeout during stop.",
+    "fix": "HomeostasisController.stop clears unstarted pending actions before the owner cancels and awaits its worker.",
+    "controller_before_sha256": "70eb6b896f598357d501daa728356e425057afb44da2e79d65c416bb99abf4e6",
+    "controller_after_sha256": "3a1bf5dc21dc24c3bd58acb0d96101b23225bf8c75e5402bf8a45754d93d8c63",
+    "test_sha256": "e2a91e6d7ef24979be916c1e5c0e76843d2aaf17f6047505b895429d6c334a07",
+    "ordered_regression_before": {
+      "failed": 2,
+      "exit_code": 1,
+      "log_sha256": "f1edeb9f9de1cf748d56af7918c6e4311ca8e444460e539205ff897d32d6249c"
+    },
+    "final_focused": {
+      "passed": 113,
+      "exit_code": 0,
+      "seconds": 7.87,
+      "log_sha256": "6969dfa5ad789ac21c0fa21bb4dee27649a6bec5ebdf267294a91fed217cad53"
+    },
+    "normal_profiles": {
+      "full-default": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 10.34,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true
+      },
+      "full-explicit-disable": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 9.99,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true
+      },
+      "full-selfinc-opt-in": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 10.04,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true
+      }
+    },
+    "controlled_cli": {
+      "exit_code": 0,
+      "timed_out": false,
+      "seconds": 10.65,
+      "signal": "one _thread.interrupt_main inside real CLI status write, no parent stop signal",
+      "runtime_log_sha256": "916ff7e61c6bcdca7c168cbebe736d39f3628ad8ba7dbc35d24d48d93d7b1089"
+    },
+    "scope_limit": "The earlier full Windows suite predates this two-line queue correction; focused, capability, launch and final-head CI checks cover the follow-up."
   }
 }

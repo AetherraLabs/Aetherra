@@ -553,6 +553,15 @@ cause and explicit reviewed disposition. Passing reruns alone do not close it.
 Supervised-alpha limits, Guardian/Security, signing and approval boundaries remain
 unchanged.
 
+Shutdown follow-up: [PR #391](https://github.com/AetherraLabs/Aetherra/pull/391)
+retains a new [Linux capture and controlled batch regression](SHUTDOWN_CANCELLATION_FOLLOWUP.md#additional-ci-shutdown-boundary)
+on `3822a021`. The QFAC capability test awaited cancelled boot cleanup, blocked on the
+Homeostasis controller's kernel action wait. Closing run intent left unstarted actions
+queued; a consumed cancellation could enter another action wait during stop. Clearing
+that pending queue is covered by two red/green regressions and fresh launch checks.
+This does not close the historical record or prove every timeout shared this cause.
+The five-minute gate remains enforced; see the PR for final-head CI and limitations.
+
 ## DEV-CI-002 — Personal continuity write-session HTTP 503
 
 **Status: OPEN — cause and severity unknown.**

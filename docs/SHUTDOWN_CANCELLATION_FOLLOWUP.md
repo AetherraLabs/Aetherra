@@ -30,6 +30,27 @@ second-interrupt behavior, Guardian and Security remain unchanged. No `uncancel(
 task field, blanket cancellation suppression, daemonization or longer timeout is used in
 production. Private pending-delivery state was inspected only by the disposable diagnostic.
 
+## Additional CI shutdown boundary
+
+The documentation revision `3822a021` captured a Linux capability timeout in
+`test_qfac_optional_service_registration`: the test awaited its cancelled boot task,
+which awaited Homeostasis shutdown and its controller's in-flight kernel action. Three
+async snapshots retained that chain. The existing five-minute gate failed with exit 124;
+the failed job and artifact hashes remain in the compact evidence.
+
+Two controlled regressions showed the remaining batch gap: closing controller run intent
+left unstarted actions queued. If an action consumed cancellation, the batch could dispatch
+another action during shutdown and wait through its timeout. `HomeostasisController.stop()`
+now clears that unstarted queue before its owner cancels and awaits the worker. This adds
+no action authority and preserves normal dispatch, observation-only and Guardian gates.
+The corrected combined set passes **113 tests**, including both new batch regressions.
+Three fresh normal profiles and the controlled CLI check also exit 0 after both corrections.
+
+This extends [DEV-CI-001 / #381](https://github.com/AetherraLabs/Aetherra/issues/381)
+with a captured shutdown wait and a controlled correction. Historical failures stay OPEN;
+the new evidence does not identify every historical initiating event. Final-head capability
+and CI results are recorded in the PR after completion.
+
 ## Verification evidence
 
 [Compact source-bound evidence](evidence/shutdown_cancellation_2026-11-28.json) retains the
@@ -46,7 +67,8 @@ remain in [the P0 trace](RUNTIME_EVIDENCE_P0_TRACE.md) and #42.
   seconds, with launcher cleanup completing and no pending cancellation delivery.
 - Two unchanged normal probes: **six process exits 0**, with Self-Incorporation unset,
   explicitly enabled and explicitly disabled; the original 60-second stop limit is intact.
-- Full default Windows suite: **4444 passed, 49 skipped, 5 subtests passed**. The command
+- Full default Windows suite before the additional queue correction: **4444 passed,
+  49 skipped, 5 subtests passed**. The command
   exited **3** after the tests because coverage aggregation mixed branch and statement
   data. This is not a clean full-command pass. The unchanged nested-pytest diagnostic
   test independently reproduces the reporting error. Both datasets remain retained;
