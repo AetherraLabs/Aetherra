@@ -1,0 +1,97 @@
+{
+  "issue": "DEV-CI-001",
+  "status": "OPEN: historical timeout attribution remains unknown",
+  "fix_commit": "b9ab95880d4cbec5b06db3e3b2a441b5da82f84d",
+  "pr": "https://github.com/AetherraLabs/Aetherra/pull/387",
+  "scope": "Controlled Homeostasis cancellation-consumption defect corrected; no broader readiness or signing change.",
+  "linux_red": {
+    "head": "1d325080db9e80e19f6668d5a9f50cbbdea3ac53",
+    "job": "https://github.com/AetherraLabs/Aetherra/actions/runs/46084813423/job/140791795901",
+    "python": "3.11.18",
+    "command": "python -m pytest -q -o addopts= -o faulthandler_timeout=1 tests/unit/test_homeostasis_shutdown_cancellation.py",
+    "failed": 6,
+    "seconds": 12.28,
+    "summary": [
+      {
+        "component": "controller_step",
+        "absorbed_cancellation": "failed",
+        "wait_for_completion_race": "failed"
+      },
+      {
+        "component": "controller_action",
+        "absorbed_cancellation": "failed",
+        "wait_for_completion_race": "failed"
+      },
+      {
+        "component": "supervisor_cycle",
+        "absorbed_cancellation": "failed",
+        "wait_for_completion_race": "failed"
+      }
+    ],
+    "all_cases": "dependency_returned=true; component_running=true; worker_cancelling=1; stop_done=false; worker_done=false",
+    "controller_step_post_stop_action_passes": 1,
+    "compact_trace": {
+      "pid": 2988,
+      "scenario": "controller_step / wait_for_completion_race",
+      "stop": [
+        "HomeostasisOrchestrator.stop (homeostasis_integration.py:934)",
+        "HomeostasisOrchestrator._stop_background_tasks (homeostasis_integration.py:1227)"
+      ],
+      "worker": [
+        "HomeostasisController.start (homeostasis_core.py:1164)",
+        "asyncio.sleep (tasks.py:649)"
+      ],
+      "native_sample": "selectors.py:468 select -> asyncio/base_events.py:1898 _run_once",
+      "source": "Before-cleanup assertions in job log; six faulthandler samples. A selector frame alone does not identify the await."
+    },
+    "job_log_sha256": "d2fa9086da8bcec781ebbf33e856ef58c78a03cd6aa72f28e5010119e8c24594",
+    "shutdown_step_sha256": "26191dced5a7eaa13223065eadc3c1f00652f6cd8af8fba87e79157231542160",
+    "reports_sha256": "4411ccd16dfa48387eb392b558f008cc0fde52c4d19e8eaff201bfc00530cfda",
+    "same_job_capabilities": {
+      "passed": 171,
+      "skipped": 4,
+      "seconds": 44.77,
+      "live_owned_processes_before_cleanup": 0
+    },
+    "artifact_digest": "sha256:306b8e96f4f302b226d64d0faca107405fb7cb8769da1e2e5cc5b8d5568c3311"
+  },
+  "local_green": {
+    "platform": "Windows, Python 3.13.7",
+    "recorded_head_before_commit": "1d325080db9e80e19f6668d5a9f50cbbdea3ac53",
+    "source_scope": "Pre-commit working tree; the three runtime byte hashes below match the semantic-phase receipt and normalized committed content.",
+    "runtime_sha256": {
+      "Aetherra/homeostasis/homeostasis_integration.py": "a94673d41c0660350696f2f1a0008879b03be66061798d61830d52c4a9f5f821",
+      "Aetherra/homeostasis/homeostasis_core.py": "70eb6b896f598357d501daa728356e425057afb44da2e79d65c416bb99abf4e6",
+      "Aetherra/homeostasis/system_supervisor.py": "a88323c3f3f20e6422106c51b8a374dab72ac7d6385a1f14fbe832f734c26cf2"
+    },
+    "regression_command": "python -m pytest -q -o addopts= tests/unit/test_homeostasis_shutdown_cancellation.py",
+    "regressions_passed": 7,
+    "regressions_seconds": 0.49,
+    "regressions_log_sha256": "1d9579b3b278f024843aa2b8ae6418b83a0dc13f21a0a79ff9ffade9601c13bc",
+    "homeostasis_guardian_observation_passed": 234,
+    "selection_seconds": 46.58,
+    "selection_note": "Includes six shutdown cases; ran before the seventh positive-loop case was added.",
+    "selection_log_sha256": "6b0a546452043ac89bcfe7351392366957dd3047c2c043916aff869886501a54",
+    "formatter_ast_equal": true,
+    "fixed_style_baseline_unchanged": true
+  },
+  "limits": [
+    "Constructed race does not establish the original CI timeout cause.",
+    "Corrected Linux cases pass on the recorded head; a separate full-gate registry leak is retained in the registry-cleanup receipt. Use PR #387 for final exact-head CI.",
+    "Run-intent closure does not revoke already-submitted actuator work; Guardian and asynchronous teardown order remain intact."
+  ],
+  "linux_green": {
+    "head": "49b28741e16a6d40e438089e2d477da2b346b846",
+    "job": "https://github.com/AetherraLabs/Aetherra/actions/runs/46087678253/job/140800996319",
+    "python": "3.11.18",
+    "regressions_passed": 7,
+    "seconds": 0.08,
+    "same_job_capabilities": {
+      "passed": 171,
+      "skipped": 4,
+      "seconds": 41.83,
+      "live_owned_processes_before_cleanup": 0
+    },
+    "capability_artifact_digest": "sha256:23ebc84e03065f17a7793e39bb36145c0a6d79f1431a00efbb7e4935878b331a"
+  }
+}

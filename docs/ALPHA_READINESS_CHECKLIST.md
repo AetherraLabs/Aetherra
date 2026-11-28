@@ -1,5 +1,17 @@
 # Alpha Readiness Checklist
 
+## Temporal integration review (2026-11-27)
+
+Temporal [PR #380](https://github.com/AetherraLabs/Aetherra/pull/380) contains
+the completed-Core source projection, typed Memory history and default-disabled
+runtime observer. Its pre-publication receipts retain their original source
+bindings. Current integration review and verification are separate requirements;
+actual results belong to the PR checks and source-bound verification evidence.
+No new live-model, browser, physical-keyboard, fresh-install or soak acceptance
+is established. All eight development records remain OPEN. Stage 21's existing
+supervised internal-alpha boundary is unchanged; Stage 22/23 and Phase D remain
+future work. See the [Temporal operator guide](TEMPORAL_HISTORY.md).
+
 Updated: 2026-11-26
 
 ## C2b Merged-Main Evidence Review (2026-11-26)
@@ -34,8 +46,9 @@ and [sanitized receipt](evidence/c2b_merged_main_review_2026-11-26.json).
   checks remain required.
 
 The supervised internal-alpha boundary and unattended/production NO-GO remain
-unchanged. Temporal [PR #380](https://github.com/AetherraLabs/Aetherra/pull/380)
-is separate and pending integration; Phase D remains deferred.
+unchanged. At this 2026-11-26 C2b review, Temporal
+[PR #380](https://github.com/AetherraLabs/Aetherra/pull/380) was separate and
+pending integration; Phase D remains deferred.
 
 ## DEV-CKPT-001 Candidate Follow-Up (2026-11-25)
 
@@ -539,8 +552,10 @@ Decision record:
 1. Review the merged-main and CI evidence and maintain the eight OPEN
    [development records](DEVELOPMENT_ISSUES.md#current-records) through their
    owner/review gates; retain original failures and revision-specific limits.
-2. Review pending Temporal PR #380 separately. Keep strict signing, governance,
-   checkpoint authority and the existing supervised internal-alpha boundary.
+2. Review and verify the delivered Temporal milestone on the current integration
+   revision separately from historical C2b evidence. Keep strict signing,
+   governance, checkpoint authority and the existing supervised internal-alpha
+   boundary.
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

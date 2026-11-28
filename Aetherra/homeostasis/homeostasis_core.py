@@ -1156,9 +1156,13 @@ class HomeostasisController:
             try:
                 # Execute control step
                 await self.step()
+                if not self.running:
+                    break
 
                 # Execute pending actions
                 await self.execute_pending_actions()
+                if not self.running:
+                    break
 
                 # Sleep until next control interval
                 await asyncio.sleep(self.control_interval)

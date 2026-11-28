@@ -1,0 +1,28 @@
+{
+  "scope": "Existing continuity test double updated for the real asyncio task API; no runtime behavior change",
+  "pr": "https://github.com/AetherraLabs/Aetherra/pull/387",
+  "linux_failure": {
+    "head": "9c945f2b9c7b427e5ef618f16ac951f9cc60979e",
+    "job": "https://github.com/AetherraLabs/Aetherra/actions/runs/46095278684/job/140825080501",
+    "node": "tests/unit/test_consciousness_observer_continuity.py::test_main_loop_classifies_only_orderly_exit_as_save_eligible[cancelled-False]",
+    "failure": "AttributeError: test-specific asyncio SimpleNamespace omitted current_task; the launcher cancellation guard requires that real API.",
+    "outcome": "1 failed, 979 passed, 5 skipped in 155.40s; exit 1, no live owned survivors before cleanup",
+    "artifact_digest": "sha256:83b95305be5eb1f7bb6263a6346a67f7f2a03547123d5d3a0d2e38b5fbf70197",
+    "job_log_sha256": "e3ed217d7a45fd3c909ee5de9a8389bfa131f6fb4a0d065a4ac3b9d5c9a45823"
+  },
+  "local_regression": {
+    "platform": "Windows Python 3.13.7",
+    "red": "All four existing exit-classification parameter cases fail with the incomplete fake.",
+    "red_log_sha256": "f6c7532dcbb31a206c2dbe777fb1ce5ca36ae2e757aa812df886505617aabd2a",
+    "green": "111 continuity, operation-cancellation and Windows SIGINT tests passed in 18.68s.",
+    "green_log_sha256": "ad036eba0a258c183d5957381437cc7a506703604363dc856a41a38bfaef14b4"
+  },
+  "correction": "Copy the real asyncio namespace into the launcher-local test double and override only sleep. Runtime task inspection and all checkpoint intent assertions are preserved.",
+  "source_sha256": {
+    "tests/unit/test_consciousness_observer_continuity.py": "eda3b18854edb45030f294de06b7bef7901e187810223541a1eef8bb103d83bd"
+  },
+  "limits": [
+    "This test compatibility failure is distinct from the Linux cancellation hang and Temporal clock assertion.",
+    "Consult PR #387 for final exact-head Linux verification."
+  ]
+}

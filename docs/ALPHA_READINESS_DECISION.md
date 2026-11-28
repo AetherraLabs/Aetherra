@@ -1,5 +1,17 @@
 # Internal Alpha Readiness Decision
 
+## Temporal integration review (2026-11-27)
+
+Temporal [PR #380](https://github.com/AetherraLabs/Aetherra/pull/380) contains
+the completed-Core source projection, typed Memory history and default-disabled
+runtime observer. Its pre-publication receipts retain their original source
+bindings. Current integration review and verification are separate requirements;
+actual results belong to the PR checks and source-bound verification evidence.
+No new live-model, browser, physical-keyboard, fresh-install or soak acceptance
+is established. All eight development records remain OPEN. Stage 21's existing
+supervised internal-alpha boundary is unchanged; Stage 22/23 and Phase D remain
+future work. See the [Temporal operator guide](TEMPORAL_HISTORY.md).
+
 Date: 2026-11-25 (America/Denver)
 Evidence reconciliation: 2026-11-26; existing decision unchanged.
 
@@ -73,8 +85,9 @@ accepted this reconciliation on 2026-11-26 under
 checks on the pushed revision. This accepts documentation wording only.
 Guardian, Security, signing, deadlines, ownership and retention approval remain
 unchanged. Stage 21 supervised internal alpha remains active; unattended and
-production operation remain NO-GO. Temporal [PR #380](https://github.com/AetherraLabs/Aetherra/pull/380)
-remains separate and pending integration; Phase D remains deferred.
+production operation remain NO-GO. At this 2026-11-26 C2b review, Temporal
+[PR #380](https://github.com/AetherraLabs/Aetherra/pull/380) was separate and
+pending integration; Phase D remains deferred.
 
 A seventh OPEN record, [DEV-CI-001](DEVELOPMENT_ISSUES.md#dev-ci-001--capabilities-job-timeout-before-a-result-summary)
 ([#381](https://github.com/AetherraLabs/Aetherra/issues/381)), consolidates

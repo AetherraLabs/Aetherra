@@ -657,7 +657,7 @@ async def test_main_loop_classifies_only_orderly_exit_as_save_eligible(
     monkeypatch.setattr(
         launcher_module,
         "asyncio",
-        SimpleNamespace(sleep=noop, CancelledError=asyncio.CancelledError),
+        SimpleNamespace(**{**vars(asyncio), "sleep": noop}),
     )
     assert await launcher._main_operation_loop() is expected
 

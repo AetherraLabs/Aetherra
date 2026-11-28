@@ -405,9 +405,9 @@ removing the skip cannot close this unknown-cause record; no risk acceptance.
 
 ## DEV-CI-001 — Capabilities job timeout before a result summary
 
-**Status: OPEN — causes unknown; a common cause is not established.**
+**Status: OPEN — operation-loop cancellation defect captured; historical attribution remains limited.**
 Owner: CI/Runtime maintainers. First retained observation: 2026-11-25
-(America/Denver); registered/reviewed: 2026-11-26. Severity unknown.
+(America/Denver); registered: 2026-11-26; reviewed: 2026-11-27. Severity unknown.
 GitHub: [#381](https://github.com/AetherraLabs/Aetherra/issues/381).
 Review gate: recurrence, capability-test lifecycle/CI changes and affected
 verification claims. This consolidates the unresolved observation already
@@ -438,15 +438,117 @@ base, but that does not prove documentation irrelevant: the static-security
 capability test scans repository contents. Neither retry establishes a fix,
 shared cause, accepted risk or broader readiness.
 
-Containment: preserve the five-minute failing gate, original logs and separate
-retry outcomes; no skip, timeout extension or runtime change in the documentation
-PR. Next action: owner captures active node and setup/call/teardown phase,
-Python/thread/process stacks, ownership/drain state and effective dependency/
-network configuration in a separate bounded Linux investigation. Resolve only
-with a supported cause and focused correction/regression, or an evidenced
-external cause with tested containment and explicit maintainer disposition.
-Passing reruns alone do not close this record. Supervised-alpha limits,
-Guardian/Security, signing and approval boundaries remain unchanged.
+The [2026-11-27 diagnostic receipt](evidence/dev_ci_001_linux_capture_2026-11-27.json)
+records PR #387 heads `3a1cea7ed9ae43b897a611a07ce4d33f11ea156a` and
+`1031ab4dd179006ac1044ec71c996c7af25bee3e`: each standalone capability selection
+completed with 171 passed / 4 skipped (45.67 and 47.39 seconds). Both used Python
+`-u` and pytest `-vv`, changing buffering and verbosity as well as adding
+instrumentation. Their 30-second samples showed short, completed analytics
+fixture teardowns; neither identifies the historical blocked boundary. The
+first build-test job failed later at docs consistency; the second build-test
+job passed. Selected environment versions matched, but retained install lines
+show filelock 4.3.1 versus 4.3.2; this drift has no established causal role.
+
+The second head's [strict quality job](https://github.com/AetherraLabs/Aetherra/actions/runs/46079599000/job/140775316625)
+failed separately: pytest exceeded `TEST_TIMEOUT=900` and exited 124. The final
+output had 145 progress dots (17%, 35%, then one dot), with no active node,
+stack or result summary. The diagnostic receipt retains its exact command and
+source-log hash. This gate uses `requirements-ci.lock`, coverage and a broader
+test selection; a common cause with the five-minute capability timeout is not
+established. The overall CI run failed despite its successful build-test job.
+
+A [controlled Homeostasis cancellation receipt](evidence/dev_ci_001_homeostasis_cancellation_2026-11-27.json)
+records six failures on Python 3.11.18 at `1d325080`: both an explicitly consumed
+cancellation and a genuine `asyncio.wait_for` completion race left controller or
+supervisor run intent open while `stop()` awaited the worker. The worker then
+slept; the controller-step case also entered action processing after stop began.
+The same Linux job completed the normal capabilities selection: 171 passed /
+4 skipped in 44.77 seconds, with no live owned processes before cleanup.
+
+Commit `b9ab95880d4cbec5b06db3e3b2a441b5da82f84d` adds twelve runtime lines:
+close component run intent before task draining and recheck it after awaited
+controller steps/actions and supervisor cycles. Asynchronous resource teardown
+order and Guardian/actuator checks are unchanged. Seven local shutdown/positive
+loop regressions pass; an earlier selection of six shutdown cases plus existing
+Homeostasis, Guardian, observation and integration checks passed all 234 tests.
+The receipt binds those pre-commit working-tree checks to the committed runtime
+source hashes. Final exact-head CI evidence belongs to
+[PR #387](https://github.com/AetherraLabs/Aetherra/pull/387).
+
+The separate full Quality Gates workflow remained active on `1031ab4d` and
+`e76f8baf` after the narrower selections completed. Those unfinished observations
+have no active-node evidence; elapsed time alone does not establish a cause.
+The same diagnostic supervisor now covers that formerly unbounded pytest
+invocation, with a new 900-second pytest deadline and a 1,500-second outer budget.
+Production signing/source/public-key verification steps are unchanged.
+
+The [registry-cleanup receipt](evidence/dev_ci_001_registry_cleanup_2026-11-27.json)
+retains the first instrumented full-gate result at `49b28741`: 3,177 passed /
+9 skipped, but one live registry daemon survived the quality command. PID 6083's
+Linux stack identified the Flask/Werkzeug registry server; its creation overlapped
+the HMR metrics test, which lacked cleanup. A real-spawn regression against that
+exact test body reproduced the leak on both normal and assertion-failure paths.
+The test now releases its owned presence resources and registry in `finally`.
+The supervisor also fails a zero-exit command if owned descendants remain alive
+after a short natural-exit grace; its subsequent cleanup cannot mask the leak.
+This is a separately established lifecycle defect, not proof of the original
+five-minute timeout's cause. The same source's seven Linux Homeostasis regression
+cases and strict gate (414 passed / 5 skipped) passed. Final exact-head results
+remain linked from PR #387.
+
+The [captured strict stall at `b5867797`](evidence/dev_ci_001_strict_stall_2026-11-27.json)
+failed with pytest exit 124 at the unchanged 900-second deadline. The active call
+was `test_self_maintenance_services_registration_and_basic_ops`; fourteen async
+samples show it awaiting its canceled boot task at line 78. The bounded task
+sample omitted that boot task, leaving its own awaited operation unresolved.
+The same head's standalone capabilities passed 171 / four skips and had no live
+owned survivors. The natural strict failure remains a blocker; background
+Homeostasis stacks alone do not establish its cause or historical attribution.
+The same head's full gate reached the same join and timed out at 900 seconds.
+The [controlled launcher correction](evidence/dev_ci_001_launcher_cancellation_2026-11-27.json)
+checks pending startup cancellation before announcement/operation, preserving
+cleanup-only checkpoint intent. Four failing cases became passing cases; the
+23-case selection includes normal orderly SIGINT and existing shutdown controls.
+Awaited-Task links improve the bounded capture. Neither this controlled result
+nor a future passing rerun proves the missing natural await or closes historical
+uncertainty.
+
+The [5c1a3806 capability capture](evidence/dev_ci_001_operation_cancellation_2026-11-27.json)
+then identifies a concrete continuation defect for that attempt: the directly
+captured boot task had cancelling=1 while sleeping inside the operation loop in
+three samples spanning 170 seconds. The test phase remained self-maintenance.
+The runtime did not recheck cancellation after awaited heartbeat/status work.
+Nine owner-loop lines now perform those checks, routing through the existing
+ordinary/first-SIGINT/repeated-interruption policy. Regression RED was 10 failed /
+9 passed; GREEN was 19 passed, with 132 lifecycle/heartbeat controls passing.
+The exact cancellation-consuming dependency remains unsampled; earlier absent
+stacks are not retroactively attributed. Source hashes, job/artifact digests,
+trace limits and final PR verification references remain in the receipt.
+
+A separate [full-suite Temporal test-clock assertion](evidence/ci_temporal_test_clock_2026-11-27.json)
+was reproduced with a fixed monotonic seed and corrected in test scheduling.
+Real Memory/Guardian/registry assertions remain; no runtime timing changed.
+It is retained separately and is not assigned the launcher-stall cause.
+The next full run exposed an [incomplete continuity test double](evidence/ci_continuity_test_api_2026-11-27.json);
+its test-only API correction preserves the runtime cancellation guard and all
+checkpoint-intent assertions.
+
+Post-merge Windows verification exposed a separate [nested-pytest coverage reporting timeout](evidence/ci_windows_diagnostic_coverage_2026-11-27.json).
+Its synthetic test and teardown completed before the 30-second deadline;
+subsequent probes identified expensive repository-wide coverage reporting.
+The test-only correction measures the diagnostic module, asserts the real report
+scope, and preserves production coverage checks and all existing deadlines.
+The original timeout stack remains unavailable. This correction does not resolve
+historical runtime attribution or close DEV-CI-001 based on passing reruns.
+
+Containment retains the five-minute capability limit, existing 900-second strict
+pytest deadline, original failures and separate capture outcomes. This controlled
+correction does not establish the historical blocked node or a shared cause.
+Continue the [bounded Linux diagnostics](CI_CAPABILITIES_DIAGNOSTICS.md); close
+this record only with supported historical attribution or an evidenced external
+cause and explicit reviewed disposition. Passing reruns alone do not close it.
+Supervised-alpha limits, Guardian/Security, signing and approval boundaries remain
+unchanged.
 
 ## DEV-CI-002 — Personal continuity write-session HTTP 503
 

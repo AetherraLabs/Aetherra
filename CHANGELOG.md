@@ -1,6 +1,131 @@
 # CHANGELOG
 
 
+## v0.5.0-beta.24 (2026-11-28)
+
+### Bug Fixes
+
+- Honor cancellation during runtime heartbeat operations
+  ([`9c945f2`](https://github.com/AetherraLabs/Aetherra/commit/9c945f2b9c7b427e5ef618f16ac951f9cc60979e))
+
+- Honor pending launcher cancellation before online operation
+  ([`5c1a380`](https://github.com/AetherraLabs/Aetherra/commit/5c1a380657faf5db77e959bd3d7881edf1e12173))
+
+- Reap test-owned registry and reject surviving CI children
+  ([`b586779`](https://github.com/AetherraLabs/Aetherra/commit/b5867797af8430713c52451ec0a078b1ca5fc39e))
+
+- Stop homeostasis loops before draining cancellation
+  ([`b9ab958`](https://github.com/AetherraLabs/Aetherra/commit/b9ab95880d4cbec5b06db3e3b2a441b5da82f84d))
+
+### Chores
+
+- Merge main for audit plan verification
+  ([`bedc8e6`](https://github.com/AetherraLabs/Aetherra/commit/bedc8e6b37bc1bf4a5e1bb853bfce5632078b39a))
+
+- Merge main into archival documentation notices
+  ([`78034cd`](https://github.com/AetherraLabs/Aetherra/commit/78034cddb8ca1380d988963824c1251a0fbe5327))
+
+### Continuous Integration
+
+- Capture and bound full quality gate stalls
+  ([`49b2874`](https://github.com/AetherraLabs/Aetherra/commit/49b28741e16a6d40e438089e2d477da2b346b846))
+
+- Capture bounded Linux capability hang evidence
+  ([`3a1cea7`](https://github.com/AetherraLabs/Aetherra/commit/3a1cea7ed9ae43b897a611a07ce4d33f11ea156a))
+
+- Retain separate stack artifacts for each attempt
+  ([`1031ab4`](https://github.com/AetherraLabs/Aetherra/commit/1031ab4dd179006ac1044ec71c996c7af25bee3e))
+
+- Trace active awaits and strict quality timeouts
+  ([`99bec98`](https://github.com/AetherraLabs/Aetherra/commit/99bec98fdd9665be2ba945a9e60dda5e14905da2))
+
+### Documentation
+
+- Explain bounded capability diagnostics and retained attempts
+  ([`2a54f56`](https://github.com/AetherraLabs/Aetherra/commit/2a54f56540ab64e45725b43406361b112c8bd92f))
+
+- Retain Linux shutdown race evidence and limits
+  ([`e76f8ba`](https://github.com/AetherraLabs/Aetherra/commit/e76f8baf00bdddfa3864925328bdd6a3d3c062fe))
+
+- Wrap the historical manifesto notice
+  ([`bb5862d`](https://github.com/AetherraLabs/Aetherra/commit/bb5862ddbfc495c308fa716ab8c06dda4cae6b66))
+
+### Testing
+
+- Reproduce homeostasis shutdown cancellation race
+  ([`1d32508`](https://github.com/AetherraLabs/Aetherra/commit/1d325080db9e80e19f6668d5a9f50cbbdea3ac53))
+
+- Stabilize registry clock and preserve asyncio task API
+  ([`e6c3bd1`](https://github.com/AetherraLabs/Aetherra/commit/e6c3bd1038ef4d6bea6cd5b8423157b6cba9af08))
+
+
+## v0.5.0-beta.23 (2026-11-27)
+
+### Bug Fixes
+
+- Keep cold chat ranking off the runtime event loop
+  ([`9fd2903`](https://github.com/AetherraLabs/Aetherra/commit/9fd29034d7023aa7ba8677b8b93982430bd5fa47))
+
+- Publish governed Temporal registry health
+  ([`c180550`](https://github.com/AetherraLabs/Aetherra/commit/c180550f0b0b6ee544eb7f670a2f1619ceee9e07))
+
+### Chores
+
+- Merge main into Temporal observer integration
+  ([`f84e736`](https://github.com/AetherraLabs/Aetherra/commit/f84e736ad47ffdef3f269a145c6f011fc1a59ee5))
+
+### Documentation
+
+- Complete modernization evidence and contributor guidance
+  ([`6a1b978`](https://github.com/AetherraLabs/Aetherra/commit/6a1b978a611c8b7b1c0b18c31ec98a3e19ace2ac))
+
+- Format the runtime file audit plan
+  ([`bdace5c`](https://github.com/AetherraLabs/Aetherra/commit/bdace5c5984f4c596682fa033942e7336aa45781))
+
+- Identify historical readiness claims and point to current alpha evidence
+  ([`fda9d74`](https://github.com/AetherraLabs/Aetherra/commit/fda9d7426dd106793496082cca16c8b8b541ed64))
+
+- Identify historical readiness claims and point to current alpha evidence
+  ([`688ffff`](https://github.com/AetherraLabs/Aetherra/commit/688ffffeac300bf7202a316197ec858c1cb8ad8e))
+
+- Improve .github/ISSUE_TEMPLATE/config.yml contributor guidance
+  ([`e7f9a4f`](https://github.com/AetherraLabs/Aetherra/commit/e7f9a4fd155e4a0b797a179900659f2f55f78ff1))
+
+- Improve .github/pull_request_template.md contributor guidance
+  ([`8972471`](https://github.com/AetherraLabs/Aetherra/commit/8972471c6fe3f38832f677b558f701f51f1f2213))
+
+- Improve CONTRIBUTING.md contributor guidance
+  ([`d58f44a`](https://github.com/AetherraLabs/Aetherra/commit/d58f44ac7b8d4569b4c121aac8733e036e34cd2b))
+
+- Improve README.md contributor guidance
+  ([`b1dec4d`](https://github.com/AetherraLabs/Aetherra/commit/b1dec4da7e3337bcbd706f32357fb35ef1ac9c0d))
+
+- Preserve unexplained continuity HTTP failure
+  ([`54c3d02`](https://github.com/AetherraLabs/Aetherra/commit/54c3d028c973f1628649a568577242afc53c12ce))
+
+- Refresh file audit scope after Temporal PR 380 merge
+  ([`0c9c81a`](https://github.com/AetherraLabs/Aetherra/commit/0c9c81a68a88812df6ff04b83debf3544eee92ef))
+
+- Retain unexplained capability timeout evidence
+  ([`9f3f97d`](https://github.com/AetherraLabs/Aetherra/commit/9f3f97dbf2fdf431906cb9bbc0eae5f0b5a5dced))
+
+- Specify full runtime file provenance audit before destructive cleanup
+  ([`4c341b1`](https://github.com/AetherraLabs/Aetherra/commit/4c341b1428f8b1f93c3bf870e97b728278e3b792))
+
+### Features
+
+- Integrate opt-in Temporal history and runtime observer
+  ([`060d672`](https://github.com/AetherraLabs/Aetherra/commit/060d672b398167e0b28a4a40757c2b1f93ee6cac))
+
+### Testing
+
+- Add Temporal CI acceptance and verification evidence
+  ([`8d221cd`](https://github.com/AetherraLabs/Aetherra/commit/8d221cd43840423ef9d924150a84a5cc813bd26f))
+
+- Isolate Temporal registry fixtures across launcher reloads
+  ([`0d6fcb7`](https://github.com/AetherraLabs/Aetherra/commit/0d6fcb78ddafdcf8d517e57d51f420bb32452c01))
+
+
 ## v0.5.0-beta.22 (2026-11-26)
 
 

@@ -1,0 +1,98 @@
+{
+  "issue": "DEV-CI-001",
+  "status": "OPEN: historical timeout attribution remains unknown",
+  "pr": "https://github.com/AetherraLabs/Aetherra/pull/387",
+  "linux_observation": {
+    "head": "49b28741e16a6d40e438089e2d477da2b346b846",
+    "job": "https://github.com/AetherraLabs/Aetherra/actions/runs/46087678341/job/140800996277",
+    "python": "3.11.18",
+    "tests": {
+      "passed": 3177,
+      "skipped": 9,
+      "seconds": 369.24
+    },
+    "child_returncode": 0,
+    "natural_owned_cleanup_passed": false,
+    "live_process": {
+      "pid": 6083,
+      "ppid": 1,
+      "session": 3924,
+      "start": 83379,
+      "state": "S",
+      "threads": 1
+    },
+    "sampled_stack": [
+      "aetherra_registry_daemon.py:114 main",
+      "Flask.run",
+      "BaseWSGIServer.serve_forever",
+      "selector"
+    ],
+    "candidate_creator": "tests/unit/test_hmr_denied_metrics.py::test_hmr_denied_metric_increments",
+    "call_interval_monotonic": [
+      833.788811028,
+      836.155832869
+    ],
+    "correlation_limit": "Start ticks correlate under Linux 100 Hz convention, not separately captured. Real-spawn regression establishes test ownership independently.",
+    "artifact_id": 15239963298,
+    "artifact_digest": "sha256:ecc173eedd60b46ed0448f50f083862ba748fa28a8d831c5ec5c0e67c8b2c671",
+    "job_log_sha256": "63d7850629512446bd911fa93a2ea1e2d574f392fd1eda0f5fe28d29bd9e6913"
+  },
+  "corrections": [
+    "HMR metrics test releases launcher-owned presence resources and registry in finally on normal/assertion-failure paths; existing assertions and authority flags remain.",
+    "Supervisor waits 0.5 seconds for natural descendant exit without signals; persistent live owned descendants after success cause exit 1 and failure_reason owned_descendants_after_success before bounded cleanup.",
+    "Original nonzero exits, watchdog 124 and five-minute capability limit remain enforced."
+  ],
+  "local_verification": {
+    "platform": "Windows, Python 3.13.7",
+    "recorded_head_before_commit": "49b28741e16a6d40e438089e2d477da2b346b846",
+    "source_scope": "Working-tree checks; final source hashes below bind the tested changes.",
+    "ownership_red": {
+      "failed": 2,
+      "seconds": 5.61,
+      "log_sha256": "12377bb72cc05e71a3515100ec6f0b62e27ebbb6c8b31a921e3b1ab66366995d",
+      "assertion": "HMR test left its registry daemon alive",
+      "pids": [
+        66548,
+        61548
+      ]
+    },
+    "ownership_green": {
+      "passed": 2,
+      "seconds": 5.47,
+      "log_sha256": "a9e4eec64dc7bcd44323bb1767333cdf1a1b438b72aeac64fbb382092557aa59",
+      "proof": "Invokes exact existing HMR test body; real daemon startup and HTTP 200/services verified, then child reaped and registry singleton cleared, for normal and forced-assertion paths. Unrelated component loaders stubbed; actual HMR gate retained."
+    },
+    "supervisor_red": {
+      "failed": 2,
+      "passed": 3,
+      "log_sha256": "351dc86e736972e7088e615772f2095b3363cf37bcedb9d67f0354f10caeeb62",
+      "skipped": 3,
+      "deselected": 29
+    },
+    "supervisor_and_async_green": {
+      "passed": 36,
+      "skipped": 11,
+      "seconds": 5.28,
+      "log_sha256": "011e3f74b23d9cdf586dfb96088914b5f5afd193e592d00710ec80ae9557297e",
+      "limit": "Linux-only live process and sampler cases await exact-head Linux CI."
+    },
+    "hmr_guardian_registry_controls": {
+      "passed": 20,
+      "seconds": 19.28,
+      "log_sha256": "af7f385b29b00e4ad853a281331c18906ed946d866a97bdfe73776b3bfd8b658",
+      "limit": "Before final added live HTTP readiness assertion; final focused ownership check recorded separately."
+    },
+    "source_sha256": {
+      "tests/unit/test_hmr_denied_metrics.py": "15fd5a7682ebf5fca5a2681cdc0a6960dd9b49f047fb385e7fb5c254ed286161",
+      "tests/unit/test_registry_daemon_ownership.py": "a6148bb4f22bfc662149ea4f4bef186c99e63af8158268cf718fdf05ba64b150",
+      "tools/ci_capabilities_diagnostics.py": "ea198243715091941d2dd60f2b9c7efb497b37e210050de031f20e5ac59a2bd0",
+      "tests/unit/test_ci_capabilities_diagnostics.py": "db2b5dcfbec9dc1c71d93fd0aac9ae79323d293f1b0a90c438dcb2f08d0f2d9a"
+    }
+  },
+  "limits": [
+    "The observed registry survivor and controlled Homeostasis race do not establish a shared cause for historical timeouts.",
+    "Consult PR #387 for final exact-head Linux results; the pre-fix full gate success did not prove clean natural process exit.",
+    "Owned-session checks exclude processes detached into other sessions. Direct-child reaping is not proof of descendant cleanup.",
+    "Production signing runs only on main push; PR signing regressions do not constitute a production release pass."
+  ]
+}

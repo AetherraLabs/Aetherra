@@ -33,14 +33,28 @@ import math
 import os
 import re
 import uuid
+from contextlib import nullcontext
 from dataclasses import dataclass, field, fields
 from datetime import UTC, datetime, timedelta
 from enum import Enum
 from functools import wraps
-from typing import Any, Dict, List, Optional
+from threading import Lock
+from typing import Any, Callable, Dict, List, Optional
 
 # Third party imports
 import numpy as np
+
+# Aetherra imports
+from Aetherra.aetherra_core.memory.lifecycle_checkpoint import CheckpointError
+from Aetherra.aetherra_core.memory.temporal_history import (
+    EMPTY,
+    OWNER,
+    SCOPE,
+    HistoryHead,
+    HistoryKey,
+    HistoryRecord,
+    freeze,
+)
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -327,6 +341,9 @@ class TemporalConsciousnessEngine:
         self.temporal_coherence = 0.0
         self.avg_prediction_accuracy = 0.0
         self._revision = 0
+        self._state_lock = Lock()
+        self._history_status = None
+        self._history_records = ()
         self._validate_config()
 
     def _validate_config(self):
@@ -352,6 +369,117 @@ class TemporalConsciousnessEngine:
     def _unchanged(self, revision):
         if self._revision != revision:
             raise TemporalConflictError("temporal_operation_conflict")
+
+    def _standalone_revision(self):
+        with self._state_lock:
+            if self._history_status is not None:
+                raise TemporalConflictError("temporal_runtime_history_active")
+            return self._revision
+
+    def import_history_window(
+        self,
+        records: tuple,
+        *,
+        history_id: str,
+        selected_head: HistoryHead,
+        authorize: Callable[[], None],
+        publication_guard=None,
+    ) -> dict:
+        """Publish a bounded, exact derived window from typed Memory history."""
+        with self._state_lock:
+            revision = self._revision
+            if revision and self._history_status is None:
+                raise TemporalConflictError("temporal_standalone_state_active")
+
+        self._validate_config()
+        max_moments = self.max_moments
+        try:
+            HistoryKey(OWNER, SCOPE, history_id)
+            head = freeze(selected_head, HistoryHead)
+            if type(records) is not tuple or len(records) > 256:
+                raise TemporalValidationError("temporal_history_invalid")
+            if not records and head != EMPTY:
+                raise TemporalValidationError("temporal_history_invalid")
+
+            provenance = tuple(freeze(record, HistoryRecord) for record in records)
+            moments = {}
+            record_ids = set()
+            prior = None
+            for record in provenance:
+                event = record.event
+                if (
+                    record.history_id != history_id
+                    or event.record_id in record_ids
+                    or (
+                        prior is not None
+                        and (
+                            record.ordinal != prior.ordinal + 1
+                            or record.prior_digest != prior.digest
+                        )
+                    )
+                ):
+                    raise TemporalValidationError("temporal_history_invalid")
+                prior = record
+                record_ids.add(event.record_id)
+
+                sample = event.source
+                # Validate absolute UTC clocks even for markers. Keep raw values
+                # in provenance (microsecond datetime rounding is view-only).
+                _DATETIME_TYPE.fromtimestamp(event.captured_at_unix_s, UTC)
+                _DATETIME_TYPE.fromtimestamp(sample.session_started_at_unix_s, UTC)
+                timestamp = _DATETIME_TYPE.fromtimestamp(sample.observed_at_unix_s, UTC)
+                if event.kind == "observation":
+                    moments[event.record_id] = TemporalMoment(
+                        event.record_id,
+                        timestamp,
+                        {
+                            "working_memory_count": sample.working_memory_count,
+                            "active_intention_count": sample.active_intention_count,
+                            "focus_count": sample.focus_count,
+                        },
+                        0.0,
+                    )
+
+            if prior is not None and prior.head != head:
+                raise TemporalValidationError("temporal_history_invalid")
+        except (CheckpointError, OSError, OverflowError, ValueError):
+            raise TemporalValidationError("temporal_history_invalid") from None
+
+        moments = dict(list(moments.items())[-max_moments:])
+        status = {
+            "history_id": history_id,
+            "head_ordinal": head.ordinal,
+            "head_record_id": head.record_id,
+            "head_digest": head.digest,
+            "retained_records": len(provenance),
+            "retained_observations": len(moments),
+            "partial_window": bool(provenance and provenance[0].ordinal > 1),
+            "last_observation_record_id": next(reversed(moments), None),
+        }
+        guard = nullcontext() if publication_guard is None else publication_guard
+        authorize()
+        with self._state_lock, guard:
+            self._unchanged(revision)
+            self.temporal_moments = moments
+            self.moments_processed = len(moments)
+            self._history_records = provenance
+            self._history_status = status
+            self._revision += 1
+        return status.copy()
+
+    def get_history_status(self) -> dict:
+        """Return detached status for the last published history window."""
+        with self._state_lock:
+            return (
+                self._history_status.copy() if self._history_status is not None else {}
+            )
+
+    @property
+    def history_provenance(self) -> tuple[HistoryRecord, ...]:
+        """Return detached, ordinal-ordered records in the derived window."""
+        with self._state_lock:
+            records = self._history_records
+        return copy.deepcopy(records)
 
     def _retained(self, moments, predictions, chains):
         # Event time determines moment eviction; insertion order breaks ties.
@@ -381,6 +509,7 @@ class TemporalConsciousnessEngine:
 
     @_temporal_operation
     async def process_temporal_moment(self, consciousness_state, timestamp=None):
+        revision = self._standalone_revision()
         state = _state_snapshot(consciousness_state)
         timestamp = _utc(timestamp) if timestamp is not None else self._now()
         self._validate_config()
@@ -394,7 +523,6 @@ class TemporalConsciousnessEngine:
                 "timestamp_hash": _hash_value(timestamp.isoformat()),
             },
         )
-        revision = self._revision
         moment = TemporalMoment(
             "moment_" + uuid.uuid4().hex,
             timestamp,
@@ -411,19 +539,23 @@ class TemporalConsciousnessEngine:
         )
         if moment.moment_id not in retained[0]:
             raise TemporalValidationError("temporal_outside_retention")
-        self._unchanged(revision)
-        self.temporal_moments, self.temporal_predictions, self.causal_chains = retained
-        self.moments_processed += 1
-        self.causal_chains_discovered += len(new_chains)
-        self.temporal_coherence_history = (
-            self.temporal_coherence_history + [moment.temporal_coherence]
-        )[-100:]
-        self.temporal_coherence = float(np.mean(self.temporal_coherence_history))
-        self._revision += 1
+        with self._state_lock:
+            self._unchanged(revision)
+            self.temporal_moments, self.temporal_predictions, self.causal_chains = (
+                retained
+            )
+            self.moments_processed += 1
+            self.causal_chains_discovered += len(new_chains)
+            self.temporal_coherence_history = (
+                self.temporal_coherence_history + [moment.temporal_coherence]
+            )[-100:]
+            self.temporal_coherence = float(np.mean(self.temporal_coherence_history))
+            self._revision += 1
         return moment.moment_id
 
     @_temporal_operation
     async def predict_future_state(self, target_time, consciousness_context):
+        revision = self._standalone_revision()
         context = _state_snapshot(consciousness_context)
         target_time, now = _utc(target_time), self._now()
         self._validate_config()
@@ -440,7 +572,6 @@ class TemporalConsciousnessEngine:
                 "context_field_count": len(context),
             },
         )
-        revision = self._revision
         moments = (await self._get_recent_moments(timedelta(hours=2), as_of=now))[-5:]
         trends = await self._analyze_temporal_trends(moments)
         projected = await self._project_trends_forward(context, trends, delta)
@@ -462,10 +593,13 @@ class TemporalConsciousnessEngine:
             {**self.temporal_predictions, prediction.prediction_id: prediction},
             self.causal_chains,
         )
-        self._unchanged(revision)
-        self.temporal_moments, self.temporal_predictions, self.causal_chains = retained
-        self.predictions_made += 1
-        self._revision += 1
+        with self._state_lock:
+            self._unchanged(revision)
+            self.temporal_moments, self.temporal_predictions, self.causal_chains = (
+                retained
+            )
+            self.predictions_made += 1
+            self._revision += 1
         return copy.deepcopy(prediction)
 
     @_temporal_operation
@@ -529,6 +663,7 @@ class TemporalConsciousnessEngine:
 
     @_temporal_operation
     async def validate_prediction_accuracy(self, prediction_id, actual_state):
+        revision = self._standalone_revision()
         state = _state_snapshot(actual_state)
         self._guardian_preflight_temporal_consciousness_operation(
             operation="validate_prediction",
@@ -542,22 +677,24 @@ class TemporalConsciousnessEngine:
         )
         if prediction_id not in self.temporal_predictions:
             raise KeyError("temporal_prediction_missing")
-        revision = self._revision
         prediction = copy.deepcopy(self.temporal_predictions[prediction_id])
         accuracy = await self._calculate_state_similarity(
             prediction.predicted_state, state
         )
-        self._unchanged(revision)
-        prediction.prediction_accuracy = accuracy
-        self.temporal_predictions[prediction_id] = prediction
-        # A revision of an existing validation replaces its score, not another sample.
-        self.prediction_accuracy_history = [
-            p.prediction_accuracy
-            for p in self.temporal_predictions.values()
-            if hasattr(p, "prediction_accuracy")
-        ][-50:]
-        self.avg_prediction_accuracy = float(np.mean(self.prediction_accuracy_history))
-        self._revision += 1
+        with self._state_lock:
+            self._unchanged(revision)
+            prediction.prediction_accuracy = accuracy
+            self.temporal_predictions[prediction_id] = prediction
+            # A revision of an existing validation replaces its score, not another sample.
+            self.prediction_accuracy_history = [
+                p.prediction_accuracy
+                for p in self.temporal_predictions.values()
+                if hasattr(p, "prediction_accuracy")
+            ][-50:]
+            self.avg_prediction_accuracy = float(
+                np.mean(self.prediction_accuracy_history)
+            )
+            self._revision += 1
         return accuracy
 
     async def _get_recent_moments(self, time_window, *, as_of=None):
@@ -818,6 +955,7 @@ class TemporalConsciousnessEngine:
 
     @_temporal_operation
     async def save_checkpoint(self):
+        self._standalone_revision()
         self._validate_config()
         self._guardian_preflight_temporal_consciousness_operation(
             operation="save_checkpoint",
@@ -826,7 +964,10 @@ class TemporalConsciousnessEngine:
         if self.memory_system is None:
             raise TemporalPersistenceError("temporal_memory_unavailable")
         handle = uuid.uuid4().hex
-        payload = self._checkpoint(handle)
+        with self._state_lock:
+            if self._history_status is not None:
+                raise TemporalConflictError("temporal_runtime_history_active")
+            payload = self._checkpoint(handle)
         self._decode_checkpoint(payload, handle)  # Validate before any durable write.
         try:
             receipt = await self.memory_system.store_memory(
@@ -844,6 +985,7 @@ class TemporalConsciousnessEngine:
 
     @_temporal_operation
     async def restore_checkpoint(self, checkpoint_id):
+        revision = self._standalone_revision()
         self._guardian_preflight_temporal_consciousness_operation(
             operation="restore_checkpoint",
             capabilities=("consciousness:write", "memory:read", "memory:write"),
@@ -856,7 +998,6 @@ class TemporalConsciousnessEngine:
             raise TemporalValidationError("temporal_invalid_checkpoint_id")
         if self.memory_system is None:
             raise TemporalPersistenceError("temporal_memory_unavailable")
-        revision = self._revision
         try:
             rows = await self.memory_system.recall_memories(
                 query_text="",
@@ -877,11 +1018,12 @@ class TemporalConsciousnessEngine:
         ):
             raise TemporalPersistenceError("temporal_checkpoint_invalid_record")
         candidate = self._decode_checkpoint(row.content, checkpoint_id)
-        if self._revision != revision:
-            raise TemporalConflictError("temporal_restore_conflict")
-        for name in _CHECKPOINT_ATTRIBUTES:
-            setattr(self, name, getattr(candidate, name))
-        self._revision += 1
+        with self._state_lock:
+            if self._revision != revision:
+                raise TemporalConflictError("temporal_restore_conflict")
+            for name in _CHECKPOINT_ATTRIBUTES:
+                setattr(self, name, getattr(candidate, name))
+            self._revision += 1
         return {
             "status": "restored",
             "checkpoint_id": checkpoint_id,

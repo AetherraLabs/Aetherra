@@ -40,6 +40,16 @@ if TYPE_CHECKING:
         StreamToken,
     )
     from .lifecycle_checkpoint import CheckpointJobControl
+    from .temporal_history import (
+        AppendInspection,
+        AppendReceipt,
+        AppendRequest,
+        HistoryHead,
+        HistoryKey,
+        HistoryPage,
+        HistorySelection,
+        HistoryToken,
+    )
 
 
 # Local imports
@@ -378,6 +388,78 @@ class AetherraMemoryEngineAdvanced:
         except Exception:
             # Never fail constructor due to STORM wiring
             self._storm_engine = None
+
+    def submit_acquire_temporal_history(
+        self, *, key: "HistoryKey", start_mode: str, control: "CheckpointJobControl"
+    ) -> "StreamJob[HistorySelection]":
+        return self._submit_temporal_history(
+            operation="acquire", key=key, start_mode=start_mode, control=control
+        )
+
+    def submit_append_temporal_history(
+        self, *, request: "AppendRequest", control: "CheckpointJobControl"
+    ) -> "StreamJob[AppendReceipt]":
+        return self._submit_temporal_history(
+            operation="append", request=request, control=control
+        )
+
+    def submit_read_temporal_history(
+        self,
+        *,
+        token: "HistoryToken",
+        selected_head: "HistoryHead",
+        after_ordinal: int,
+        limit: int,
+        control: "CheckpointJobControl",
+    ) -> "StreamJob[HistoryPage]":
+        return self._submit_temporal_history(
+            operation="read",
+            token=token,
+            selected_head=selected_head,
+            after_ordinal=after_ordinal,
+            limit=limit,
+            control=control,
+        )
+
+    def submit_inspect_temporal_append(
+        self,
+        *,
+        token: "HistoryToken",
+        request: "AppendRequest",
+        control: "CheckpointJobControl",
+    ) -> "StreamJob[AppendInspection]":
+        return self._submit_temporal_history(
+            operation="inspect", token=token, request=request, control=control
+        )
+
+    def _submit_temporal_history(self, *, adapter_owned=None, **job):
+        # Local imports
+        from .checkpoint_stream import StreamJob
+
+        core = self._checkpoint_core
+        if (
+            type(self) is not AetherraMemoryEngineAdvanced
+            or type(core) is not LyrixaMemorySystem
+            or self.core_memory is not core
+        ):
+            return StreamJob.refused("unavailable")
+
+        def owned():
+            return (
+                self.core_memory is core
+                and self._checkpoint_core is core
+                and (adapter_owned is None or adapter_owned())
+            )
+
+        return core._submit_temporal_history(backend_owned=owned, **job)
+
+    def temporal_history_pending(self) -> bool:
+        core = self._checkpoint_core
+        return type(core) is LyrixaMemorySystem and core.temporal_history_pending()
+
+    def drain_temporal_history(self, timeout: float = 1.0) -> bool:
+        core = self._checkpoint_core
+        return type(core) is LyrixaMemorySystem and core.drain_temporal_history(timeout)
 
     def submit_acquire_checkpoint_stream(
         self,

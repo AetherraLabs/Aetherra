@@ -40,9 +40,42 @@ jobs:
       - name: Smoke tests
         run: python tools/os_smoke.py
 
+      - name: Install isolated stack sampler
+        run: |
+          python -m venv "$RUNNER_TEMP/aetherra-stack-tools"
+          "$RUNNER_TEMP/aetherra-stack-tools/bin/python" -m pip install 'py-spy==0.4.4'
+
+      - name: Capabilities diagnostic regression tests
+        env:
+          AETHERRA_CI_STACK_SAMPLER: ${{ runner.temp }}/aetherra-stack-tools/bin/py-spy
+        run: >-
+          python -m pytest -q -o addopts=
+          tests/unit/test_ci_capabilities_diagnostics.py
+          tests/unit/test_ci_async_diagnostics.py
+          tests/tools/test_quality_gate_diagnostics.py
+
       - name: Capabilities tests
         timeout-minutes: 5
-        run: pytest -q -o addopts= tests/capabilities
+        run: >-
+          python -m tools.ci_capabilities_diagnostics
+          --output "$RUNNER_TEMP/capabilities-diagnostics"
+          --sampler "$RUNNER_TEMP/aetherra-stack-tools/bin/py-spy"
+          -- -q -o addopts= -o faulthandler_timeout=60 tests/capabilities
+
+      - name: Retain capability diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: capabilities-diagnostics-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/capabilities-diagnostics
+          if-no-files-found: warn
+
+      - name: Runtime cancellation regressions
+        run: >-
+          python -m pytest -q -o addopts= -o faulthandler_timeout=1
+          tests/unit/test_homeostasis_shutdown_cancellation.py
+          tests/unit/test_launcher_startup_cancellation.py
+          tests/unit/test_launcher_operation_cancellation.py
 
       - name: SSE v2 tests
         run: pytest -q -o addopts= tests/test_sse_v2.py
@@ -309,9 +342,36 @@ jobs:
           ln -s "$audit_env/bin/pip-audit" "$audit_bin/pip-audit"
           echo "$audit_bin" >> "$GITHUB_PATH"
 
+      - name: Install isolated quality stack sampler
+        run: |
+          python -m venv "$RUNNER_TEMP/aetherra-stack-tools"
+          "$RUNNER_TEMP/aetherra-stack-tools/bin/python" -m pip install 'py-spy==0.4.4'
+
       - name: "🚦 Run Quality Gates"
         run: |
-          python tools/quality_gates.py
+          python - <<'PY'
+          import os
+          import sys
+          from pathlib import Path
+          from tools.ci_capabilities_diagnostics import supervise
+
+          temporary = Path(os.environ["RUNNER_TEMP"])
+          raise SystemExit(supervise(
+              [sys.executable, "tools/quality_gates.py"],
+              temporary / "strict-quality-diagnostics",
+              sampler=temporary / "aetherra-stack-tools/bin/py-spy",
+              timeout=1500,
+              checkpoints=range(30, 1500, 60),
+          ))
+          PY
+
+      - name: Retain strict quality diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: strict-quality-diagnostics-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/strict-quality-diagnostics
+          if-no-files-found: warn
 
   ws-transport-tests:
     name: "🌐 WS transport tests"

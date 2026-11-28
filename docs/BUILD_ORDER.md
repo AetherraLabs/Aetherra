@@ -90,7 +90,9 @@ Internal alpha requires:
 ## Current Next Work
 
 Phases A/B, C1/C2a, C2b and the bounded runtime follow-up are merged.
-The C2b merge is `592c4622` (PR #368); beta.22 is `56623003`. The
+C2b merged through PRs #356-#360 and #362-#367, followed by the progress
+correction in #368 at `592c46224425`; its metadata-only beta.22 release is
+`56623003675b`. The
 [phase status table](MASTER_ROADMAP.md#current-priority-internal-alpha),
 [current evidence review](ALPHA_READINESS_DECISION.md#c2b-merged-main-evidence-review-2026-11-26)
 and [receipt](evidence/c2b_merged_main_review_2026-11-26.json) distinguish the
@@ -103,6 +105,18 @@ Separate [DEV-CI-002](DEVELOPMENT_ISSUES.md#dev-ci-002--personal-continuity-writ
 ([#382](https://github.com/AetherraLabs/Aetherra/issues/382)) records the
 unexplained personal-continuity write-session HTTP 503.
 
+Temporal [PR #380](https://github.com/AetherraLabs/Aetherra/pull/380) delivers the
+completed-Core source projection, typed Memory history and normal-launch runtime
+observer as a separate milestone. The observer is disabled by default and remains
+observe-only. The [operator guide](TEMPORAL_HISTORY.md),
+[source receipt](evidence/temporal_resumption_2026-11-26.json),
+[Memory receipt](evidence/temporal_memory_history_2026-11-26.json),
+[runtime receipt](evidence/temporal_runtime_integration_2026-11-26.json) and
+[delivery mapping](evidence/temporal_observer_delivery_2026-11-26.json) retain
+pre-publication source bindings and verification limits. They do not establish
+checks on the current integration revision; final PR review and revision-bound
+checks remain required.
+
 **Stage 21 remains active, with the existing supervised internal-alpha GO
 unchanged.** Stage 22 Beta Hardening and Stage 23 Production Readiness remain
 Planned; a beta package version does not advance them. C2b is implemented within
@@ -110,12 +124,25 @@ its recorded limits; Phase D optional agency remains deferred.
 
 | Priority | Work | Required Outcome |
 | --- | --- | --- |
-| 1 | Review evidence and investigate OPEN development records | Apply the eight [records' owner and closure gates](DEVELOPMENT_ISSUES.md#current-records); preserve causes still unknown, retained failures and unverified boundaries. Delegated Codex documentation review accepted the reconciliation; final pushed-revision checks remain required. |
-| Separate pending work | Temporal runtime observer, PR #380 | Review and verify pending integration separately from merged C2b/checkpoint work. |
+| 1 | Review the Temporal runtime milestone on the current integration revision | Review the source-bound local receipts, current PR checks and merge outcome separately from historical C2b acceptance; preserve the existing alpha scope and unresolved incidents. |
+| Ongoing alpha qualification | Review evidence and investigate OPEN development records | Apply the eight [records' owner and closure gates](DEVELOPMENT_ISSUES.md#current-records); preserve causes still unknown, retained failures and unverified boundaries. The prior delegated Codex documentation review accepted the modernization reconciliation only; final pushed-revision checks remain required. |
 
-Keep signing, Guardian/Security, checkpoint ownership and observe/propose-only
-authority limits enforced. Broader installation graphs, unattended/production
-use and autonomous actions require separate acceptance.
+The full suite at C2b merge `592c46224425` passed 4,158 tests with 38 skips and
+45.29% coverage; GUI tests (40), build and lint passed. Released main
+`56623003675b` passed boot/integration checks and a 660-second automated
+continuity/restart run. These results do not rerun Python installation, browser,
+live-model, physical keyboard or the 65-minute exercise at released main.
+
+[ALPHA-CKPT-001](DEVELOPMENT_ISSUES.md#alpha-ckpt-001--checkpoint-stop-delay) and
+[DEV-CKPT-001](DEVELOPMENT_ISSUES.md#dev-ckpt-001--extended-run-observer-and-checkpoint-progress-gap)
+remain **OPEN**: the original slow operation and extended-run causal chain are
+unexplained. The pre-existing Homeostasis watchdog shutdown error also remains;
+clean process exit does not prove orderly settlement of its pending work.
+Checkpoint recovery, Temporal history and temporal reasoning remain distinct;
+C2b retention cannot delete Temporal history. Keep signing, Guardian/Security,
+checkpoint ownership and observe/propose-only limits enforced. Unattended or
+production use, unverified installation graphs and autonomous actions have no
+new acceptance or GO.
 
 Historical reference: the [2026-11-22 desktop verification](ALPHA_READINESS_DECISION.md#historical-desktop-verification-2026-11-22)
 and [first supervised exercise](evidence/supervised_alpha_2026-11-22.json)

@@ -921,6 +921,12 @@ class HomeostasisOrchestrator:
             logger.info("🛑 Stopping Aetherra Homeostasis System")
             self.running = False
 
+            # Close loop intent before cancellation: a completed await may consume it.
+            if self.controller:
+                self.controller.stop()
+            if self.supervisor:
+                self.supervisor.stop()
+
             # Stop watchdog first
             if self.watchdog:
                 self.watchdog.stop()
