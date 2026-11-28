@@ -683,3 +683,11 @@ remained enforced; no new GO follows. Next: owner reconciles kernel/launcher ser
 ownership and unset/0/1 semantics, tests identity/scan/status/settlement, and captures
 stacks if the shutdown delay recurs. Close only after focused correction and reviewed
 lifecycle evidence; disposition of the retained unknown delay must remain explicit.
+
+Publication review observation (2026-11-27): probe-04 reproduced the shutdown timeout
+with the enable flag unset; explicit 1 and 0 exited cleanly. At the 50-second dump,
+the main thread waited in `threading._shutdown`; other stacks showed the Homeostasis
+watchdog event loop, stdlib scheduler loop and Hub `serve_forever`/selector. These
+are observed stacks, not proof of the initiating cause or individual responsibility.
+The profile-specific hypothesis is unsupported. Retain both timeouts and their
+separate receipts; do not mark this lifecycle limitation resolved by clean siblings.

@@ -145,9 +145,8 @@ async def observe(launcher, profile, port):
         result["native_decision"] = dataclasses.asdict(decision)
         result["file_id"] = item.id
         result["artifact_has_signature"] = Path(item.path + ".sig").exists()
-        result["separate_helper_unsigned_result"] = (
-            await service.security_layer.verify_signature(Path(item.path))
-        )
+        unsigned_result = await service.security_layer.verify_signature(Path(item.path))
+        result["separate_helper_unsigned_result"] = unsigned_result
         # Path-string model ONLY: no claim of native Linux execution.
         # Aetherra imports
         import aetherra_self_incorporation as selfinc

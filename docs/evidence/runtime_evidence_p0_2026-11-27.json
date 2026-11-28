@@ -383,6 +383,53 @@
         },
         "generation_double_calls": 0
       }
+    },
+    "probe-04": {
+      "full-default": {
+        "exit_code": 1,
+        "timed_out": true,
+        "seconds": 68.68,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": false,
+        "artifact_sha256": {
+          "probe.json": "971c4a90e56f4ee4d3bd21491e2b128b3f29ca4412798eb55b19c0f0606ace61",
+          "runtime.log": "881f8224d95b3bad6dfa11ab92a6174fa473f76ea0c75c0d6c0a5194319adbd4",
+          "receipt.json": "2e4356af0bdc562fa5275b0bd72814ae09b29db63c72371df3a9d1b4df9d4cda",
+          "runtime-provider.json": "984b3d39551b6dade616ffce414d065a99952360c4bbfd89376a0315cf759dca"
+        },
+        "observations_match_probe_03": true
+      },
+      "full-explicit-disable": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 10.32,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true,
+        "artifact_sha256": {
+          "probe.json": "af039628e87c219e510b79666e6b6ccc88de522b44b1829cbf0cfc8018f035c1",
+          "runtime.log": "f8b4086cb5cc938ecd121c9ed0ce9ac06a424f5d5a0e8a424df04cfd4af335fb",
+          "receipt.json": "e16b779031ac5dafd6ab64aa6a2b7b3e190bbddfb2784c5046d3e8f45a252482",
+          "runtime-provider.json": "0e786b43013f29f74228efc0ccb83ac72b09794ed6a5486a0ed12b2db84ed0af"
+        },
+        "observations_match_probe_03": true
+      },
+      "full-selfinc-opt-in": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 10.65,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true,
+        "artifact_sha256": {
+          "probe.json": "732159fb2ac44163ce4a757f45ceb7bc0fd279ad4d003edc5aeb6c609e709d1b",
+          "runtime.log": "e28602a95c932c6ccc8f829597cc4caa0f1c3b1496260d03cc46d885fdadbadb",
+          "receipt.json": "a2eb4c2f58a598f5025d673af52d290b2ec388633e9d520ddfc75e508f2e89dc",
+          "runtime-provider.json": "8deae0a367ea4aac42855a8042af42e871893f9889022dd06e77c57b3e16a5c1"
+        },
+        "observations_match_probe_03": true
+      }
     }
   },
   "verification_limits": [
@@ -392,8 +439,8 @@
     "An earlier child shutdown timeout remains unexplained despite later clean exits."
   ],
   "executed_probe_sha256": "34c4af3351f57c563e7ffb5c706f35b6b56393354993bc4b77318cfbd4275790",
-  "documented_probe_sha256": "eddc1a5bca50ac0f219aeddfb1a7ba9b45c38e7f5c04194ce866932543ff02a3",
-  "probe_formatting_note": "After final execution: import-group comments and module docstring only; executable AST equality verified.",
+  "documented_probe_sha256": "e894f8fa9c69d830a2110d2c747782886835da6507df8331eaba0d28740cbd13",
+  "probe_formatting_note": "Probe-03 was followed by import-group comments/docstring only (executable AST equality checked then). Publication correction split one long assignment for Ruff/Black compatibility; probe-04 exercises that final executable code.",
   "documentation_consistency": {
     "exit_code": 0,
     "timed_out": false,
@@ -415,6 +462,38 @@
       "timed_out": false,
       "seconds": 6.03,
       "log_sha256": "8583a03e3147c065ccb05499c56cfca076682e08be4bba5daae441b56c21342b"
+    },
+    "format_correction": {
+      "failed_ci_run": 46114398180,
+      "failed_check": "ruff-format",
+      "failed_log_sha256": "0d1b63f999df52010927eeb83f4c643d9102f19d49371e2cdcfed3199be33c22",
+      "change": "Split awaited helper result through a local variable; no runtime implementation changed.",
+      "final_probe": {
+        "source_revision": "4e799b3a0839e2ceab5831cbcc43161bb0972cca",
+        "probe_sha256": "e894f8fa9c69d830a2110d2c747782886835da6507df8331eaba0d28740cbd13",
+        "scope": "offline diagnostic observations, not alpha acceptance or fixed bug contracts"
+      },
+      "final_probe_exit_code": 1,
+      "shutdown_diagnostic": {
+        "profile": "full-default (flag unset)",
+        "watchdog_seconds": 50,
+        "shutdown_limit_seconds": 60,
+        "main_thread": "threading._shutdown",
+        "other_stacks": [
+          "homeostasis_integration._watchdog_thread_main -> asyncio.run_until_complete",
+          "stdlib.executor._scheduler_loop",
+          "aetherra_hub.request_server.serve_forever -> socketserver.serve_forever -> selectors.select"
+        ],
+        "scope": "Observed waiting stacks only; initiating cause and individual thread responsibility are not established. Earlier explicit-disable hang remains a separate observation."
+      }
+    },
+    "python_quality": {
+      "head": "4e799b3a0839e2ceab5831cbcc43161bb0972cca",
+      "exit_code": 0,
+      "timed_out": false,
+      "seconds": 147.97,
+      "log_sha256": "a80ef194bd1fbbe1fcc4b22ace109dac84d6279aec09c0ddd2216a405a8b7d14",
+      "result": "0 new/edited violations; 945 unchanged legacy files; 88 resolved."
     }
   }
 }

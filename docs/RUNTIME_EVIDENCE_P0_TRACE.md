@@ -165,10 +165,17 @@ in the measured profile; preserve it in supervised verification until ownership/
 - Initial two-profile diagnostic: both exited 0. Refined three-profile diagnostic: first two exited 0; explicit-disable
   observations completed, then its process required a kill after the 60-second shutdown limit (exit 1).
   Its worker receipt said zero before the process settled. That receipt alone is insufficient shutdown evidence.
-- Final repeat added a 50-second stack-dump watchdog without changing any runtime or shutdown deadline. All three
+- Pre-publication repeat added a 50-second stack-dump watchdog without changing any runtime or shutdown deadline. All three
   processes exited 0 in approximately 10 seconds each; no stack dump fired. The earlier delay remains unexplained.
   Logs/hashes from every run are retained. No common cause with DEV-HOMEOSTASIS-001, DEV-CI-001 or CKPT records is proven.
-- Ruff, Black, isort and Markdown checks passed; repository documentation consistency exited 0.
+- Publication CI found a Ruff-format/Black disagreement in one long assignment. It was split through a local variable;
+  Ruff lint/format, Black and isort now agree. No baseline or CI rule changed. Probe-04 retained the same observations
+  and denied execution, but its unset-flag child required termination after 60 seconds (whole probe exit 1).
+  The enabled/disabled children exited 0. At the 50-second stack dump, the main thread waited in `threading._shutdown`;
+  other threads were in the Homeostasis watchdog event loop, stdlib scheduler loop and Hub `serve_forever`/selector.
+  These stacks narrow the observed shutdown state; they do not identify the initiating cause or prove which thread
+  prevented exit. The delay is not specific to explicit disable. This rerun is not a clean shutdown pass.
+- Ruff lint/format, Black, isort and Markdown checks passed; repository documentation consistency exited 0.
 - Native Linux, production/dev/optional-QFAC profiles, real validator, approved integration, browser, live model and
   physical keyboard checks remain unverified. No full-suite, fresh-install or new CI run is claimed for this trace.
 
