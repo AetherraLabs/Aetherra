@@ -349,5 +349,62 @@
     },
     "launcher_sha256": "7dd67af76214247ea935eda632649599fc584f4ed1a93ecff7ced96ef7f63d0e",
     "note": "Before LF normalization; retained separately from the final source-bound rerun."
+  },
+  "process_receipt_semantics": "completed_cleanly means process exit zero within its budget, not error-free watchdog shutdown.",
+  "remaining_watchdog_limitation": {
+    "record": "DEV-HOMEOSTASIS-001",
+    "issue": "https://github.com/AetherraLabs/Aetherra/issues/373",
+    "state": "OPEN",
+    "message": "Event loop stopped before Future completed",
+    "observed": "baseline and corrected successful-exit logs; independent cooperative-shutdown contract remains unverified"
+  },
+  "full_windows_suite": {
+    "head": "9c2e7708adc6c3eaa9d78388b0f92627855a0800",
+    "exit_code": 3,
+    "timed_out": false,
+    "seconds": 2895.07,
+    "log_sha256": "24aeb2d4e584c75bd4e46cd48f72e5d4857ac7be08f3fe75acd829e5c77c1f6e",
+    "head_note": "Run began before commit, with corrected launcher bytes matching launcher_after_sha256; final formatted regression source was separately rerun in final-focused.",
+    "passed": 4444,
+    "skipped": 49,
+    "subtests_passed": 5,
+    "command_clean_pass": false,
+    "reporting_failure": "coverage.exceptions.DataError: Can't combine branch coverage data with statement data"
+  },
+  "coverage_reporting_followup": {
+    "unchanged_reproducer": "tests/tools/test_quality_gate_diagnostics.py::test_selected_pytest_loads_phase_plugin_without_infecting_nested_pytest",
+    "reproducer_exit_code": 3,
+    "reproducer_log_sha256": "3593ec4b6b0f828c8236160c1629f84240768f846263206fa4864fd79050a0d7",
+    "recovered_parent_branch_percent": 45,
+    "unchanged_threshold_percent": 22,
+    "report_exit_code": 0,
+    "report_sha256": "9d0c35f97274dc9803ded7edfb93f9a87a40397093a4bbf803b7d898154e39c3",
+    "datasets": [
+      {
+        "original": "full-suite.coverage",
+        "mode": "statement",
+        "sha256": "7d9002aaf1b5c6d857abe7851448bf2d51152a8870f956302aea182ed7a55d32",
+        "measured_files": 1
+      },
+      {
+        "original": "full-suite.coverage.DESKTOP-5AICBVI.pid38836.XN3zj4lx.HWnw2lxVJggh",
+        "mode": "branch",
+        "sha256": "fa07f9d3e8dbae6beab4cb4888e6fd0a82af33d183ba7eec3ffa75f7d3bc7460",
+        "measured_files": 21
+      }
+    ],
+    "limitation": "Recover reporting from the untouched full-suite parent dataset; preserve original exit 3 and both datasets. This is not a clean original-command pass."
+  },
+  "implementation_ci": {
+    "head": "370952e899630926be29a9f8f7fa428f93f1ae92",
+    "success": 37,
+    "skipped": 1,
+    "skip": "Dependabot-only auto-merge",
+    "quality_run": "https://github.com/AetherraLabs/Aetherra/actions/runs/46120314479",
+    "quality_passed": 3235,
+    "quality_skipped": 9,
+    "signing_regressions_passed": 58,
+    "signing_subtests_passed": 5,
+    "production_signing": "Enforced for main pushes; expected skip on pull requests; no new production signing pass claimed."
   }
 }

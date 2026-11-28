@@ -43,10 +43,32 @@ remain in [the P0 trace](RUNTIME_EVIDENCE_P0_TRACE.md) and #42.
 - Corrected focused set: **65 passed**. This includes existing first/second SIGINT,
   checkpoint intent, consumed cancellation and Homeostasis teardown coverage.
 - Identical controlled real-CLI signal after correction: process exited 0 in about nine
-  seconds, with complete Homeostasis and launcher teardown and no pending delivery.
+  seconds, with launcher cleanup completing and no pending cancellation delivery.
 - Two unchanged normal probes: **six process exits 0**, with Self-Incorporation unset,
   explicitly enabled and explicitly disabled; the original 60-second stop limit is intact.
-- Full-suite and CI results are recorded in the follow-up PR after completion.
+- Full default Windows suite: **4444 passed, 49 skipped, 5 subtests passed**. The command
+  exited **3** after the tests because coverage aggregation mixed branch and statement
+  data. This is not a clean full-command pass. The unchanged nested-pytest diagnostic
+  test independently reproduces the reporting error. Both datasets remain retained;
+  reporting from the original parent branch dataset succeeds at **45%**, above the
+  unchanged **22%** threshold. No coverage or timeout policy was relaxed.
+- Implementation commit `370952e8`: **37 CI checks passed**, with one expected
+  Dependabot-only skip. CI Quality Gates passed **3235 tests, 9 skipped**, plus the
+  separate **58 signing regressions, 5 subtests**. Production signing steps run on
+  main pushes and are intentionally skipped for a PR. The PR records current-head CI.
+
+Successful process exits still log the pre-existing Homeostasis watchdog error
+`Event loop stopped before Future completed`, also present in baseline runs. This is
+[DEV-HOMEOSTASIS-001](DEVELOPMENT_ISSUES.md#dev-homeostasis-001--watchdog-shutdown-lifecycle),
+[GitHub #373](https://github.com/AetherraLabs/Aetherra/issues/373), which remains OPEN.
+A process exit is not evidence that its separate cooperative-shutdown contract is
+complete. Likewise, this fix does not resolve #42's startup ownership/opt-in mismatch.
+
+The coverage reporting limitation is in the unchanged nested-pytest path in
+`tests/tools/test_quality_gate_diagnostics.py`: its statement-only child inherits the
+parent's `COVERAGE_FILE`, while the parent collects branch coverage. The original
+exit-3 receipt is retained alongside the recovered report; this focused launcher PR
+makes no change to that test infrastructure.
 
 ## Repeat the supported checks
 
