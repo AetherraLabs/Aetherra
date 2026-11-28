@@ -229,6 +229,8 @@ class SystemSupervisor:
         while self.running:
             try:
                 await self._supervision_cycle()
+                if not self.running:
+                    break
                 await asyncio.sleep(self.health_check_interval)
 
             except asyncio.CancelledError:

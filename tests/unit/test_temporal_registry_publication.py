@@ -143,60 +143,74 @@ async def test_post_start_block_removes_healthy_discovery(temporal_launcher, rea
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "clock_seed", [None, 960.1], ids=["real-seed", "binary-boundary"]
+)
 async def test_running_collector_survives_actual_registry_stale_monitor(
-    temporal_launcher, monkeypatch
+    temporal_launcher, monkeypatch, clock_seed
 ):
     launcher, registry, start = temporal_launcher
-    collector = await start()
-    await until(lambda: collector.get_runtime_status()["runtime_state"] == "running")
-    await until(lambda: registry.get_service("temporal_observer") is collector)
-    now = datetime.now()
-    monotonic = time.monotonic()
-    monkeypatch.setattr(registry_module, "datetime", SimpleNamespace(now=lambda: now))
-    monkeypatch.setattr(
-        launcher_module, "time", SimpleNamespace(monotonic=lambda: monotonic)
-    )
+    monotonic = time.monotonic() if clock_seed is None else clock_seed
+    # Seed before the owner monitor starts; restore real deadlines before teardown.
+    with monkeypatch.context() as clock_patch:
+        clock_patch.setattr(
+            launcher_module, "time", SimpleNamespace(monotonic=lambda: monotonic)
+        )
+        collector = await start()
+        await until(
+            lambda: collector.get_runtime_status()["runtime_state"] == "running"
+        )
+        # The first sample can precede Core's first tick: allow the real five-second
+        # collector cadence, one publisher poll, and one second of scheduling margin.
+        await until(
+            lambda: registry.get_service("temporal_observer") is collector, timeout=7
+        )
+        now = datetime.now()
+        clock_patch.setattr(
+            registry_module, "datetime", SimpleNamespace(now=lambda: now)
+        )
 
-    async def monitor_tick(_delay):
-        registry._running = False
+        async def monitor_tick(_delay):
+            registry._running = False
 
-    monkeypatch.setattr(
-        registry_module,
-        "asyncio",
-        SimpleNamespace(**{**vars(asyncio), "sleep": monitor_tick}),
-    )
-    # Gate the owner monitor at its real polling boundary, then advance both
-    # clocks. Each queue acknowledgement proves its preceding publication ended.
-    polls = asyncio.Queue()
+        clock_patch.setattr(
+            registry_module,
+            "asyncio",
+            SimpleNamespace(**{**vars(asyncio), "sleep": monitor_tick}),
+        )
+        # Gate the owner monitor at its real polling boundary, then advance both
+        # clocks. Each queue acknowledgement proves its preceding publication ended.
+        polls = asyncio.Queue()
 
-    async def owner_poll(_delay):
-        ready = asyncio.get_running_loop().create_future()
-        polls.put_nowait((asyncio.current_task(), ready))
-        await ready
+        async def owner_poll(_delay):
+            ready = asyncio.get_running_loop().create_future()
+            polls.put_nowait((asyncio.current_task(), ready))
+            await ready
 
-    monkeypatch.setattr(
-        launcher_module,
-        "asyncio",
-        SimpleNamespace(**{**vars(asyncio), "sleep": owner_poll}),
-    )
+        clock_patch.setattr(
+            launcher_module,
+            "asyncio",
+            SimpleNamespace(**{**vars(asyncio), "sleep": owner_poll}),
+        )
 
-    async def temporal_poll():
-        while True:
-            task, ready = await asyncio.wait_for(polls.get(), 3)
-            if task is launcher._temporal_task:
-                return ready
+        async def temporal_poll():
+            while True:
+                task, ready = await asyncio.wait_for(polls.get(), 3)
+                if task is launcher._temporal_task:
+                    return ready
 
-    ready = await temporal_poll()
-    for _ in range(7):
-        now += timedelta(seconds=30)
-        monotonic += 30
-        ready.set_result(None)
         ready = await temporal_poll()
-        assert registry.get_service_info("temporal_observer").last_heartbeat == now
-        registry._running = True
-        await registry._heartbeat_monitor()
-        assert registry.get_service("temporal_observer") is collector
-    assert registry.is_self_heartbeating("temporal_observer")
+        for _ in range(7):
+            now += timedelta(seconds=30)
+            # Cross the 30s threshold despite float rounding at exponent boundaries.
+            monotonic += 31
+            ready.set_result(None)
+            ready = await temporal_poll()
+            assert registry.get_service_info("temporal_observer").last_heartbeat == now
+            registry._running = True
+            await registry._heartbeat_monitor()
+            assert registry.get_service("temporal_observer") is collector
+        assert registry.is_self_heartbeating("temporal_observer")
 
 
 @pytest.mark.asyncio

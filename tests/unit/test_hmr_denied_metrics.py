@@ -1,4 +1,5 @@
 # Standard library imports
+import contextlib
 import importlib
 import re
 import sys
@@ -31,25 +32,31 @@ async def test_hmr_denied_metric_increments(monkeypatch):
     # Launch minimal path: import launcher and construct, then invoke _load_core_systems directly
     # Aetherra imports
     from aetherra_os_launcher import AetherraOSLauncher
+    from aetherra_service_registry import shutdown_service_registry
 
     launcher = AetherraOSLauncher()
-    # We only need service registry and core systems up to HMR attempt
-    await launcher._initialize_service_registry()
     try:
-        await launcher._load_core_systems({})
-    except Exception:
-        # HMR denial raises RuntimeError("hmr_requirements_not_met") which is fine
-        pass
+        # We only need service registry and core systems up to HMR attempt
+        await launcher._initialize_service_registry()
+        # HMR denial raises RuntimeError("hmr_requirements_not_met") which is fine.
+        with contextlib.suppress(Exception):
+            await launcher._load_core_systems({})
 
-    # Now scrape metrics via hub metrics module builder directly (lighter than HTTP)
-    # Aetherra imports
-    from aetherra_hub.services.metrics_accum import build_all_metrics_lines
+        # Now scrape metrics via hub metrics module builder directly (lighter than HTTP)
+        # Aetherra imports
+        from aetherra_hub.services.metrics_accum import build_all_metrics_lines
 
-    lines = build_all_metrics_lines()
-    body = "\n".join(lines)
-    # Assert total counter incremented
-    assert re.search(r"^aetherra_hmr_denied_total\s+1$", body, re.MULTILINE), body
-    # Assert reason counter present
-    assert re.search(
-        r'aetherra_hmr_denied_reasons_total\{reason="requirements_not_met"\}\s+1', body
-    ), body
+        lines = build_all_metrics_lines()
+        body = "\n".join(lines)
+        # Assert total counter incremented
+        assert re.search(r"^aetherra_hmr_denied_total\s+1$", body, re.MULTILINE), body
+        # Assert reason counter present
+        assert re.search(
+            r'aetherra_hmr_denied_reasons_total\{reason="requirements_not_met"\}\s+1',
+            body,
+        ), body
+    finally:
+        try:
+            await launcher._stop_presence_resources()
+        finally:
+            await shutdown_service_registry()

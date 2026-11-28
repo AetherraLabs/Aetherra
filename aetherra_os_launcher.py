@@ -735,8 +735,16 @@ class AetherraOSLauncher:
             self.readiness_report = await self._run_startup_readiness_scan(config)
             self._log_readiness_summary(self.readiness_report)
 
+            # Startup dependencies can finish after consuming cancellation.
+            # A cancelled boot must clean up without granting checkpoint intent.
+            launch_task = asyncio.current_task()
+            if launch_task is not None and launch_task.cancelling():
+                raise asyncio.CancelledError
+
             # Phase 6: Announce OS online
             await self._announce_os_online()
+            if launch_task is not None and launch_task.cancelling():
+                raise asyncio.CancelledError
 
             # Phase 7: Enter main operation loop
             orderly_stop = await self._main_operation_loop()
@@ -4686,13 +4694,22 @@ class AetherraOSLauncher:
         """[LOOP] Main operation loop - keeps the OS running."""
         logger.info("[LOOP] Entering main operation loop...")
 
+        operation_task = asyncio.current_task()
         try:
+            if operation_task is not None and operation_task.cancelling():
+                raise asyncio.CancelledError
             while self.running:
                 await self._refresh_owned_engine_heartbeat()
+                if operation_task is not None and operation_task.cancelling():
+                    raise asyncio.CancelledError
                 await self._refresh_observation_service_heartbeats()
+                if operation_task is not None and operation_task.cancelling():
+                    raise asyncio.CancelledError
 
                 # Write OS status file for cross-process detection
                 await self._write_os_status()
+                if operation_task is not None and operation_task.cancelling():
+                    raise asyncio.CancelledError
 
                 # Check system health periodically
                 await asyncio.sleep(30)  # Every 30 seconds
