@@ -525,6 +525,14 @@ The exact cancellation-consuming dependency remains unsampled; earlier absent
 stacks are not retroactively attributed. Source hashes, job/artifact digests,
 trace limits and final PR verification references remain in the receipt.
 
+A separate [full-suite Temporal test-clock assertion](evidence/ci_temporal_test_clock_2026-11-27.json)
+was reproduced with a fixed monotonic seed and corrected in test scheduling.
+Real Memory/Guardian/registry assertions remain; no runtime timing changed.
+It is retained separately and is not assigned the launcher-stall cause.
+The next full run exposed an [incomplete continuity test double](evidence/ci_continuity_test_api_2026-11-27.json);
+its test-only API correction preserves the runtime cancellation guard and all
+checkpoint-intent assertions.
+
 Containment retains the five-minute capability limit, existing 900-second strict
 pytest deadline, original failures and separate capture outcomes. This controlled
 correction does not establish the historical blocked node or a shared cause.

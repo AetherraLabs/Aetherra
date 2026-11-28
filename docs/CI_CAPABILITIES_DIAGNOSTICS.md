@@ -131,6 +131,33 @@ order remain unchanged. Consult PR #387 for final exact-head Linux results.
 This captured defect does not retroactively identify the older uninstrumented
 timeout causes or expand supervised-alpha readiness.
 
+## Separate full-suite clock assertion
+
+A later full run passed its launch and registry-cleanup cases but failed a
+Temporal heartbeat timestamp assertion. The [test-clock receipt](evidence/ci_temporal_test_clock_2026-11-27.json)
+retains that failure separately. A fixed monotonic seed of 960.1 reproduces its
+third-tick lag with real Memory, Guardian and registry publication: adding exactly
+30 seconds crosses a floating-point boundary with a computed increment slightly
+below 30. The test now advances monotonic time just past the publication interval,
+retaining its wall-clock heartbeat and real stale-monitor assertions.
+
+Only that test's initial healthy-publication wait allows seven seconds, covering
+the measured five-second sample cadence, a publisher poll and scheduling margin.
+Its generic transition checks and all runtime deadlines remain unchanged.
+Both clock cases and all 18 registry-publication tests pass locally. The original
+fractional seed was not logged, and this assertion is separate from the launcher
+cancellation stall. Consult PR #387 for final Linux verification.
+
+## Continuity test API compatibility
+
+The next full run reached an existing exit-classification test whose local
+`asyncio` double exposed only `sleep` and `CancelledError`. The new cancellation
+guard correctly uses the real `current_task` API. The test now copies that API
+namespace and overrides only sleep; all four checkpoint-intent assertions remain.
+The [failure and regression receipt](evidence/ci_continuity_test_api_2026-11-27.json)
+records four reproduced failures and 111 passing continuity, operation-cancellation
+and Windows SIGINT checks. No runtime fallback or cancellation guard was weakened.
+
 ## Linux reproduction
 
 Use a disposable checkout and the same Python/dependency profile as the CI job.

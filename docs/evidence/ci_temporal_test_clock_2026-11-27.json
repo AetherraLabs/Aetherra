@@ -1,0 +1,58 @@
+{
+  "scope": "Separate full-suite test-clock failure encountered during DEV-CI-001 verification",
+  "pr": "https://github.com/AetherraLabs/Aetherra/pull/387",
+  "runtime_changed": false,
+  "original_linux": {
+    "head": "5c1a380657faf5db77e959bd3d7881edf1e12173",
+    "job": "https://github.com/AetherraLabs/Aetherra/actions/runs/46093911666/job/140820828174",
+    "node": "tests/unit/test_temporal_registry_publication.py::test_running_collector_survives_actual_registry_stale_monitor",
+    "assertion_line": 195,
+    "outcome": "1 failed, 3079 passed, 9 skipped in 273.58s; exit 1, no live owned survivors before cleanup",
+    "failure": "Stored heartbeat timestamp was 30 seconds behind mocked wall time.",
+    "call_monotonic_interval": [
+      960.057,
+      962.086
+    ],
+    "artifact_digest": "sha256:029b7138758abf9d72153599db8de9e7711b5fccbbea340682451992eeab8e59",
+    "job_log_sha256": "6fedaa04935ca35c2e328facadbf8932806897910bd1eb5b5f01aa5baf25a6ec"
+  },
+  "controlled_reproduction": {
+    "seed": 960.1,
+    "third_30_second_increment": 29.999999999999886,
+    "result": "The real owner monitor skips publication when the rounded increment is just below its 30-second interval. The real-registry integration reproduces the same third-tick 30-second wall-clock lag.",
+    "red_failed": 1,
+    "red_passed": 1,
+    "red_seconds": 10.57,
+    "red_log_sha256": "9e6f64b2df3c56e21d526ed87ecb227aa6aed293f0fa9eb81ef687eac6b75aaa",
+    "green_passed": 2,
+    "green_seconds": 10.52,
+    "green_log_sha256": "55b8279eab751d35657c816842af2cca3d4ba070eca1370df16d28597fd9ddf6",
+    "all_registry_tests_passed": 18,
+    "all_registry_seconds": 38.39,
+    "all_registry_log_sha256": "b18db55bc50c5003417190269f01f07fddf5ea5b0c065d9770e36acd4262f6b3"
+  },
+  "initial_sampling_observation": {
+    "first_sample_seconds": 0.176,
+    "first_source_fresh": false,
+    "second_sample_seconds": 5.146,
+    "second_source_fresh": true,
+    "healthy_registration_seconds": 5.155,
+    "core_ticks": 5,
+    "log_sha256": "9d1947436ee38384e9586caa63c80b693b2c4fce46b0bc6238a3445133084204"
+  },
+  "test_correction": [
+    "Parameterize the real integration test with current and fixed 960.1 monotonic seeds.",
+    "Advance monotonic time 31 seconds, just past the 30-second publication boundary; retain wall-clock 30-second steps and original heartbeat/discovery assertions.",
+    "Allow 7 seconds only for this test initial healthy publication: 5-second collector cadence + 1-second publication poll + 1-second margin. Generic 3-second transition checks and runtime deadlines remain unchanged.",
+    "Restore patched clocks before fixture teardown so real absolute shutdown deadlines remain valid."
+  ],
+  "source_sha256": {
+    "tests/unit/test_temporal_registry_publication.py": "ac22dbb27046edc517b5ba9c9a57ccca3596263c46f6d10eb6c186bc8e407d72"
+  },
+  "limits": [
+    "The original exact fractional clock seed was not recorded; the deterministic case reproduces its observed signature and falls in the captured clock range.",
+    "This assertion failure is separate from the captured launcher cancellation stall.",
+    "Memory, Guardian, Security, registry publication, status assertions and real stale-monitor execution remain in the integration test. No signing or runtime-policy change.",
+    "Consult PR #387 for final exact-head Linux verification."
+  ]
+}

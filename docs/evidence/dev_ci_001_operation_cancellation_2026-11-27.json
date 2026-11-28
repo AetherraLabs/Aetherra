@@ -85,6 +85,6 @@
   "remaining_limits": [
     "Exact cancellation-consuming dependency remains unsampled. The owner continuation defect is captured and directly reproduced.",
     "Earlier uninstrumented failures and the missing boot await in b586 are not retroactively assigned this cause.",
-    "Final exact-head Linux verification is retained on PR #387. Automated SIGINT simulations are not physical keyboard checks."
+    "Consult PR #387 for final exact-head Linux verification. Automated SIGINT simulations are not physical keyboard checks."
   ]
 }
