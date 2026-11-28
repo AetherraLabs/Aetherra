@@ -72,12 +72,9 @@ def test_normal_exit_records_owned_survivor_before_reaping(
         "p=subprocess.Popen([sys.executable,'-c','import time; time.sleep(30)']); "
         f"pathlib.Path({str(marker)!r}).write_text(str(p.pid)); raise SystemExit({status})"
     )
-    assert (
-        diagnostics.supervise(
-            [sys.executable, "-c", code], tmp_path, timeout=5, checkpoints=()
-        )
-        == status
-    )
+    assert diagnostics.supervise(
+        [sys.executable, "-c", code], tmp_path, timeout=5, checkpoints=()
+    ) == (1 if status == 0 else status)
     survivor = int(marker.read_text())
     cleanup = next(
         event
@@ -86,7 +83,104 @@ def test_normal_exit_records_owned_survivor_before_reaping(
     )
     assert cleanup["child_returncode"] == status
     assert {process["pid"] for process in cleanup["live_processes"]} == {survivor}
+    assert records(tmp_path, "supervisor.jsonl")[-1].get("failure_reason") == (
+        "owned_descendants_after_success" if status == 0 else None
+    )
     assert_process_stopped(diagnostics, survivor)
+
+
+@pytest.mark.parametrize(
+    ("status", "state", "expected"),
+    [(0, "S", 1), (0, "Z", 0), (0, "exits", 0), (7, "S", 7), (None, "S", 124)],
+)
+def test_survivor_check_fails_only_success_and_preserves_cleanup(
+    diagnostics, tmp_path, monkeypatch, status, state, expected
+):
+    # Exercise a real child and supervisor, replacing only the Linux /proc boundary.
+    owner = {"pid": 101, "start": 20, "session": 101, "state": "S"}
+    survivor = {
+        "pid": 102,
+        "start": 21,
+        "session": 101,
+        "state": "S" if state == "exits" else state,
+    }
+    monkeypatch.setattr(
+        diagnostics, "sys", SimpleNamespace(platform="linux", stderr=sys.stderr)
+    )
+    monkeypatch.setattr(diagnostics, "read_process", lambda pid: owner)
+    inspections = []
+
+    def inspect(*args):
+        inspections.append(True)
+        return [] if state == "exits" and len(inspections) > 1 else [survivor]
+
+    monkeypatch.setattr(diagnostics, "owned_processes", inspect)
+    cleanup_calls = []
+    stop_owned = diagnostics.stop_owned
+
+    def cleanup(child, identity):
+        cleanup_calls.append(identity)
+        stop_owned(
+            child, None
+        )  # Clean the real child without signalling synthetic PIDs.
+
+    monkeypatch.setattr(diagnostics, "stop_owned", cleanup)
+    code = (
+        "import time; time.sleep(30)"
+        if status is None
+        else f"raise SystemExit({status})"
+    )
+    result = diagnostics.supervise(
+        [sys.executable, "-c", code],
+        tmp_path,
+        timeout=0.2 if status is None else 5,
+        checkpoints=(),
+    )
+    assert result == expected
+    assert cleanup_calls == [owner]
+    events = records(tmp_path, "supervisor.jsonl")
+    before = next(event for event in events if event["event"] == "before_cleanup")
+    assert before["child_returncode"] == status
+    assert before["live_processes"] == ([survivor] if state == "S" else [])
+    assert events[-1]["reaped"] is True
+    assert events[-1].get("failure_reason") == (
+        "owned_descendants_after_success" if status == 0 and state == "S" else None
+    )
+
+
+@pytest.mark.skipif(sys.platform != "linux", reason="Linux natural descendant exit")
+def test_success_allows_child_to_finish_after_parent_pipe_closes(diagnostics, tmp_path):
+    marker = tmp_path / "ready.pid"
+    child_code = (
+        "import os,pathlib,sys,time; "
+        f"pathlib.Path({str(marker)!r}).write_text(str(os.getpid())); "
+        "sys.stdin.buffer.read(); time.sleep(0.1)"
+    )
+    parent_code = (
+        "import pathlib,subprocess,sys,time\n"
+        f"child=subprocess.Popen([sys.executable,'-c',{child_code!r}],stdin=subprocess.PIPE)\n"
+        f"marker=pathlib.Path({str(marker)!r})\n"
+        "deadline=time.monotonic()+3\n"
+        "while not marker.exists() and time.monotonic()<deadline: time.sleep(0.01)\n"
+        "assert marker.exists()\n"
+    )
+    assert (
+        diagnostics.supervise(
+            [sys.executable, "-c", parent_code],
+            tmp_path,
+            timeout=5,
+            checkpoints=(),
+        )
+        == 0
+    )
+    before = next(
+        event
+        for event in records(tmp_path, "supervisor.jsonl")
+        if event["event"] == "before_cleanup"
+    )
+    assert before["child_returncode"] == 0
+    assert before["live_processes"] == []
+    assert_process_stopped(diagnostics, int(marker.read_text()))
 
 
 def test_watchdog_is_bounded_and_reaps_child(diagnostics, tmp_path):

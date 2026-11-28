@@ -37,9 +37,10 @@ runner import `tools.ci_capabilities_phase` from a temporary repository where
 `tools` was unavailable. This is a diagnostic import regression, not the
 historical timeout. A local source-checkout guard now limits plugin injection:
 its regressions first reported 2 failed / 4 passed, then the selected Windows
-suite passed all 55 tests. This local correction has no Linux result recorded
-here. The historical timeout causes remain unknown; passing captures and the
-diagnostic correction do not establish broader readiness.
+suite passed all 55 tests. At `49b28741`, the corrected Linux strict gate passed
+414 tests with five skips; the full gate passed 3,177 with nine skips, but its
+before-cleanup receipt exposed the registry leak described below. These results
+do not establish the historical timeout causes or broader readiness.
 
 ## Controlled Homeostasis correction
 
@@ -57,15 +58,35 @@ supervisor cycles. It preserves asynchronous teardown order and authority checks
 Seven local regressions pass, including a normal two-cycle controller case;
 234 Homeostasis/Guardian/observation/integration checks passed before the positive
 case was added. Source hashes distinguish pre-commit working-tree verification
-from the recorded base HEAD. Consult [PR #387](https://github.com/AetherraLabs/Aetherra/pull/387)
-for final exact-head CI results; this receipt does not assert corrected Linux
-verification or broader readiness.
+from the recorded base HEAD. At `49b28741`, all seven Linux regression cases
+passed in 0.08 seconds. Consult [PR #387](https://github.com/AetherraLabs/Aetherra/pull/387)
+for final exact-head CI results; these checks do not expand readiness.
 
 Run the focused regression in the supported installed test environment:
 
 ```bash
 python -m pytest -q -o addopts= tests/unit/test_homeostasis_shutdown_cancellation.py
 ```
+
+## Registry ownership correction
+
+The [registry receipt](evidence/dev_ci_001_registry_cleanup_2026-11-27.json)
+retains a full-gate Linux capture at `49b28741`. Pytest and the quality command
+returned zero, but owned PID 6083 remained alive, reparented to PID 1. Its sampled
+stack ended in `aetherra_registry_daemon.py:114`, Flask/Werkzeug's server loop and
+an idle selector. The HMR denial-metrics test initialized the real registry and
+never released it. A focused regression invokes that exact test body with a real
+daemon on an isolated loopback port; both normal and forced-assertion paths
+reproduced the leak. The test now releases its owned presence resources and
+registry in `finally`, preserving its HMR assertions and authority settings.
+
+The supervisor now allows 0.5 seconds for natural descendant exit, without
+sending signals. If a successful command still has live owned descendants, it
+records `owned_descendants_after_success`, attempts bounded cleanup, and
+returns 1. Original failures and timeout codes remain failures. Forced cleanup
+cannot turn this condition into success. Zombies are not running survivors.
+Processes detached outside the owned session remain outside this check's scope.
+The historical timeout cause is still unknown.
 
 ## Linux reproduction
 
@@ -137,15 +158,16 @@ failed test still fails the job; uploading diagnostics cannot authorize signing.
   sampler failures remain visible as sanitized status values.
 - `environment.jsonl`: selected package versions and Python version.
 - `supervisor.jsonl`: start, watchdog, direct-child exit and any live owned
-  descendants before cleanup, then the final exit/reap result. A successful
-  wrapper exit does not by itself prove the tested process left no descendants.
+  descendants before cleanup, then the final exit/reap result. A persistent live
+  owned descendant after a successful command fails the wrapper; inspect the
+  before-cleanup receipt rather than treating direct-child reaping as proof.
 - `async-stacks.jsonl`: bounded await-chain frames from marked pytest processes
   after 90 seconds, when a main-thread asyncio loop can service the diagnostic
   callback. No task names, locals or results are collected.
 
 The standalone watchdog fails with exit 124 at 290 seconds and attempts bounded
-cleanup before the outer five-minute limit. Otherwise pytest's exit status is
-preserved.
+cleanup before the outer five-minute limit. Original nonzero exit status is
+preserved; a zero exit with persistent live owned descendants becomes exit 1.
 The `capabilities-diagnostics-<attempt>` Actions artifact is uploaded even after
 a failed capability step. Missing diagnostics cannot turn a pytest failure into
 success.

@@ -405,7 +405,7 @@ removing the skip cannot close this unknown-cause record; no risk acceptance.
 
 ## DEV-CI-001 — Capabilities job timeout before a result summary
 
-**Status: OPEN — historical causes unknown; controlled Homeostasis defect corrected.**
+**Status: OPEN — historical causes unknown; Homeostasis shutdown and test-owned registry cleanup corrected.**
 Owner: CI/Runtime maintainers. First retained observation: 2026-11-25
 (America/Denver); registered: 2026-11-26; reviewed: 2026-11-27. Severity unknown.
 GitHub: [#381](https://github.com/AetherraLabs/Aetherra/issues/381).
@@ -481,6 +481,20 @@ have no active-node evidence; elapsed time alone does not establish a cause.
 The same diagnostic supervisor now covers that formerly unbounded pytest
 invocation, with a new 900-second pytest deadline and a 1,500-second outer budget.
 Production signing/source/public-key verification steps are unchanged.
+
+The [registry-cleanup receipt](evidence/dev_ci_001_registry_cleanup_2026-11-27.json)
+retains the first instrumented full-gate result at `49b28741`: 3,177 passed /
+9 skipped, but one live registry daemon survived the quality command. PID 6083's
+Linux stack identified the Flask/Werkzeug registry server; its creation overlapped
+the HMR metrics test, which lacked cleanup. A real-spawn regression against that
+exact test body reproduced the leak on both normal and assertion-failure paths.
+The test now releases its owned presence resources and registry in `finally`.
+The supervisor also fails a zero-exit command if owned descendants remain alive
+after a short natural-exit grace; its subsequent cleanup cannot mask the leak.
+This is a separately established lifecycle defect, not proof of the original
+five-minute timeout's cause. The same source's seven Linux Homeostasis regression
+cases and strict gate (414 passed / 5 skipped) passed. Final exact-head results
+remain linked from PR #387.
 
 Containment retains the five-minute capability limit, existing 900-second strict
 pytest deadline, original failures and separate capture outcomes. This controlled

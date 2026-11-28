@@ -265,15 +265,34 @@ def supervise(
     except KeyboardInterrupt:
         result = 130
     finally:
-        live = (
-            [
-                process
-                for process in owned_processes(owner["pid"], owner["start"])
-                if process["state"] != "Z"
-            ]
-            if owner
-            else []
+
+        def live_owned():
+            return (
+                [
+                    process
+                    for process in owned_processes(owner["pid"], owner["start"])
+                    if process["state"] != "Z"
+                ]
+                if owner
+                else []
+            )
+
+        live = live_owned()
+        # EOF-driven helpers may finish just after their parent; do not signal them.
+        until = time.monotonic() + 0.5
+        while result == 0 and live and time.monotonic() < until:
+            time.sleep(0.05)
+            live = live_owned()
+        failure_reason = (
+            "owned_descendants_after_success" if result == 0 and live else None
         )
+        if failure_reason:
+            result = 1
+            with contextlib.suppress(OSError):
+                print(
+                    "[CI] Command exited 0 with live owned descendants; failing closed.",
+                    file=sys.stderr,
+                )
         emit(
             output,
             "supervisor.jsonl",
@@ -281,6 +300,7 @@ def supervise(
                 "event": "before_cleanup",
                 "child_returncode": child.poll(),
                 "live_processes": live,
+                "failure_reason": failure_reason,
             },
         )
         stop_owned(child, owner)
@@ -288,7 +308,12 @@ def supervise(
         emit(
             output,
             "supervisor.jsonl",
-            {"event": "exit", "code": result, "reaped": child.poll() is not None},
+            {
+                "event": "exit",
+                "code": result,
+                "reaped": child.poll() is not None,
+                "failure_reason": failure_reason,
+            },
         )
     return result
 

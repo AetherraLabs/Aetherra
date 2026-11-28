@@ -77,7 +77,21 @@
   },
   "limits": [
     "Constructed race does not establish the original CI timeout cause.",
-    "No corrected Linux result is asserted by this receipt; use the final exact-head CI evidence on PR #387.",
+    "Corrected Linux cases pass on the recorded head; a separate full-gate registry leak is retained in the registry-cleanup receipt. Use PR #387 for final exact-head CI.",
     "Run-intent closure does not revoke already-submitted actuator work; Guardian and asynchronous teardown order remain intact."
-  ]
+  ],
+  "linux_green": {
+    "head": "49b28741e16a6d40e438089e2d477da2b346b846",
+    "job": "https://github.com/AetherraLabs/Aetherra/actions/runs/46087678253/job/140800996319",
+    "python": "3.11.18",
+    "regressions_passed": 7,
+    "seconds": 0.08,
+    "same_job_capabilities": {
+      "passed": 171,
+      "skipped": 4,
+      "seconds": 41.83,
+      "live_owned_processes_before_cleanup": 0
+    },
+    "capability_artifact_digest": "sha256:23ebc84e03065f17a7793e39bb36145c0a6d79f1431a00efbb7e4935878b331a"
+  }
 }
