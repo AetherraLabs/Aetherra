@@ -14,7 +14,11 @@ import pytest
 
 # Aetherra imports
 from Aetherra.homeostasis import system_supervisor
-from Aetherra.homeostasis.homeostasis_core import HomeostasisController
+from Aetherra.homeostasis.homeostasis_core import (
+    ActionPriority,
+    ControlAction,
+    HomeostasisController,
+)
 from Aetherra.homeostasis.homeostasis_integration import HomeostasisOrchestrator
 
 
@@ -233,3 +237,68 @@ def test_controller_completes_normal_cycle_before_stopping(monkeypatch, tmp_path
     asyncio.run(run())
     assert events == ["metrics", "actions", "metrics"]
     assert not controller.running
+
+
+@pytest.mark.parametrize("completion_race", [False, True])
+def test_stop_drops_queued_actions_after_inflight_cancellation_is_consumed(
+    tmp_path, completion_race
+):
+    async def run():
+        boundary = _ControlledAwait(completion_race)
+        dispatched = []
+
+        async def execute(action):
+            dispatched.append(action.action_type)
+            if len(dispatched) == 1:
+                await boundary.wait()
+                return True
+            # A second action must never start after stop intent is closed.
+            await asyncio.Future()
+            return False
+
+        component = HomeostasisController(
+            metrics=types.SimpleNamespace(
+                get_current_snapshot=lambda: None, collect_snapshot=_nothing
+            ),
+            actuators=types.SimpleNamespace(execute_action_via_kernel=execute),
+            config_path=str(tmp_path / "absent-setpoints.yaml"),
+            policy_path=str(tmp_path / "absent-policy.yaml"),
+        )
+        for name in ("inflight", "queued"):
+            component.pending_actions.append(
+                ControlAction(
+                    name, "synthetic", {}, ActionPriority.LOW, 0, "test", "test"
+                )
+            )
+        worker = asyncio.create_task(component.start())
+        owner = _owner(component, worker, "controller_action")
+        stop_task = None
+        try:
+            await asyncio.wait_for(boundary.waiting.wait(), timeout=2)
+            stop_task = asyncio.create_task(owner.stop())
+            if completion_race:
+                # Queue stop before resumption; wait_for can still consume the
+                # cancellation when its inner future has already completed.
+                boundary.reply.set_result(None)
+            await asyncio.wait((stop_task,), timeout=2)
+            assert stop_task.done(), "Shutdown waited for another queued action"
+            await stop_task
+            assert dispatched == ["inflight"]
+            assert not component.pending_actions
+            assert not component.running
+            assert worker.done()
+            assert not owner.background_tasks
+        finally:
+            component.stop()
+            boundary.release.set()
+            tasks = [task for task in (worker, stop_task) if task is not None]
+            for task in tasks:
+                if not task.done():
+                    task.cancel()
+            _, pending = await asyncio.wait(tasks, timeout=2)
+            assert not pending, "Controlled action tasks survived cleanup"
+            for task in tasks:
+                if not task.cancelled():
+                    task.result()
+
+    asyncio.run(run())

@@ -1177,6 +1177,8 @@ class HomeostasisController:
     def stop(self):
         """Stop the homeostasis controller."""
         self.running = False
+        # A completed action may consume cancellation; never dispatch the remainder.
+        self.pending_actions.clear()
         logger.info("🛑 Homeostasis controller stopping")
 
 

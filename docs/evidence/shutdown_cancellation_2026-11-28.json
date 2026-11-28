@@ -1,0 +1,490 @@
+{
+  "date": "2026-11-28",
+  "scope": "DEV-SELFINC-002 shutdown follow-up / GitHub #42; no opt-in or authority correction",
+  "base_commit": "9c2e7708adc6c3eaa9d78388b0f92627855a0800",
+  "environment": "Windows, Python 3.13.7, isolated offline full-launch profiles",
+  "launcher_before_sha256": "d0811295af97a663d153ed8f0d96a32d1e57963ff43d7ca4ea1b4b5c15b421ed",
+  "launcher_after_sha256": "8e1ed67b02a36183b501a00666ccee9040e2fa51960d2145dd89f9700dd99a4e",
+  "regression_tests_sha256": "6e999ae78e7263f476160ae7c354ebde295124c8a6c4e6633a7a31fbd8254976",
+  "baseline_normal_probe": {
+    "full-default": {
+      "exit_code": 0,
+      "timed_out": false,
+      "seconds": 9.33,
+      "probe_completed": true,
+      "stop": "automated interrupt_main; not a physical keyboard check",
+      "completed_cleanly": true
+    },
+    "full-selfinc-opt-in": {
+      "exit_code": 0,
+      "timed_out": false,
+      "seconds": 9.1,
+      "probe_completed": true,
+      "stop": "automated interrupt_main; not a physical keyboard check",
+      "completed_cleanly": true
+    },
+    "full-explicit-disable": {
+      "exit_code": 0,
+      "timed_out": false,
+      "seconds": 8.91,
+      "probe_completed": true,
+      "stop": "automated interrupt_main; not a physical keyboard check",
+      "completed_cleanly": true
+    }
+  },
+  "before_controlled_signal": {
+    "receipt": {
+      "exit_code": 1,
+      "timed_out": true,
+      "seconds": 70.01,
+      "signal": "one _thread.interrupt_main inside real CLI status write, no parent stop signal",
+      "runtime_log_sha256": "1a96d6e14da1907e4fe1232010f333f9b09413724089695ba134930347be654b"
+    },
+    "trace": [
+      {
+        "boundary": "_main_operation_loop",
+        "event": "enter",
+        "cancelling": 0,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_main_operation_loop",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": true,
+        "result": true
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": true
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": true,
+        "result": null
+      },
+      {
+        "boundary": "_graceful_shutdown",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": true
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": true
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": true,
+        "result": null
+      },
+      {
+        "boundary": "_stop_presence_resources",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": true
+      },
+      {
+        "boundary": "_stop_presence_resources",
+        "event": "raise",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "exception": "CancelledError"
+      },
+      {
+        "boundary": "_graceful_shutdown",
+        "event": "raise",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "exception": "CancelledError"
+      }
+    ],
+    "artifacts": {
+      "receipt.json": "1345cedb9abdba125b7d6f7e4416b752bdc9f7aa69cdbb5a5e98866e869fde4a",
+      "shutdown-trace.jsonl": "c120caa5ba43959b871231fa757e8caf6b117ddaa0c28bd435098c818c664237",
+      "runtime.log": "1a96d6e14da1907e4fe1232010f333f9b09413724089695ba134930347be654b"
+    }
+  },
+  "after_controlled_signal": {
+    "receipt": {
+      "exit_code": 0,
+      "timed_out": false,
+      "seconds": 9.17,
+      "signal": "one _thread.interrupt_main inside real CLI status write, no parent stop signal",
+      "runtime_log_sha256": "b7e1621a9dcb14bedf1603e1e6adae85aff8c6a3f80ac9dd8e1ded5d7e1d457f"
+    },
+    "trace": [
+      {
+        "boundary": "_main_operation_loop",
+        "event": "enter",
+        "cancelling": 0,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_main_operation_loop",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "result": true
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "result": null
+      },
+      {
+        "boundary": "_graceful_shutdown",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "result": null
+      },
+      {
+        "boundary": "_stop_presence_resources",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_stop_presence_resources",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "result": null
+      },
+      {
+        "boundary": "_graceful_shutdown",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "result": null
+      }
+    ],
+    "artifacts": {
+      "receipt.json": "fcc2d7b7b1f053d0bdc07324e252e71ba3933ac6b0821e6c06889ea7b1befaaf",
+      "shutdown-trace.jsonl": "f8de7f48b973cfcdee6084f8c3f34fe32deadd402bc89f187c11095fbb0d3cee",
+      "runtime.log": "b7e1621a9dcb14bedf1603e1e6adae85aff8c6a3f80ac9dd8e1ded5d7e1d457f"
+    }
+  },
+  "normal_launch_repeats": {
+    "probe-green-one": {
+      "full-default": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 9.07,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true
+      },
+      "full-selfinc-opt-in": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 9.01,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true
+      },
+      "full-explicit-disable": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 8.93,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true
+      }
+    },
+    "probe-green-two": {
+      "full-default": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 8.98,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true
+      },
+      "full-selfinc-opt-in": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 9.09,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true
+      },
+      "full-explicit-disable": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 9.12,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true
+      }
+    }
+  },
+  "regression_results": {
+    "before": "18 failed, 19 deselected; owned cleanup skipped in every inline-cancellation case",
+    "after": "65 passed; original cancellation, Windows signal and Homeostasis coverage included"
+  },
+  "retained_test_logs": {
+    "baseline-contracts.log": "11e22f84d133bef15c8baa8dae48fe8f84b3e9caa4234f1d3cd0df44c66f2a9f",
+    "red-inline-cancellation.log": "cd31a90d892cf556b60c0f96acc0a5e5794451d81c27049b4ab758cea83e6990",
+    "green-cancellation.log": "266cf7a738cb92d3aff7be0c55a8917d80d3f019b67caefb95e0a16fc50b0d35",
+    "final-focused.log": "41f71e1752d44a9dfe1df9336a0212a98fc4b37d0100dc538222b41679b8cbda",
+    "final-injected-cli.log": "1eec01ed4d2eaf478937ade645c10fbaab94e6a0d3cf178959398a2b001b284b",
+    "python-quality.log": "a80ef194bd1fbbe1fcc4b22ace109dac84d6279aec09c0ddd2216a405a8b7d14",
+    "docs-consistency.log": "0dd09fc5d8ef3be80b0d530194cd8e4f471948930b4d90cafd4dbe8d2932c78f"
+  },
+  "limitations": [
+    "The controlled real-CLI signal reproduces the retained wait stacks and establishes this cancellation escape path, not the cause of every historical hang.",
+    "No live-model, browser or physical-keyboard validation; automated SIGINT only.",
+    "QFAC provenance, unsigned planning trust, and Self-Incorporation startup ownership remain open.",
+    "Older DEV-HOMEOSTASIS-001, DEV-CI-001 and checkpoint records retain their own evidence and disposition."
+  ],
+  "initial_corrected_run": {
+    "receipt": {
+      "exit_code": 0,
+      "timed_out": false,
+      "seconds": 9.0,
+      "signal": "one _thread.interrupt_main inside real CLI status write, no parent stop signal",
+      "runtime_log_sha256": "4e0812322ba2e9fff86dd7873e8a526e7930a49105d23149e7fc16c1a684ccbe"
+    },
+    "trace": [
+      {
+        "boundary": "_main_operation_loop",
+        "event": "enter",
+        "cancelling": 0,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_main_operation_loop",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "result": true
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "result": null
+      },
+      {
+        "boundary": "_graceful_shutdown",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_stop_consciousness_observer",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "result": null
+      },
+      {
+        "boundary": "_stop_presence_resources",
+        "event": "enter",
+        "cancelling": 1,
+        "pending_delivery": false
+      },
+      {
+        "boundary": "_stop_presence_resources",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "result": null
+      },
+      {
+        "boundary": "_graceful_shutdown",
+        "event": "return",
+        "cancelling": 1,
+        "pending_delivery": false,
+        "result": null
+      }
+    ],
+    "artifacts": {
+      "receipt.json": "a4bb03fcd69b19184e9abfe0682d85be8b916592bbc124d08c958384f4b90db0",
+      "shutdown-trace.jsonl": "f8de7f48b973cfcdee6084f8c3f34fe32deadd402bc89f187c11095fbb0d3cee",
+      "runtime.log": "4e0812322ba2e9fff86dd7873e8a526e7930a49105d23149e7fc16c1a684ccbe"
+    },
+    "launcher_sha256": "7dd67af76214247ea935eda632649599fc584f4ed1a93ecff7ced96ef7f63d0e",
+    "note": "Before LF normalization; retained separately from the final source-bound rerun."
+  },
+  "process_receipt_semantics": "completed_cleanly means process exit zero within its budget, not error-free watchdog shutdown.",
+  "remaining_watchdog_limitation": {
+    "record": "DEV-HOMEOSTASIS-001",
+    "issue": "https://github.com/AetherraLabs/Aetherra/issues/373",
+    "state": "OPEN",
+    "message": "Event loop stopped before Future completed",
+    "observed": "baseline and corrected successful-exit logs; independent cooperative-shutdown contract remains unverified"
+  },
+  "full_windows_suite": {
+    "head": "9c2e7708adc6c3eaa9d78388b0f92627855a0800",
+    "exit_code": 3,
+    "timed_out": false,
+    "seconds": 2895.07,
+    "log_sha256": "24aeb2d4e584c75bd4e46cd48f72e5d4857ac7be08f3fe75acd829e5c77c1f6e",
+    "head_note": "Run began before commit, with corrected launcher bytes matching launcher_after_sha256; final formatted regression source was separately rerun in final-focused.",
+    "passed": 4444,
+    "skipped": 49,
+    "subtests_passed": 5,
+    "command_clean_pass": false,
+    "reporting_failure": "coverage.exceptions.DataError: Can't combine branch coverage data with statement data"
+  },
+  "coverage_reporting_followup": {
+    "unchanged_reproducer": "tests/tools/test_quality_gate_diagnostics.py::test_selected_pytest_loads_phase_plugin_without_infecting_nested_pytest",
+    "reproducer_exit_code": 3,
+    "reproducer_log_sha256": "3593ec4b6b0f828c8236160c1629f84240768f846263206fa4864fd79050a0d7",
+    "recovered_parent_branch_percent": 45,
+    "unchanged_threshold_percent": 22,
+    "report_exit_code": 0,
+    "report_sha256": "9d0c35f97274dc9803ded7edfb93f9a87a40397093a4bbf803b7d898154e39c3",
+    "datasets": [
+      {
+        "original": "full-suite.coverage",
+        "mode": "statement",
+        "sha256": "7d9002aaf1b5c6d857abe7851448bf2d51152a8870f956302aea182ed7a55d32",
+        "measured_files": 1
+      },
+      {
+        "original": "full-suite.coverage.DESKTOP-5AICBVI.pid38836.XN3zj4lx.HWnw2lxVJggh",
+        "mode": "branch",
+        "sha256": "fa07f9d3e8dbae6beab4cb4888e6fd0a82af33d183ba7eec3ffa75f7d3bc7460",
+        "measured_files": 21
+      }
+    ],
+    "limitation": "Recover reporting from the untouched full-suite parent dataset; preserve original exit 3 and both datasets. This is not a clean original-command pass."
+  },
+  "implementation_ci": {
+    "head": "370952e899630926be29a9f8f7fa428f93f1ae92",
+    "success": 37,
+    "skipped": 1,
+    "skip": "Dependabot-only auto-merge",
+    "quality_run": "https://github.com/AetherraLabs/Aetherra/actions/runs/46120314479",
+    "quality_passed": 3235,
+    "quality_skipped": 9,
+    "signing_regressions_passed": 58,
+    "signing_subtests_passed": 5,
+    "production_signing": "Enforced for main pushes; expected skip on pull requests; no new production signing pass claimed."
+  },
+  "linux_capability_recurrence": {
+    "head": "3822a02196232d50f7ed1c7d78df21c80b7d346a",
+    "job": "https://github.com/AetherraLabs/Aetherra/actions/runs/46124032231/job/140914505725",
+    "artifact": "https://github.com/AetherraLabs/Aetherra/actions/runs/46124032231/artifacts/15255352254",
+    "exit_code": 124,
+    "supervisor_seconds": 290,
+    "workflow_timeout_minutes": 5,
+    "active_node": "tests/capabilities/test_qfac_in_os.py::test_qfac_optional_service_registration",
+    "phase": "call, in finally awaiting cancelled boot task",
+    "await_chain": [
+      "test_qfac_optional_service_registration -> boot -> launch_full_os -> _graceful_shutdown",
+      "HomeostasisOrchestrator.shutdown -> stop -> _stop_background_tasks",
+      "HomeostasisController.start -> execute_pending_actions -> execute_action_via_kernel",
+      "AetherraKernelLoop.submit_actuator_action_and_wait -> asyncio.wait_for"
+    ],
+    "observations": "The same await chain is retained in three samples. Boot and controller each report cancelling=1. This identifies the wait, not every historical initiating cause.",
+    "artifacts_sha256": {
+      "async-ready-2598.json": "d79783ee792734966904619aa70f0959212c33bb10ab9af305cf3b203ab78817",
+      "async-requests.jsonl": "9b5a66ca9d92896e7de9008551a166b080f763d44880f66ffd0b1c4cb660c247",
+      "async-stacks.jsonl": "ad0b245518563fe525b3ed1a12f6c54b411fe02c61dab67793b2a86285ae2142",
+      "environment.jsonl": "399642d6e38f914f99f09f9912b3ba2b275d4ea51e7ba2bce97a5cb691c2bad2",
+      "phases.jsonl": "6ea04f92cbb5a31343a44561efcfe256f27b0a0470602787649853b773edafbd",
+      "processes.jsonl": "65bf89891f6adfefb149958bec5487b22b3e31cba6c6d795410dd5d2c236066e",
+      "stacks.jsonl": "2d83c9b24cd96c1afc4a5ade9fabbf8d8b50bccce27c589262acd77f09fbb599",
+      "supervisor.jsonl": "ea37cb8a29953cc35c5de99ed05a9c39beb3f76b0fe55580c5021ba8df9359ce"
+    }
+  },
+  "queued_action_correction": {
+    "record": "DEV-CI-001 / #381, shutdown follow-up for #42",
+    "cause": "Closing running intent did not discard the pending action batch; a dependency consuming cancellation could dispatch a further action and wait through its timeout during stop.",
+    "fix": "HomeostasisController.stop clears unstarted pending actions before the owner cancels and awaits its worker.",
+    "controller_before_sha256": "70eb6b896f598357d501daa728356e425057afb44da2e79d65c416bb99abf4e6",
+    "controller_after_sha256": "3a1bf5dc21dc24c3bd58acb0d96101b23225bf8c75e5402bf8a45754d93d8c63",
+    "test_sha256": "e2a91e6d7ef24979be916c1e5c0e76843d2aaf17f6047505b895429d6c334a07",
+    "ordered_regression_before": {
+      "failed": 2,
+      "exit_code": 1,
+      "log_sha256": "f1edeb9f9de1cf748d56af7918c6e4311ca8e444460e539205ff897d32d6249c"
+    },
+    "final_focused": {
+      "passed": 113,
+      "exit_code": 0,
+      "seconds": 7.87,
+      "log_sha256": "6969dfa5ad789ac21c0fa21bb4dee27649a6bec5ebdf267294a91fed217cad53"
+    },
+    "normal_profiles": {
+      "full-default": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 10.34,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true
+      },
+      "full-explicit-disable": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 9.99,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true
+      },
+      "full-selfinc-opt-in": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 10.04,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true
+      }
+    },
+    "controlled_cli": {
+      "exit_code": 0,
+      "timed_out": false,
+      "seconds": 10.65,
+      "signal": "one _thread.interrupt_main inside real CLI status write, no parent stop signal",
+      "runtime_log_sha256": "916ff7e61c6bcdca7c168cbebe736d39f3628ad8ba7dbc35d24d48d93d7b1089"
+    },
+    "scope_limit": "The earlier full Windows suite predates this two-line queue correction; focused, capability, launch and final-head CI checks cover the follow-up."
+  }
+}
