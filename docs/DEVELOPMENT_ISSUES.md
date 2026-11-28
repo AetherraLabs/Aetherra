@@ -100,6 +100,9 @@ this document establishes development practice only.
 | [DEV-STORM-001](#dev-storm-001--skipped-persistence-lifecycle-check) | OPEN | Memory/STORM maintainers | Why did the lifecycle recall return no results? |
 | [DEV-CI-001](#dev-ci-001--capabilities-job-timeout-before-a-result-summary) | OPEN | CI/Runtime maintainers | Which operation prevented the Linux capability job from completing? |
 | [DEV-CI-002](#dev-ci-002--personal-continuity-write-session-http-503) | OPEN | Hub/Engine and CI maintainers | Why did a personal-continuity write turn return HTTP 503? |
+| [DEV-QFAC-001](#dev-qfac-001--validator-metric-provenance) | OPEN | Hub/QFAC and Runtime maintainers | Why do full-mode validator metrics discard source values and availability? |
+| [DEV-SELFINC-001](#dev-selfinc-001--verification-and-planning-trust) | OPEN | Security/Runtime maintainers | How will strict artifact evidence govern persisted planning trust? |
+| [DEV-SELFINC-002](#dev-selfinc-002--startup-ownership-and-opt-in) | OPEN | Runtime/Kernel maintainers | Which configured instance owns Self-Incorporation startup and status? |
 
 ## ALPHA-CKPT-001 — Checkpoint stop delay
 
@@ -597,3 +600,94 @@ correction/regression, or an evidenced external cause with tested containment
 and explicit reviewed disposition. A passing rerun alone cannot close this
 record or establish risk acceptance or broader GO. Guardian, Security, signing
 and approval boundaries remain unchanged.
+
+## DEV-QFAC-001 — Validator metric provenance
+
+**Status: OPEN — full-launch override and missing-data ambiguity reproduced.**
+Owner: Hub/QFAC and Runtime maintainers. Opened/reviewed: 2026-11-27.
+GitHub: [#389](https://github.com/AetherraLabs/Aetherra/issues/389); inventory RI-012.
+Review gate: P1 metric truthfulness correction and any QFAC readiness claim.
+
+At main `3253893604a5cf3fb0417f95de3acf51131650f1`, Windows Python 3.13.7 full-launch
+strict-flags test profiles set `VALIDATOR_FAKE=1` and clear override counts. Real Hub
+HTTP metrics replaced a labeled registry fixture's 17/4 counts with 0/0; changing
+only the override to zero restored 17/4. Missing/throwing sources also exported 0/0.
+Expected: preserve source observations and distinguish unavailable from measured zero.
+[Trace, exact commands and receipts](RUNTIME_EVIDENCE_P0_TRACE.md) retain profiles,
+source, before/control outputs, exits and limitations. No real validator was registered
+at boot or owned producer found; loss of actual backend measurements is unverified.
+
+Cause of the fixture override is established in launcher/consumer source and controlled
+runtime observation. External metric consumers and optional profiles remain unknown.
+Containment: do not use these counters as validation/readiness evidence; no runtime
+workaround or acceptance is granted. Next: owner adds normal-launch negative tests,
+corrects override/availability semantics with truthful compatible output, and reviews
+strict/missing/failing/optional profiles. Closure requires reviewed source-bound
+before/after evidence, not schema presence or a passing rerun. Five-minute CI timeout,
+Guardian, Security, signing and Memory remain unchanged.
+
+## DEV-SELFINC-001 — Verification and planning trust
+
+**Status: OPEN — strict artifact evidence is not established by legacy planning trust.**
+Owner: Security/Runtime maintainers. Opened/reviewed: 2026-11-27.
+GitHub: existing [#67](https://github.com/AetherraLabs/Aetherra/issues/67); inventory RI-013.
+Review gate: P1 authority correction before P2 migration or an incorporation readiness claim.
+
+At the same main revision and isolated Windows environment recorded in the
+[P0 trace](RUNTIME_EVIDENCE_P0_TRACE.md), real discovery, explicit classification and
+evaluation persisted an unsigned utility as TRUSTED and planned a high-priority action.
+Native Windows reported `verified=false`; a POSIX path-string model returned true while
+reporting no signature. The latter is not native Linux execution. Reopening SafetyIndex
+retained the decision; another evaluation skipped it. Expected: strict artifact trust
+and verification claims derive from current supported verification evidence, not paths.
+
+Established: path-based legacy evaluation feeds SQLite/planning; the separate security
+helper is not invoked on that path. Startup discovery alone does not call the evaluator.
+Tested unauthenticated Hub, disclosure and unapproved Guardian requests were denied,
+with zero execute calls. A universal authorization bypass is **not established**; approved
+policies, artifact classes, native Linux and stale-policy handling require review.
+Release signing is a separate authority. Detailed sensitive findings follow SECURITY.md.
+
+Containment: retain explicit-disable supervised profiles, fail-closed action authority
+and existing #67 requirements; do not treat a trust tier as cryptographic proof. Next:
+owner reuses existing verifiers, reviews persisted-decision freshness and adds native
+caller/unsigned/invalid/valid-signature tests plus denial before mutation. Closure needs
+reviewed evidence for supported artifact types, persistence and action boundaries.
+No passing rerun, fallback, planning success or release signature closes this record.
+
+## DEV-SELFINC-002 — Startup ownership and opt-in
+
+**Status: OPEN — launcher and kernel opt-in defaults disagree.**
+Owner: Runtime/Kernel maintainers. Opened/reviewed: 2026-11-27.
+GitHub: existing [#42](https://github.com/AetherraLabs/Aetherra/issues/42); additional RI-013 finding.
+Review gate: normal-launch configuration/registration/shutdown and alpha reviews.
+
+The [P0 trace and receipts](RUNTIME_EVIDENCE_P0_TRACE.md) bind main
+`3253893604a5cf3fb0417f95de3acf51131650f1` to Windows Python 3.13.7 full-launch runs.
+With the enable flag unset, the launcher-held object was disabled while a different
+kernel-created registered instance was enabled, scanned and reported healthy via Hub.
+Explicit 0 retained one disabled instance; explicit 1 had one enabled identity at
+observation after replacement. Expected: one configured owner with consistent opt-in,
+registry identity and truthful status. Earlier launcher-only static review in #42 is
+preserved; the runtime result adds the missing kernel path.
+
+The default mismatch/re-registration cause is source-confirmed. Separately, an
+explicit-disable diagnostic completed its observations and wrote worker exit 0 but
+failed to terminate within the 60-second stop limit; the harness killed it (exit 1).
+A later repeat exited cleanly. The original shutdown cause remains unknown; no common
+cause with DEV-HOMEOSTASIS-001, DEV-CI-001 or CKPT failures is established. This is a
+retained lifecycle limitation under investigation, not proof that disabling causes hangs.
+
+Containment: explicit 0 prevented discovery in the measured profile, while action gates
+remained enforced; no new GO follows. Next: owner reconciles kernel/launcher service
+ownership and unset/0/1 semantics, tests identity/scan/status/settlement, and captures
+stacks if the shutdown delay recurs. Close only after focused correction and reviewed
+lifecycle evidence; disposition of the retained unknown delay must remain explicit.
+
+Publication review observation (2026-11-27): probe-04 reproduced the shutdown timeout
+with the enable flag unset; explicit 1 and 0 exited cleanly. At the 50-second dump,
+the main thread waited in `threading._shutdown`; other stacks showed the Homeostasis
+watchdog event loop, stdlib scheduler loop and Hub `serve_forever`/selector. These
+are observed stacks, not proof of the initiating cause or individual responsibility.
+The profile-specific hypothesis is unsupported. Retain both timeouts and their
+separate receipts; do not mark this lifecycle limitation resolved by clean siblings.

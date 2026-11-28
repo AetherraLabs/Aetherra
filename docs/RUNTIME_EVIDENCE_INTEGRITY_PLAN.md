@@ -117,6 +117,16 @@ Complete and review these reachability records before selecting implementation s
 proposed first narrow correction, subject to the authority audit's findings. Continue the broader P0 inventory; neither
 trace substitutes for a whole-repository audit.
 
+### Bounded P0 evidence — 2026-11-27
+
+The [QFAC/verification reachability report](RUNTIME_EVIDENCE_P0_TRACE.md) and its
+[structured inventory](evidence/runtime_evidence_p0_inventory.json) record normal-launch probes at
+`3253893604a5cf3fb0417f95de3acf51131650f1`. Confirmed findings map to DEV-QFAC-001 / #389,
+DEV-SELFINC-001 / #67 and DEV-SELFINC-002 / #42 in the permanent register. The probe also found a kernel/launcher
+opt-in ownership disagreement. No unapproved execution bypass or native Linux verification is claimed.
+Retained shutdown failure and profile limits remain explicit. This completes two bounded traces, not the broader
+P0 inventory, an implementation correction, issue closure or expanded alpha acceptance.
+
 ## Cross-cutting invariants (Phase 0)
 
 1. Add a typed evidence envelope (or extend the existing canonical one; no second authority) with `kind` = measured |

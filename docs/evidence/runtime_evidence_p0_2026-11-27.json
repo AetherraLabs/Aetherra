@@ -1,0 +1,499 @@
+{
+  "source_revision": "3253893604a5cf3fb0417f95de3acf51131650f1",
+  "review_date": "2026-11-27",
+  "platform": "Windows",
+  "python": "3.13.7",
+  "scope": "Bounded RI-012/RI-013 investigation; not whole P0 or alpha acceptance",
+  "probe": "tools/inspect_runtime_evidence_p0.py",
+  "baseline": {
+    "head": "3253893604a5cf3fb0417f95de3acf51131650f1",
+    "ambient_pythonpath_absent": true,
+    "offline_generation_configuration": true,
+    "exit_code": 0,
+    "timed_out": false,
+    "seconds": 7.51,
+    "log_sha256": "bcd707a58327b65757d5f97517b7b36e1c1c9aba3cabd1b11adbbd83b97b2c73",
+    "command": "python -m pytest -q -o addopts= tests/unit/test_selfinc_integration_guardian.py tests/unit/test_self_incorporation_security.py tests/unit/test_metrics_read_only_snapshot.py tests/capabilities/test_qfac_validator_shadow_schema.py"
+  },
+  "baseline_result": "62 passed in 6.30s",
+  "initial_selection_error": {
+    "receipt_sha256": "92575ddf8ede99e25adbac551374947c4fdd58656d2a02a2aadd5eeb89432c02",
+    "exit_code": 4,
+    "reason": "Harness selected nonexistent test_launcher_selfinc_registration.py; no tests ran, not a product failure."
+  },
+  "profile_matrix": {
+    "full-default": {
+      "effective_flags": {
+        "AETHERRA_QFAC_VALIDATOR_FAKE": "1",
+        "AETHERRA_QFAC_VALIDATOR_FAKE_GREEN": null,
+        "AETHERRA_QFAC_VALIDATOR_FAKE_BLOCKED": null,
+        "AETHERRA_QFAC_SHADOW_FAKE": "0",
+        "AETHERRA_QFAC_FAST_STUB": "0",
+        "AETHERRA_SELFINC_ENABLED": null,
+        "AETHERRA_SELFINC_STRICT": "1",
+        "AETHERRA_SIGNING_STRICT": "1",
+        "AETHERRA_SCRIPT_VERIFY_STRICT": "1",
+        "AETHERRA_REQUIRE_CAPABILITIES": "1",
+        "AETHERRA_NET_STRICT": "1"
+      },
+      "validator_registered_at_boot": false,
+      "launcher_selfinc_enabled": false,
+      "registry_selfinc_enabled": true,
+      "same_selfinc_instance": false,
+      "classifications_before_manual_evaluation": 0,
+      "hub_selfinc_status": {
+        "config_enabled": true,
+        "running": true,
+        "status": "healthy"
+      },
+      "qfac_http_counts": {
+        "missing_validator": {
+          "aetherra_qfac_validator_green_total": 0.0,
+          "aetherra_qfac_validator_blocked_total": 0.0
+        },
+        "fixture_full_flags": {
+          "aetherra_qfac_validator_green_total": 0.0,
+          "aetherra_qfac_validator_blocked_total": 0.0
+        },
+        "fixture_override_disabled_control": {
+          "aetherra_qfac_validator_green_total": 17.0,
+          "aetherra_qfac_validator_blocked_total": 4.0
+        },
+        "fixture_unavailable_control": {
+          "aetherra_qfac_validator_green_total": 0.0,
+          "aetherra_qfac_validator_blocked_total": 0.0
+        }
+      },
+      "unauthenticated_apply_http": 401,
+      "native_decision": {
+        "file_id": "sha256:ae416f1cd9dfc11105959301cfec9348b4144f7bda7a13d35bf57bb385cc85b4",
+        "verified": false,
+        "signing": {
+          "method": "path_based_trust",
+          "trusted_location": false,
+          "signature_present": false,
+          "signature_valid": false
+        },
+        "capability_ok": true,
+        "trust_tier": "TrustTier.TRUSTED"
+      },
+      "persisted_decision_equal": true,
+      "second_evaluation_count": 0,
+      "posix_path_model_only": {
+        "verified": true,
+        "signing": {
+          "method": "path_based_trust",
+          "trusted_location": true,
+          "signature_present": false,
+          "signature_valid": false
+        }
+      },
+      "plan": {
+        "plan_id": "55129aeb",
+        "status": "ready",
+        "active_components": 1,
+        "integration_order": [
+          "sha256:ae416f1cd9dfc11105959301cfec9348b4144f7bda7a13d35bf57bb385cc85b4"
+        ],
+        "actions": [
+          {
+            "action": "import_utility",
+            "target": {
+              "file_id": "sha256:ae416f1cd9dfc11105959301cfec9348b4144f7bda7a13d35bf57bb385cc85b4",
+              "type": "utility",
+              "capabilities": [],
+              "trust_tier": "trusted"
+            },
+            "priority": "high"
+          }
+        ]
+      },
+      "separate_helper_unsigned_result": false,
+      "authenticated_apply_http": 403,
+      "guardian_denial": {
+        "status": "guardian_denied",
+        "reason": "guardian_policy_no_allow_match",
+        "plan_id": "f2b91c91"
+      },
+      "execute_plan_calls": 0
+    },
+    "full-explicit-disable": {
+      "effective_flags": {
+        "AETHERRA_QFAC_VALIDATOR_FAKE": "1",
+        "AETHERRA_QFAC_VALIDATOR_FAKE_GREEN": null,
+        "AETHERRA_QFAC_VALIDATOR_FAKE_BLOCKED": null,
+        "AETHERRA_QFAC_SHADOW_FAKE": "0",
+        "AETHERRA_QFAC_FAST_STUB": "0",
+        "AETHERRA_SELFINC_ENABLED": "0",
+        "AETHERRA_SELFINC_STRICT": "1",
+        "AETHERRA_SIGNING_STRICT": "1",
+        "AETHERRA_SCRIPT_VERIFY_STRICT": "1",
+        "AETHERRA_REQUIRE_CAPABILITIES": "1",
+        "AETHERRA_NET_STRICT": "1"
+      },
+      "validator_registered_at_boot": false,
+      "launcher_selfinc_enabled": false,
+      "registry_selfinc_enabled": false,
+      "same_selfinc_instance": true,
+      "classifications_before_manual_evaluation": 0,
+      "hub_selfinc_status": {
+        "config_enabled": false,
+        "running": false,
+        "status": "disabled"
+      },
+      "qfac_http_counts": {
+        "missing_validator": {
+          "aetherra_qfac_validator_green_total": 0.0,
+          "aetherra_qfac_validator_blocked_total": 0.0
+        },
+        "fixture_full_flags": {
+          "aetherra_qfac_validator_green_total": 0.0,
+          "aetherra_qfac_validator_blocked_total": 0.0
+        },
+        "fixture_override_disabled_control": {
+          "aetherra_qfac_validator_green_total": 17.0,
+          "aetherra_qfac_validator_blocked_total": 4.0
+        },
+        "fixture_unavailable_control": {
+          "aetherra_qfac_validator_green_total": 0.0,
+          "aetherra_qfac_validator_blocked_total": 0.0
+        }
+      },
+      "unauthenticated_apply_http": 401,
+      "disabled_scan": {
+        "ok": false,
+        "status": "disabled",
+        "reason": "service_disabled"
+      }
+    },
+    "full-selfinc-opt-in": {
+      "effective_flags": {
+        "AETHERRA_QFAC_VALIDATOR_FAKE": "1",
+        "AETHERRA_QFAC_VALIDATOR_FAKE_GREEN": null,
+        "AETHERRA_QFAC_VALIDATOR_FAKE_BLOCKED": null,
+        "AETHERRA_QFAC_SHADOW_FAKE": "0",
+        "AETHERRA_QFAC_FAST_STUB": "0",
+        "AETHERRA_SELFINC_ENABLED": "1",
+        "AETHERRA_SELFINC_STRICT": "1",
+        "AETHERRA_SIGNING_STRICT": "1",
+        "AETHERRA_SCRIPT_VERIFY_STRICT": "1",
+        "AETHERRA_REQUIRE_CAPABILITIES": "1",
+        "AETHERRA_NET_STRICT": "1"
+      },
+      "validator_registered_at_boot": false,
+      "launcher_selfinc_enabled": true,
+      "registry_selfinc_enabled": true,
+      "same_selfinc_instance": true,
+      "classifications_before_manual_evaluation": 0,
+      "hub_selfinc_status": {
+        "config_enabled": true,
+        "running": true,
+        "status": "healthy"
+      },
+      "qfac_http_counts": {
+        "missing_validator": {
+          "aetherra_qfac_validator_green_total": 0.0,
+          "aetherra_qfac_validator_blocked_total": 0.0
+        },
+        "fixture_full_flags": {
+          "aetherra_qfac_validator_green_total": 0.0,
+          "aetherra_qfac_validator_blocked_total": 0.0
+        },
+        "fixture_override_disabled_control": {
+          "aetherra_qfac_validator_green_total": 17.0,
+          "aetherra_qfac_validator_blocked_total": 4.0
+        },
+        "fixture_unavailable_control": {
+          "aetherra_qfac_validator_green_total": 0.0,
+          "aetherra_qfac_validator_blocked_total": 0.0
+        }
+      },
+      "unauthenticated_apply_http": 401,
+      "native_decision": {
+        "file_id": "sha256:ae416f1cd9dfc11105959301cfec9348b4144f7bda7a13d35bf57bb385cc85b4",
+        "verified": false,
+        "signing": {
+          "method": "path_based_trust",
+          "trusted_location": false,
+          "signature_present": false,
+          "signature_valid": false
+        },
+        "capability_ok": true,
+        "trust_tier": "TrustTier.TRUSTED"
+      },
+      "persisted_decision_equal": true,
+      "second_evaluation_count": 0,
+      "posix_path_model_only": {
+        "verified": true,
+        "signing": {
+          "method": "path_based_trust",
+          "trusted_location": true,
+          "signature_present": false,
+          "signature_valid": false
+        }
+      },
+      "plan": {
+        "plan_id": "1ab6b9fe",
+        "status": "ready",
+        "active_components": 1,
+        "integration_order": [
+          "sha256:ae416f1cd9dfc11105959301cfec9348b4144f7bda7a13d35bf57bb385cc85b4"
+        ],
+        "actions": [
+          {
+            "action": "import_utility",
+            "target": {
+              "file_id": "sha256:ae416f1cd9dfc11105959301cfec9348b4144f7bda7a13d35bf57bb385cc85b4",
+              "type": "utility",
+              "capabilities": [],
+              "trust_tier": "trusted"
+            },
+            "priority": "high"
+          }
+        ]
+      },
+      "separate_helper_unsigned_result": false,
+      "authenticated_apply_http": 403,
+      "guardian_denial": {
+        "status": "guardian_denied",
+        "reason": "guardian_policy_no_allow_match",
+        "plan_id": "b27fd73f"
+      },
+      "execute_plan_calls": 0
+    }
+  },
+  "retained_runs": {
+    "probe-01": {
+      "full-default": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 9.68,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "artifact_sha256": {
+          "probe.json": "1c0a97329cbd0d2f5e36e7449cf971407953a7bcdfd65bce1d8dac6cfbccc039",
+          "runtime.log": "ea6514a9c9c741d65108e0ec702c385aab46380341979ed10afad3205c3bfb53",
+          "receipt.json": "2fb7ad78f8d4840e3ae8e161e022bbbebfaf548312a20c4e35d11f4eb8e27c0e",
+          "runtime-provider.json": "7100627d924b85cb84db664a2aa1868b7ed6574d396262d6510f6269f54882d8"
+        },
+        "generation_double_calls": 1
+      },
+      "full-selfinc-opt-in": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 9.17,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "artifact_sha256": {
+          "probe.json": "956bb4afa58210c1b20112777e0d693cf793079aedf08e1589b58a72b729db5a",
+          "runtime.log": "9ddaa9f03a4df3e166b2ff8274dfccddd8b33a2a195ace2fd3494787fbd80a1b",
+          "receipt.json": "a4ab4bf25076bd5391ecd6e8a98a8515543d8e3d665600a69603795e2e29eb4d",
+          "runtime-provider.json": "1918e866ba1af0141fc9b9e874b28185290f98b80c6a64999c958b975686dba4"
+        },
+        "generation_double_calls": 0
+      }
+    },
+    "probe-02": {
+      "full-default": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 9.14,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "artifact_sha256": {
+          "probe.json": "1956ee87aad088dd900fb5a1ff5bfe54821de0e4d28e1dc9bf292c970bbef1cd",
+          "runtime.log": "ea3dfb919fe8356b0cbf8cbdcc92dea81050d44c66c08db918fdc80e656cacdf",
+          "receipt.json": "6c805c02bacc7d63477f235396ffec2d679a915f3bd6366ecdbdb4c9c1d7497a",
+          "runtime-provider.json": "086ad847311315d1f4b34183449978c1c890c31591c20585eef29eef0ddba896"
+        },
+        "generation_double_calls": 1
+      },
+      "full-explicit-disable": {
+        "exit_code": 1,
+        "timed_out": true,
+        "seconds": 70.63,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "artifact_sha256": {
+          "probe.json": "af039628e87c219e510b79666e6b6ccc88de522b44b1829cbf0cfc8018f035c1",
+          "runtime.log": "c893309292e32bd01dda8b5e6379c6a7fcc919385bf84c7e9ab2d4651a0412f6",
+          "receipt.json": "514350e11c980e32cd959ad71ab8d8ffed1b79759587a6f4fc7624a7fd5957db",
+          "runtime-provider.json": "1e6e9b1b931b0b1a39baf4006eaa0704baa42c9cf8b2334a4baefde1d5625fbc"
+        },
+        "generation_double_calls": 0
+      },
+      "full-selfinc-opt-in": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 9.55,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "artifact_sha256": {
+          "probe.json": "242aa845e92239a085d08504f44fd574919d40b6280b538ea0fda776c3263544",
+          "runtime.log": "745b258eb8fa4f612f7063b806d5b64368068eb9b928d822b49d738d0a6c38b3",
+          "receipt.json": "6839adba91322272542a4acbb4cf52f4a56e1c166a373b90ea7cd947a18a8a4b",
+          "runtime-provider.json": "549b6977da1f187f155a00baea2ab742d67763bf3f3ed1734a6694f9a674e8a5"
+        },
+        "generation_double_calls": 0
+      }
+    },
+    "probe-03": {
+      "full-default": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 10.0,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true,
+        "artifact_sha256": {
+          "probe.json": "d632c4e4e05e3bb110d3b7bd2879c285402db493d7689f25f52aa62fd2d807ae",
+          "runtime.log": "5aa36fdfd8354cf1ccf9b23117faa3ded9cc345bc679900f684065e740dba695",
+          "receipt.json": "a3fda9dca84a78e7a02192006fbb511c880488ec43aeaaa5de762d1b6dbdeb89",
+          "runtime-provider.json": "570c2fe04925f3a561bc72a9144895ada4fa4972a7876e30c56e15e2c6928271"
+        },
+        "generation_double_calls": 1
+      },
+      "full-explicit-disable": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 9.92,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true,
+        "artifact_sha256": {
+          "probe.json": "af039628e87c219e510b79666e6b6ccc88de522b44b1829cbf0cfc8018f035c1",
+          "runtime.log": "c28d531e0d8a057df5d3ac273b0be51d3752b18a6075848860213aaeecf9dd1b",
+          "receipt.json": "75ecfa420d4fa86864ef55ff841c91760c13db9d67253e6932692847df533962",
+          "runtime-provider.json": "f5b8c2c0ae062faf28636212eb44e98391a5ce28e7a79e03c24dcead10540261"
+        },
+        "generation_double_calls": 0
+      },
+      "full-selfinc-opt-in": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 10.1,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true,
+        "artifact_sha256": {
+          "probe.json": "7d324b8c2dedab9cd4d24345c65f5c5e0d4d84db4546b92a0a634de9252eb6ef",
+          "runtime.log": "b49a8ca50935a2e0d01f8ea22625a13d9d084f867e4d125e83f98c1d3362f6cc",
+          "receipt.json": "6e20d39d100799a0d0fc084f1d8e903b317ab05c16f75daa22d4f73d8f4106c8",
+          "runtime-provider.json": "e173c971df5d112e7522378ebb343210631f9c52c18bab3e28e5802aa04db242"
+        },
+        "generation_double_calls": 0
+      }
+    },
+    "probe-04": {
+      "full-default": {
+        "exit_code": 1,
+        "timed_out": true,
+        "seconds": 68.68,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": false,
+        "artifact_sha256": {
+          "probe.json": "971c4a90e56f4ee4d3bd21491e2b128b3f29ca4412798eb55b19c0f0606ace61",
+          "runtime.log": "881f8224d95b3bad6dfa11ab92a6174fa473f76ea0c75c0d6c0a5194319adbd4",
+          "receipt.json": "2e4356af0bdc562fa5275b0bd72814ae09b29db63c72371df3a9d1b4df9d4cda",
+          "runtime-provider.json": "984b3d39551b6dade616ffce414d065a99952360c4bbfd89376a0315cf759dca"
+        },
+        "observations_match_probe_03": true
+      },
+      "full-explicit-disable": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 10.32,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true,
+        "artifact_sha256": {
+          "probe.json": "af039628e87c219e510b79666e6b6ccc88de522b44b1829cbf0cfc8018f035c1",
+          "runtime.log": "f8b4086cb5cc938ecd121c9ed0ce9ac06a424f5d5a0e8a424df04cfd4af335fb",
+          "receipt.json": "e16b779031ac5dafd6ab64aa6a2b7b3e190bbddfb2784c5046d3e8f45a252482",
+          "runtime-provider.json": "0e786b43013f29f74228efc0ccb83ac72b09794ed6a5486a0ed12b2db84ed0af"
+        },
+        "observations_match_probe_03": true
+      },
+      "full-selfinc-opt-in": {
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 10.65,
+        "probe_completed": true,
+        "stop": "automated interrupt_main; not a physical keyboard check",
+        "completed_cleanly": true,
+        "artifact_sha256": {
+          "probe.json": "732159fb2ac44163ce4a757f45ceb7bc0fd279ad4d003edc5aeb6c609e709d1b",
+          "runtime.log": "e28602a95c932c6ccc8f829597cc4caa0f1c3b1496260d03cc46d885fdadbadb",
+          "receipt.json": "a2eb4c2f58a598f5025d673af52d290b2ec388633e9d520ddfc75e508f2e89dc",
+          "runtime-provider.json": "8deae0a367ea4aac42855a8042af42e871893f9889022dd06e77c57b3e16a5c1"
+        },
+        "observations_match_probe_03": true
+      }
+    }
+  },
+  "verification_limits": [
+    "No native Linux execution; PurePosixPath model only.",
+    "No real QFAC validator backend registered or exercised.",
+    "No live model, browser, physical keyboard, fresh dependency install, or approved integration execution.",
+    "An earlier child shutdown timeout remains unexplained despite later clean exits."
+  ],
+  "executed_probe_sha256": "34c4af3351f57c563e7ffb5c706f35b6b56393354993bc4b77318cfbd4275790",
+  "documented_probe_sha256": "e894f8fa9c69d830a2110d2c747782886835da6507df8331eaba0d28740cbd13",
+  "probe_formatting_note": "Probe-03 was followed by import-group comments/docstring only (executable AST equality checked then). Publication correction split one long assignment for Ruff/Black compatibility; probe-04 exercises that final executable code.",
+  "documentation_consistency": {
+    "exit_code": 0,
+    "timed_out": false,
+    "seconds": 14.07,
+    "log_sha256": "8583a03e3147c065ccb05499c56cfca076682e08be4bba5daae441b56c21342b"
+  },
+  "publication_review": {
+    "focused_contracts": {
+      "head": "3253893604a5cf3fb0417f95de3acf51131650f1",
+      "exit_code": 0,
+      "timed_out": false,
+      "seconds": 5.73,
+      "log_sha256": "57389a1e6e07566b11441073566e0dde5d00ccc58d3a67e138eb64e3dfd8dfcb",
+      "result": "62 passed in 4.29s"
+    },
+    "documentation_consistency": {
+      "head": "3253893604a5cf3fb0417f95de3acf51131650f1",
+      "exit_code": 0,
+      "timed_out": false,
+      "seconds": 6.03,
+      "log_sha256": "8583a03e3147c065ccb05499c56cfca076682e08be4bba5daae441b56c21342b"
+    },
+    "format_correction": {
+      "failed_ci_run": 46114398180,
+      "failed_check": "ruff-format",
+      "failed_log_sha256": "0d1b63f999df52010927eeb83f4c643d9102f19d49371e2cdcfed3199be33c22",
+      "change": "Split awaited helper result through a local variable; no runtime implementation changed.",
+      "final_probe": {
+        "source_revision": "4e799b3a0839e2ceab5831cbcc43161bb0972cca",
+        "probe_sha256": "e894f8fa9c69d830a2110d2c747782886835da6507df8331eaba0d28740cbd13",
+        "scope": "offline diagnostic observations, not alpha acceptance or fixed bug contracts"
+      },
+      "final_probe_exit_code": 1,
+      "shutdown_diagnostic": {
+        "profile": "full-default (flag unset)",
+        "watchdog_seconds": 50,
+        "shutdown_limit_seconds": 60,
+        "main_thread": "threading._shutdown",
+        "other_stacks": [
+          "homeostasis_integration._watchdog_thread_main -> asyncio.run_until_complete",
+          "stdlib.executor._scheduler_loop",
+          "aetherra_hub.request_server.serve_forever -> socketserver.serve_forever -> selectors.select"
+        ],
+        "scope": "Observed waiting stacks only; initiating cause and individual thread responsibility are not established. Earlier explicit-disable hang remains a separate observation."
+      }
+    },
+    "python_quality": {
+      "head": "4e799b3a0839e2ceab5831cbcc43161bb0972cca",
+      "exit_code": 0,
+      "timed_out": false,
+      "seconds": 147.97,
+      "log_sha256": "a80ef194bd1fbbe1fcc4b22ace109dac84d6279aec09c0ddd2216a405a8b7d14",
+      "result": "0 new/edited violations; 945 unchanged legacy files; 88 resolved."
+    }
+  }
+}

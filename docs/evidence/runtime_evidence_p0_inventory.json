@@ -1,0 +1,310 @@
+{
+  "source_revision": "3253893604a5cf3fb0417f95de3acf51131650f1",
+  "lifecycle_authority": "docs/DEVELOPMENT_ISSUES.md",
+  "scope": "RI-012 and RI-013 only; broader P0 remains incomplete",
+  "nodes": {
+    "launch": {
+      "path": "aetherra_os_launcher.py",
+      "symbol": "AetherraOSLauncher.launch_full_os",
+      "line": 618,
+      "sha256": "d0811295af97a663d153ed8f0d96a32d1e57963ff43d7ca4ea1b4b5c15b421ed"
+    },
+    "kernel_selfinc": {
+      "path": "aetherra_kernel_loop.py",
+      "symbol": "AetherraKernelLoop._enqueue_self_incorporation_startup",
+      "line": 511,
+      "sha256": "4818bdda6182da3314c1164aeb2ad5f3c534d47fd061d53f8554a94c958d9173"
+    },
+    "kernel_register": {
+      "path": "aetherra_kernel_loop.py",
+      "symbol": "AetherraKernelLoop._ensure_self_incorporation_registered",
+      "line": 544,
+      "sha256": "4818bdda6182da3314c1164aeb2ad5f3c534d47fd061d53f8554a94c958d9173"
+    },
+    "registry": {
+      "path": "aetherra_hub/services/registry_client.py",
+      "symbol": "get_service",
+      "line": 933,
+      "sha256": "84e53f9576b386d414e86df20a1a99f17f15b0e0388605428b73da721de6d8ed"
+    },
+    "metric_builder": {
+      "path": "aetherra_hub/services/metrics_accum.py",
+      "symbol": "build_all_metrics_lines",
+      "line": 571,
+      "sha256": "7fc02af3df997615e4db3607c4721acb58a8e266290a375fd17e901dc3b17a39"
+    },
+    "metric_route": {
+      "path": "aetherra_hub/blueprints/metrics.py",
+      "symbol": "metrics_export",
+      "line": 19,
+      "sha256": "5de83269b3adadb263c0adb34c107b08ba9697f9b51bf36c9432f15aa6040c47"
+    },
+    "discovery": {
+      "path": "aetherra_self_incorporation.py",
+      "symbol": "SelfIncorporationService.trigger_scan",
+      "line": 6000,
+      "sha256": "193ff69ae1fde1c03865f58f7b4350679952960f5fafc74a9f923e1030d1a454"
+    },
+    "classification": {
+      "path": "aetherra_self_incorporation.py",
+      "symbol": "SelfIncorporationService.trigger_classify",
+      "line": 4554,
+      "sha256": "193ff69ae1fde1c03865f58f7b4350679952960f5fafc74a9f923e1030d1a454"
+    },
+    "evaluation": {
+      "path": "aetherra_self_incorporation.py",
+      "symbol": "SelfIncorporationService._run_security_evaluation",
+      "line": 4633,
+      "sha256": "193ff69ae1fde1c03865f58f7b4350679952960f5fafc74a9f923e1030d1a454"
+    },
+    "verification": {
+      "path": "aetherra_self_incorporation.py",
+      "symbol": "SecurityGate._verify_signatures",
+      "line": 1816,
+      "sha256": "193ff69ae1fde1c03865f58f7b4350679952960f5fafc74a9f923e1030d1a454"
+    },
+    "trust": {
+      "path": "aetherra_self_incorporation.py",
+      "symbol": "SecurityGate._assign_trust_tier",
+      "line": 1985,
+      "sha256": "193ff69ae1fde1c03865f58f7b4350679952960f5fafc74a9f923e1030d1a454"
+    },
+    "safety_store": {
+      "path": "aetherra_self_incorporation.py",
+      "symbol": "SafetyIndex.store_decision",
+      "line": 2080,
+      "sha256": "193ff69ae1fde1c03865f58f7b4350679952960f5fafc74a9f923e1030d1a454"
+    },
+    "planning": {
+      "path": "aetherra_self_incorporation.py",
+      "symbol": "SelfIncorporationService._run_integration_planning",
+      "line": 4737,
+      "sha256": "193ff69ae1fde1c03865f58f7b4350679952960f5fafc74a9f923e1030d1a454"
+    },
+    "action_priority": {
+      "path": "aetherra_self_incorporation.py",
+      "symbol": "IntegrationPlanner._determine_priority",
+      "line": 2579,
+      "sha256": "193ff69ae1fde1c03865f58f7b4350679952960f5fafc74a9f923e1030d1a454"
+    },
+    "hub_apply": {
+      "path": "aetherra_hub/blueprints/self_incorporation.py",
+      "symbol": "apply_plan",
+      "line": 213,
+      "sha256": "2ca2fe0586ddb7d0441b09b537d4ea773bfb75b7dcd5bc1958cb70ad4db53e96"
+    },
+    "integrate": {
+      "path": "aetherra_self_incorporation.py",
+      "symbol": "SelfIncorporationService.trigger_integrate",
+      "line": 4886,
+      "sha256": "193ff69ae1fde1c03865f58f7b4350679952960f5fafc74a9f923e1030d1a454"
+    },
+    "guardian": {
+      "path": "aetherra_self_incorporation.py",
+      "symbol": "SelfIncorporationService._guardian_preflight_integrate",
+      "line": 5235,
+      "sha256": "193ff69ae1fde1c03865f58f7b4350679952960f5fafc74a9f923e1030d1a454"
+    },
+    "execute": {
+      "path": "aetherra_self_incorporation.py",
+      "symbol": "CoreIntegrator.execute_plan",
+      "line": 2971,
+      "sha256": "193ff69ae1fde1c03865f58f7b4350679952960f5fafc74a9f923e1030d1a454"
+    },
+    "separate_helper": {
+      "path": "Aetherra/homeostasis/self_incorporation_security.py",
+      "symbol": "SelfIncorporationSecurity.verify_signature",
+      "line": 92,
+      "sha256": "0dba6ca2a9933c89b440feda619b8d88e00850c6e8c540fb4ce9b8647cfaecaa"
+    },
+    "canary": {
+      "path": "aetherra_self_incorporation.py",
+      "symbol": "SelfIncorporationService.integrate_with_canary",
+      "line": 5647,
+      "sha256": "193ff69ae1fde1c03865f58f7b4350679952960f5fafc74a9f923e1030d1a454"
+    },
+    "canary_guardian": {
+      "path": "aetherra_self_incorporation.py",
+      "symbol": "SelfIncorporationService._guardian_preflight_canary",
+      "line": 5190,
+      "sha256": "193ff69ae1fde1c03865f58f7b4350679952960f5fafc74a9f923e1030d1a454"
+    },
+    "ui_snapshot": {
+      "path": "Aetherra/runtime_ui/snapshot.py",
+      "symbol": "_observe_service",
+      "line": 104,
+      "sha256": "d0f7e5683c5bf40d5eeac816e130f2217139a5915bc419a3ae47bf7c0768ad48"
+    },
+    "ui_route": {
+      "path": "aetherra_hub/blueprints/runtime_ui.py",
+      "symbol": "runtime_ui_bootstrap",
+      "line": 57,
+      "sha256": "a793c8de7851d49139c4dd3ed5f7deacea42b524b826f7560e5b6176672258f5"
+    },
+    "ui_client": {
+      "path": "Aetherra/lyrixa/gui/src/App.tsx",
+      "symbol": "loadBootstrap",
+      "line": 142,
+      "sha256": "84d62fd6f679219964aa2b07c88a34c6701c6f0c34e9b07d50f1dd00a28e2fdc"
+    }
+  },
+  "edges": [
+    [
+      "launch",
+      "metric_builder",
+      "full-mode environment selects override"
+    ],
+    [
+      "metric_route",
+      "metric_builder",
+      "GET /metrics reads builder output"
+    ],
+    [
+      "metric_builder",
+      "registry",
+      "read qfac_validator status, then overwrite if flag enabled"
+    ],
+    [
+      "launch",
+      "kernel_selfinc",
+      "kernel startup may construct a second service"
+    ],
+    [
+      "kernel_selfinc",
+      "kernel_register",
+      "unset flag defaults enabled in kernel"
+    ],
+    [
+      "kernel_register",
+      "registry",
+      "replace registered Self-Incorporation identity"
+    ],
+    [
+      "kernel_register",
+      "discovery",
+      "queued discovery only; no automatic classification/evaluation found"
+    ],
+    [
+      "classification",
+      "evaluation",
+      "explicit internal service calls over indexed fixtures; not a boot chain"
+    ],
+    [
+      "evaluation",
+      "verification",
+      "path-derived flag, no cryptographic verification"
+    ],
+    [
+      "evaluation",
+      "trust",
+      "verified/path/capability/risk input"
+    ],
+    [
+      "evaluation",
+      "safety_store",
+      "SQLite decision persisted"
+    ],
+    [
+      "safety_store",
+      "planning",
+      "eligible tiers read from persisted index"
+    ],
+    [
+      "planning",
+      "action_priority",
+      "trust tier affects action ordering and priority"
+    ],
+    [
+      "hub_apply",
+      "registry",
+      "selects registered service, not launcher-held object"
+    ],
+    [
+      "hub_apply",
+      "integrate",
+      "control authorization and disclosure gate first"
+    ],
+    [
+      "integrate",
+      "guardian",
+      "intent, capability checker and approval decision"
+    ],
+    [
+      "guardian",
+      "execute",
+      "only allowed decisions proceed; scope lock revalidated by execute"
+    ],
+    [
+      "canary",
+      "planning",
+      "internal HMR-gated consumer; no owned external caller found; not exercised"
+    ],
+    [
+      "canary",
+      "canary_guardian",
+      "intent/capability/approval preflight before execute"
+    ],
+    [
+      "canary_guardian",
+      "execute",
+      "allowed decision required; no live canary execution claim"
+    ],
+    [
+      "ui_client",
+      "ui_route",
+      "read-only bootstrap HTTP; source traced, not browser verified"
+    ],
+    [
+      "ui_route",
+      "ui_snapshot",
+      "payload collects current registry evidence"
+    ],
+    [
+      "ui_snapshot",
+      "registry",
+      "registered service identity is display source"
+    ]
+  ],
+  "disconnected_authority": [
+    "separate_helper has no call from the legacy evaluator/planning/apply path; proposal authentication uses that object separately"
+  ],
+  "items": [
+    {
+      "candidate": "RI-012",
+      "register_id": "DEV-QFAC-001",
+      "issue": 389,
+      "owner": "Hub/QFAC and Runtime maintainers",
+      "reachability": "Normal full-launch HTTP metrics; backend fixture explicitly registered for the distinct-count control",
+      "input": "Missing, dict-valued or throwing validator get_status; full/no-fake flags",
+      "output": "green/blocked series lose provenance or override values",
+      "priority": "P1 focused truthfulness correction",
+      "replacement": "Preserve actual observations; explicit unavailable/validity semantics; no runtime fixture override",
+      "decision": "Confirmed; unresolved. No owned real validator producer found."
+    },
+    {
+      "candidate": "RI-013",
+      "register_id": "DEV-SELFINC-001",
+      "issue": 67,
+      "owner": "Security/Runtime maintainers",
+      "reachability": "Explicit internal evaluation over real discovered files; persisted output used by real planner; Hub apply guarded",
+      "input": "Unsigned harmless utility, strict flags, no declared capabilities",
+      "output": "Native Windows trusted/high-priority plan; POSIX path model verified=true without signature",
+      "priority": "P1 authority review before P2 migration",
+      "replacement": "Existing supported artifact verifiers and truthful trust evidence; revalidation and denial-before-mutation coverage",
+      "decision": "Confirmed trust-evidence gap; no unapproved execution bypass established."
+    },
+    {
+      "candidate": "RI-013 (additional lifecycle finding)",
+      "register_id": "DEV-SELFINC-002",
+      "issue": 42,
+      "owner": "Runtime/Kernel maintainers",
+      "reachability": "Normal full startup with flag unset; explicit 0 is contained",
+      "input": "Launcher default disabled versus kernel default enabled",
+      "output": "Different registered enabled instance; Hub healthy and discovery despite launcher disabled",
+      "priority": "P1 opt-in boundary correction",
+      "replacement": "Single reconciled configured service identity, unset/0/1 lifecycle tests",
+      "decision": "Confirmed; unresolved. Earlier bounded shutdown timeout separately retained without causal attribution."
+    }
+  ],
+  "evidence": "docs/evidence/runtime_evidence_p0_2026-11-27.json"
+}
