@@ -735,8 +735,16 @@ class AetherraOSLauncher:
             self.readiness_report = await self._run_startup_readiness_scan(config)
             self._log_readiness_summary(self.readiness_report)
 
+            # Startup dependencies can finish after consuming cancellation.
+            # A cancelled boot must clean up without granting checkpoint intent.
+            launch_task = asyncio.current_task()
+            if launch_task is not None and launch_task.cancelling():
+                raise asyncio.CancelledError
+
             # Phase 6: Announce OS online
             await self._announce_os_online()
+            if launch_task is not None and launch_task.cancelling():
+                raise asyncio.CancelledError
 
             # Phase 7: Enter main operation loop
             orderly_stop = await self._main_operation_loop()

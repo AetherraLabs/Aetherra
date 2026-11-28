@@ -84,6 +84,142 @@ def test_capture_includes_nested_await_frames_without_private_values(
     asyncio.run(scenario())
 
 
+def test_capture_follows_awaited_task_outside_initial_inventory(monkeypatch, tmp_path):
+    async def scenario():
+        release = asyncio.Event()
+        entered = asyncio.Event()
+        cancellation_consumed = asyncio.Event()
+
+        async def boot():
+            private_local = "PRIVATE_LOCAL_SENTINEL"
+            entered.set()
+            try:
+                await release.wait()
+            except asyncio.CancelledError:
+                cancellation_consumed.set()
+                await release.wait()
+            return private_local
+
+        async def heartbeat():
+            await release.wait()
+
+        boot_task = asyncio.create_task(boot(), name="PRIVATE_TASK_SENTINEL")
+        await asyncio.wait_for(entered.wait(), timeout=2)
+        boot_task.cancel()
+        await asyncio.wait_for(cancellation_consumed.wait(), timeout=2)
+
+        async def parent():
+            await boot_task
+
+        parent_task = asyncio.create_task(parent())
+        heartbeats = [asyncio.create_task(heartbeat()) for _ in range(40)]
+        await asyncio.sleep(0)
+        inventory = [heartbeats[0], parent_task, *heartbeats[1:], boot_task]
+        state = {
+            "enabled": True,
+            "pending": True,
+            "output": tmp_path,
+            "pid": os.getpid(),
+        }
+        try:
+            # Control enumeration only; every await edge belongs to a real Task.
+            with monkeypatch.context() as patch:
+                patch.setattr(
+                    phase,
+                    "asyncio",
+                    types.SimpleNamespace(
+                        all_tasks=lambda _loop: inventory,
+                        Task=asyncio.Task,
+                    ),
+                )
+                phase._capture_async_stacks(state, asyncio.get_running_loop())
+            capture = tmp_path / "async-stacks.jsonl"
+            tasks = _read_records(capture)[0]["tasks"]
+            boots = [
+                task
+                for task in tasks
+                if any(frame["function"].endswith("boot") for frame in task["frames"])
+            ]
+            assert len(boots) == 1, "Awaited boot task was omitted"
+            parent_record = next(
+                task
+                for task in tasks
+                if any(frame["function"].endswith("parent") for frame in task["frames"])
+            )
+            assert parent_record["awaits_task"] == boots[0]["task_id"]
+            assert boots[0]["cancelling"] == 1
+            assert boots[0]["awaits_task"] is None  # Event's plain Future is opaque.
+            assert "PRIVATE_LOCAL_SENTINEL" not in capture.read_text()
+            assert "PRIVATE_TASK_SENTINEL" not in capture.read_text()
+        finally:
+            release.set()
+            await asyncio.wait_for(
+                asyncio.gather(parent_task, boot_task, *heartbeats), timeout=2
+            )
+
+    asyncio.run(scenario())
+
+
+@pytest.mark.parametrize("coroutine_depth", [0, 12])
+def test_awaited_task_graph_respects_global_limits(
+    monkeypatch, tmp_path, coroutine_depth
+):
+    async def scenario():
+        release = asyncio.Event()
+
+        async def leaf():
+            await release.wait()
+
+        async def link(child):
+            async def nested(depth):
+                if depth:
+                    await nested(depth - 1)
+                else:
+                    await child
+
+            await nested(coroutine_depth)
+
+        owned = [asyncio.create_task(leaf())]
+        for _ in range(40):
+            owned.append(asyncio.create_task(link(owned[-1])))
+        await asyncio.sleep(0)
+        state = {
+            "enabled": True,
+            "pending": True,
+            "output": tmp_path,
+            "pid": os.getpid(),
+        }
+        try:
+            with monkeypatch.context() as patch:
+                patch.setattr(
+                    phase,
+                    "asyncio",
+                    types.SimpleNamespace(
+                        all_tasks=lambda _loop: [owned[-1], *owned],
+                        Task=asyncio.Task,
+                    ),
+                )
+                phase._capture_async_stacks(state, asyncio.get_running_loop())
+            tasks = _read_records(tmp_path / "async-stacks.jsonl")[0]["tasks"]
+            ids = {task["task_id"] for task in tasks}
+            assert len(tasks) == len(ids) <= 32
+            assert sum(len(task["frames"]) for task in tasks) <= 256
+            assert any(task["awaits_task"] is not None for task in tasks)
+            assert all(
+                task["awaits_task"] is None or task["awaits_task"] in ids
+                for task in tasks
+            )
+            if coroutine_depth == 0:
+                assert len(tasks) == 32
+            else:
+                assert sum(len(task["frames"]) for task in tasks) == 256
+        finally:
+            release.set()
+            await asyncio.wait_for(asyncio.gather(*owned), timeout=2)
+
+    asyncio.run(scenario())
+
+
 def test_await_chain_is_bounded_and_disabled_callback_does_not_write(tmp_path):
     assert callable(getattr(phase, "_await_chain", None))
 
@@ -197,7 +333,8 @@ def test_linux_signal_captures_wait_chain_and_late_signal_preserves_exit(
         "            private_local = 'PRIVATE_LOCAL_SENTINEL'\n"
         "            await event.wait()\n"
         "        async def outer():\n"
-        "            await inner()\n"
+        "            child_task = asyncio.create_task(inner(), name='PRIVATE_TASK_SENTINEL')\n"
+        "            await child_task\n"
         "        async def release_when_ready():\n"
         f"            while not Path({str(release)!r}).exists():\n"
         "                await asyncio.sleep(0.02)\n"
@@ -236,16 +373,17 @@ def test_linux_signal_captures_wait_chain_and_late_signal_preserves_exit(
         capture = output / "async-stacks.jsonl"
         _wait_until(capture.exists, child)
         records = _read_records(capture)
-        chains = [
-            [frame["function"] for frame in task["frames"]]
-            for task in records[0]["tasks"]
-        ]
-        assert any(
-            all(
-                any(name.endswith(part) for name in names)
-                for part in ("outer", "inner", "Event.wait")
-            )
-            for names in chains
+        tasks = {task["task_id"]: task for task in records[0]["tasks"]}
+        outer = next(
+            task
+            for task in tasks.values()
+            if any(frame["function"].endswith("outer") for frame in task["frames"])
+        )
+        inner = tasks[outer["awaits_task"]]
+        names = [frame["function"] for frame in inner["frames"]]
+        assert all(
+            any(name.endswith(part) for name in names)
+            for part in ("inner", "Event.wait")
         )
         assert "PRIVATE_LOCAL_SENTINEL" not in capture.read_text()
         assert "PRIVATE_TASK_SENTINEL" not in capture.read_text()

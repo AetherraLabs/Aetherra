@@ -1,0 +1,40 @@
+{
+  "issue": "DEV-CI-001",
+  "status": "OPEN: controlled startup defect corrected; exact natural-stall attribution remains unproven",
+  "pr": "https://github.com/AetherraLabs/Aetherra/pull/387",
+  "recorded_head_before_edits": "b5867797af8430713c52451ec0a078b1ca5fc39e",
+  "correction": "Eight launcher lines check pending owner-task cancellation before online announcement and again after its awaited kernel enqueue. Interrupted startup propagates cancellation through existing cleanup without granting orderly checkpoint intent.",
+  "controlled_windows_red": {
+    "failed": 4,
+    "passed": 5,
+    "log_sha256": "e7e2f043b4e20b4a9d9c3c063bfdac918bfebc10cd1ee4e5f3b67b62e830f687",
+    "failure_cases": "Consumed cancellation at core-load or announcement, with ordinary or marked CLI SIGINT delivery, entered the operation loop and failed to reach owned cleanup."
+  },
+  "controlled_windows_green": {
+    "passed": 23,
+    "seconds": 2.32,
+    "log_sha256": "2375536b4050b2ddcb24e92bea9e98bde14e99779056ee1a10ab77502ff8a5b7",
+    "selection": "Nine new startup cases plus existing launcher shutdown and Windows SIGINT controls. Normal boot/orderly SIGINT retains checkpoint intent; cancelled startup records only save_checkpoint=False.",
+    "genuine_wait_for_case": "Uses a real completed Future and actual cancellation. Windows 3.13 propagates it; Linux 3.11 can consume it, as separately reproduced in the Homeostasis receipt."
+  },
+  "awaited_task_diagnostics": {
+    "red_failed": 3,
+    "red_log_sha256": "706ccf8a56f9512addab712bab3fd0ac7c6d5c84dfed702f4e0dccf636f5f156",
+    "green_passed": 39,
+    "green_linux_skipped": 11,
+    "green_seconds": 5.76,
+    "green_log_sha256": "6f2306594f589b043d165eedba734c95a1fb828127d1fe1dbe65543f9f61ef7c",
+    "proof": "A real parent awaits a boot Task placed beyond the initial 32 roots; capture follows the read-only guarded Task edge, retaining numeric links and cancellation count. Deep-chain/dedup tests retain global bounds and privacy."
+  },
+  "final_working_tree_sha256": {
+    "aetherra_os_launcher.py": "86c1c0ab54af2baa02e918220c8594c6348eae8455ee0ae365e3a6fbdd824b68",
+    "tests/unit/test_launcher_startup_cancellation.py": "de9eac36b396f3519a609cc291278a42dca0af4ad3e76810ae9b1432eb02b434",
+    "tools/ci_capabilities_phase.py": "d4056fb9dbdbdf1f0976302bcda893a8922a4b742d932239aa77f9c1e09a3760",
+    "tests/unit/test_ci_async_diagnostics.py": "3eefb3eb3e996197c6ec6c06fdb45ced79ad5bd930cdcc648b0646926e85b3b3"
+  },
+  "limits": [
+    "The natural strict/full captures identify a test awaiting its cancelled launcher task, but omit that task own await chain. The controlled defect does not prove that missing chain or historical common cause.",
+    "No runtime authority, Guardian/Security, signing or checkpoint approval boundary changes. Tests simulate marked SIGINT; these are not new physical keyboard checks.",
+    "Final exact-head Linux results must be checked on PR #387."
+  ]
+}

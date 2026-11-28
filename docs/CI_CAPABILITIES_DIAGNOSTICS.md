@@ -88,6 +88,29 @@ cannot turn this condition into success. Zombies are not running survivors.
 Processes detached outside the owned session remain outside this check's scope.
 The historical timeout cause is still unknown.
 
+## Captured strict-gate stall
+
+At `b5867797`, the normal capability job passed 171 tests / four skips with no
+owned live survivors, but the strict gate hit its unchanged 900-second pytest
+deadline. The [stall receipt](evidence/dev_ci_001_strict_stall_2026-11-27.json)
+retains the active test and fourteen async samples: the self-maintenance
+capability test waited at line 78 for its canceled boot task. The event loop
+remained responsive. The 32-task sample omitted the boot task itself, so its
+awaited operation is not established by this capture. Live background Homeostasis
+chains do not by themselves identify the cause. This failure remains a blocker;
+passing narrower checks does not close DEV-CI-001. The same head's full quality
+gate timed out at the same test join and also omitted the boot await chain.
+
+A [controlled launcher regression](evidence/dev_ci_001_launcher_cancellation_2026-11-27.json)
+then reproduced a startup owner defect: consumed cancellation could reach online
+announcement and the operation loop. Eight launcher lines now check pending
+cancellation before announcement and after its awaited kernel enqueue. Existing
+cleanup runs without granting orderly checkpoint intent. Four pre-fix failures
+and five controls became 23 passing startup/shutdown/Windows SIGINT checks with
+the correction. This controlled result does not prove the missing natural await
+chain. Bounded awaited-Task links now improve future captures; exact-head Linux
+verification remains on PR #387.
+
 ## Linux reproduction
 
 Use a disposable checkout and the same Python/dependency profile as the CI job.
@@ -163,7 +186,12 @@ failed test still fails the job; uploading diagnostics cannot authorize signing.
   before-cleanup receipt rather than treating direct-child reaping as proof.
 - `async-stacks.jsonl`: bounded await-chain frames from marked pytest processes
   after 90 seconds, when a main-thread asyncio loop can service the diagnostic
-  callback. No task names, locals or results are collected.
+  callback. Capture-local numeric `task_id` / `awaits_task` links and cancellation
+  counts follow an awaited real Task before unrelated roots, sharing the same
+  32-task / 256-frame / cooperative 50ms bounds. The guarded, optional
+  `_fut_waiter` lookup never inspects plain Future callbacks. A missing link can
+  mean an unsupported edge or exhausted budget; it is not proof of no await.
+  No task names, locals or results are collected.
 
 The standalone watchdog fails with exit 124 at 290 seconds and attempts bounded
 cleanup before the outer five-minute limit. Original nonzero exit status is

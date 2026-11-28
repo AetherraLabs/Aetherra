@@ -1,0 +1,87 @@
+{
+  "issue": "DEV-CI-001",
+  "status": "OPEN: captured strict stall boundary; underlying launcher await unresolved",
+  "source_head": "b5867797af8430713c52451ec0a078b1ca5fc39e",
+  "job": "https://github.com/AetherraLabs/Aetherra/actions/runs/46090874747/job/140811220756",
+  "run_attempt": 1,
+  "timeout_seconds": 900,
+  "exit_code": 124,
+  "timeout_source": "tools/quality_gates.py subprocess timeout (TEST_TIMEOUT=900); no supervisor watchdog event",
+  "last_phase": {
+    "pid": 2484,
+    "time": 186.55260726,
+    "phase": "call",
+    "nodeid": "tests/capabilities/test_self_maintenance_services.py::test_self_maintenance_services_registration_and_basic_ops",
+    "state": "start",
+    "flags": {
+      "AETHERRA_QUIET": "1",
+      "TESTING": "true",
+      "TEST_MODE": "true"
+    }
+  },
+  "async_capture_count": 14,
+  "capture_time_interval": [
+    234.803792018,
+    1014.810557371
+  ],
+  "test_await_chain": [
+    [
+      {
+        "function": "test_self_maintenance_services_registration_and_basic_ops",
+        "file": "tests/capabilities/test_self_maintenance_services.py",
+        "line": 78
+      }
+    ]
+  ],
+  "tasks_per_async_capture": 32,
+  "supported_boundary": "The self-maintenance capability test is awaiting its cancelled boot task in finally at line 78. The owning boot/launch coroutine is not present in the bounded 32-task snapshots, so its awaited operation and underlying cause remain unresolved. Live Homeostasis action and sleep chains alone do not establish causation.",
+  "historical_attribution": "This is a source-bound b586 strict stall; earlier uninstrumented timeouts are not attributed to it.",
+  "before_cleanup": {
+    "event": "before_cleanup",
+    "child_returncode": 124,
+    "live_processes": [
+      {
+        "pid": 2919,
+        "ppid": 1,
+        "session": 2477,
+        "start": 18655,
+        "state": "S",
+        "threads": 1,
+        "python": true
+      }
+    ],
+    "failure_reason": null
+  },
+  "artifact": {
+    "id": 15241354198,
+    "name": "strict-quality-diagnostics-1",
+    "digest": "sha256:328a9eaa2fee11192162d02af21224a6995782ba613169088b3ecdb0bf3eaf4c"
+  },
+  "hashes": {
+    "strict-job-140811220756.log": "00e1b04bf6498a992429f7b90b88254595d2403a1455a10198fa80c2541ffd31",
+    "strict-quality-diagnostics-1/async-ready-2484.json": "bc71d29aa23476d20a9fe8fcb66e7a2facf16a7f19c1d3a2bc8d850d0f4390ab",
+    "strict-quality-diagnostics-1/async-requests.jsonl": "74afe9923422ab893f240b11e7357e8c09b48bad90804f8c60c9a4ed6678ee72",
+    "strict-quality-diagnostics-1/async-stacks.jsonl": "36513bda226cdd6372023b0b7bb3d448985e7a299ae0a237a9978a01110d661b",
+    "strict-quality-diagnostics-1/environment.jsonl": "d038b05adb3911a3f3b0e4db6177b398913851699958df94ea6605e0d4715c3a",
+    "strict-quality-diagnostics-1/phases.jsonl": "c529394353def0b2a8152d5dfc9fc01c0fb9d1ae4d714508ad3239766806905e",
+    "strict-quality-diagnostics-1/processes.jsonl": "cb62fcf728ce233f5eb5e3fd71c585e85dfa3a38333657a67c9182aaf3a33a34",
+    "strict-quality-diagnostics-1/stacks.jsonl": "f4a531df84288edbe9e60f9dfff1910a6f8e855d11020363aeb409146d093a63",
+    "strict-quality-diagnostics-1/supervisor.jsonl": "ad528d42b6e913aa2fee1667e9419b3c3f1c2ca809c9e81fbe870857220cec3a",
+    "strict-quality-diagnostics-1-15241354198.zip": "328a9eaa2fee11192162d02af21224a6995782ba613169088b3ecdb0bf3eaf4c"
+  },
+  "full_gate_observation": {
+    "job": "https://github.com/AetherraLabs/Aetherra/actions/runs/46090874915/job/140811220734",
+    "timeout_seconds": 900,
+    "exit_code": 124,
+    "same_active_test": true,
+    "test_await_line": 78,
+    "async_capture_count": 14,
+    "tasks_per_capture": 32,
+    "boot_task_omitted": true,
+    "live_registry_pid_before_cleanup": 4507,
+    "artifact_id": 15241044537,
+    "artifact_digest": "sha256:81ac86b0862a0cd5bdccf834225350677a8e1897d6b8d152884cb24331843e8a",
+    "job_log_sha256": "517fa6d97d4ce7a17fddfca20b5ad636821d8c2b7906a47f3d8c5ecd141ec658",
+    "limits": "The full run stopped before the HMR/registry unit cases. These captures locate the same join boundary but do not establish the launcher awaited operation."
+  }
+}

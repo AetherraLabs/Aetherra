@@ -89,13 +89,39 @@ def _capture_async_stacks(state, loop):
             return
         deadline = time.monotonic() + 0.05
         tasks = []
+        captured = {}
         remaining = 256
-        for task in islice(asyncio.all_tasks(loop), 32):
-            if remaining <= 0 or time.monotonic() >= deadline:
-                break
+
+        def capture(task):
+            nonlocal remaining
+            if not isinstance(task, asyncio.Task):
+                return None
+            if task in captured:
+                return captured[task]
+            if len(tasks) >= 32 or remaining <= 0 or time.monotonic() >= deadline:
+                return None
             frames = _await_chain(task.get_coro(), min(32, remaining))
             remaining -= len(frames)
-            tasks.append({"frames": frames})
+            task_id = len(tasks) + 1
+            captured[task] = task_id
+            entry = {
+                "task_id": task_id,
+                "awaits_task": None,
+                "cancelling": task.cancelling(),
+                "frames": frames,
+            }
+            tasks.append(entry)
+            # Optional CPython await edge: never inspect plain Future callbacks.
+            try:
+                waiter = getattr(task, "_fut_waiter", None)
+            except Exception:
+                waiter = None
+            if isinstance(waiter, asyncio.Task):
+                entry["awaits_task"] = capture(waiter)
+            return task_id
+
+        for task in islice(asyncio.all_tasks(loop), 32):
+            capture(task)
         emit(
             state["output"],
             "async-stacks.jsonl",

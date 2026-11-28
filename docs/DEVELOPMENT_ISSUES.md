@@ -496,6 +496,23 @@ five-minute timeout's cause. The same source's seven Linux Homeostasis regressio
 cases and strict gate (414 passed / 5 skipped) passed. Final exact-head results
 remain linked from PR #387.
 
+The [captured strict stall at `b5867797`](evidence/dev_ci_001_strict_stall_2026-11-27.json)
+failed with pytest exit 124 at the unchanged 900-second deadline. The active call
+was `test_self_maintenance_services_registration_and_basic_ops`; fourteen async
+samples show it awaiting its canceled boot task at line 78. The bounded task
+sample omitted that boot task, leaving its own awaited operation unresolved.
+The same head's standalone capabilities passed 171 / four skips and had no live
+owned survivors. The natural strict failure remains a blocker; background
+Homeostasis stacks alone do not establish its cause or historical attribution.
+The same head's full gate reached the same join and timed out at 900 seconds.
+The [controlled launcher correction](evidence/dev_ci_001_launcher_cancellation_2026-11-27.json)
+checks pending startup cancellation before announcement/operation, preserving
+cleanup-only checkpoint intent. Four failing cases became passing cases; the
+23-case selection includes normal orderly SIGINT and existing shutdown controls.
+Awaited-Task links improve the bounded capture. Neither this controlled result
+nor a future passing rerun proves the missing natural await or closes historical
+uncertainty.
+
 Containment retains the five-minute capability limit, existing 900-second strict
 pytest deadline, original failures and separate capture outcomes. This controlled
 correction does not establish the historical blocked node or a shared cause.
