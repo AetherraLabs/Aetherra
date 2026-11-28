@@ -158,6 +158,27 @@ The [failure and regression receipt](evidence/ci_continuity_test_api_2026-11-27.
 records four reproduced failures and 111 passing continuity, operation-cancellation
 and Windows SIGINT checks. No runtime fallback or cancellation guard was weakened.
 
+## Windows nested-pytest coverage scope
+
+The plugin-inheritance integration test originally generated repository-wide
+coverage after its synthetic test and teardown had finished. During clean-main
+verification after PR #387, the child exceeded its existing 30-second deadline.
+A later probe measured 20.50 seconds in coverage reporting; the exact stack at
+the original timeout was not captured. The [follow-up receipt](evidence/ci_windows_diagnostic_coverage_2026-11-27.json)
+retains the failure, timings and regression results separately.
+
+Only this integration execution now measures `tools.ci_capabilities_phase`.
+It checks the actual JSON coverage report for that module and executed lines,
+while preserving the real selected/nested pytest plugin assertions. The four
+production-command cases still require repository-wide coverage and the existing
+900-second pytest timeout. Neither the 30-second child deadline nor the
+five-minute capability step changes. The diagnostic CI step now runs this test
+file explicitly; locally, run:
+
+```text
+python -m pytest -q -o addopts= tests/tools/test_quality_gate_diagnostics.py
+```
+
 ## Linux reproduction
 
 Use a disposable checkout and the same Python/dependency profile as the CI job.

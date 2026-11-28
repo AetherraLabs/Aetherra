@@ -52,6 +52,7 @@ jobs:
           python -m pytest -q -o addopts=
           tests/unit/test_ci_capabilities_diagnostics.py
           tests/unit/test_ci_async_diagnostics.py
+          tests/tools/test_quality_gate_diagnostics.py
 
       - name: Capabilities tests
         timeout-minutes: 5
