@@ -1,6 +1,7 @@
 """Diagnostics belong to the selected quality pytest, not its nested invocations."""
 
 # Standard library imports
+import json
 import os
 import subprocess
 import sys
@@ -91,6 +92,10 @@ def test_selected_pytest_loads_phase_plugin_without_infecting_nested_pytest(
         encoding="utf-8",
     )
     command, _ = selected_command(monkeypatch, tmp_path, os.path.relpath(target, REPO))
+    # Production-wide coverage is asserted above; this probe checks plugin scope.
+    command[command.index("--cov=.")] = "--cov=tools.ci_capabilities_phase"
+    coverage_report = tmp_path / "selected-coverage.json"
+    command[command.index("--cov-report") + 1] = f"json:{coverage_report}"
     result = subprocess.run(
         command,
         cwd=REPO,
@@ -101,6 +106,12 @@ def test_selected_pytest_loads_phase_plugin_without_infecting_nested_pytest(
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert (tmp_path / "diagnostics" / "phases.jsonl").exists()
+    coverage_data = json.loads(coverage_report.read_text(encoding="utf-8"))
+    measured = {
+        Path(name).as_posix(): data for name, data in coverage_data["files"].items()
+    }
+    assert set(measured) == {"tools/ci_capabilities_phase.py"}
+    assert measured["tools/ci_capabilities_phase.py"]["executed_lines"]
 
 
 def test_diagnostic_parent_preserves_nested_quality_gate_reports(monkeypatch, tmp_path):

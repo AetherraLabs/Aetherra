@@ -533,6 +533,14 @@ The next full run exposed an [incomplete continuity test double](evidence/ci_con
 its test-only API correction preserves the runtime cancellation guard and all
 checkpoint-intent assertions.
 
+Post-merge Windows verification exposed a separate [nested-pytest coverage reporting timeout](evidence/ci_windows_diagnostic_coverage_2026-11-27.json).
+Its synthetic test and teardown completed before the 30-second deadline;
+subsequent probes identified expensive repository-wide coverage reporting.
+The test-only correction measures the diagnostic module, asserts the real report
+scope, and preserves production coverage checks and all existing deadlines.
+The original timeout stack remains unavailable. This correction does not resolve
+historical runtime attribution or close DEV-CI-001 based on passing reruns.
+
 Containment retains the five-minute capability limit, existing 900-second strict
 pytest deadline, original failures and separate capture outcomes. This controlled
 correction does not establish the historical blocked node or a shared cause.

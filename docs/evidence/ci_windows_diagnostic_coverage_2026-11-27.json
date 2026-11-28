@@ -1,0 +1,71 @@
+{
+  "scope": "Windows nested-pytest diagnostic coverage workload correction",
+  "base_commit": "fd0362b15c715d97ad9901b9869ee4dba2931da5",
+  "original_failure": {
+    "source_commit": "e167c30778563f5220345965f2a0d0276075d470",
+    "test": "tests/tools/test_quality_gate_diagnostics.py::test_selected_pytest_loads_phase_plugin_without_infecting_nested_pytest",
+    "timeout_seconds": 30,
+    "call_and_teardown_finished_before_timeout": true,
+    "log_sha256": "4b3919d8b7213c4008fcbcb2ee541aeb073c7d2c81836b73108864fa2177ac7a",
+    "receipt_sha256": "5e98c953063b90045df23e8dfc44e18efc840a376869e88e1fa3a4ceaa0a170f"
+  },
+  "prior_timing_probes": [
+    {
+      "coverage_scope": ".",
+      "finish_seconds": 0.4510921,
+      "summary_seconds": 20.4995614,
+      "process_seconds": 22.86,
+      "timings": "coverage-full-source-timings.jsonl"
+    },
+    {
+      "coverage_scope": "tools.ci_capabilities_phase",
+      "finish_seconds": 0.0175108,
+      "summary_seconds": 0.0088221,
+      "process_seconds": 1.92,
+      "timings": "coverage-phase-plugin-only-timings.jsonl"
+    }
+  ],
+  "new_unchanged_baseline": {
+    "passed": 1,
+    "pytest_seconds": 29.5,
+    "log_sha256": "fc82767f8243b777ed01af020d718c7583ad4006716e0df321c40a14b92ae0ab"
+  },
+  "regression_red": {
+    "result": "Actual coverage report includes unrelated repository files",
+    "measured_files": 979,
+    "failed": 1,
+    "pytest_seconds": 26.92,
+    "log_sha256": "3bdbbc38a386476ff2b46c09674b8a95b0480d7e36c5fd2b2d42073482aafb4a"
+  },
+  "regression_green": {
+    "passed": 6,
+    "measured_files": [
+      "tools\\ci_capabilities_phase.py"
+    ],
+    "executed_line_count": 26,
+    "log_sha256": "0573f9f556ea0dec269a5eee9ca6d64698bda582d65afd835b7333d2a83d4252",
+    "pytest_seconds": 5.45
+  },
+  "correction": "Only this synthetic integration execution measures tools.ci_capabilities_phase and emits JSON. It asserts the actual measured files and nonempty executed lines. Real selected/nested pytest processes and plugin assertions remain.",
+  "preserved_controls": [
+    "Four production-command cases still require --cov=. and TEST_TIMEOUT=900.",
+    "Existing child timeouts remain 30 and 15 seconds; the separate nested-report test remains 60 seconds.",
+    "Capability CI step remains five minutes; signing, runtime, Guardian and Security are unchanged."
+  ],
+  "source_sha256": {
+    "tests/tools/test_quality_gate_diagnostics.py": "200a6b1233a45b777ad22018b9111e17d28a4d8623d6f7367d53943064e43d47"
+  },
+  "limits": [
+    "The exact active stack at the original greater-than-30-second timeout was not captured. Later probes locate the expensive reporting workload but do not reconstruct that original interval.",
+    "This test-only correction does not establish historical runtime-hang causes or close DEV-CI-001.",
+    "Final exact-head CI results are recorded in the follow-up PR."
+  ],
+  "combined_windows_regressions": {
+    "passed": 213,
+    "skipped": 11,
+    "pytest_seconds": 97.82,
+    "process_exit_code": 0,
+    "log_sha256": "b4df257d50585e3a2c2bf651c707ec46bc8fbc68b1b163dd4b7bd15c11642182",
+    "scope": "Same diagnostic, cancellation, continuity, Guardian and signing selection that exposed the original timeout."
+  }
+}
