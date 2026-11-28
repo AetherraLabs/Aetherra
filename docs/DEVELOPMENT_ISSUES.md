@@ -475,6 +475,13 @@ The receipt binds those pre-commit working-tree checks to the committed runtime
 source hashes. Final exact-head CI evidence belongs to
 [PR #387](https://github.com/AetherraLabs/Aetherra/pull/387).
 
+The separate full Quality Gates workflow remained active on `1031ab4d` and
+`e76f8baf` after the narrower selections completed. Those unfinished observations
+have no active-node evidence; elapsed time alone does not establish a cause.
+The same diagnostic supervisor now covers that formerly unbounded pytest
+invocation, with a new 900-second pytest deadline and a 1,500-second outer budget.
+Production signing/source/public-key verification steps are unchanged.
+
 Containment retains the five-minute capability limit, existing 900-second strict
 pytest deadline, original failures and separate capture outcomes. This controlled
 correction does not establish the historical blocked node or a shared cause.

@@ -110,6 +110,21 @@ into quality runs from temporary repositories. It is not loaded through
 `PYTEST_ADDOPTS` or `PYTEST_PLUGINS`. The artifact is named
 `strict-quality-diagnostics-<attempt>`. Signing jobs and policy are unchanged.
 
+## Full Quality Gates capture
+
+The separate `CI Quality Gates` workflow selects capabilities, unit and integration
+tests. Its pytest invocation was previously unbounded. After the corrected normal
+CI passed while this broader gate remained active, the same diagnostic supervisor
+was extended to it. It now has a **new** 900-second pytest deadline and a
+1,500-second outer supervisor, retaining `full-quality-diagnostics-<attempt>` even
+on failure. These limits produce a bounded failure and inspectable evidence; they
+do not identify a cause from elapsed time alone. The normal capability step keeps
+its existing five-minute limit.
+
+Existing coverage, offline model settings, test selection, vulnerability checks,
+and production signing/source/public-key verification steps are preserved. A
+failed test still fails the job; uploading diagnostics cannot authorize signing.
+
 ## Evidence and limits
 
 - `phases.jsonl`: active node and setup/call/teardown lifecycle, collection and
