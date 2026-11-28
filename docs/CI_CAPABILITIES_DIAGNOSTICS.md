@@ -41,6 +41,32 @@ suite passed all 55 tests. This local correction has no Linux result recorded
 here. The historical timeout causes remain unknown; passing captures and the
 diagnostic correction do not establish broader readiness.
 
+## Controlled Homeostasis correction
+
+The [cancellation receipt](evidence/dev_ci_001_homeostasis_cancellation_2026-11-27.json)
+retains the source job, hashes and one compact process/await trace. On Linux
+Python 3.11.18, all six pre-fix cases failed at `1d325080`: cancellation consumed
+by a dependency, including a real `asyncio.wait_for` completion race, left
+component run intent open and shutdown waiting on a sleeping worker. This is a
+controlled reproduction, not attribution of the historical capability timeout.
+That job's normal capability selection passed 171 tests with four skips.
+
+Commit `b9ab95880d4cbec5b06db3e3b2a441b5da82f84d` closes component run intent
+before cancellation/draining and rechecks it after controller steps/actions and
+supervisor cycles. It preserves asynchronous teardown order and authority checks.
+Seven local regressions pass, including a normal two-cycle controller case;
+234 Homeostasis/Guardian/observation/integration checks passed before the positive
+case was added. Source hashes distinguish pre-commit working-tree verification
+from the recorded base HEAD. Consult [PR #387](https://github.com/AetherraLabs/Aetherra/pull/387)
+for final exact-head CI results; this receipt does not assert corrected Linux
+verification or broader readiness.
+
+Run the focused regression in the supported installed test environment:
+
+```bash
+python -m pytest -q -o addopts= tests/unit/test_homeostasis_shutdown_cancellation.py
+```
+
 ## Linux reproduction
 
 Use a disposable checkout and the same Python/dependency profile as the CI job.

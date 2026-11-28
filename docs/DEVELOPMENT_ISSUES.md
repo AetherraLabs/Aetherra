@@ -405,7 +405,7 @@ removing the skip cannot close this unknown-cause record; no risk acceptance.
 
 ## DEV-CI-001 — Capabilities job timeout before a result summary
 
-**Status: OPEN — causes unknown; a common cause is not established.**
+**Status: OPEN — historical causes unknown; controlled Homeostasis defect corrected.**
 Owner: CI/Runtime maintainers. First retained observation: 2026-11-25
 (America/Denver); registered: 2026-11-26; reviewed: 2026-11-27. Severity unknown.
 GitHub: [#381](https://github.com/AetherraLabs/Aetherra/issues/381).
@@ -457,17 +457,32 @@ source-log hash. This gate uses `requirements-ci.lock`, coverage and a broader
 test selection; a common cause with the five-minute capability timeout is not
 established. The overall CI run failed despite its successful build-test job.
 
-Containment: preserve the five-minute capability limit, existing 900-second
-strict pytest deadline, original logs and separate capture outcomes; no skip,
-timeout extension or runtime correction is established. Next action: the
-[bounded Linux diagnostic configuration](CI_CAPABILITIES_DIAGNOSTICS.md)
-restores buffered `-q` reporting, captures both gates, and adds opt-in await-chain
-and process cleanup evidence. Capture the stalled node/phase and outstanding
-work before choosing a focused correction. Resolve only
-with a supported cause and focused correction/regression, or an evidenced
-external cause with tested containment and explicit maintainer disposition.
-Passing reruns alone do not close this record. Supervised-alpha limits,
-Guardian/Security, signing and approval boundaries remain unchanged.
+A [controlled Homeostasis cancellation receipt](evidence/dev_ci_001_homeostasis_cancellation_2026-11-27.json)
+records six failures on Python 3.11.18 at `1d325080`: both an explicitly consumed
+cancellation and a genuine `asyncio.wait_for` completion race left controller or
+supervisor run intent open while `stop()` awaited the worker. The worker then
+slept; the controller-step case also entered action processing after stop began.
+The same Linux job completed the normal capabilities selection: 171 passed /
+4 skipped in 44.77 seconds, with no live owned processes before cleanup.
+
+Commit `b9ab95880d4cbec5b06db3e3b2a441b5da82f84d` adds twelve runtime lines:
+close component run intent before task draining and recheck it after awaited
+controller steps/actions and supervisor cycles. Asynchronous resource teardown
+order and Guardian/actuator checks are unchanged. Seven local shutdown/positive
+loop regressions pass; an earlier selection of six shutdown cases plus existing
+Homeostasis, Guardian, observation and integration checks passed all 234 tests.
+The receipt binds those pre-commit working-tree checks to the committed runtime
+source hashes. Final exact-head CI evidence belongs to
+[PR #387](https://github.com/AetherraLabs/Aetherra/pull/387).
+
+Containment retains the five-minute capability limit, existing 900-second strict
+pytest deadline, original failures and separate capture outcomes. This controlled
+correction does not establish the historical blocked node or a shared cause.
+Continue the [bounded Linux diagnostics](CI_CAPABILITIES_DIAGNOSTICS.md); close
+this record only with supported historical attribution or an evidenced external
+cause and explicit reviewed disposition. Passing reruns alone do not close it.
+Supervised-alpha limits, Guardian/Security, signing and approval boundaries remain
+unchanged.
 
 ## DEV-CI-002 — Personal continuity write-session HTTP 503
 
